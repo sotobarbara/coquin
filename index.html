@@ -530,7 +530,13 @@ main{padding-top:18px}
   <div class="section-title">Estoque de coco no mês</div>
   <div class="card chart-card"><div class="ch-s" id="chStockSub" style="margin:0 2px 10px"></div><div class="chart" id="chStock"></div><div class="charttip" id="tipStock"></div><div class="legend" id="lgStock"></div></div>
 
-  <div class="foot"><div>Coquin · dados do mês selecionado</div></div>
+  <div class="foot">
+    <button class="share" id="reportBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      Compartilhar relatório do mês
+    </button>
+    <div>Coquin · dados do mês selecionado</div>
+  </div>
 
  </div><!-- /viewDados -->
 
@@ -1641,6 +1647,93 @@ $('shareBtn').addEventListener('click', ()=>{
   if(navigator.share){ navigator.share({title:'Resumo Coquin',text:txt}).catch(()=>{}); }
   else if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast('Resumo copiado')); }
   else { toast('Resumo pronto'); }
+});
+
+/* ---- relatório do mês (imagem) ---- */
+function reportData(key){
+  const list=closingsOf(key), goal=goalFor(key);
+  let rev=0,gel=0,taxa=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
+  list.forEach(c=>{ const r=reconcile(c); rev+=c.revenue||0; gel+=c.gelatos||0; taxa+=c.taxa||0; byM.pix+=c.pix||0; byM.debito+=c.debito||0; byM.credito+=c.credito||0; byM.dinheiro+=r.dinheiro; });
+  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(m.type==='in')cashIn+=m.amount||0; else cashOut+=m.amount||0; });
+  const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
+  const cogs=gel*(cocoC/PRODUCTS.coco.yield+sorvC/PRODUCTS.sorvete.yield);
+  const lucro=rev+cashIn-cogs-taxa-cashOut, margem=rev>0?lucro/rev*100:0;
+  // melhor dia (todo histórico) e pico
+  const WD=Array.from({length:7},()=>({s:0,n:0})), WDF=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  db.closings.forEach(c=>{ const [Y,M,D]=c.date.split('-').map(Number); const w=new Date(Y,M-1,D).getDay(); WD[w].s+=c.revenue||0; WD[w].n++; });
+  let bd=-1,bv=-1; WD.forEach((x,i)=>{ if(x.n>0 && x.s/x.n>bv){bv=x.s/x.n;bd=i;} });
+  const hAgg=new Array(24).fill(0); let hasH=false; list.forEach(c=>{ if(Array.isArray(c.hours)){hasH=true;c.hours.forEach((n,h)=>hAgg[h]+=(n||0));} });
+  let pk=-1; if(hasH){ pk=0; for(let h=1;h<24;h++) if(hAgg[h]>hAgg[pk]) pk=h; }
+  return {key,list,goal,rev,gel,taxa,byM,cashIn,cashOut,cogs,lucro,margem,
+    cocoNow:Math.round(currentStock('coco')), sorvNow:Math.round(currentStock('sorvete')),
+    bestDay:bd>=0?WDF[bd]:null, bestVal:bv, peak:pk>=0?pk:null };
+}
+function loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+async function buildReport(){
+  const key=viewMonth, d=reportData(key), logo=await loadImg('logo-coquin-white.png');
+  const W=1080, H=1560, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const x=cv.getContext('2d'); const M=64, CW=W-M*2;
+  const C={green:'#446349',g700:'#35503A',gold:'#C79A3E',ink:'#26302A',soft:'#5E6B60',faint:'#95A096',line:'#E7E4DC',bg:'#F5F3EE',
+    pix:'#1baf7a',din:'#eda100',deb:'#2a78d6',cred:'#eb6834',ok:'#1E6B34'};
+  x.fillStyle=C.bg; x.fillRect(0,0,W,H);
+  // header verde
+  const grd=x.createLinearGradient(0,0,W,360); grd.addColorStop(0,C.green); grd.addColorStop(1,C.g700);
+  x.fillStyle=grd; x.fillRect(0,0,W,360);
+  if(logo){ const lw=360, lh=lw*logo.height/logo.width; x.drawImage(logo,(W-lw)/2,96,lw,lh); }
+  x.fillStyle='rgba(255,255,255,.9)'; x.textAlign='center'; x.font='600 30px -apple-system,Segoe UI,Roboto,sans-serif';
+  x.fillText('Relatório · '+monthName(key).replace(/^\w/,c=>c.toUpperCase())+' · '+d.goal.unit, W/2, 300);
+  let y=440;
+  // faturamento (hero)
+  x.textAlign='left'; x.fillStyle=C.faint; x.font='700 26px -apple-system,sans-serif'; x.fillText('FATURAMENTO DO MÊS', M, y);
+  x.fillStyle=C.g700; x.font='800 92px -apple-system,sans-serif'; x.fillText(money(d.rev), M, y+92); y+=170;
+  // 3 KPIs
+  const kpis=[['Lucro líquido',money(d.lucro)],['Margem',Math.round(d.margem)+'%'],['Gelatos',NUM.format(d.gel)]];
+  const kw=(CW-40)/3;
+  kpis.forEach((k,i)=>{ const kx=M+i*(kw+20); x.fillStyle='#fff'; rr(x,kx,y,kw,150,20); x.fill(); x.strokeStyle=C.line; x.lineWidth=2; x.stroke();
+    x.fillStyle=C.faint; x.font='700 20px -apple-system,sans-serif'; x.fillText(k[0],kx+22,y+42);
+    x.fillStyle=C.g700; x.font='800 42px -apple-system,sans-serif'; x.fillText(k[1],kx+22,y+100); });
+  y+=150+40;
+  // meta gelatos
+  const pctMeta=d.goal.gelatos>0?Math.round(d.gel/d.goal.gelatos*100):0;
+  x.fillStyle=C.soft; x.font='600 28px -apple-system,sans-serif'; x.fillText('Meta: '+NUM.format(d.gel)+' / '+NUM.format(d.goal.gelatos)+' gelatos ('+pctMeta+'%)', M, y);
+  x.fillStyle=C.line; rr(x,M,y+20,CW,18,9); x.fill(); x.fillStyle=C.gold; rr(x,M,y+20,CW*Math.min(1,pctMeta/100),18,9); x.fill(); y+=90;
+  // seção pagamentos
+  function sectionTitle(t){ x.fillStyle=C.faint; x.font='800 24px -apple-system,sans-serif'; x.fillText(t.toUpperCase(), M, y); y+=44; }
+  sectionTitle('Formas de pagamento');
+  const pays=[['Pix',d.byM.pix,C.pix],['Dinheiro',d.byM.dinheiro,C.din],['Débito',d.byM.debito,C.deb],['Crédito',d.byM.credito,C.cred]];
+  pays.forEach(pp=>{ x.fillStyle=pp[2]; rr(x,M,y-22,26,26,7); x.fill();
+    x.fillStyle=C.ink; x.font='700 30px -apple-system,sans-serif'; x.fillText(pp[0], M+42, y);
+    x.textAlign='right'; x.font='800 30px -apple-system,sans-serif'; x.fillText(money(pp[1]), W-M, y); x.textAlign='left'; y+=54; });
+  y+=24;
+  // estoque + destaques
+  sectionTitle('Estoque & destaques');
+  const lines=[['🥥 Cocos em estoque', NUM.format(d.cocoNow)], ['🍦 Caixas de sorvete', NUM.format(d.sorvNow)]];
+  if(d.bestDay) lines.push(['🏆 Dia mais forte', d.bestDay]);
+  if(d.peak!=null) lines.push(['🔥 Pico de vendas', d.peak+'h–'+((d.peak+1)%24)+'h']);
+  lines.push(['🧾 Taxa Stone no mês', money(d.taxa)]);
+  lines.forEach(ln=>{ x.fillStyle=C.soft; x.font='600 30px -apple-system,sans-serif'; x.fillText(ln[0], M, y);
+    x.textAlign='right'; x.fillStyle=C.ink; x.font='800 30px -apple-system,sans-serif'; x.fillText(ln[1], W-M, y); x.textAlign='left'; y+=54; });
+  // rodapé
+  x.fillStyle=C.faint; x.font='600 24px -apple-system,sans-serif'; x.textAlign='center';
+  x.fillText('Coquin · relatório gerado pelo app', W/2, H-48);
+  return cv;
+}
+$('reportBtn').addEventListener('click', async ()=>{
+  toast('Gerando relatório…');
+  try{
+    const cv=await buildReport();
+    cv.toBlob(async(blob)=>{
+      if(!blob){ toast('Não consegui gerar'); return; }
+      const file=new File([blob],'coquin-'+viewMonth+'.png',{type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file], title:'Relatório Coquin'}); }catch(e){}
+      } else {
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='coquin-'+viewMonth+'.png'; a.click();
+        toast('Relatório baixado 📄');
+      }
+    },'image/png');
+  }catch(e){ toast('Não consegui gerar o relatório'); }
 });
 
 /* ---- login / sincronia ---- */
