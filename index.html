@@ -201,6 +201,17 @@ main{padding-top:18px}
 .recon-ok{display:flex;gap:8px;align-items:center;background:#DFF3E4;color:#1E6B34;border-radius:11px;padding:9px 12px;font-size:12.8px;font-weight:700;margin-top:10px}
 .recon-ok svg{width:16px;height:16px;stroke:#1E6B34}
 
+.import-btn{width:100%;border:2px dashed var(--green-tint-2);background:var(--green-tint);color:var(--green-700);font-size:14.5px;font-weight:750;padding:14px;border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px}
+.import-btn:active{background:var(--green-tint-2)}
+.import-btn svg{width:18px;height:18px;stroke:var(--green-700)}
+.stone-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.stone-chips:empty{display:none}
+.sc-chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:700;color:var(--ink-soft);cursor:pointer}
+.sc-chip.sel{border-color:var(--green);background:var(--green-tint);color:var(--green-700)}
+.sc-chip b{color:var(--green-700)}
+.import-hint{font-size:12.5px;background:var(--gold-soft);color:#8A6A1E;padding:9px 12px;border-radius:10px;font-weight:600;margin-top:10px;line-height:1.35}
+.import-hint:empty{display:none}
+.import-hint b{font-weight:800}
 .btn-primary{width:100%;border:0;background:var(--green);color:#fff;font-size:16.5px;font-weight:750;padding:16px;border-radius:var(--r-sm);cursor:pointer;letter-spacing:.2px;box-shadow:0 6px 18px rgba(52,80,58,.28)}
 .btn-primary:active{background:var(--green-700)}
 .btn-primary:disabled{opacity:.45;box-shadow:none}
@@ -317,7 +328,17 @@ main{padding-top:18px}
   </div>
 
   <div class="field">
-    <label>Gelatos vendidos no dia</label>
+    <button type="button" class="import-btn" id="importBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importar CSV da Stone
+    </button>
+    <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+    <div class="stone-chips" id="stoneChips"></div>
+    <div class="import-hint" id="importHint"></div>
+  </div>
+
+  <div class="field">
+    <label>Gelatos vendidos no dia <span class="hintlink" style="color:var(--ink-faint);cursor:default">total, com dinheiro</span></label>
     <input id="cGel" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
   </div>
 
@@ -566,21 +587,91 @@ function draftFromForm(){
     revenue:parseMoney($('cRev').value), pix:parseMoney($('sPix').value),
     debito:parseMoney($('sDeb').value), credito:parseMoney($('sCred').value) };
 }
+function autoRev(){ const q=parseInt2($('cGel').value); if(q>0){ $('cRev').value=String((q*price()).toFixed(2)).replace('.',','); } }
 function renderRecon(){
   const c=draftFromForm(); const r=reconcile(c);
+  const cardGel=price()>0?Math.round(r.stone/price()):0;
+  const cashGel=price()>0?Math.round(r.dinheiro/price()):0;
+  const split=c.gelatos>0?`<div class="recon-row"><span>🍨 ${c.gelatos} gelatos</span><b>${cardGel} cartão/Pix + ${cashGel} dinheiro</b></div>`:'';
   let html=`<div class="recon-row"><span>Faturamento</span><b>${money(c.revenue)}</b></div>
     <div class="recon-row"><span>Recebido Stone</span><b>${money(r.stone)}</b></div>
+    ${split}
     <div class="recon-row big"><span class="lbl">💵 Dinheiro (deduzido)</span><span class="dinheiro">${money(r.dinheiro)}</span></div>`;
   if(r.issues.length){ r.issues.forEach(m=>{ html+=`<div class="recon-alert"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>${m}</span></div>`; }); }
   else if(c.gelatos>0){ html+=`<div class="recon-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tudo bate certinho</div>`; }
   $('recon').innerHTML=html;
   $('saveClose').disabled=!(c.gelatos>0 && c.revenue>0);
 }
-['cGel','cRev','sPix','sDeb','sCred','cDate'].forEach(id=> $(id).addEventListener('input', renderRecon));
-$('fillRev').addEventListener('click', ()=>{ const q=parseInt2($('cGel').value); if(q>0){ $('cRev').value=String((q*price()).toFixed(2)).replace('.',','); renderRecon(); } });
+$('cGel').addEventListener('input', ()=>{ autoRev(); renderRecon(); });
+['cRev','sPix','sDeb','sCred','cDate'].forEach(id=> $(id).addEventListener('input', renderRecon));
+$('fillRev').addEventListener('click', ()=>{ autoRev(); renderRecon(); });
+
+/* ---- import CSV da Stone ---- */
+let stoneParsed=[];
+function parseStoneCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim().length);
+  if(lines.length<2) return [];
+  const delim=(lines[0].split(';').length>=lines[0].split(',').length)?';':',';
+  const hdr=lines[0].split(delim).map(h=>h.trim().toUpperCase());
+  const iDate=hdr.indexOf('DATA DA VENDA'), iProd=hdr.indexOf('PRODUTO'), iVal=hdr.indexOf('VALOR BRUTO'), iSt=hdr.indexOf('ULTIMO STATUS');
+  if(iDate<0||iProd<0||iVal<0) return null;   // não é o relatório da Stone
+  const days={};
+  for(let n=1;n<lines.length;n++){
+    const r=lines[n].split(delim);
+    if(r.length<=iProd) continue;
+    if(iSt>=0 && r[iSt] && r[iSt].trim().toLowerCase()!=='aprovada') continue;
+    const dpart=(r[iDate]||'').trim().split(' ')[0];
+    const dm=dpart.split('/'); if(dm.length!==3) continue;
+    const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
+    const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,tx:0});
+    if(prod.indexOf('pix')>=0) d.pix+=val;
+    else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0) d.debito+=val;
+    else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0) d.credito+=val;
+    else continue;
+    d.tx++;
+  }
+  return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
+}
+function showStoneChips(sel){
+  $('stoneChips').innerHTML=stoneParsed.map(d=>{
+    const [Y,M,D]=d.date.split('-'); const tot=d.pix+d.debito+d.credito;
+    return `<button type="button" class="sc-chip ${d.date===sel?'sel':''}" data-day="${d.date}">${D}/${M} · <b>${money(tot)}</b></button>`;
+  }).join('');
+}
+function applyStoneDay(d){
+  $('cDate').value=d.date;
+  $('sPix').value=d.pix?String(d.pix.toFixed(2)).replace('.',','):'';
+  $('sDeb').value=d.debito?String(d.debito.toFixed(2)).replace('.',','):'';
+  $('sCred').value=d.credito?String(d.credito.toFixed(2)).replace('.',','):'';
+  const tot=d.pix+d.debito+d.credito, cardGel=Math.round(price()>0?tot/price():0);
+  const existing=db.closings.find(c=>c.date===d.date);
+  if(existing && existing.gelatos){ $('cGel').value=existing.gelatos; }
+  else if(!parseInt2($('cGel').value)){ $('cGel').value=cardGel; }   // piso: só cartão/Pix
+  autoRev();
+  $('importHint').innerHTML='No cartão/Pix: <b>'+cardGel+' gelatos</b> ('+money(tot)+'). Tem dinheiro? Ajuste o <b>total de gelatos</b> acima que o resto vira dinheiro.';
+  showStoneChips(d.date);
+  renderRecon();
+}
+$('importBtn').addEventListener('click', ()=> $('csvFile').click());
+$('csvFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let res; try{ res=parseStoneCSV(String(reader.result)); }catch(err){ res=null; }
+    if(res===null){ toast('CSV não reconhecido — use o relatório de vendas da Stone'); }
+    else if(!res.length){ toast('Nenhuma venda aprovada no arquivo'); }
+    else { stoneParsed=res; applyStoneDay(res[0]); toast(res.length>1? res.length+' dias no arquivo — toque no dia p/ escolher':'Stone importada ✓'); }
+  };
+  reader.readAsText(f); e.target.value='';
+});
+$('stoneChips').addEventListener('click', e=>{
+  const b=e.target.closest('[data-day]'); if(!b) return;
+  const d=stoneParsed.find(x=>x.date===b.dataset.day); if(d) applyStoneDay(d);
+});
 
 function openClose(existing){
-  editingId=null;
+  editingId=null; stoneParsed=[]; $('stoneChips').innerHTML=''; $('importHint').innerHTML='';
   if(existing){
     editingId=existing.id||existing.date;
     $('closeTitle').textContent='Editar fechamento';
