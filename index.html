@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#446349">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Coquin Vendas">
-<title>Coquin · Controle de Vendas</title>
+<meta name="apple-mobile-web-app-title" content="Coquin">
+<title>Coquin · Controle</title>
 <style>
 /* ============================================================
-   COQUIN — Controle de Vendas
+   COQUIN — Controle de operação (fechamento diário)
    Marca: verde #446349 · visual clean & sofisticado
-   App 100% offline · dados salvos no próprio aparelho
+   Fase 1: fechamento do dia + conciliação Stone (dados locais)
    ============================================================ */
 :root{
   --green:#446349;
@@ -45,10 +45,7 @@
 html,body{margin:0}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-  -webkit-font-smoothing:antialiased;
-  line-height:1.45;
+  background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.45;
   padding-bottom:calc(120px + env(safe-area-inset-bottom));
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 16px}
@@ -57,8 +54,7 @@ body{
 header{
   position:sticky;top:0;z-index:20;
   background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 78%,var(--green-900) 100%);
-  box-shadow:0 4px 18px rgba(52,80,58,.22);
-  padding-top:env(safe-area-inset-top);
+  box-shadow:0 4px 18px rgba(52,80,58,.22);padding-top:env(safe-area-inset-top);
 }
 .head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 15px;max-width:520px;margin:0 auto}
 .brand img{height:30px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}
@@ -69,15 +65,13 @@ header{
 
 /* ---------- Sections ---------- */
 main{padding-top:18px}
-.section-title{font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-faint);margin:26px 4px 10px}
+.section-title{font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-faint);margin:26px 4px 10px;display:flex;justify-content:space-between;align-items:baseline}
+.section-title .st-side{text-transform:none;letter-spacing:0;font-weight:600;color:var(--ink-faint)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 
 /* ---------- Meta (hero) ---------- */
-.meta{
-  padding:20px;color:#fff;border:0;overflow:hidden;position:relative;
-  background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 62%,var(--green-900) 100%);
-  box-shadow:0 10px 30px rgba(52,80,58,.30);
-}
+.meta{padding:20px;color:#fff;border:0;overflow:hidden;position:relative;
+  background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 62%,var(--green-900) 100%);box-shadow:0 10px 30px rgba(52,80,58,.30);}
 .meta::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06)}
 .meta-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:relative}
 .meta-lab{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.85}
@@ -125,7 +119,7 @@ main{padding-top:18px}
 .pay .prail{height:4px;border-radius:999px;background:var(--line);margin-top:10px;overflow:hidden}
 .pay .prail > i{display:block;height:100%;border-radius:999px;transition:width .5s}
 
-/* ---------- Produtos ---------- */
+/* ---------- Métricas ---------- */
 .prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .prod{padding:16px;display:flex;align-items:center;gap:13px}
 .prod .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;flex:none}
@@ -134,95 +128,91 @@ main{padding-top:18px}
 .prod .pv{font-size:26px;font-weight:800;letter-spacing:-.6px;line-height:1}
 .prod .pl{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-weight:600}
 
-/* ---------- Vendas list ---------- */
+/* ---------- Histórico ---------- */
 .sales{overflow:hidden}
-.dayhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;background:var(--green-tint);border-bottom:1px solid var(--line)}
-.dayhead .dl{font-size:12.5px;font-weight:800;color:var(--green-700);text-transform:capitalize;letter-spacing:.2px}
-.dayhead .dr{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink-soft);font-weight:600}
-.dayhead .dr b{color:var(--green-700);font-weight:800}
-.dayhead .badge{display:inline-flex;align-items:center;gap:3px}
-.sale{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.sale{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
 .sale:last-child{border-bottom:0}
-.sale .m{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none}
-.sale .m svg{width:18px;height:18px;stroke:#fff}
+.sale .m{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex:none;background:var(--green-tint);color:var(--green-700);font-weight:800;font-size:12px;line-height:1;text-align:center;flex-direction:column}
+.sale .m b{font-size:17px;font-weight:800}
+.sale .m span{font-size:9.5px;font-weight:700;text-transform:uppercase;opacity:.7;letter-spacing:.3px}
 .sale .info{flex:1;min-width:0}
-.sale .info .r1{font-size:15px;font-weight:700;letter-spacing:-.3px}
-.sale .info .r2{font-size:12px;color:var(--ink-faint);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sale .info .r1{font-size:15px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:7px}
+.sale .info .r2{font-size:12px;color:var(--ink-faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sale .warn{color:var(--danger);font-size:13px}
 .sale .del{border:0;background:transparent;color:var(--ink-faint);width:34px;height:34px;border-radius:10px;cursor:pointer;display:grid;place-items:center;flex:none}
 .sale .del:active{background:#F7E9E7;color:var(--danger)}
 .sale .del svg{width:17px;height:17px}
+.dotpay{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:2px;vertical-align:middle}
 .empty{padding:40px 24px;text-align:center;color:var(--ink-faint)}
 .empty .em{font-size:34px;margin-bottom:8px}
 .empty p{margin:0;font-size:14px}
 
 /* ---------- FAB ---------- */
-.fab{
-  position:fixed;left:50%;transform:translateX(-50%);
-  bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;
-  background:var(--green);color:#fff;border:0;border-radius:999px;
-  padding:15px 26px;font-size:16px;font-weight:700;letter-spacing:.2px;
-  box-shadow:0 10px 26px rgba(52,80,58,.42);cursor:pointer;
-  display:flex;align-items:center;gap:9px;
-}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;
+  background:var(--green);color:#fff;border:0;border-radius:999px;padding:15px 26px;font-size:16px;font-weight:700;letter-spacing:.2px;
+  box-shadow:0 10px 26px rgba(52,80,58,.42);cursor:pointer;display:flex;align-items:center;gap:9px;}
 .fab:active{transform:translateX(-50%) scale(.97)}
 .fab svg{width:20px;height:20px;stroke:#fff}
 
 /* ---------- Sheet / Modal ---------- */
 .scrim{position:fixed;inset:0;background:rgba(30,38,32,.42);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
 .scrim.on{opacity:1;pointer-events:auto}
-.sheet{
-  position:fixed;left:0;right:0;bottom:0;z-index:41;
-  background:var(--surface);border-radius:26px 26px 0 0;
-  padding:8px 20px calc(24px + env(safe-area-inset-bottom));
-  transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.85,.25,1);
-  max-width:520px;margin:0 auto;box-shadow:var(--shadow-lg);max-height:92vh;overflow-y:auto;
-}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);border-radius:26px 26px 0 0;
+  padding:8px 20px calc(24px + env(safe-area-inset-bottom));transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.85,.25,1);
+  max-width:520px;margin:0 auto;box-shadow:var(--shadow-lg);max-height:94vh;overflow-y:auto;}
 .sheet.on{transform:translateY(0)}
 .grip{width:42px;height:5px;border-radius:999px;background:var(--line);margin:10px auto 14px}
-.sheet h2{font-size:19px;font-weight:800;margin:0 0 18px;letter-spacing:-.3px}
-.field{margin-bottom:18px}
+.sheet h2{font-size:19px;font-weight:800;margin:0 0 4px;letter-spacing:-.3px}
+.sheet .h2sub{font-size:13px;color:var(--ink-faint);margin:0 0 18px}
+.field{margin-bottom:16px}
 .field > label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.field .hintlink{float:right;text-transform:none;letter-spacing:0;color:var(--green);font-weight:700;cursor:pointer}
 .money{display:flex;align-items:center;border:2px solid var(--line);border-radius:var(--r-sm);padding:0 16px;transition:border-color .15s;background:#fff}
 .money:focus-within{border-color:var(--green)}
-.money .cur{font-size:22px;font-weight:700;color:var(--ink-soft);margin-right:6px}
-.money input{border:0;outline:0;font-size:30px;font-weight:800;padding:14px 0;width:100%;color:var(--ink);letter-spacing:-.5px;background:transparent}
-.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.method{border:2px solid var(--line);border-radius:var(--r-sm);padding:13px;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;transition:.15s;user-select:none}
-.method .mi{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
-.method .mi svg{width:17px;height:17px;stroke:#fff}
-.method span{font-size:14.5px;font-weight:700}
-.method.sel{border-color:var(--green);background:var(--green-tint)}
-.steppers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stepper{border:2px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center;background:#fff}
-.stepper .sl{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;gap:5px}
-.stepper .sc{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
-.stepper .sc button{width:38px;height:38px;border-radius:11px;border:0;background:var(--green-tint);color:var(--green-700);font-size:22px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1}
-.stepper .sc button:active{background:var(--green-tint-2)}
-.stepper .sc .qty{font-size:24px;font-weight:800;min-width:40px}
-.qtybig{display:flex;align-items:center;justify-content:space-between;gap:14px;border:2px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;background:#fff}
-.qtybig .qb{width:56px;height:56px;border-radius:16px;border:0;background:var(--green-tint);color:var(--green-700);font-size:30px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1;flex:none}
-.qtybig .qb:active{background:var(--green-tint-2)}
-.qtymid{text-align:center;flex:1}
-.qtymid .qn{font-size:44px;font-weight:800;line-height:1;letter-spacing:-1px;color:var(--ink)}
-.qtymid .qtot{font-size:15px;font-weight:800;color:var(--green-700);margin-top:4px}
-.qhint{font-size:12px;color:var(--ink-faint);text-align:center;margin-top:9px}
-.qchips{display:flex;gap:8px;margin-top:12px}
-.qchips button{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 0;font-size:15px;font-weight:750;color:var(--ink-soft);cursor:pointer}
-.qchips button:active{background:var(--green-tint);border-color:var(--green);color:var(--green-700)}
+.money .cur{font-size:18px;font-weight:700;color:var(--ink-soft);margin-right:6px}
+.money input{border:0;outline:0;font-size:24px;font-weight:800;padding:12px 0;width:100%;color:var(--ink);letter-spacing:-.5px;background:transparent;text-align:right}
+.big-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:12px 16px;font-size:30px;font-weight:800;outline:0;color:var(--ink);letter-spacing:-.5px;background:#fff}
+.big-input:focus{border-color:var(--green)}
+.txt-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:13px 16px;font-size:16px;font-weight:600;outline:0;color:var(--ink);background:#fff}
+.txt-input:focus{border-color:var(--green)}
+.date-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:12px 16px;font-size:16px;font-weight:700;outline:0;color:var(--ink);background:#fff;font-family:inherit}
+.date-input:focus{border-color:var(--green)}
+.goal-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;font-size:24px;font-weight:800;text-align:center;outline:0;color:var(--ink)}
+.goal-input:focus{border-color:var(--green)}
+
+/* linhas Stone */
+.stone-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.stone-row .sl{display:flex;align-items:center;gap:8px;width:104px;flex:none;font-size:13.5px;font-weight:700;color:var(--ink)}
+.stone-row .sl .mi{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none}
+.stone-row .sl .mi svg{width:15px;height:15px;stroke:#fff}
+.stone-row .money{flex:1}
+.stone-row .money input{font-size:19px;padding:9px 0}
+.stone-row .money .cur{font-size:14px}
+
+/* card de conciliação */
+.recon{background:var(--green-tint);border-radius:var(--r-sm);padding:13px 15px;margin:2px 0 16px}
+.recon-row{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:4px 0;color:var(--ink-soft)}
+.recon-row b{color:var(--ink);font-weight:750}
+.recon-row.big{font-size:15px;padding-top:9px;margin-top:5px;border-top:1px dashed var(--green-tint-2)}
+.recon-row.big .lbl{font-weight:700;color:var(--ink)}
+.recon-row.big .dinheiro{font-weight:800;color:var(--dinheiro);font-size:18px}
+.recon-alert{display:flex;gap:9px;align-items:flex-start;background:#F7DFD6;color:#8f3626;border-radius:11px;padding:10px 12px;font-size:12.8px;font-weight:600;margin-top:10px;line-height:1.35}
+.recon-alert svg{width:17px;height:17px;flex:none;margin-top:1px;stroke:#A6432E}
+.recon-ok{display:flex;gap:8px;align-items:center;background:#DFF3E4;color:#1E6B34;border-radius:11px;padding:9px 12px;font-size:12.8px;font-weight:700;margin-top:10px}
+.recon-ok svg{width:16px;height:16px;stroke:#1E6B34}
+
 .btn-primary{width:100%;border:0;background:var(--green);color:#fff;font-size:16.5px;font-weight:750;padding:16px;border-radius:var(--r-sm);cursor:pointer;letter-spacing:.2px;box-shadow:0 6px 18px rgba(52,80,58,.28)}
 .btn-primary:active{background:var(--green-700)}
 .btn-primary:disabled{opacity:.45;box-shadow:none}
-.goal-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;font-size:24px;font-weight:800;text-align:center;outline:0;color:var(--ink)}
-.goal-input:focus{border-color:var(--green)}
-.txt-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:13px 16px;font-size:16px;font-weight:600;outline:0;color:var(--ink)}
-.txt-input:focus{border-color:var(--green)}
+.btn-ghost{width:100%;border:2px solid var(--line);background:#fff;color:var(--ink-soft);font-size:14px;font-weight:700;padding:12px;border-radius:var(--r-sm);cursor:pointer;margin-top:10px}
+.btn-ghost:active{background:var(--green-tint)}
 
 /* ---------- Misc ---------- */
-.foot{ text-align:center;color:var(--ink-faint);font-size:11.5px;padding:22px 0 6px}
+.foot{text-align:center;color:var(--ink-faint);font-size:11.5px;padding:22px 0 6px}
 .foot .share{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:650;color:var(--green-700);cursor:pointer;margin-bottom:14px}
 .foot .share:active{background:var(--green-tint)}
 .foot .share svg{width:16px;height:16px}
-.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(96px + env(safe-area-inset-bottom));z-index:50;background:var(--green-900);color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(96px + env(safe-area-inset-bottom));z-index:50;background:var(--green-900);color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:88%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast b{color:#EAD9A6}
 </style>
@@ -250,7 +240,7 @@ main{padding-top:18px}
         <div class="meta-lab">Gelatos vendidos</div>
         <div class="meta-unit" id="metaUnit">Imprensa</div>
       </div>
-      <button class="meta-edit" id="editGoal">Editar meta</button>
+      <button class="meta-edit" id="editGoal">Ajustes</button>
     </div>
     <div class="meta-nums">
       <span class="big" id="gelSold">0</span>
@@ -271,7 +261,7 @@ main{padding-top:18px}
     <div>
       <div class="lab">Total recebido no mês</div>
       <div class="val" id="revTotal">R$ 0,00</div>
-      <div class="n" id="salesCount">Nenhuma venda registrada</div>
+      <div class="n" id="salesCount">Nenhum dia fechado</div>
     </div>
     <div class="coin">
       <svg viewBox="0 0 24 24" fill="none" stroke="#446349" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -282,21 +272,21 @@ main{padding-top:18px}
   <div class="section-title">Por forma de pagamento</div>
   <div class="pay-grid" id="payGrid"></div>
 
-  <!-- GELATOS -->
-  <div class="section-title">Gelatos vendidos</div>
+  <!-- MÉTRICAS -->
+  <div class="section-title">No mês</div>
   <div class="prod-grid">
     <div class="card prod">
       <div class="ic gel">🍨</div>
-      <div><div class="pv" id="gelCount">0</div><div class="pl">No mês</div></div>
+      <div><div class="pv" id="gelCount">0</div><div class="pl">Gelatos vendidos</div></div>
     </div>
     <div class="card prod">
-      <div class="ic coco">📅</div>
-      <div><div class="pv" id="gelToday">0</div><div class="pl">Hoje</div></div>
+      <div class="ic coco">🎟️</div>
+      <div><div class="pv" id="ticket">R$ 0</div><div class="pl">Ticket médio</div></div>
     </div>
   </div>
 
-  <!-- VENDAS -->
-  <div class="section-title">Histórico por dia</div>
+  <!-- HISTÓRICO -->
+  <div class="section-title">Fechamentos <span class="st-side" id="daysCount"></span></div>
   <div class="card sales" id="salesList"></div>
 
   <div class="foot">
@@ -304,51 +294,66 @@ main{padding-top:18px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
       Compartilhar resumo do mês
     </button>
-    <div>Coquin · dados salvos só neste aparelho</div>
+    <div>Coquin · Fase 1 · dados neste aparelho</div>
   </div>
 
 </main>
 
 <button class="fab" id="fab">
   <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  Nova venda
+  Fechar o dia
 </button>
 
-<!-- SHEET: nova venda -->
+<!-- SHEET: fechar o dia -->
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="saleSheet" role="dialog" aria-modal="true">
+<div class="sheet" id="closeSheet" role="dialog" aria-modal="true">
   <div class="grip"></div>
-  <h2>Registrar venda</h2>
+  <h2 id="closeTitle">Fechamento do dia</h2>
+  <p class="h2sub">Lance o total do dia. O dinheiro é deduzido pela Stone.</p>
 
   <div class="field">
-    <label>Quantos gelatos?</label>
-    <div class="qtybig">
-      <button class="qb" data-d="-1" aria-label="Menos">−</button>
-      <div class="qtymid"><div class="qn" id="qGel">1</div><div class="qtot" id="saleTotal">R$ 35,00</div></div>
-      <button class="qb" data-d="1" aria-label="Mais">+</button>
-    </div>
-    <div class="qchips" id="qChips">
-      <button data-set="1">1</button>
-      <button data-set="2">2</button>
-      <button data-set="3">3</button>
-      <button data-set="5">5</button>
-      <button data-set="10">10</button>
-    </div>
-    <div class="qhint" id="qHint">Preço unitário R$ 35,00 · valor calculado automaticamente</div>
+    <label>Dia</label>
+    <input id="cDate" class="date-input" type="date">
   </div>
 
   <div class="field">
-    <label>Forma de pagamento</label>
-    <div class="methods" id="methodPick"></div>
+    <label>Gelatos vendidos no dia</label>
+    <input id="cGel" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
   </div>
 
-  <button class="btn-primary" id="saveSale" disabled>Registrar venda</button>
+  <div class="field">
+    <label>Faturamento total <span class="hintlink" id="fillRev">usar preço × qtd</span></label>
+    <div class="money"><span class="cur">R$</span><input id="cRev" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+  </div>
+
+  <div class="field">
+    <label>Recebido pela Stone (por forma)</label>
+    <div class="stone-row">
+      <span class="sl"><span class="mi" style="background:var(--pix)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/></svg></span>Pix</span>
+      <div class="money"><span class="cur">R$</span><input id="sPix" type="text" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+    <div class="stone-row">
+      <span class="sl"><span class="mi" style="background:var(--debito)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>Débito</span>
+      <div class="money"><span class="cur">R$</span><input id="sDeb" type="text" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+    <div class="stone-row">
+      <span class="sl"><span class="mi" style="background:var(--credito)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></span>Crédito</span>
+      <div class="money"><span class="cur">R$</span><input id="sCred" type="text" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+  </div>
+
+  <!-- conciliação ao vivo -->
+  <div class="recon" id="recon"></div>
+
+  <button class="btn-primary" id="saveClose" disabled>Salvar fechamento</button>
+  <button class="btn-ghost" id="deleteClose" style="display:none">Excluir este fechamento</button>
 </div>
 
-<!-- SHEET: editar meta -->
+<!-- SHEET: ajustes -->
 <div class="sheet" id="goalSheet" role="dialog" aria-modal="true">
   <div class="grip"></div>
-  <h2>Ajustes do mês</h2>
+  <h2>Ajustes</h2>
+  <p class="h2sub">Valem para os cálculos e a meta.</p>
   <div class="field">
     <label>Unidade / loja</label>
     <input id="goalUnit" class="txt-input" type="text" placeholder="Imprensa" autocomplete="off">
@@ -359,10 +364,7 @@ main{padding-top:18px}
   </div>
   <div class="field">
     <label>Preço do gelato</label>
-    <div class="money">
-      <span class="cur">R$</span>
-      <input id="goalPrice" type="text" inputmode="decimal" placeholder="35,00" autocomplete="off">
-    </div>
+    <div class="money"><span class="cur">R$</span><input id="goalPrice" type="text" inputmode="decimal" placeholder="35,00"></div>
   </div>
   <button class="btn-primary" id="saveGoal">Salvar</button>
 </div>
@@ -371,325 +373,304 @@ main{padding-top:18px}
 
 <script>
 /* ============================================================
-   Coquin — lógica (vanilla JS, sem dependências)
-   Persistência: localStorage (fica só no aparelho)
+   Coquin — Fase 1 (fechamento diário + conciliação Stone)
+   Camada de dados: localStorage (abstração Store — pronta p/ nuvem)
    ============================================================ */
-const STORE = 'coquin_sales_v1';
-const DEFAULT_GOAL = 1200;
-const DEFAULT_UNIT = 'Imprensa';
-const DEFAULT_PRICE = 35;   // Coquin vende só gelato, preço fixo
+const STORE='coquin_v2';
+const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 
-const METHODS = {
-  pix:      {label:'Pix',      color:'var(--pix)',      icon:'<path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/>'},
-  dinheiro: {label:'Dinheiro', color:'var(--dinheiro)', icon:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>'},
-  debito:   {label:'Débito',   color:'var(--debito)',   icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>'},
-  credito:  {label:'Crédito',  color:'var(--credito)',  icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'}
+const METHODS={
+  pix:{label:'Pix',color:'var(--pix)',icon:'<path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/>'},
+  dinheiro:{label:'Dinheiro',color:'var(--dinheiro)',icon:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>'},
+  debito:{label:'Débito',color:'var(--debito)',icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>'},
+  credito:{label:'Crédito',color:'var(--credito)',icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'}
 };
-const METHOD_ORDER = ['pix','dinheiro','debito','credito'];
+const METHOD_ORDER=['pix','dinheiro','debito','credito'];
 
-/* ---- estado ---- */
-function load(){
-  try{ return JSON.parse(localStorage.getItem(STORE)) || {}; }catch(e){ return {}; }
+/* ---------- Store (abstração) ---------- */
+const Store={
+  load(){ try{ return JSON.parse(localStorage.getItem(STORE))||null; }catch(e){ return null; } },
+  save(d){ localStorage.setItem(STORE, JSON.stringify(d)); }
+};
+
+/* migração v1 (venda a venda) -> v2 (fechamento diário) */
+function migrateV1(){
+  let v1; try{ v1=JSON.parse(localStorage.getItem('coquin_sales_v1')); }catch(e){ v1=null; }
+  const base={version:2, settings:{unit:DEFAULT_UNIT, price:DEFAULT_PRICE}, goals:{}, closings:[]};
+  if(!v1||!Array.isArray(v1.sales)||!v1.sales.length) return base;
+  if(v1.price) base.settings.price=v1.price;
+  const byDay={};
+  v1.sales.forEach(s=>{
+    const d=new Date(s.ts);
+    const day=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const q=s.qty!=null?s.qty:(s.gel||0);
+    const a=s.amount!=null?s.amount:q*base.settings.price;
+    const c=byDay[day]||(byDay[day]={date:day,gelatos:0,revenue:0,pix:0,debito:0,credito:0,stoneTx:0,note:'',createdAt:s.ts});
+    c.gelatos+=q; c.revenue+=a;
+    if(s.method==='pix')c.pix+=a; else if(s.method==='debito')c.debito+=a; else if(s.method==='credito')c.credito+=a;
+    // dinheiro fica implícito (revenue - stone)
+  });
+  base.closings=Object.values(byDay);
+  if(v1.goals) Object.keys(v1.goals).forEach(k=>{ base.goals[k]={gelatos:v1.goals[k].gelatos}; if(v1.goals[k].unit)base.settings.unit=v1.goals[k].unit; });
+  return base;
 }
-function save(d){ localStorage.setItem(STORE, JSON.stringify(d)); }
-let db = load();
-if(!db.sales) db.sales = [];
-if(!db.goals) db.goals = {};        // { 'YYYY-MM': {gelatos, unit} }
-if(db.price==null) db.price = DEFAULT_PRICE;
 
-let viewMonth = ym(new Date());     // 'YYYY-MM'
-let draft = {method:null, qty:1};
+let db=Store.load();
+if(!db||db.version!==2){ db=migrateV1(); Store.save(db); }
+if(!db.settings) db.settings={unit:DEFAULT_UNIT,price:DEFAULT_PRICE};
+if(!db.goals) db.goals={};
+if(!db.closings) db.closings=[];
 
-/* qtd/valor de uma venda (compatível com registros antigos) */
-function qtyOf(s){ return s.qty!=null ? s.qty : (s.gel||0); }
-function amountOf(s){ return s.amount!=null ? s.amount : qtyOf(s)*db.price; }
+let viewMonth=ym(new Date());
+let editingId=null;
 
-/* ---- helpers ---- */
+/* ---------- helpers ---------- */
 function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-function monthName(key){
-  const [y,m]=key.split('-').map(Number);
-  return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-}
-const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
-const NUM = new Intl.NumberFormat('pt-BR');
+function monthName(key){ const [y,m]=key.split('-').map(Number); return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); }
+const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const NUM=new Intl.NumberFormat('pt-BR');
 function money(v){ return BRL.format(v||0); }
-function goalFor(key){
-  const g = db.goals[key] || {};
-  return { gelatos: (g.gelatos!=null?g.gelatos:DEFAULT_GOAL), unit: (g.unit||DEFAULT_UNIT) };
-}
-function localDay(ts){ const d=new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function salesOf(key){ return db.sales.filter(s=> localDay(s.ts).slice(0,7)===key); }
+function price(){ return db.settings.price||DEFAULT_PRICE; }
+function goalFor(key){ const g=db.goals[key]||{}; return { gelatos:(g.gelatos!=null?g.gelatos:DEFAULT_GOAL), unit:db.settings.unit||DEFAULT_UNIT }; }
+function closingsOf(key){ return db.closings.filter(c=> c.date.slice(0,7)===key); }
+function parseMoney(str){ if(!str)return 0; let s=String(str).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'); const v=parseFloat(s); return isNaN(v)?0:v; }
+function parseInt2(str){ const v=parseInt(String(str||'').replace(/\D/g,''),10); return isNaN(v)?0:v; }
+function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dayLabel(dstr){
-  const [Y,M,D]=dstr.split('-').map(Number);
-  const dt=new Date(Y,M-1,D);
-  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const [Y,M,D]=dstr.split('-').map(Number); const dt=new Date(Y,M-1,D);
+  const t0=new Date(); t0.setHours(0,0,0,0);
   const diff=Math.round((t0-dt)/86400000);
-  if(diff===0) return 'Hoje';
-  if(diff===1) return 'Ontem';
+  if(diff===0) return 'Hoje'; if(diff===1) return 'Ontem';
   return dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
 }
 
-/* ---- render ---- */
+/* conciliação de um fechamento */
+function reconcile(c){
+  const stone=(c.pix||0)+(c.debito||0)+(c.credito||0);
+  const dinheiro=(c.revenue||0)-stone;
+  const expected=(c.gelatos||0)*price();
+  const valueDiff=(c.revenue||0)-expected;               // >0 vendeu acima do preço base; <0 abaixo
+  const issues=[];
+  if(dinheiro < -0.5) issues.push('A Stone ('+money(stone)+') passou do faturamento lançado — confira os valores.');
+  if(Math.abs(valueDiff) > 0.5) issues.push('Valor não fecha com '+ (c.gelatos||0) +' × '+money(price())+' = '+money(expected)+' (dif. '+(valueDiff>0?'+':'')+money(valueDiff)+'). Combo, desconto ou erro?');
+  return {stone,dinheiro,expected,valueDiff,issues,ok:issues.length===0};
+}
+
+/* ---------- render ---------- */
 function render(){
-  const key = viewMonth;
-  document.getElementById('monthLabel').textContent = monthName(key);
-  const list = salesOf(key).sort((a,b)=> b.ts.localeCompare(a.ts));
-  const goal = goalFor(key);
+  const key=viewMonth;
+  document.getElementById('monthLabel').textContent=monthName(key);
+  const list=closingsOf(key).sort((a,b)=> b.date.localeCompare(a.date));
+  const goal=goalFor(key);
 
-  // agregados (só gelato; valor = qtd × preço)
-  let rev=0, gel=0, gelToday=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
-  const todayLocal = localDay(new Date());
-  list.forEach(s=>{ const a=amountOf(s), q=qtyOf(s); rev+=a; gel+=q; if(localDay(s.ts)===todayLocal) gelToday+=q; if(byM[s.method]!=null) byM[s.method]+=a; });
+  let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
+  list.forEach(c=>{ const r=reconcile(c); rev+=c.revenue||0; gel+=c.gelatos||0; byM.pix+=c.pix||0; byM.debito+=c.debito||0; byM.credito+=c.credito||0; byM.dinheiro+=r.dinheiro; });
 
-  // meta gelatos
-  const g = goal.gelatos;
-  const pct = g>0 ? Math.min(100, gel/g*100) : 0;
-  document.getElementById('metaUnit').textContent = goal.unit;
-  document.getElementById('gelSold').textContent = NUM.format(gel);
-  document.getElementById('gelGoal').textContent = NUM.format(g);
-  document.getElementById('metaBar').style.width = pct+'%';
-
-  const falta = Math.max(0, g-gel);
-  const sub = document.getElementById('metaSub');
-  const chip = document.getElementById('metaChip');
-  const paceEl = document.getElementById('metaPace');
-  const paceMark = document.getElementById('paceMark');
-  const projEl = document.getElementById('metaProj');
-  projEl.innerHTML = '';
-
-  const today = new Date();
-  const isCurrent = key === ym(today);
-  const isPast = key < ym(today);
-  const [yy,mm] = key.split('-').map(Number);
-  const daysInMonth = new Date(yy,mm,0).getDate();
-
+  /* meta */
+  const g=goal.gelatos;
+  const pct=g>0?Math.min(100,gel/g*100):0;
+  document.getElementById('metaUnit').textContent=goal.unit;
+  document.getElementById('gelSold').textContent=NUM.format(gel);
+  document.getElementById('gelGoal').textContent=NUM.format(g);
+  document.getElementById('metaBar').style.width=pct+'%';
+  const falta=Math.max(0,g-gel);
+  const sub=document.getElementById('metaSub'), chip=document.getElementById('metaChip'),
+        paceEl=document.getElementById('metaPace'), paceMark=document.getElementById('paceMark'),
+        projEl=document.getElementById('metaProj');
+  projEl.innerHTML='';
+  const today=new Date(); const isCurrent=key===ym(today); const isPast=key<ym(today);
+  const [yy,mm]=key.split('-').map(Number); const daysInMonth=new Date(yy,mm,0).getDate();
   if(gel>=g && g>0){
-    sub.textContent = '🎉 Meta batida! ' + NUM.format(gel-g) + ' acima do objetivo';
-    chip.className='chip done'; chip.textContent='✓ Meta alcançada';
-    paceEl.textContent=''; paceMark.style.display='none';
-    if(isCurrent){
-      const daysLeft = daysInMonth - today.getDate();
-      projEl.innerHTML = '<span class="dias">🗓️ ' + (daysLeft>0? 'Faltam '+daysLeft+(daysLeft>1?' dias':' dia')+' no mês' : 'Último dia do mês') +
-        '</span><span class="proj ok">Meta garantida 🎯</span>';
-    }
+    sub.textContent='🎉 Meta batida! '+NUM.format(gel-g)+' acima do objetivo';
+    chip.className='chip done'; chip.textContent='✓ Meta alcançada'; paceEl.textContent=''; paceMark.style.display='none';
+    if(isCurrent){ const dl=daysInMonth-today.getDate(); projEl.innerHTML='<span class="dias">🗓️ '+(dl>0?'Faltam '+dl+(dl>1?' dias':' dia')+' no mês':'Último dia do mês')+'</span><span class="proj ok">Meta garantida 🎯</span>'; }
   } else if(isCurrent){
-    const day = today.getDate();
-    const daysLeft = daysInMonth - day;
-    const expected = g * (day/daysInMonth);           // ritmo esperado até hoje
-    const expPct = Math.min(100, expected/g*100);
-    paceMark.style.display='block'; paceMark.style.left = expPct+'%';
-    const diff = Math.round(gel - expected);
-    const perDayNeeded = (g-gel)/Math.max(1,daysLeft);
-    sub.textContent = 'Faltam ' + NUM.format(falta) + ' gelatos · ' + Math.ceil(perDayNeeded) + '/dia p/ bater';
-    if(diff >= 0){
-      chip.className='chip ahead'; chip.textContent='▲ ' + NUM.format(Math.abs(diff)) + ' à frente do ritmo';
-    } else if(diff > -Math.max(8, g*0.05)){
-      chip.className='chip ontrack'; chip.textContent='No ritmo da meta';
-    } else {
-      chip.className='chip behind'; chip.textContent='▼ ' + NUM.format(Math.abs(diff)) + ' atrás do ritmo';
-    }
-    paceEl.textContent = 'Ritmo ideal hoje: ' + NUM.format(Math.round(expected));
-
-    // dias restantes + projeção no ritmo atual
-    const projected = Math.round(gel / day * daysInMonth);
-    const willHit = projected >= g;
-    const diasTxt = daysLeft>0 ? 'Faltam <b>'+daysLeft+'</b>'+(daysLeft>1?' dias':' dia')+' p/ fechar o mês' : 'Último dia do mês';
-    const projTxt = willHit
-        ? 'Projeção: <b>~'+NUM.format(projected)+'</b> · bate a meta 🎯'
-        : 'Projeção: <b>~'+NUM.format(projected)+'</b> · faltariam '+NUM.format(Math.max(0,g-projected));
-    projEl.innerHTML = '<span class="dias">🗓️ '+diasTxt+'</span><span class="proj '+(willHit?'ok':'miss')+'">'+projTxt+'</span>';
+    const day=today.getDate(), daysLeft=daysInMonth-day;
+    const expected=g*(day/daysInMonth), expPct=Math.min(100,expected/g*100);
+    paceMark.style.display='block'; paceMark.style.left=expPct+'%';
+    const diff=Math.round(gel-expected), perDay=(g-gel)/Math.max(1,daysLeft);
+    sub.textContent='Faltam '+NUM.format(falta)+' gelatos · '+Math.ceil(perDay)+'/dia p/ bater';
+    if(diff>=0){ chip.className='chip ahead'; chip.textContent='▲ '+NUM.format(Math.abs(diff))+' à frente do ritmo'; }
+    else if(diff>-Math.max(8,g*0.05)){ chip.className='chip ontrack'; chip.textContent='No ritmo da meta'; }
+    else { chip.className='chip behind'; chip.textContent='▼ '+NUM.format(Math.abs(diff))+' atrás do ritmo'; }
+    paceEl.textContent='Ritmo ideal hoje: '+NUM.format(Math.round(expected));
+    const projected=Math.round(gel/day*daysInMonth), willHit=projected>=g;
+    const diasTxt=daysLeft>0?'Faltam <b>'+daysLeft+'</b>'+(daysLeft>1?' dias':' dia')+' p/ fechar o mês':'Último dia do mês';
+    const projTxt=willHit?'Projeção: <b>~'+NUM.format(projected)+'</b> · bate a meta 🎯':'Projeção: <b>~'+NUM.format(projected)+'</b> · faltariam '+NUM.format(Math.max(0,g-projected));
+    projEl.innerHTML='<span class="dias">🗓️ '+diasTxt+'</span><span class="proj '+(willHit?'ok':'miss')+'">'+projTxt+'</span>';
   } else if(isPast){
-    sub.textContent = 'Faltaram ' + NUM.format(falta) + ' para a meta';
-    chip.className='chip behind'; chip.textContent = Math.round(pct)+'% da meta';
-    paceEl.textContent=''; paceMark.style.display='none';
+    sub.textContent='Faltaram '+NUM.format(falta)+' para a meta'; chip.className='chip behind'; chip.textContent=Math.round(pct)+'% da meta'; paceEl.textContent=''; paceMark.style.display='none';
   } else {
-    sub.textContent = 'Meta de ' + NUM.format(g) + ' gelatos';
-    chip.className='chip ontrack'; chip.textContent='Mês futuro';
-    paceEl.textContent=''; paceMark.style.display='none';
+    sub.textContent='Meta de '+NUM.format(g)+' gelatos'; chip.className='chip ontrack'; chip.textContent='Mês futuro'; paceEl.textContent=''; paceMark.style.display='none';
   }
 
-  // faturamento
-  document.getElementById('revTotal').textContent = money(rev);
-  document.getElementById('salesCount').textContent = list.length
-      ? list.length + (list.length>1?' vendas':' venda') + ' · ' + NUM.format(gel) + ' gelatos'
-      : 'Nenhuma venda registrada';
+  /* faturamento */
+  document.getElementById('revTotal').textContent=money(rev);
+  document.getElementById('salesCount').textContent=list.length?(list.length+(list.length>1?' dias fechados':' dia fechado')):'Nenhum dia fechado';
 
-  // pagamento
-  const pg = document.getElementById('payGrid');
-  pg.innerHTML = METHOD_ORDER.map(m=>{
-    const v = byM[m]; const p = rev>0 ? (v/rev*100) : 0; const M=METHODS[m];
-    return `<div class="card pay">
-      <div class="dot" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
-      <div class="pname">${M.label}</div>
-      <div class="pval">${money(v)}</div>
+  /* pagamento */
+  document.getElementById('payGrid').innerHTML=METHOD_ORDER.map(m=>{
+    const v=byM[m], p=rev>0?(v/rev*100):0, M=METHODS[m];
+    return `<div class="card pay"><div class="dot" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
+      <div class="pname">${M.label}</div><div class="pval">${money(v)}</div>
       <div class="ppct">${rev>0?Math.round(p)+'% do total':'—'}</div>
-      <div class="prail"><i style="width:${p}%;background:${M.color}"></i></div>
-    </div>`;
+      <div class="prail"><i style="width:${Math.max(0,p)}%;background:${M.color}"></i></div></div>`;
   }).join('');
 
-  // gelatos (mês / hoje)
-  document.getElementById('gelCount').textContent = NUM.format(gel);
-  document.getElementById('gelToday').textContent = NUM.format(gelToday);
+  /* métricas */
+  document.getElementById('gelCount').textContent=NUM.format(gel);
+  document.getElementById('ticket').textContent=gel>0?money(rev/gel):'R$ 0';
 
-  // histórico por dia (agrupado)
-  const sl = document.getElementById('salesList');
+  /* histórico de fechamentos */
+  document.getElementById('daysCount').textContent=list.length?(list.length+(list.length>1?' dias':' dia')):'';
+  const sl=document.getElementById('salesList');
   if(!list.length){
-    sl.innerHTML = `<div class="empty"><div class="em">🍨</div><p>Nenhuma venda neste mês.<br>Toque em <b>+ Nova venda</b> para começar.</p></div>`;
+    sl.innerHTML=`<div class="empty"><div class="em">🍨</div><p>Nenhum dia fechado neste mês.<br>Toque em <b>+ Fechar o dia</b> para lançar.</p></div>`;
   } else {
-    const groups = {};
-    list.forEach(s=>{ const d=localDay(s.ts); (groups[d]=groups[d]||[]).push(s); });
-    const dayKeys = Object.keys(groups).sort((a,b)=> b.localeCompare(a));
-    sl.innerHTML = dayKeys.map(dk=>{
-      const items = groups[dk];
-      let dRev=0,dGel=0;
-      items.forEach(s=>{ dRev+=amountOf(s); dGel+=qtyOf(s); });
-      const head = `<div class="dayhead"><span class="dl">${dayLabel(dk)}</span><span class="dr"><span class="badge">🍨 ${dGel}</span><b>${money(dRev)}</b></span></div>`;
-      const rows = items.map(s=>{
-        const M = METHODS[s.method] || METHODS.dinheiro;
-        const t = new Date(s.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-        const q = qtyOf(s);
-        return `<div class="sale">
-          <div class="m" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
-          <div class="info"><div class="r1">${money(amountOf(s))}</div><div class="r2">${M.label} · ${t} · ${q} 🍨</div></div>
-          <button class="del" data-id="${s.id}" aria-label="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-        </div>`;
-      }).join('');
-      return head+rows;
+    sl.innerHTML=list.map(c=>{
+      const r=reconcile(c);
+      const [Y,M,D]=c.date.split('-').map(Number);
+      const dots=[];
+      if(c.pix>0)dots.push('<span class="dotpay" style="background:var(--pix)"></span>');
+      if(r.dinheiro>0.5)dots.push('<span class="dotpay" style="background:var(--dinheiro)"></span>');
+      if(c.debito>0)dots.push('<span class="dotpay" style="background:var(--debito)"></span>');
+      if(c.credito>0)dots.push('<span class="dotpay" style="background:var(--credito)"></span>');
+      const warn=r.ok?'':'<span class="warn" title="Confira o fechamento">⚠︎</span>';
+      return `<div class="sale" data-id="${c.id||c.date}">
+        <div class="m"><b>${NUM.format(c.gelatos||0)}</b><span>gelatos</span></div>
+        <div class="info">
+          <div class="r1">${money(c.revenue||0)} ${warn}</div>
+          <div class="r2">${dayLabel(c.date)} · ${String(D).padStart(2,'0')}/${String(M).padStart(2,'0')} · ${dots.join('')} din. ${money(r.dinheiro)}</div>
+        </div>
+        <button class="del" data-edit="${c.id||c.date}" aria-label="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      </div>`;
     }).join('');
   }
 }
 
-/* ---- valor monetário: parse pt-BR ---- */
-function parseMoney(str){
-  if(!str) return 0;
-  let s = String(str).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');
-  const v = parseFloat(s);
-  return isNaN(v)?0:v;
-}
-
-/* ---- toast ---- */
+/* ---------- toast ---------- */
 let toastT;
-function toast(html){
-  const t=document.getElementById('toast'); t.innerHTML=html; t.classList.add('on');
-  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2600);
-}
+function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
 
-/* ---- sheet nova venda ---- */
-const scrim=document.getElementById('scrim');
-const saleSheet=document.getElementById('saleSheet');
-const goalSheet=document.getElementById('goalSheet');
+/* ---------- sheets ---------- */
+const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); saleSheet.classList.remove('on'); goalSheet.classList.remove('on'); }
+function closeSheets(){ scrim.classList.remove('on'); closeSheet.classList.remove('on'); goalSheet.classList.remove('on'); }
 scrim.addEventListener('click', closeSheets);
 
-// montar chips de método
-document.getElementById('methodPick').innerHTML = METHOD_ORDER.map(m=>{
-  const M=METHODS[m];
-  return `<div class="method" data-m="${m}">
-    <div class="mi" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
-    <span>${M.label}</span></div>`;
-}).join('');
-
-function syncQty(){
-  document.getElementById('qGel').textContent = draft.qty;
-  document.getElementById('saleTotal').textContent = money(draft.qty*db.price);
-  document.getElementById('qHint').textContent = 'Preço unitário '+money(db.price)+' · valor calculado automaticamente';
+/* ---- fechar o dia ---- */
+const $=id=>document.getElementById(id);
+function draftFromForm(){
+  return { date:$('cDate').value||todayISO(), gelatos:parseInt2($('cGel').value),
+    revenue:parseMoney($('cRev').value), pix:parseMoney($('sPix').value),
+    debito:parseMoney($('sDeb').value), credito:parseMoney($('sCred').value) };
 }
-function resetDraft(){
-  draft={method:null, qty:1};
-  syncQty();
-  document.querySelectorAll('.method').forEach(x=>x.classList.remove('sel'));
-  validate();
+function renderRecon(){
+  const c=draftFromForm(); const r=reconcile(c);
+  let html=`<div class="recon-row"><span>Faturamento</span><b>${money(c.revenue)}</b></div>
+    <div class="recon-row"><span>Recebido Stone</span><b>${money(r.stone)}</b></div>
+    <div class="recon-row big"><span class="lbl">💵 Dinheiro (deduzido)</span><span class="dinheiro">${money(r.dinheiro)}</span></div>`;
+  if(r.issues.length){ r.issues.forEach(m=>{ html+=`<div class="recon-alert"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>${m}</span></div>`; }); }
+  else if(c.gelatos>0){ html+=`<div class="recon-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tudo bate certinho</div>`; }
+  $('recon').innerHTML=html;
+  $('saveClose').disabled=!(c.gelatos>0 && c.revenue>0);
 }
-function validate(){
-  document.getElementById('saveSale').disabled = !(draft.qty>0 && draft.method);
+['cGel','cRev','sPix','sDeb','sCred','cDate'].forEach(id=> $(id).addEventListener('input', renderRecon));
+$('fillRev').addEventListener('click', ()=>{ const q=parseInt2($('cGel').value); if(q>0){ $('cRev').value=String((q*price()).toFixed(2)).replace('.',','); renderRecon(); } });
+
+function openClose(existing){
+  editingId=null;
+  if(existing){
+    editingId=existing.id||existing.date;
+    $('closeTitle').textContent='Editar fechamento';
+    $('cDate').value=existing.date;
+    $('cGel').value=existing.gelatos||'';
+    $('cRev').value=existing.revenue?String(existing.revenue.toFixed(2)).replace('.',','):'';
+    $('sPix').value=existing.pix?String(existing.pix.toFixed(2)).replace('.',','):'';
+    $('sDeb').value=existing.debito?String(existing.debito.toFixed(2)).replace('.',','):'';
+    $('sCred').value=existing.credito?String(existing.credito.toFixed(2)).replace('.',','):'';
+    $('deleteClose').style.display='block';
+  } else {
+    $('closeTitle').textContent='Fechamento do dia';
+    $('cDate').value=yesterdayISO();
+    ['cGel','cRev','sPix','sDeb','sCred'].forEach(id=>$(id).value='');
+    $('deleteClose').style.display='none';
+  }
+  renderRecon(); openSheet(closeSheet);
 }
-document.querySelectorAll('.method').forEach(el=>{
-  el.addEventListener('click', ()=>{
-    document.querySelectorAll('.method').forEach(x=>x.classList.remove('sel'));
-    el.classList.add('sel'); draft.method=el.dataset.m; validate();
-  });
+$('fab').addEventListener('click', ()=> openClose(null));
+
+$('saveClose').addEventListener('click', ()=>{
+  const d=draftFromForm();
+  if(!(d.gelatos>0 && d.revenue>0)) return;
+  // 1 fechamento por dia: se já existe nesse dia (e não é o que edito), soma? Não — substitui/edita.
+  let target=null;
+  if(editingId) target=db.closings.find(c=>(c.id||c.date)===editingId);
+  const sameDay=db.closings.find(c=>c.date===d.date && c!==target);
+  if(sameDay && !editingId){ // já há fechamento nesse dia -> editar o existente
+    target=sameDay;
+  }
+  if(target){
+    Object.assign(target, d);
+  } else {
+    db.closings.push({ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() });
+  }
+  Store.save(db); closeSheets();
+  // ir para o mês do fechamento
+  viewMonth=d.date.slice(0,7); render();
+  toast('Dia fechado · '+d.gelatos+' gelatos · <b>'+money(d.revenue)+'</b>');
 });
-// stepper de quantidade
-document.querySelectorAll('.qtybig .qb').forEach(b=>{
-  b.addEventListener('click', ()=>{ draft.qty=Math.max(1, draft.qty+(+b.dataset.d)); syncQty(); });
-});
-// atalhos de quantidade
-document.querySelectorAll('#qChips button').forEach(b=>{
-  b.addEventListener('click', ()=>{ draft.qty=+b.dataset.set; syncQty(); });
+$('deleteClose').addEventListener('click', ()=>{
+  if(!editingId) return;
+  db.closings=db.closings.filter(c=>(c.id||c.date)!==editingId);
+  Store.save(db); closeSheets(); render(); toast('Fechamento excluído');
 });
 
-document.getElementById('fab').addEventListener('click', ()=>{ resetDraft(); openSheet(saleSheet); });
-
-document.getElementById('saveSale').addEventListener('click', ()=>{
-  if(!(draft.qty>0) || !draft.method) return;
-  const amount = draft.qty*db.price;
-  // registra no mês em visualização (dia/hora atual se for o mês corrente, senão dia 1)
-  const now = new Date();
-  let ts;
-  if(viewMonth === ym(now)){ ts = now.toISOString(); }
-  else { const [y,m]=viewMonth.split('-').map(Number); ts = new Date(y,m-1,1,12,0,0).toISOString(); }
-  db.sales.push({ id:'s'+now.getTime()+Math.floor(Math.random()*1000), ts, method:draft.method, qty:draft.qty, amount });
-  save(db); closeSheets(); render();
-  toast(draft.qty+' gelato'+(draft.qty>1?'s':'')+' · <b>'+money(amount)+'</b>');
+/* editar via lista */
+$('salesList').addEventListener('click', e=>{
+  const btn=e.target.closest('[data-edit]'); if(!btn) return;
+  const id=btn.getAttribute('data-edit');
+  const c=db.closings.find(x=>(x.id||x.date)===id); if(c) openClose(c);
 });
 
-/* ---- excluir venda ---- */
-document.getElementById('salesList').addEventListener('click', e=>{
-  const btn=e.target.closest('.del'); if(!btn) return;
-  const id=btn.dataset.id;
-  const removed = db.sales.find(s=>s.id===id);
-  db.sales = db.sales.filter(s=>s.id!==id);
-  save(db); render();
-  toast('Venda excluída');
-});
-
-/* ---- meta ---- */
-document.getElementById('editGoal').addEventListener('click', ()=>{
-  const goal = goalFor(viewMonth);
-  document.getElementById('goalUnit').value = goal.unit;
-  document.getElementById('goalValue').value = goal.gelatos;
-  document.getElementById('goalPrice').value = String(db.price).replace('.',',');
+/* ---- ajustes ---- */
+$('editGoal').addEventListener('click', ()=>{
+  const goal=goalFor(viewMonth);
+  $('goalUnit').value=goal.unit; $('goalValue').value=goal.gelatos; $('goalPrice').value=String(price()).replace('.',',');
   openSheet(goalSheet);
 });
-document.getElementById('saveGoal').addEventListener('click', ()=>{
-  const unit = document.getElementById('goalUnit').value.trim() || DEFAULT_UNIT;
-  const val = parseInt(String(document.getElementById('goalValue').value).replace(/\D/g,''),10);
-  const price = parseMoney(document.getElementById('goalPrice').value);
-  db.price = price>0 ? price : DEFAULT_PRICE;
-  db.goals[viewMonth] = { gelatos: (isNaN(val)?DEFAULT_GOAL:val), unit };
-  save(db); closeSheets(); render();
-  toast('Ajustes salvos');
+$('saveGoal').addEventListener('click', ()=>{
+  db.settings.unit=$('goalUnit').value.trim()||DEFAULT_UNIT;
+  const p=parseMoney($('goalPrice').value); db.settings.price=p>0?p:DEFAULT_PRICE;
+  const val=parseInt2($('goalValue').value); db.goals[viewMonth]={gelatos:val>0?val:DEFAULT_GOAL};
+  Store.save(db); closeSheets(); render(); toast('Ajustes salvos');
 });
 
 /* ---- navegação de mês ---- */
-function shiftMonth(delta){
-  const [y,m]=viewMonth.split('-').map(Number);
-  const d=new Date(y,m-1+delta,1); viewMonth=ym(d); render();
-}
-document.getElementById('prevMonth').addEventListener('click', ()=>shiftMonth(-1));
-document.getElementById('nextMonth').addEventListener('click', ()=>shiftMonth(1));
+function shiftMonth(delta){ const [y,m]=viewMonth.split('-').map(Number); viewMonth=ym(new Date(y,m-1+delta,1)); render(); }
+$('prevMonth').addEventListener('click', ()=>shiftMonth(-1));
+$('nextMonth').addEventListener('click', ()=>shiftMonth(1));
 
-/* ---- compartilhar resumo ---- */
-document.getElementById('shareBtn').addEventListener('click', ()=>{
-  const key=viewMonth; const list=salesOf(key); const goal=goalFor(key);
+/* ---- compartilhar ---- */
+$('shareBtn').addEventListener('click', ()=>{
+  const key=viewMonth, list=closingsOf(key), goal=goalFor(key);
   let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
-  list.forEach(s=>{const a=amountOf(s);rev+=a;gel+=qtyOf(s);if(byM[s.method]!=null)byM[s.method]+=a;});
-  const txt =
-`🍨 COQUIN · ${monthName(key)} (${goal.unit})
+  list.forEach(c=>{ const r=reconcile(c); rev+=c.revenue||0; gel+=c.gelatos||0; byM.pix+=c.pix||0; byM.debito+=c.debito||0; byM.credito+=c.credito||0; byM.dinheiro+=r.dinheiro; });
+  const txt=`🍨 COQUIN · ${monthName(key)} (${goal.unit})
 ━━━━━━━━━━━━━━━
 🍨 Gelatos: ${NUM.format(gel)} / ${NUM.format(goal.gelatos)} (${Math.round(goal.gelatos>0?gel/goal.gelatos*100:0)}% da meta)
 💰 Total: ${money(rev)}
   • Pix: ${money(byM.pix)}
   • Dinheiro: ${money(byM.dinheiro)}
   • Débito: ${money(byM.debito)}
-  • Crédito: ${money(byM.credito)}`;
+  • Crédito: ${money(byM.credito)}
+🎟️ Ticket médio: ${gel>0?money(rev/gel):'—'}`;
   if(navigator.share){ navigator.share({title:'Resumo Coquin',text:txt}).catch(()=>{}); }
   else if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast('Resumo copiado')); }
   else { toast('Resumo pronto'); }
 });
 
-/* ---- start ---- */
 render();
 </script>
 </body>
