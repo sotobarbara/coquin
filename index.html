@@ -72,7 +72,8 @@ main{padding-top:18px}
 /* ---------- Meta (hero) ---------- */
 .meta{padding:20px;color:#fff;border:0;overflow:hidden;position:relative;
   background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 62%,var(--green-900) 100%);box-shadow:0 10px 30px rgba(52,80,58,.30);}
-.meta::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06)}
+.meta::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.meta-top,.meta-nums,.meta-sub,.bar,.meta-foot,.meta-proj{position:relative;z-index:1}
 .meta-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:relative}
 .meta-lab{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.85}
 .meta-unit{font-size:12.5px;opacity:.8;margin-top:2px}
@@ -442,6 +443,7 @@ main{padding-top:18px}
     <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
     <div class="stone-chips" id="stoneChips"></div>
     <div class="import-hint" id="importHint"></div>
+    <button type="button" class="btn-ghost" id="bulkBtn" style="display:none;margin-top:10px">Lançar todos os dias do arquivo</button>
   </div>
 
   <div class="field">
@@ -910,8 +912,24 @@ function applyStoneDay(d){
   autoRev();
   $('importHint').innerHTML='No cartão/Pix: <b>'+cardGel+' gelatos</b> ('+money(tot)+'). Tem dinheiro? Ajuste o <b>total de gelatos</b> acima que o resto vira dinheiro.';
   showStoneChips(d.date);
+  $('bulkBtn').style.display = stoneParsed.length? 'block':'none';
+  $('bulkBtn').textContent = 'Lançar os '+stoneParsed.length+' dia'+(stoneParsed.length>1?'s':'')+' do arquivo';
   renderRecon();
 }
+/* lança de uma vez os dias do arquivo que ainda não têm fechamento */
+function bulkImportStone(){
+  if(!stoneParsed.length) return;
+  let created=0, skipped=0, seed=Date.now();
+  stoneParsed.forEach((d,i)=>{
+    if(db.closings.find(x=>x.date===d.date)){ skipped++; return; }
+    const tot=d.pix+d.debito+d.credito, gel=Math.round(price()>0?tot/price():0);
+    const c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, stoneTx:d.tx, note:'', createdAt:new Date().toISOString() };
+    db.closings.push(c); created++; Cloud.pushClosing(c);
+  });
+  Store.save(db); closeSheets(); render();
+  toast(created+' dia(s) lançado(s)'+(skipped?' · '+skipped+' já existiam':'')+' — revise os que tiveram dinheiro');
+}
+$('bulkBtn').addEventListener('click', bulkImportStone);
 $('importBtn').addEventListener('click', ()=> $('csvFile').click());
 $('csvFile').addEventListener('change', e=>{
   const f=e.target.files[0]; if(!f) return;
@@ -930,7 +948,7 @@ $('stoneChips').addEventListener('click', e=>{
 });
 
 function openClose(existing){
-  editingId=null; stoneParsed=[]; $('stoneChips').innerHTML=''; $('importHint').innerHTML='';
+  editingId=null; stoneParsed=[]; $('stoneChips').innerHTML=''; $('importHint').innerHTML=''; $('bulkBtn').style.display='none';
   if(existing){
     editingId=existing.id||existing.date;
     $('closeTitle').textContent='Editar fechamento';
@@ -978,11 +996,12 @@ $('deleteClose').addEventListener('click', ()=>{
   Store.save(db); closeSheets(); render(); if(dt) Cloud.delClosing(dt); toast('Fechamento excluído');
 });
 
-/* clicar num dia -> detalhe do dia */
+/* lápis -> editar direto · corpo do dia -> detalhe */
 $('salesList').addEventListener('click', e=>{
+  const pencil=e.target.closest('[data-edit]');
   const row=e.target.closest('.sale'); if(!row) return;
-  const id=row.getAttribute('data-id');
-  const c=db.closings.find(x=>(x.id||x.date)===id); if(c) openDayDetail(c);
+  const c=db.closings.find(x=>(x.id||x.date)===row.getAttribute('data-id')); if(!c) return;
+  if(pencil) openClose(c); else openDayDetail(c);
 });
 
 /* ---- detalhe do dia ---- */
