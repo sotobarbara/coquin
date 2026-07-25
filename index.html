@@ -469,6 +469,9 @@ main{padding-top:18px}
   <div class="section-title">Faturamento por dia</div>
   <div class="card chart-card"><div class="chart" id="chFat"></div></div>
 
+  <div class="section-title">Pico de vendas <span class="st-side">horário · cartão/Pix</span></div>
+  <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div></div>
+
   <div class="section-title">Formas de pagamento</div>
   <div class="card chart-card"><div class="chart" id="chPay"></div><div class="legend" id="lgPay"></div></div>
 
@@ -653,13 +656,13 @@ const Cloud={
     const {data:cl,error:e1}=await c.from('closings').select('*').order('date',{ascending:false});
     if(e1) throw e1;
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
-    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,note:r.note||''}));
+    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),note:r.note||''}));
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     Store.save(db);
   },
-  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
   async pushStock(s){ if(!this.on)return; const pl={date:s.date,comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''}; if(s.contagem!=null && s.contagem!=='') pl.contagem=+s.contagem; else pl.contagem=null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date);}catch(e){} },
@@ -864,6 +867,20 @@ function svgArea(points, opts){
     if(n<=12||i%step===0) labels+='<text class="lbl" x="'+X(i).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+p.label+'</text>'; });
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><path d="'+area+'" fill="'+opts.color+'" opacity="0.12"/><path d="'+line+'" fill="none" stroke="'+opts.color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'<line class="axis" x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+zeroY.toFixed(1)+'"/>'+labels+'</svg>';
 }
+function svgHours(hours, peakIdx){
+  if(!hours.some(h=>h>0)) return emptyChart();
+  let first=0,last=23; while(first<23&&hours[first]===0) first++; while(last>0&&hours[last]===0) last--;
+  const data=[]; for(let h=first;h<=last;h++) data.push({h,value:hours[h]});
+  const W=340,H=150,padL=6,padR=6,padT=16,padB=18,n=data.length;
+  const max=Math.max(1,...data.map(d=>d.value)), bw=(W-padL-padR)/n, barW=Math.min(30,bw*0.62), plotH=H-padT-padB, step=n>10?2:1;
+  let bars='';
+  data.forEach((d,i)=>{ const x=padL+bw*i+(bw-barW)/2, hh=(d.value/max)*plotH, y=padT+plotH-hh, col=d.h===peakIdx?'var(--gold)':'var(--green)';
+    bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,hh).toFixed(1)+'" rx="4" fill="'+col+'"/>';
+    if(d.h===peakIdx) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+d.value+'</text>';
+    if(i%step===0) bars+='<text class="lbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+d.h+'h</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+'</svg>';
+}
 function renderDados(){
   const key=viewMonth, list=closingsOf(key).slice().sort((a,b)=>a.date.localeCompare(b.date)), goal=goalFor(key);
   let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
@@ -888,6 +905,16 @@ function renderDados(){
     +(above?'<div class="chk-row quebra warn"><span>Compra acima do planejado</span><b>+'+Math.round((avgC/plan-1)*100)+'%</b></div>':'');
   // faturamento por dia
   document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00','')}) : emptyChart();
+  // pico de vendas por hora (do CSV da Stone)
+  const hoursAgg=new Array(24).fill(0); let hasHours=false, daysWithHours=0;
+  closingsOf(key).forEach(c=>{ if(Array.isArray(c.hours)&&c.hours.length===24){ hasHours=true; daysWithHours++; c.hours.forEach((n,h)=>hoursAgg[h]+=(n||0)); } });
+  const chH=document.getElementById('chHours'), peakSub=document.getElementById('peakSub');
+  if(hasHours && hoursAgg.some(h=>h>0)){
+    let peak=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[peak]) peak=h;
+    const totalTx=hoursAgg.reduce((a,b)=>a+b,0);
+    peakSub.innerHTML='🔥 Pico: <b>'+peak+'h–'+((peak+1)%24)+'h</b> · '+hoursAgg[peak]+' vendas ('+Math.round(hoursAgg[peak]/totalTx*100)+'% do fluxo) · base de '+daysWithHours+' dia'+(daysWithHours>1?'s':'');
+    chH.innerHTML=svgHours(hoursAgg, peak);
+  } else { peakSub.textContent='Importe o CSV da Stone (Fechar o dia) para ver o fluxo por horário.'; chH.innerHTML=emptyChart(); }
   // formas de pagamento
   const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
   document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
@@ -1061,16 +1088,17 @@ function parseStoneCSV(text){
     const r=lines[n].split(delim);
     if(r.length<=iProd) continue;
     if(iSt>=0 && r[iSt] && r[iSt].trim().toLowerCase()!=='aprovada') continue;
-    const dpart=(r[iDate]||'').trim().split(' ')[0];
+    const raw=(r[iDate]||'').trim(); const dpart=raw.split(' ')[0]; const tpart=raw.split(' ')[1];
     const dm=dpart.split('/'); if(dm.length!==3) continue;
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,tx:0});
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,tx:0,hours:new Array(24).fill(0)});
     if(prod.indexOf('pix')>=0) d.pix+=val;
     else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0) d.debito+=val;
     else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0) d.credito+=val;
     else continue;
     d.tx++;
+    const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; if(hh>=0&&hh<24) d.hours[hh]++;
   }
   return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
 }
@@ -1103,7 +1131,7 @@ function bulkImportStone(){
   stoneParsed.forEach((d,i)=>{
     if(db.closings.find(x=>x.date===d.date)){ skipped++; return; }
     const tot=d.pix+d.debito+d.credito, gel=Math.round(price()>0?tot/price():0);
-    const c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, stoneTx:d.tx, note:'', createdAt:new Date().toISOString() };
+    const c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, stoneTx:d.tx, hours:d.hours||null, note:'', createdAt:new Date().toISOString() };
     db.closings.push(c); created++; Cloud.pushClosing(c);
   });
   Store.save(db); closeSheets(); render();
@@ -1162,6 +1190,8 @@ $('saveClose').addEventListener('click', ()=>{
   let saved;
   if(target){ Object.assign(target, d); saved=target; }
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
+  // fluxo por hora vindo do CSV importado (se houver para esta data)
+  const sp=stoneParsed.find(x=>x.date===d.date); if(sp && sp.hours) saved.hours=sp.hours;
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
   // nuvem: se a data mudou na edição, remove a antiga
