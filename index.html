@@ -792,11 +792,12 @@ const Cloud={
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     const {data:cf,error:eCf}=await c.from('cashflow').select('*').order('date',{ascending:false});
     if(!eCf && cf){
-      const rows=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,note:r.note||'',createdAt:r.created_at||''}));
+      const rows=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,note:r.note||'',createdAt:r.created_at||'',synced:true}));
       const ids=new Set(rows.map(r=>r.id));
-      const pending=(db.cashflow||[]).filter(m=>m&&!ids.has(m.id));   // lançados aqui, ainda não chegaram na nuvem
+      // local mas fora da nuvem: se NUNCA subiu (!synced) = reenvia e mantém; se já subiu = foi apagado em outro aparelho = descarta
+      const pending=(db.cashflow||[]).filter(m=>m&&!ids.has(m.id)&&!m.synced);
       db.cashflow=rows.concat(pending);
-      pending.forEach(m=>this.pushCash(m));                           // reenvia (não perde nada)
+      pending.forEach(m=>this.pushCash(m));
     }
     Store.save(db);
   },
@@ -804,7 +805,7 @@ const Cloud={
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
   async pushStock(s){ if(!this.on)return; const pl={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''}; pl.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date,product'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
-  async pushCash(m){ if(!this.on)return; try{ await this.client.from('cashflow').upsert({id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,note:m.note||''},{onConflict:'id'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushCash(m){ if(!this.on)return; try{ await this.client.from('cashflow').upsert({id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,note:m.note||''},{onConflict:'id'}); m.synced=true; Store.save(db); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals});}catch(e){} },
   subscribe(){
@@ -1606,6 +1607,7 @@ function openCash(existing){
 }
 $('saveCash').addEventListener('click', ()=>{
   const amount=parseMoney($('cAmount').value); if(!(amount>0)||!cashDraft.category) return;
+  $('saveCash').disabled=true;   // trava toque-duplo (sem isso, 2 toques = 2 lançamentos)
   const d={ date:$('cfDate').value||todayISO(), type:cashDraft.type, category:cashDraft.category, amount, note:$('cfNote').value.trim() };
   let saved=null;
   if(editingCash){ saved=db.cashflow.find(x=>x.id===editingCash); if(saved) Object.assign(saved,d); }
