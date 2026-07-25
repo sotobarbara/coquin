@@ -291,6 +291,7 @@ main{padding-top:18px}
 .charttip b{color:#EAD9A6;font-weight:800}
 .chart .hit{cursor:pointer;fill:transparent;pointer-events:all}
 .chart .hit.hl{fill:rgba(52,80,58,.07)}
+.chart .hit-seg{cursor:pointer;pointer-events:stroke}
 /* insights / destaques */
 .insights{padding:18px 18px 6px;color:#fff;border:0;overflow:hidden;position:relative;background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 65%,var(--green-900) 100%);box-shadow:0 10px 30px rgba(52,80,58,.30)}
 .insights::after{content:"";position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
@@ -500,8 +501,8 @@ main{padding-top:18px}
   <div class="section-title">Pico de vendas <span class="st-side">horário · cartão/Pix</span></div>
   <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div><div class="charttip" id="tipHours"></div></div>
 
-  <div class="section-title">Formas de pagamento</div>
-  <div class="card chart-card"><div class="chart" id="chPay"></div><div class="legend" id="lgPay"></div></div>
+  <div class="section-title">Formas de pagamento <span class="st-side">toque nas fatias</span></div>
+  <div class="card chart-card"><div class="chart" id="chPay"></div><div class="charttip" id="tipPay"></div><div class="legend" id="lgPay"></div></div>
 
   <div class="section-title">Estoque de coco no mês</div>
   <div class="card chart-card"><div class="ch-s" id="chStockSub" style="margin:0 2px 10px"></div><div class="chart" id="chStock"></div><div class="charttip" id="tipStock"></div><div class="legend" id="lgStock"></div></div>
@@ -902,7 +903,8 @@ function svgDonut(segs, centerText){
   if(total<=0) return emptyChart();
   let paths='', offset=0;
   segs.forEach(seg=>{ const frac=seg.value/total; if(frac<=0) return; const len=Math.max(0,frac*C-2);
-    paths+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+seg.color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-offset).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" stroke-linecap="butt"/>';
+    const tip=(seg.label||'')+' · <b>'+money(seg.value)+'</b> · '+Math.round(frac*100)+'%';
+    paths+='<circle class="hit-seg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+seg.color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-offset).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" stroke-linecap="butt" data-tip="'+tip+'"/>';
     offset+=frac*C; });
   return '<svg viewBox="0 0 '+S+' '+S+'" style="max-width:190px;display:block;margin:2px auto 0">'+paths
     +'<text x="'+cx+'" y="'+(cy-3)+'" text-anchor="middle" style="fill:var(--green-700);font-size:17px;font-weight:800">'+centerText+'</text>'
@@ -951,14 +953,14 @@ function svgHours(hours, peakIdx){
 }
 /* tooltips dos gráficos (hover no desktop, toque no celular) */
 function initChartTips(){
-  [['chFat','tipFat'],['chWday','tipWday'],['chHours','tipHours'],['chStock','tipStock']].forEach(([cid,tid])=>{
+  [['chFat','tipFat'],['chWday','tipWday'],['chHours','tipHours'],['chStock','tipStock'],['chPay','tipPay']].forEach(([cid,tid])=>{
     const c=document.getElementById(cid), tip=document.getElementById(tid); if(!c||!tip) return;
     const card=c.closest('.chart-card');
-    function show(e){ const hit=e.target.closest('.hit'); if(!hit||!hit.dataset.tip){ tip.classList.remove('on'); return; }
-      c.querySelectorAll('.hit.hl').forEach(h=>h.classList.remove('hl')); hit.classList.add('hl');
-      const rect=card.getBoundingClientRect(); let x=e.clientX-rect.left; x=Math.max(46,Math.min(rect.width-46,x));
+    function show(e){ const hit=e.target.closest('[data-tip]'); if(!hit){ tip.classList.remove('on'); c.querySelectorAll('.hl').forEach(h=>h.classList.remove('hl')); return; }
+      c.querySelectorAll('.hl').forEach(h=>h.classList.remove('hl')); if(hit.classList.contains('hit')) hit.classList.add('hl');
+      const rect=card.getBoundingClientRect(); let x=e.clientX-rect.left; x=Math.max(52,Math.min(rect.width-52,x));
       tip.style.left=x+'px'; tip.style.top=(e.clientY-rect.top-12)+'px'; tip.innerHTML=hit.dataset.tip; tip.classList.add('on'); }
-    function hide(){ tip.classList.remove('on'); c.querySelectorAll('.hit.hl').forEach(h=>h.classList.remove('hl')); }
+    function hide(){ tip.classList.remove('on'); c.querySelectorAll('.hl').forEach(h=>h.classList.remove('hl')); }
     c.addEventListener('pointermove', show);
     c.addEventListener('pointerdown', show);
     c.addEventListener('pointerleave', hide);
@@ -1013,7 +1015,7 @@ function renderDados(){
   } else { peakSub.textContent='Importe o CSV da Stone (Fechar o dia) para ver o fluxo por horário.'; chH.innerHTML=emptyChart(); }
   // formas de pagamento
   const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
-  document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
+  document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({label:s.label,value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
   document.getElementById('lgPay').innerHTML= segs.map(s=>'<span class="lg"><span class="sw" style="background:'+s.color+'"></span>'+s.label+' <b>'+money(s.v)+'</b> <small>'+(rev>0?Math.round(s.v/rev*100):0)+'%</small></span>').join('');
   // estoque de coco no mês
   const movDates=[...new Set([...stockOf(key,'coco').map(s=>s.date), ...list.map(c=>c.date)])].sort();
@@ -1025,6 +1027,11 @@ function renderDados(){
   // ---- Destaques (insights) ----
   const ins=document.getElementById('insights'); const rows=[];
   const irow=(ic,txt)=>'<div class="irow"><div class="ici">'+ic+'</div><div class="it">'+txt+'</div></div>';
+  // comparativo com o mês passado
+  const [py,pm]=key.split('-').map(Number); const prevKey=ym(new Date(py,pm-2,1));
+  let prevRev=0,prevGel=0; closingsOf(prevKey).forEach(c=>{prevRev+=c.revenue||0;prevGel+=c.gelatos||0;});
+  if(rev>0 && prevRev>0){ const dp=(rev-prevRev)/prevRev*100, up=dp>=0;
+    rows.push(irow(up?'📈':'📉','Faturamento <b>'+(up?'+':'')+Math.round(dp)+'%</b> vs mês passado<span class="muted"> — de '+money(prevRev)+' para '+money(rev)+'</span>')); }
   if(wbi>=0) rows.push(irow('🏆','Seu dia mais forte é <b>'+WDF[wdData[wbi].w]+'</b><span class="muted"> — média de '+money(wbv)+'/dia</span>'));
   if(hasHours && hoursAgg.some(h=>h>0)){ let pk=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[pk]) pk=h;
     rows.push(irow('🔥','Pico de movimento entre <b>'+pk+'h e '+((pk+1)%24)+'h</b><span class="muted"> — '+hoursAgg[pk]+' vendas no horário</span>')); }
