@@ -223,6 +223,26 @@ main{padding-top:18px}
 .foot .share{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:650;color:var(--green-700);cursor:pointer;margin-bottom:14px}
 .foot .share:active{background:var(--green-tint)}
 .foot .share svg{width:16px;height:16px}
+/* login / sincronia */
+.authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
+.authgate.on{display:flex}
+.auth-card{width:100%;max-width:380px;text-align:center;color:#fff}
+.auth-card .alogo{height:40px;margin:0 auto 26px;display:block;filter:drop-shadow(0 1px 3px rgba(0,0,0,.25))}
+.auth-card h1{font-size:22px;font-weight:800;margin:0 0 6px;letter-spacing:-.3px}
+.auth-card p{font-size:13.5px;opacity:.85;margin:0 0 24px}
+.auth-card input{width:100%;border:0;border-radius:var(--r-sm);padding:15px 16px;font-size:16px;font-weight:600;margin-bottom:11px;outline:0;color:var(--ink);background:rgba(255,255,255,.96)}
+.auth-card input:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+.auth-err{min-height:18px;font-size:13px;font-weight:600;color:#FBD5C9;margin:2px 0 12px}
+.auth-card .btn-primary{background:#fff;color:var(--green-700);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.auth-card .btn-primary:active{background:#f0f0ec}
+.auth-local{background:transparent;border:0;color:#fff;opacity:.85;font-size:13.5px;font-weight:650;margin-top:16px;cursor:pointer;text-decoration:underline}
+.acct{margin-top:6px;border-top:1px solid var(--line);padding-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.acct .ai{font-size:13px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;gap:8px;min-width:0}
+.acct .ai .sd{width:9px;height:9px;border-radius:50%;flex:none}
+.acct .ai .sd.on{background:#2FA36B}.acct .ai .sd.off{background:var(--ink-faint)}
+.acct .ai b{color:var(--ink);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct button{border:2px solid var(--line);background:#fff;color:var(--green-700);font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer;flex:none}
+.acct button:active{background:var(--green-tint)}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(96px + env(safe-area-inset-bottom));z-index:50;background:var(--green-900);color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:88%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast b{color:#EAD9A6}
@@ -388,15 +408,33 @@ main{padding-top:18px}
     <div class="money"><span class="cur">R$</span><input id="goalPrice" type="text" inputmode="decimal" placeholder="35,00"></div>
   </div>
   <button class="btn-primary" id="saveGoal">Salvar</button>
+  <div class="acct" id="acctRow"></div>
+</div>
+
+<!-- LOGIN / SINCRONIA -->
+<div class="authgate" id="authGate">
+  <div class="auth-card">
+    <img class="alogo" src="logo-coquin-white.png" alt="Coquin">
+    <h1>Entrar</h1>
+    <p>Acesse com o login da equipe para sincronizar os dados entre os celulares.</p>
+    <input id="authEmail" type="email" inputmode="email" autocapitalize="none" autocomplete="username" placeholder="e-mail">
+    <input id="authPass" type="password" autocomplete="current-password" placeholder="senha">
+    <div class="auth-err" id="authErr"></div>
+    <button class="btn-primary" id="authBtn">Entrar</button>
+    <button class="auth-local" id="authLocal">Usar só neste aparelho</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
-   Coquin — Fase 1 (fechamento diário + conciliação Stone)
-   Camada de dados: localStorage (abstração Store — pronta p/ nuvem)
+   Coquin — Fase 2 (fechamento diário + conciliação Stone + nuvem)
+   Dados: Supabase (multi-celular) com localStorage como cache/offline
    ============================================================ */
+const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 
@@ -412,6 +450,31 @@ const METHOD_ORDER=['pix','dinheiro','debito','credito'];
 const Store={
   load(){ try{ return JSON.parse(localStorage.getItem(STORE))||null; }catch(e){ return null; } },
   save(d){ localStorage.setItem(STORE, JSON.stringify(d)); }
+};
+
+/* ---------- Cloud (Supabase) — multi-celular ---------- */
+const Cloud={
+  client:null, on:false, email:null,
+  ready(){ return typeof supabase!=='undefined' && !!SUPABASE_URL && !!SUPABASE_ANON; },
+  init(){ if(this.client||!this.ready()) return this.client; this.client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}); return this.client; },
+  async pull(){
+    const c=this.client;
+    const {data:cl,error:e1}=await c.from('closings').select('*').order('date',{ascending:false});
+    if(e1) throw e1;
+    const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
+    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,note:r.note||''}));
+    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE}; db.goals=st.goals||{}; }
+    Store.save(db);
+  },
+  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
+  async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,goals:db.goals});}catch(e){} },
+  subscribe(){
+    try{ this.client.channel('coquin-rt')
+      .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
+      .on('postgres_changes',{event:'*',schema:'public',table:'app_settings'},()=>this.pull().then(render).catch(()=>{}))
+      .subscribe(); }catch(e){}
+  }
 };
 
 /* migração v1 (venda a venda) -> v2 (fechamento diário) */
@@ -696,26 +759,27 @@ $('saveClose').addEventListener('click', ()=>{
   const d=draftFromForm();
   if(!(d.gelatos>0 && d.revenue>0)) return;
   // 1 fechamento por dia: se já existe nesse dia (e não é o que edito), soma? Não — substitui/edita.
-  let target=null;
-  if(editingId) target=db.closings.find(c=>(c.id||c.date)===editingId);
+  let target=null, oldDate=null;
+  if(editingId){ target=db.closings.find(c=>(c.id||c.date)===editingId); if(target) oldDate=target.date; }
   const sameDay=db.closings.find(c=>c.date===d.date && c!==target);
   if(sameDay && !editingId){ // já há fechamento nesse dia -> editar o existente
-    target=sameDay;
+    target=sameDay; oldDate=sameDay.date;
   }
-  if(target){
-    Object.assign(target, d);
-  } else {
-    db.closings.push({ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() });
-  }
+  let saved;
+  if(target){ Object.assign(target, d); saved=target; }
+  else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
   Store.save(db); closeSheets();
-  // ir para o mês do fechamento
   viewMonth=d.date.slice(0,7); render();
+  // nuvem: se a data mudou na edição, remove a antiga
+  if(oldDate && oldDate!==saved.date) Cloud.delClosing(oldDate);
+  Cloud.pushClosing(saved);
   toast('Dia fechado · '+d.gelatos+' gelatos · <b>'+money(d.revenue)+'</b>');
 });
 $('deleteClose').addEventListener('click', ()=>{
   if(!editingId) return;
+  const c=db.closings.find(x=>(x.id||x.date)===editingId); const dt=c&&c.date;
   db.closings=db.closings.filter(c=>(c.id||c.date)!==editingId);
-  Store.save(db); closeSheets(); render(); toast('Fechamento excluído');
+  Store.save(db); closeSheets(); render(); if(dt) Cloud.delClosing(dt); toast('Fechamento excluído');
 });
 
 /* editar via lista */
@@ -729,13 +793,13 @@ $('salesList').addEventListener('click', e=>{
 $('editGoal').addEventListener('click', ()=>{
   const goal=goalFor(viewMonth);
   $('goalUnit').value=goal.unit; $('goalValue').value=goal.gelatos; $('goalPrice').value=String(price()).replace('.',',');
-  openSheet(goalSheet);
+  updateAcct(); openSheet(goalSheet);
 });
 $('saveGoal').addEventListener('click', ()=>{
   db.settings.unit=$('goalUnit').value.trim()||DEFAULT_UNIT;
   const p=parseMoney($('goalPrice').value); db.settings.price=p>0?p:DEFAULT_PRICE;
   const val=parseInt2($('goalValue').value); db.goals[viewMonth]={gelatos:val>0?val:DEFAULT_GOAL};
-  Store.save(db); closeSheets(); render(); toast('Ajustes salvos');
+  Store.save(db); closeSheets(); render(); Cloud.pushSettings(); toast('Ajustes salvos');
 });
 
 /* ---- navegação de mês ---- */
@@ -762,7 +826,58 @@ $('shareBtn').addEventListener('click', ()=>{
   else { toast('Resumo pronto'); }
 });
 
-render();
+/* ---- login / sincronia ---- */
+function showGate(v){ document.getElementById('authGate').classList.toggle('on',v); }
+function updateAcct(){
+  const el=document.getElementById('acctRow'); if(!el) return;
+  if(!Cloud.ready()){ el.innerHTML=''; return; }
+  if(Cloud.on){
+    el.innerHTML='<span class="ai"><span class="sd on"></span>Sincronizando · <b>'+(Cloud.email||'')+'</b></span><button id="btnSignOut">Sair</button>';
+    el.querySelector('#btnSignOut').onclick=async()=>{ try{ await Cloud.client.auth.signOut(); }catch(e){} };
+  } else {
+    el.innerHTML='<span class="ai"><span class="sd off"></span>Só neste aparelho</span><button id="btnSignIn">Entrar</button>';
+    el.querySelector('#btnSignIn').onclick=()=>{ closeSheets(); showGate(true); };
+  }
+}
+async function onLoggedIn(sess){
+  Cloud.on=true; Cloud.email=sess.user.email; showGate(false);
+  try{
+    const {data:cl}=await Cloud.client.from('closings').select('date').limit(1);
+    if((!cl||!cl.length) && db.closings.length){         // 1ª vez: semeia a nuvem com o que já existe local
+      for(const c of db.closings){ await Cloud.pushClosing(c); }
+      await Cloud.pushSettings();
+    }
+    await Cloud.pull();
+  }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
+  render(); updateAcct(); Cloud.subscribe();
+}
+async function doLogin(){
+  const email=document.getElementById('authEmail').value.trim(), pass=document.getElementById('authPass').value;
+  const err=document.getElementById('authErr'); err.textContent='';
+  if(!email||!pass){ err.textContent='Preencha e-mail e senha.'; return; }
+  const btn=document.getElementById('authBtn'); btn.disabled=true; btn.textContent='Entrando…';
+  try{
+    const {data,error}=await Cloud.client.auth.signInWithPassword({email,password:pass});
+    if(error) throw error;
+    await onLoggedIn(data.session); toast('Conectado ✓');
+  }catch(e){ err.textContent=(e&&e.message&&/invalid|credential/i.test(e.message))?'E-mail ou senha incorretos.':'Não foi possível entrar. Tente de novo.'; }
+  finally{ btn.disabled=false; btn.textContent='Entrar'; }
+}
+document.getElementById('authBtn').addEventListener('click', doLogin);
+document.getElementById('authPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('authLocal').addEventListener('click', ()=>{ showGate(false); Cloud.on=false; updateAcct(); });
+
+async function boot(){
+  render();                                  // mostra dados locais na hora
+  if(!Cloud.ready()){ updateAcct(); return; }
+  Cloud.init();
+  let sess=null;
+  try{ const {data}=await Cloud.client.auth.getSession(); sess=data.session; }catch(e){}
+  if(sess){ await onLoggedIn(sess); }
+  else { showGate(true); }
+  try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; updateAcct(); showGate(true); } }); }catch(e){}
+}
+boot();
 </script>
 </body>
 </html>
