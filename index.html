@@ -318,6 +318,13 @@ main{padding-top:18px}
 .tbl td:last-child{text-align:right;font-weight:800;color:var(--ink)}
 .tbl td:first-child{color:var(--ink-soft);font-weight:600}
 
+/* metas por dia */
+.wk-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.wk-row label{width:92px;flex:none;font-size:14px;font-weight:700;color:var(--ink)}
+.wk-row input{flex:1;border:2px solid var(--line);border-radius:12px;padding:11px 14px;font-size:18px;font-weight:800;outline:0;color:var(--ink);text-align:center;background:#fff}
+.wk-row input:focus{border-color:var(--green)}
+.wk-total{background:var(--green-tint);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:var(--green-700);text-align:center;margin:8px 0 16px}
+.wk-total b{font-weight:800}
 /* caixa */
 .cash-split{display:flex;gap:10px;margin-top:16px;position:relative;z-index:1}
 .cash-split > div{flex:1;background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px}
@@ -625,6 +632,8 @@ main{padding-top:18px}
   <div class="field">
     <label>Meta de gelatos no mês</label>
     <input id="goalValue" class="goal-input" type="text" inputmode="numeric" placeholder="1200">
+    <button type="button" class="btn-ghost" id="openDayGoals" style="margin-top:10px">🎯 Definir meta por dia da semana</button>
+    <div id="wkGoalHint" style="font-size:12px;color:var(--ink-faint);margin-top:8px;text-align:center"></div>
   </div>
   <div class="field">
     <label>Preço do gelato</label>
@@ -671,6 +680,17 @@ main{padding-top:18px}
   <p class="h2sub" id="ddSub"></p>
   <div id="ddBody"></div>
   <button class="btn-primary" id="ddEdit">Editar fechamento</button>
+</div>
+
+<!-- SHEET: metas por dia da semana -->
+<div class="sheet" id="dayGoalSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Meta por dia da semana</h2>
+  <p class="h2sub">Gelatos por dia. A meta do mês vira a soma dos dias — bom pra dias instáveis (quinta fraca, sexta sobe).</p>
+  <div id="wkInputs"></div>
+  <div class="wk-total" id="wkTotal"></div>
+  <button class="btn-primary" id="saveDayGoals">Salvar metas por dia</button>
+  <button class="btn-ghost" id="clearDayGoals" style="margin-top:10px">Limpar (usar meta única do mês)</button>
 </div>
 
 <!-- SHEET: movimentação de caixa -->
@@ -750,7 +770,7 @@ const Cloud={
     if(e1) throw e1;
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
     db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa:+r.taxa||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),note:r.note||''}));
-    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST)}; db.goals=st.goals||{}; }
+    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     const {data:cf,error:eCf}=await c.from('cashflow').select('*').order('date',{ascending:false});
@@ -763,7 +783,7 @@ const Cloud={
   async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
   async pushCash(m){ if(!this.on)return; try{ await this.client.from('cashflow').upsert({id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,note:m.note||''},{onConflict:'id'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,goals:db.goals});}catch(e){} },
+  async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals});}catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
@@ -817,7 +837,18 @@ const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const NUM=new Intl.NumberFormat('pt-BR');
 function money(v){ return BRL.format(v||0); }
 function price(){ return db.settings.price||DEFAULT_PRICE; }
-function goalFor(key){ const g=db.goals[key]||{}; return { gelatos:(g.gelatos!=null?g.gelatos:DEFAULT_GOAL), unit:db.settings.unit||DEFAULT_UNIT }; }
+function weekdayGoalsSet(){ const w=db.settings.weekdayGoals; return w && Object.keys(w).some(k=>+w[k]>0); }
+function monthGoalFor(key){
+  if(weekdayGoalsSet()){ const [y,m]=key.split('-').map(Number), dim=new Date(y,m,0).getDate(); let g=0; for(let d=1;d<=dim;d++) g+=(+db.settings.weekdayGoals[new Date(y,m-1,d).getDay()]||0); return g; }
+  const gg=db.goals[key]; return gg&&gg.gelatos!=null?gg.gelatos:DEFAULT_GOAL;
+}
+function expectedGoalByDay(key, day){
+  const [y,m]=key.split('-').map(Number);
+  if(weekdayGoalsSet()){ let g=0; for(let d=1;d<=day;d++) g+=(+db.settings.weekdayGoals[new Date(y,m-1,d).getDay()]||0); return g; }
+  const dim=new Date(y,m,0).getDate(); return monthGoalFor(key)*(day/dim);
+}
+function dayGoal(dateStr){ if(!weekdayGoalsSet()) return null; const [Y,M,D]=dateStr.split('-').map(Number); return +db.settings.weekdayGoals[new Date(Y,M-1,D).getDay()]||0; }
+function goalFor(key){ return { gelatos: monthGoalFor(key), unit:db.settings.unit||DEFAULT_UNIT }; }
 function closingsOf(key){ return db.closings.filter(c=> c.date.slice(0,7)===key); }
 function parseMoney(str){ if(!str)return 0; let s=String(str).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'); const v=parseFloat(s); return isNaN(v)?0:v; }
 function parseInt2(str){ const v=parseInt(String(str||'').replace(/\D/g,''),10); return isNaN(v)?0:v; }
@@ -1163,7 +1194,8 @@ function render(){
     if(isCurrent){ const dl=daysInMonth-today.getDate(); projEl.innerHTML='<span class="dias">🗓️ '+(dl>0?'Faltam '+dl+(dl>1?' dias':' dia')+' no mês':'Último dia do mês')+'</span><span class="proj ok">Meta garantida 🎯</span>'; }
   } else if(isCurrent){
     const day=today.getDate(), daysLeft=daysInMonth-day;
-    const expected=g*(day/daysInMonth), expPct=Math.min(100,expected/g*100);
+    const expected= weekdayGoalsSet()? expectedGoalByDay(key,day) : g*(day/daysInMonth);
+    const expPct=g>0?Math.min(100,expected/g*100):0;
     paceMark.style.display='block'; paceMark.style.left=expPct+'%';
     const diff=Math.round(gel-expected), perDay=(g-gel)/Math.max(1,daysLeft);
     sub.textContent='Faltam '+NUM.format(falta)+' gelatos · '+Math.ceil(perDay)+'/dia p/ bater';
@@ -1234,9 +1266,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet].forEach(s=>s.classList.remove('on')); }
 scrim.addEventListener('click', closeSheets);
 
 /* ---------- abas Vendas | Estoque ---------- */
@@ -1439,8 +1471,10 @@ function openDayDetail(c){
   $('ddSub').textContent=(c.gelatos||0)+' gelatos · '+money(c.revenue||0);
   const cardGel=Math.round(price()>0?r.stone/price():0), cashGel=Math.round(price()>0?r.dinheiro/price():0);
   const row=(sw,l,v)=>'<div class="dd-row"><span class="l">'+(sw?'<span class="sw" style="background:'+sw+'"></span>':'')+l+'</span><b>'+v+'</b></div>';
+  const dg=dayGoal(c.date), gv=c.gelatos||0;
   $('ddBody').innerHTML=
-    '<div class="dd-sec"><div class="dd-big"><span class="v">'+money(c.revenue||0)+'</span><span class="g">'+(c.gelatos||0)+' gelatos</span></div></div>'
+    '<div class="dd-sec"><div class="dd-big"><span class="v">'+money(c.revenue||0)+'</span><span class="g">'+gv+' gelatos</span></div></div>'
+    +((dg!=null&&dg>0)?'<div class="dd-sec"><h3>Meta do dia</h3>'+row('', (gv>=dg?'✅ Bateu a meta':'🎯 Meta do dia'), gv+' / '+dg+(gv>=dg?' ✓':' · faltaram '+(dg-gv)))+'</div>':'')
     +'<div class="dd-sec"><h3>Formas de pagamento</h3>'
       +row('var(--pix)','Pix',money(c.pix||0))+row('var(--debito)','Débito',money(c.debito||0))
       +row('var(--credito)','Crédito',money(c.credito||0))+row('var(--dinheiro)','Dinheiro',money(r.dinheiro))+'</div>'
@@ -1559,10 +1593,11 @@ $('deleteCash').addEventListener('click', ()=>{ if(!editingCash) return; db.cash
 $('cashList').addEventListener('click', e=>{ const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(m) openCash(m); });
 
 /* ---- ajustes ---- */
+function refreshWkHint(){ $('wkGoalHint').innerHTML = weekdayGoalsSet()? '✅ Meta por dia ATIVA · mês = <b>'+NUM.format(monthGoalFor(viewMonth))+'</b> gelatos (a meta única acima fica ignorada)' : ''; }
 $('editGoal').addEventListener('click', ()=>{
-  const goal=goalFor(viewMonth);
-  $('goalUnit').value=goal.unit; $('goalValue').value=goal.gelatos; $('goalPrice').value=String(price()).replace('.',','); $('goalCost').value=String(costPlan()).replace('.',',');
-  updateAcct(); openSheet(goalSheet);
+  const rawGoal=(db.goals[viewMonth]&&db.goals[viewMonth].gelatos!=null)?db.goals[viewMonth].gelatos:DEFAULT_GOAL;
+  $('goalUnit').value=db.settings.unit||DEFAULT_UNIT; $('goalValue').value=rawGoal; $('goalPrice').value=String(price()).replace('.',','); $('goalCost').value=String(costPlan()).replace('.',',');
+  refreshWkHint(); updateAcct(); openSheet(goalSheet);
 });
 $('saveGoal').addEventListener('click', ()=>{
   db.settings.unit=$('goalUnit').value.trim()||DEFAULT_UNIT;
@@ -1571,6 +1606,18 @@ $('saveGoal').addEventListener('click', ()=>{
   const val=parseInt2($('goalValue').value); db.goals[viewMonth]={gelatos:val>0?val:DEFAULT_GOAL};
   Store.save(db); closeSheets(); render(); Cloud.pushSettings(); toast('Ajustes salvos');
 });
+/* metas por dia da semana */
+function readWkInputs(){ const w={}; document.querySelectorAll('#wkInputs .wk-in').forEach(inp=>{ w[inp.dataset.wd]=parseInt2(inp.value); }); return w; }
+function updateWkTotal(){ const w=readWkInputs(); const [y,m]=viewMonth.split('-').map(Number), dim=new Date(y,m,0).getDate(); let tot=0; for(let d=1;d<=dim;d++) tot+=(+w[new Date(y,m-1,d).getDay()]||0); $('wkTotal').innerHTML='Meta do mês (soma dos dias): <b>'+NUM.format(tot)+' gelatos</b>'; }
+function renderDayGoals(){
+  const order=[1,2,3,4,5,6,0], names=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'], w=db.settings.weekdayGoals||{};
+  $('wkInputs').innerHTML=order.map((d,i)=>'<div class="wk-row"><label>'+names[i]+'</label><input class="wk-in" data-wd="'+d+'" type="text" inputmode="numeric" value="'+(w[d]!=null&&+w[d]>0?w[d]:'')+'" placeholder="0"></div>').join('');
+  document.querySelectorAll('#wkInputs .wk-in').forEach(inp=>inp.addEventListener('input', updateWkTotal));
+  updateWkTotal();
+}
+$('openDayGoals').addEventListener('click', ()=>{ renderDayGoals(); openSheet(dayGoalSheet); });
+$('saveDayGoals').addEventListener('click', ()=>{ db.settings.weekdayGoals=readWkInputs(); Store.save(db); closeSheets(); render(); Cloud.pushSettings(); toast('Metas por dia salvas 🎯'); });
+$('clearDayGoals').addEventListener('click', ()=>{ db.settings.weekdayGoals=null; Store.save(db); closeSheets(); render(); Cloud.pushSettings(); toast('Voltou pra meta única do mês'); });
 
 /* ---- navegação de mês ---- */
 function shiftMonth(delta){ const [y,m]=viewMonth.split('-').map(Number); viewMonth=ym(new Date(y,m-1+delta,1)); render(); }

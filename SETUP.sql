@@ -57,9 +57,11 @@ create table if not exists public.app_settings (
   unit  text default 'Imprensa',
   price numeric default 35,
   custo_plan numeric default 1.5,
+  wk_goals jsonb,                     -- metas por dia da semana (opcional)
   goals jsonb default '{}'::jsonb
 );
 alter table public.app_settings add column if not exists custo_plan numeric default 1.5;
+alter table public.app_settings add column if not exists wk_goals jsonb;
 
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
 alter table public.closings     enable row level security;
