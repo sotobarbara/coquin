@@ -40,6 +40,17 @@ update public.stock set product='coco' where product is null;
 alter table public.stock drop constraint if exists stock_pkey;
 alter table public.stock add primary key (date, product);
 
+-- ============ Caixa (entradas e saídas) ============
+create table if not exists public.cashflow (
+  id         text primary key,
+  date       date not null,
+  type       text not null,          -- 'in' (entrada) | 'out' (saída)
+  category   text,
+  amount     numeric not null default 0,
+  note       text default '',
+  created_at timestamptz not null default now()
+);
+
 -- ============ Ajustes (linha única) ============
 create table if not exists public.app_settings (
   id    integer primary key default 1 check (id = 1),
@@ -53,15 +64,19 @@ alter table public.app_settings add column if not exists custo_plan numeric defa
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
 alter table public.closings     enable row level security;
 alter table public.stock        enable row level security;
+alter table public.cashflow     enable row level security;
 alter table public.app_settings enable row level security;
 drop policy if exists "equipe closings" on public.closings;
 drop policy if exists "equipe stock"    on public.stock;
+drop policy if exists "equipe cashflow" on public.cashflow;
 drop policy if exists "equipe settings" on public.app_settings;
 create policy "equipe closings" on public.closings     for all to authenticated using (true) with check (true);
 create policy "equipe stock"    on public.stock        for all to authenticated using (true) with check (true);
+create policy "equipe cashflow" on public.cashflow     for all to authenticated using (true) with check (true);
 create policy "equipe settings" on public.app_settings for all to authenticated using (true) with check (true);
 
 -- ============ Tempo real (sincronia entre celulares) ============
 do $$ begin alter publication supabase_realtime add table public.closings;     exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.stock;         exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table public.cashflow;      exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.app_settings;  exception when duplicate_object then null; end $$;
