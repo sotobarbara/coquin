@@ -272,6 +272,31 @@ main{padding-top:18px}
 .dd-big .v{font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--green-700)}
 .dd-big .g{font-size:14px;color:var(--ink-soft);font-weight:700}
 
+/* ---------- Dados / gráficos ---------- */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kpi{padding:15px 16px}
+.kpi .kl{font-size:11.5px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px}
+.kpi .kv{font-size:24px;font-weight:800;letter-spacing:-.8px;color:var(--green-700);margin-top:4px}
+.kpi .kd{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+.kpi .kv.neg{color:var(--danger)}
+.chart-card{padding:16px 14px 12px}
+.chart-card .ch-t{font-size:14px;font-weight:800;color:var(--ink);margin:0 2px 2px;letter-spacing:-.2px}
+.chart-card .ch-s{font-size:12px;color:var(--ink-faint);margin:0 2px 12px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chart .gridln{stroke:#EEECE6;stroke-width:1}
+.chart .lbl{fill:var(--ink-faint);font-size:9px;font-weight:600}
+.chart .vlbl{fill:var(--ink-soft);font-size:9px;font-weight:800}
+.legend{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:12px;padding:0 2px}
+.legend .lg{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.legend .lg .sw{width:11px;height:11px;border-radius:3px;flex:none}
+.legend .lg b{color:var(--ink);font-weight:800}
+.legend .lg small{color:var(--ink-faint);font-weight:700}
+.tbl{width:100%;border-collapse:collapse;margin-top:4px}
+.tbl td{padding:7px 2px;font-size:13px;border-bottom:1px solid var(--line)}
+.tbl td:last-child{text-align:right;font-weight:800;color:var(--ink)}
+.tbl td:first-child{color:var(--ink-soft);font-weight:600}
+
 /* login / sincronia */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -313,6 +338,7 @@ main{padding-top:18px}
 <div class="tabs">
   <button id="tabVendas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Vendas</button>
   <button id="tabEstoque"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Estoque</button>
+  <button id="tabDados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Dados</button>
 </div>
 
 <main class="wrap">
@@ -426,6 +452,29 @@ main{padding-top:18px}
   <div class="foot"><div>Consumo estimado por vendas · 1 coco rende 2 gelatos</div></div>
 
  </div><!-- /viewEstoque -->
+
+ <div id="viewDados" class="hide">
+
+  <div class="section-title">Saúde do mês</div>
+  <div class="kpi-grid">
+    <div class="card kpi"><div class="kl">Faturamento</div><div class="kv" id="kFat">R$ 0</div><div class="kd" id="kFatD">—</div></div>
+    <div class="card kpi"><div class="kl">Gelatos</div><div class="kv" id="kGel">0</div><div class="kd" id="kGelD">meta —</div></div>
+    <div class="card kpi"><div class="kl">Ticket médio</div><div class="kv" id="kTicket">R$ 0</div><div class="kd">por gelato</div></div>
+    <div class="card kpi"><div class="kl">Quebra de coco</div><div class="kv" id="kQuebra">0</div><div class="kd">no mês</div></div>
+  </div>
+
+  <div class="section-title">Faturamento por dia</div>
+  <div class="card chart-card"><div class="chart" id="chFat"></div></div>
+
+  <div class="section-title">Formas de pagamento</div>
+  <div class="card chart-card"><div class="chart" id="chPay"></div><div class="legend" id="lgPay"></div></div>
+
+  <div class="section-title">Estoque de coco no mês</div>
+  <div class="card chart-card"><div class="ch-s" id="chStockSub" style="margin:0 2px 10px"></div><div class="chart" id="chStock"></div><div class="legend" id="lgStock"></div></div>
+
+  <div class="foot"><div>Coquin · dados do mês selecionado</div></div>
+
+ </div><!-- /viewDados -->
 
 </main>
 
@@ -757,6 +806,69 @@ function renderEstoque(){
   }).join(''); }
 }
 
+/* ---------- Dados / gráficos (SVG puro) ---------- */
+function emptyChart(){ return '<div class="ch-s" style="padding:18px 2px">Sem dados neste mês ainda.</div>'; }
+function svgBars(data, opts){
+  const W=340,H=opts.h||150,padL=6,padR=6,padT=16,padB=18,n=data.length;
+  if(!n) return emptyChart();
+  const max=Math.max(1,...data.map(d=>d.value)), bw=(W-padL-padR)/n, barW=Math.min(28,bw*0.6), plotH=H-padT-padB;
+  const step=Math.ceil(n/10); let bars='';
+  data.forEach((d,i)=>{
+    const x=padL+bw*i+(bw-barW)/2, h=max>0?(d.value/max)*plotH:0, y=padT+plotH-h;
+    bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="4" fill="'+opts.color+'"/>';
+    if(d.value===max) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+opts.fmt(d.value)+'</text>';
+    if(n<=12||i%step===0) bars+='<text class="lbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+d.label+'</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+'</svg>';
+}
+function svgDonut(segs, centerText){
+  const total=segs.reduce((s,x)=>s+x.value,0), S=150,cx=S/2,cy=S/2,r=54,sw=22,C=2*Math.PI*r;
+  if(total<=0) return emptyChart();
+  let paths='', offset=0;
+  segs.forEach(seg=>{ const frac=seg.value/total; if(frac<=0) return; const len=Math.max(0,frac*C-2);
+    paths+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+seg.color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-offset).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" stroke-linecap="butt"/>';
+    offset+=frac*C; });
+  return '<svg viewBox="0 0 '+S+' '+S+'" style="max-width:190px;display:block;margin:2px auto 0">'+paths
+    +'<text x="'+cx+'" y="'+(cy-3)+'" text-anchor="middle" style="fill:var(--green-700);font-size:17px;font-weight:800">'+centerText+'</text>'
+    +'<text x="'+cx+'" y="'+(cy+13)+'" text-anchor="middle" style="fill:var(--ink-faint);font-size:9px;font-weight:700;letter-spacing:.5px">TOTAL</text></svg>';
+}
+function svgArea(points, opts){
+  const W=340,H=140,padL=6,padR=6,padT=14,padB=18,n=points.length;
+  if(!n) return emptyChart();
+  const vals=points.map(p=>p.value), max=Math.max(1,...vals), min=Math.min(0,...vals), plotH=H-padT-padB, plotW=W-padL-padR;
+  const X=i=> padL+(n===1?plotW/2:plotW*i/(n-1)), Y=v=> padT+plotH-((v-min)/((max-min)||1))*plotH, zeroY=Y(0), step=Math.ceil(n/10);
+  const line=points.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.value).toFixed(1)).join(' ');
+  const area='M'+X(0).toFixed(1)+' '+zeroY.toFixed(1)+' '+points.map((p,i)=>'L'+X(i).toFixed(1)+' '+Y(p.value).toFixed(1)).join(' ')+' L'+X(n-1).toFixed(1)+' '+zeroY.toFixed(1)+' Z';
+  let dots='',labels='';
+  points.forEach((p,i)=>{ dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.value).toFixed(1)+'" r="3" fill="'+opts.color+'"/>';
+    if(n<=12||i%step===0) labels+='<text class="lbl" x="'+X(i).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+p.label+'</text>'; });
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><path d="'+area+'" fill="'+opts.color+'" opacity="0.12"/><path d="'+line+'" fill="none" stroke="'+opts.color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'<line class="axis" x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+zeroY.toFixed(1)+'"/>'+labels+'</svg>';
+}
+function renderDados(){
+  const key=viewMonth, list=closingsOf(key).slice().sort((a,b)=>a.date.localeCompare(b.date)), goal=goalFor(key);
+  let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
+  list.forEach(c=>{ const r=reconcile(c); rev+=c.revenue||0; gel+=c.gelatos||0; byM.pix+=c.pix||0; byM.debito+=c.debito||0; byM.credito+=c.credito||0; byM.dinheiro+=r.dinheiro; });
+  document.getElementById('kFat').textContent=money(rev);
+  document.getElementById('kFatD').textContent=list.length+' dia'+(list.length!==1?'s':'')+' fechado'+(list.length!==1?'s':'');
+  document.getElementById('kGel').textContent=NUM.format(gel);
+  document.getElementById('kGelD').textContent=Math.round(goal.gelatos>0?gel/goal.gelatos*100:0)+'% da meta';
+  document.getElementById('kTicket').textContent=gel>0?money(rev/gel):'R$ 0';
+  const B=computeBalances(); const qMonth=B.counts.filter(c=>c.date.slice(0,7)===key).reduce((s,c)=>s+c.quebra,0);
+  const kq=document.getElementById('kQuebra'); kq.textContent=(qMonth>0.5?'−':'')+NUM.format(Math.round(Math.abs(qMonth))); kq.className='kv'+(qMonth>0.5?' neg':'');
+  // faturamento por dia
+  document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00','')}) : emptyChart();
+  // formas de pagamento
+  const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
+  document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
+  document.getElementById('lgPay').innerHTML= segs.map(s=>'<span class="lg"><span class="sw" style="background:'+s.color+'"></span>'+s.label+' <b>'+money(s.v)+'</b> <small>'+(rev>0?Math.round(s.v/rev*100):0)+'%</small></span>').join('');
+  // estoque no mês
+  const movDates=[...new Set([...stockOf(key).map(s=>s.date), ...list.map(c=>c.date)])].sort();
+  document.getElementById('chStock').innerHTML= movDates.length? svgArea(movDates.map(d=>({label:(+d.slice(8)).toString(), value:Math.round(B.balBy[d])})),{color:'var(--green)'}) : emptyChart();
+  let comprados=0,consumidos=0; stockOf(key).forEach(s=>comprados+=s.comprados||0); closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/GEL_PER_COCO);
+  document.getElementById('chStockSub').textContent='Comprados '+NUM.format(comprados)+' · Consumidos ~'+NUM.format(Math.round(consumidos))+' · Saldo atual '+NUM.format(Math.round(B.current));
+  document.getElementById('lgStock').innerHTML='<span class="lg"><span class="sw" style="background:var(--green)"></span>Saldo de coco no fim de cada dia</span>';
+}
+
 /* ---------- render ---------- */
 function render(){
   const key=viewMonth;
@@ -848,6 +960,7 @@ function render(){
     }).join('');
   }
   renderEstoque();
+  renderDados();
 }
 
 /* ---------- toast ---------- */
@@ -865,15 +978,17 @@ scrim.addEventListener('click', closeSheets);
 let currentView='vendas';
 function switchView(v){
   currentView=v;
-  document.getElementById('viewVendas').classList.toggle('hide', v!=='vendas');
-  document.getElementById('viewEstoque').classList.toggle('hide', v!=='estoque');
-  document.getElementById('tabVendas').classList.toggle('sel', v==='vendas');
-  document.getElementById('tabEstoque').classList.toggle('sel', v==='estoque');
+  [['Vendas','vendas'],['Estoque','estoque'],['Dados','dados']].forEach(([n,k])=>{
+    document.getElementById('view'+n).classList.toggle('hide', v!==k);
+    document.getElementById('tab'+n).classList.toggle('sel', v===k);
+  });
+  document.getElementById('fab').style.display = v==='dados'?'none':'flex';
   document.getElementById('fabLabel').textContent=(v==='estoque')?'Registrar cocos':'Fechar o dia';
   window.scrollTo(0,0);
 }
 document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
 document.getElementById('tabEstoque').addEventListener('click',()=>switchView('estoque'));
+document.getElementById('tabDados').addEventListener('click',()=>switchView('dados'));
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
