@@ -485,7 +485,7 @@ main{padding-top:18px}
   <div class="kpi-grid">
     <div class="card kpi"><div class="kl">Faturamento</div><div class="kv" id="kFat">R$ 0</div><div class="kd" id="kFatD">—</div></div>
     <div class="card kpi"><div class="kl">Gelatos</div><div class="kv" id="kGel">0</div><div class="kd" id="kGelD">meta —</div></div>
-    <div class="card kpi"><div class="kl">Lucro bruto</div><div class="kv" id="kLucro">R$ 0</div><div class="kd" id="kMargem">margem —</div></div>
+    <div class="card kpi"><div class="kl">Lucro estimado</div><div class="kv" id="kLucro">R$ 0</div><div class="kd" id="kMargem">margem —</div></div>
     <div class="card kpi"><div class="kl">Ticket médio</div><div class="kv" id="kTicket">R$ 0</div><div class="kd">por gelato</div></div>
     <div class="card kpi"><div class="kl">Quebra de coco</div><div class="kv" id="kQuebra">0</div><div class="kd">no mês</div></div>
   </div>
@@ -694,13 +694,13 @@ const Cloud={
     const {data:cl,error:e1}=await c.from('closings').select('*').order('date',{ascending:false});
     if(e1) throw e1;
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
-    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),note:r.note||''}));
+    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa:+r.taxa||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),note:r.note||''}));
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     Store.save(db);
   },
-  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
   async pushStock(s){ if(!this.on)return; const pl={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''}; pl.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date,product'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
@@ -979,16 +979,20 @@ function renderDados(){
   const B=computeBalances(); const qMonth=B.counts.filter(c=>c.date.slice(0,7)===key).reduce((s,c)=>s+c.quebra,0);
   const kq=document.getElementById('kQuebra'); kq.textContent=(qMonth>0.5?'−':'')+NUM.format(Math.round(Math.abs(qMonth))); kq.className='kv'+(qMonth>0.5?' neg':'');
   // custo / lucro / margem
+  let taxaMonth=0; list.forEach(c=>taxaMonth+=c.taxa||0);
   const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
-  const cogsPerGel=cocoC/PRODUCTS.coco.yield + sorvC/PRODUCTS.sorvete.yield, cogs=gel*cogsPerGel, lucro=rev-cogs, margem=rev>0?lucro/rev*100:0;
+  const cogsPerGel=cocoC/PRODUCTS.coco.yield + sorvC/PRODUCTS.sorvete.yield, cogs=gel*cogsPerGel;
+  const lucro=rev-cogs-taxaMonth, margem=rev>0?lucro/rev*100:0;
   const kl=document.getElementById('kLucro'); kl.textContent=money(lucro); kl.className='kv'+(lucro<0?' neg':'');
-  document.getElementById('kMargem').textContent='margem '+Math.round(margem)+'% (insumos)';
+  document.getElementById('kMargem').textContent='margem '+Math.round(margem)+'% (líquida)';
   const plan=costPlan(), above=cocoC>plan*1.005;
   document.getElementById('custoCard').innerHTML=
-    '<div class="chk-head"><span>🍨 Custo por gelato (insumos)</span><b>'+money(cogsPerGel)+'</b></div>'
-    +'<div class="chk-row"><span>🥥 Coco (½ · '+money(cocoC)+'/coco)</span><span>'+money(cocoC/PRODUCTS.coco.yield)+'</span></div>'
-    +'<div class="chk-row"><span>🍦 Sorvete (1⁄25 · '+money(sorvC)+'/caixa)</span><span>'+money(sorvC/PRODUCTS.sorvete.yield)+'</span></div>'
-    +'<div class="chk-row"><span>Custo dos insumos vendidos</span><span>'+money(cogs)+'</span></div>'
+    '<div class="chk-head"><span>🧾 Resultado do mês</span><b>'+money(lucro)+'</b></div>'
+    +'<div class="chk-row"><span>Faturamento (vendas)</span><span>'+money(rev)+'</span></div>'
+    +'<div class="chk-row"><span>− Insumos <small style="opacity:.65">('+money(cogsPerGel)+'/gelato)</small></span><span>−'+money(cogs)+'</span></div>'
+    +'<div class="chk-row"><span>− Taxa Stone (créd/déb)</span><span>−'+money(taxaMonth)+'</span></div>'
+    +'<div class="chk-row quebra '+(lucro>=0?'ok':'crit')+'"><span>= Lucro estimado</span><b>'+money(lucro)+'</b></div>'
+    +'<div class="chk-row"><span>💳 Recebido líquido na conta</span><span>'+money(rev-taxaMonth)+'</span></div>'
     +(above?'<div class="chk-row quebra warn"><span>Coco acima do planejado</span><b>+'+Math.round((cocoC/plan-1)*100)+'%</b></div>':'');
   // faturamento por dia
   document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0, gel:c.gelatos||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00',''),tip:d=>'Dia '+d.label+' · <b>'+money(d.value)+'</b> · '+d.gel+' gelatos'}) : emptyChart();
@@ -1035,7 +1039,7 @@ function renderDados(){
   if(wbi>=0) rows.push(irow('🏆','Seu dia mais forte é <b>'+WDF[wdData[wbi].w]+'</b><span class="muted"> — média de '+money(wbv)+'/dia</span>'));
   if(hasHours && hoursAgg.some(h=>h>0)){ let pk=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[pk]) pk=h;
     rows.push(irow('🔥','Pico de movimento entre <b>'+pk+'h e '+((pk+1)%24)+'h</b><span class="muted"> — '+hoursAgg[pk]+' vendas no horário</span>')); }
-  if(gel>0) rows.push(irow('💰','Margem de <b>'+Math.round(margem)+'%</b> sobre os insumos<span class="muted"> — lucro bruto '+money(lucro)+' no mês</span>'));
+  if(gel>0) rows.push(irow('💰','Margem líquida de <b>'+Math.round(margem)+'%</b><span class="muted"> — lucro estimado '+money(lucro)+' (após insumos e taxa)</span>'));
   if(gel>0) rows.push(irow('🍨','Ticket médio de <b>'+money(rev/gel)+'</b><span class="muted"> — '+NUM.format(gel)+' gelatos vendidos</span>'));
   const cocoNow=Math.round(currentStock('coco')), sorvNow=Math.round(currentStock('sorvete'));
   if(db.stock.length) rows.push(irow('📦','Estoque: <b>'+NUM.format(cocoNow)+' cocos</b> e <b>'+NUM.format(sorvNow)+' caixas</b><span class="muted"> de sorvete</span>'));
@@ -1197,7 +1201,7 @@ function parseStoneCSV(text){
   if(lines.length<2) return [];
   const delim=(lines[0].split(';').length>=lines[0].split(',').length)?';':',';
   const hdr=lines[0].split(delim).map(h=>h.trim().toUpperCase());
-  const iDate=hdr.indexOf('DATA DA VENDA'), iProd=hdr.indexOf('PRODUTO'), iVal=hdr.indexOf('VALOR BRUTO'), iSt=hdr.indexOf('ULTIMO STATUS');
+  const iDate=hdr.indexOf('DATA DA VENDA'), iProd=hdr.indexOf('PRODUTO'), iVal=hdr.indexOf('VALOR BRUTO'), iLiq=hdr.indexOf('VALOR LIQUIDO'), iSt=hdr.indexOf('ULTIMO STATUS');
   if(iDate<0||iProd<0||iVal<0) return null;   // não é o relatório da Stone
   const days={};
   for(let n=1;n<lines.length;n++){
@@ -1208,11 +1212,13 @@ function parseStoneCSV(text){
     const dm=dpart.split('/'); if(dm.length!==3) continue;
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,tx:0,hours:new Array(24).fill(0)});
+    const liq=iLiq>=0?parseMoney(r[iLiq]):val;   // valor líquido (após taxa Stone)
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,hours:new Array(24).fill(0)});
     if(prod.indexOf('pix')>=0) d.pix+=val;
     else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0) d.debito+=val;
     else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0) d.credito+=val;
     else continue;
+    d.taxa += Math.max(0, val-liq);   // taxa da Stone desse dia
     d.tx++;
     const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; if(hh>=0&&hh<24) d.hours[hh]++;
   }
@@ -1247,11 +1253,11 @@ function bulkImportStone(){
   stoneParsed.forEach((d,i)=>{
     const tot=d.pix+d.debito+d.credito;
     let c=db.closings.find(x=>x.date===d.date);
-    if(c){ // atualiza Stone + fluxo por hora, mantém gelatos/faturamento/contagem
-      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; if(d.hours) c.hours=d.hours; updated++; Cloud.pushClosing(c);
+    if(c){ // atualiza Stone + fluxo por hora + taxa, mantém gelatos/faturamento/contagem
+      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; if(d.hours) c.hours=d.hours; updated++; Cloud.pushClosing(c);
     } else {
       const gel=Math.round(price()>0?tot/price():0);
-      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, stoneTx:d.tx, hours:d.hours||null, note:'', createdAt:new Date().toISOString() };
+      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, hours:d.hours||null, note:'', createdAt:new Date().toISOString() };
       db.closings.push(c); created++; Cloud.pushClosing(c);
     }
   });
@@ -1311,8 +1317,8 @@ $('saveClose').addEventListener('click', ()=>{
   let saved;
   if(target){ Object.assign(target, d); saved=target; }
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
-  // fluxo por hora vindo do CSV importado (se houver para esta data)
-  const sp=stoneParsed.find(x=>x.date===d.date); if(sp && sp.hours) saved.hours=sp.hours;
+  // fluxo por hora + taxa Stone vindos do CSV importado (se houver para esta data)
+  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; saved.taxa=sp.taxa||0; }
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
   // nuvem: se a data mudou na edição, remove a antiga
