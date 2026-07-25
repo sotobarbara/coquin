@@ -344,13 +344,18 @@ main{padding-top:18px}
 .seg2 button.out.sel .ic{background:var(--danger)}
 .seg2 button.in.sel{border-color:#1E6B34;background:#E9F5EC;color:#1E6B34}
 .seg2 button.in.sel .ic{background:#2A9D53}
-.catrow{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line)}
+.catrow{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line);-webkit-tap-highlight-color:transparent}
 .catrow:last-child{border-bottom:0}
-.catrow .cn{width:96px;flex:none;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catrow[data-catrow]{cursor:pointer}
+.catrow[data-catrow]:active{background:#FAF8F3}
+.catrow .cn{width:92px;flex:none;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catrow .cn small{display:block;font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-top:1px}
 .catrow .cbar{height:7px;border-radius:999px;background:var(--line);overflow:hidden;flex:1}
 .catrow .cbar>i{display:block;height:100%;background:var(--credito);border-radius:999px}
-.catrow .cvv{font-size:13.5px;font-weight:800;min-width:78px;text-align:right}
+.catrow .cvv{font-size:13.5px;font-weight:800;min-width:74px;text-align:right}
+.catrow .cchev{flex:none;color:var(--ink-faint);width:16px;height:16px;margin-left:-2px}
 .cf-amt.in{color:#1E6B34}.cf-amt.out{color:var(--danger)}
+.det-emp{font-size:12px;color:var(--ink-faint)}
 /* login / sincronia */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -697,6 +702,15 @@ main{padding-top:18px}
   <p class="h2sub" id="ddSub"></p>
   <div id="ddBody"></div>
   <button class="btn-primary" id="ddEdit">Editar fechamento</button>
+</div>
+
+<!-- SHEET: detalhe de uma categoria do caixa -->
+<div class="sheet" id="catDetail" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2 id="catTitle">Categoria</h2>
+  <p class="h2sub" id="catSub"></p>
+  <div class="card sales" id="catList" style="margin-bottom:6px"></div>
+  <p class="det-emp">Toque num lançamento para editar ou excluir.</p>
 </div>
 
 <!-- SHEET: metas por dia da semana -->
@@ -1169,14 +1183,16 @@ function renderDados(){
 function cashOf(key){ return db.cashflow.filter(c=>c.date.slice(0,7)===key); }
 function renderCaixa(){
   const key=viewMonth, list=cashOf(key).slice().sort((a,b)=> b.date.localeCompare(a.date)||(b.createdAt||'').localeCompare(a.createdAt||''));
-  let inn=0,out=0; const byCat={};
-  list.forEach(m=>{ if(m.type==='in') inn+=m.amount||0; else { out+=m.amount||0; byCat[m.category]=(byCat[m.category]||0)+(m.amount||0); } });
+  let inn=0,out=0; const byCat={}, cntCat={};
+  list.forEach(m=>{ if(m.type==='in') inn+=m.amount||0; else { out+=m.amount||0; byCat[m.category]=(byCat[m.category]||0)+(m.amount||0); cntCat[m.category]=(cntCat[m.category]||0)+1; } });
   document.getElementById('cashSaldo').textContent=money(inn-out);
   document.getElementById('cashIn').textContent=money(inn);
   document.getElementById('cashOut').textContent=money(out);
   document.getElementById('cashSub').textContent = list.length? (list.length+' movimenta'+(list.length>1?'ções':'ção')+' no mês') : 'Despesas e outras entradas (fora vendas/insumos)';
   const cats=Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]), maxCat=Math.max(1,...cats.map(c=>byCat[c]));
-  document.getElementById('cashCats').innerHTML = cats.length? cats.map(c=>'<div class="catrow"><span class="cn">'+c+'</span><span class="cbar"><i style="width:'+(byCat[c]/maxCat*100)+'%"></i></span><span class="cvv">'+money(byCat[c])+'</span></div>').join('')
+  const chev='<svg class="cchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+  document.getElementById('cashCats').innerHTML = cats.length? cats.map(c=>{ const n=cntCat[c]||0;
+      return '<div class="catrow" data-catrow="'+c.replace(/"/g,'&quot;')+'"><span class="cn">'+c+(n>1?'<small>'+n+' lançamentos</small>':'')+'</span><span class="cbar"><i style="width:'+(byCat[c]/maxCat*100)+'%"></i></span><span class="cvv">'+money(byCat[c])+'</span>'+chev+'</div>'; }).join('')
     : '<div class="empty" style="padding:22px 16px"><p>Nenhuma saída lançada neste mês.</p></div>';
   document.getElementById('cashCount').textContent=list.length?list.length+' itens':'';
   const cl=document.getElementById('cashList');
@@ -1290,9 +1306,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail].forEach(s=>s.classList.remove('on')); }
 scrim.addEventListener('click', closeSheets);
 
 /* ---------- abas Vendas | Estoque ---------- */
@@ -1618,6 +1634,23 @@ $('saveCash').addEventListener('click', ()=>{
 });
 $('deleteCash').addEventListener('click', ()=>{ if(!editingCash) return; db.cashflow=db.cashflow.filter(x=>x.id!==editingCash); Store.save(db); closeSheets(); render(); Cloud.delCash(editingCash); toast('Movimentação excluída'); });
 $('cashList').addEventListener('click', e=>{ const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(m) openCash(m); });
+
+/* detalhe por categoria: cada lançamento separado (ex.: Salário Paulo, Salário Ionnara) */
+function openCatDetail(cat){
+  const items=cashOf(viewMonth).filter(m=>m.type==='out'&&m.category===cat)
+    .sort((a,b)=> b.date.localeCompare(a.date)||(b.createdAt||'').localeCompare(a.createdAt||''));
+  const total=items.reduce((s,m)=>s+(m.amount||0),0);
+  $('catTitle').textContent=cat;
+  $('catSub').innerHTML=items.length+' lançamento'+(items.length>1?'s':'')+' · total <b>'+money(total)+'</b>';
+  $('catList').innerHTML=items.map(m=>{ const [Y,M,D]=m.date.split('-');
+    return '<div class="sale" data-cash="'+m.id+'"><div class="m" style="background:var(--danger);color:#fff"><b>↓</b></div>'
+      +'<div class="info"><div class="r1 cf-amt out">−'+money(m.amount||0)+'</div><div class="r2">'+(m.note?m.note+' · ':'')+D+'/'+M+'</div></div>'
+      +'<button class="del" data-cashedit="'+m.id+'" aria-label="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></div>';
+  }).join('');
+  openSheet(catDetail);
+}
+$('cashCats').addEventListener('click', e=>{ const row=e.target.closest('[data-catrow]'); if(!row) return; openCatDetail(row.getAttribute('data-catrow')); });
+$('catList').addEventListener('click', e=>{ const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(!m) return; closeSheets(); setTimeout(()=>openCash(m),140); });
 
 /* ---- ajustes ---- */
 function refreshWkHint(){ $('wkGoalHint').innerHTML = weekdayGoalsSet()? '✅ Meta por dia ATIVA · mês = <b>'+NUM.format(monthGoalFor(viewMonth))+'</b> gelatos (a meta única acima fica ignorada)' : ''; }
