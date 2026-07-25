@@ -469,6 +469,9 @@ main{padding-top:18px}
   <div class="section-title">Faturamento por dia</div>
   <div class="card chart-card"><div class="chart" id="chFat"></div></div>
 
+  <div class="section-title">Rende mais por dia <span class="st-side">média · todo o histórico</span></div>
+  <div class="card chart-card"><div class="ch-s" id="wdaySub" style="margin:0 2px 8px"></div><div class="chart" id="chWday"></div></div>
+
   <div class="section-title">Pico de vendas <span class="st-side">horário · cartão/Pix</span></div>
   <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div></div>
 
@@ -867,6 +870,18 @@ function svgArea(points, opts){
     if(n<=12||i%step===0) labels+='<text class="lbl" x="'+X(i).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+p.label+'</text>'; });
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><path d="'+area+'" fill="'+opts.color+'" opacity="0.12"/><path d="'+line+'" fill="none" stroke="'+opts.color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'<line class="axis" x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+zeroY.toFixed(1)+'"/>'+labels+'</svg>';
 }
+function svgBarsH(data, hiIdx, fmt){
+  const W=340,H=150,padL=6,padR=6,padT=16,padB=18,n=data.length;
+  if(!n||!data.some(d=>d.value>0)) return emptyChart();
+  const max=Math.max(1,...data.map(d=>d.value)), bw=(W-padL-padR)/n, barW=Math.min(34,bw*0.6), plotH=H-padT-padB;
+  let bars='';
+  data.forEach((d,i)=>{ const x=padL+bw*i+(bw-barW)/2, hh=(d.value/max)*plotH, y=padT+plotH-hh, col=i===hiIdx?'var(--gold)':'var(--green)';
+    bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,hh).toFixed(1)+'" rx="4" fill="'+col+'" opacity="'+(d.value>0?1:0.28)+'"/>';
+    if(i===hiIdx && fmt) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+fmt(d.value)+'</text>';
+    bars+='<text class="lbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+d.label+'</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+'</svg>';
+}
 function svgHours(hours, peakIdx){
   if(!hours.some(h=>h>0)) return emptyChart();
   let first=0,last=23; while(first<23&&hours[first]===0) first++; while(last>0&&hours[last]===0) last--;
@@ -905,6 +920,17 @@ function renderDados(){
     +(above?'<div class="chk-row quebra warn"><span>Compra acima do planejado</span><b>+'+Math.round((avgC/plan-1)*100)+'%</b></div>':'');
   // faturamento por dia
   document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00','')}) : emptyChart();
+  // rende mais por dia da semana (todo o histórico, média por ocorrência)
+  const WD=Array.from({length:7},()=>({sum:0,n:0})), WDN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'], WDF=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  db.closings.forEach(c=>{ const [Y,M,D]=c.date.split('-').map(Number); const w=new Date(Y,M-1,D).getDay(); WD[w].sum+=c.revenue||0; WD[w].n++; });
+  const wdOrder=[1,2,3,4,5,6,0];
+  const wdData=wdOrder.map(w=>({label:WDN[w], value: WD[w].n? WD[w].sum/WD[w].n : 0, n:WD[w].n, w}));
+  let wbi=-1,wbv=-1; wdData.forEach((d,i)=>{ if(d.n>0 && d.value>wbv){ wbv=d.value; wbi=i; } });
+  const wdSub=document.getElementById('wdaySub');
+  if(wbi>=0){ const best=wdData[wbi];
+    wdSub.innerHTML='🏆 Melhor dia: <b>'+WDF[best.w]+'</b> · média <b>'+money(wbv)+'</b>/dia'+(best.n>1?' · '+best.n+' registros':'');
+    document.getElementById('chWday').innerHTML=svgBarsH(wdData, wbi, v=>money(v).replace(',00',''));
+  } else { wdSub.textContent='Feche alguns dias para ver o padrão por dia da semana.'; document.getElementById('chWday').innerHTML=emptyChart(); }
   // pico de vendas por hora (do CSV da Stone)
   const hoursAgg=new Array(24).fill(0); let hasHours=false, daysWithHours=0;
   closingsOf(key).forEach(c=>{ if(Array.isArray(c.hours)&&c.hours.length===24){ hasHours=true; daysWithHours++; c.hours.forEach((n,h)=>hoursAgg[h]+=(n||0)); } });
