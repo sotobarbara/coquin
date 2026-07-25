@@ -23,10 +23,11 @@
   --gold:#C79A3E;
   --gold-soft:#F3E9CF;
 
-  --pix:#0E9C8E;
-  --dinheiro:#4F8A57;
-  --debito:#3B77B4;
-  --credito:#7C5CB0;
+  --pix:#1baf7a;      /* aqua  (categórico validado — CVD-safe) */
+  --dinheiro:#eda100; /* dourado: cash = ouro */
+  --debito:#2a78d6;   /* azul */
+  --credito:#eb6834;  /* laranja */
+  --ink-money:#35503A;/* texto de valores (nunca a cor da série) */
 
   --bg:#F5F3EE;
   --surface:#FFFFFF;
@@ -196,7 +197,7 @@ main{padding-top:18px}
 .recon-row b{color:var(--ink);font-weight:750}
 .recon-row.big{font-size:15px;padding-top:9px;margin-top:5px;border-top:1px dashed var(--green-tint-2)}
 .recon-row.big .lbl{font-weight:700;color:var(--ink)}
-.recon-row.big .dinheiro{font-weight:800;color:var(--dinheiro);font-size:18px}
+.recon-row.big .dinheiro{font-weight:800;color:var(--ink-money);font-size:18px}
 .recon-alert{display:flex;gap:9px;align-items:flex-start;background:#F7DFD6;color:#8f3626;border-radius:11px;padding:10px 12px;font-size:12.8px;font-weight:600;margin-top:10px;line-height:1.35}
 .recon-alert svg{width:17px;height:17px;flex:none;margin-top:1px;stroke:#A6432E}
 .recon-ok{display:flex;gap:8px;align-items:center;background:#DFF3E4;color:#1E6B34;border-radius:11px;padding:9px 12px;font-size:12.8px;font-weight:700;margin-top:10px}
@@ -249,6 +250,14 @@ main{padding-top:18px}
 .num2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .small-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:11px 14px;font-size:20px;font-weight:800;outline:0;color:var(--ink);background:#fff;text-align:center}
 .small-input:focus{border-color:var(--green)}
+.chk-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--ink-soft);padding-bottom:9px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.chk-head b{font-size:16px;color:var(--green-700);font-weight:800}
+.chk-row{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--ink-soft);padding:5px 0}
+.chk-row span:last-child,.chk-row b{color:var(--ink);font-weight:700}
+.chk-row.quebra{margin-top:4px;padding:9px 11px;border-radius:10px}
+.chk-row.quebra.ok{background:var(--green-tint);color:#1E6B34}.chk-row.quebra.ok b{color:#1E6B34}
+.chk-row.quebra.warn{background:#FBEBD8;color:#8A5A1E}.chk-row.quebra.warn b{color:#8A5A1E}
+.chk-row.quebra.crit{background:#F7DFD6;color:#8f3626}.chk-row.quebra.crit b{color:#8f3626}
 .consume-note{font-size:12.5px;color:var(--ink-soft);background:var(--green-tint);border-radius:11px;padding:10px 12px;font-weight:600;line-height:1.4;margin-bottom:4px}
 .consume-note b{color:var(--green-700);font-weight:800}
 /* detalhe do dia */
@@ -397,6 +406,8 @@ main{padding-top:18px}
     <div class="meta-proj" id="stockAuto"></div>
   </div>
 
+  <div class="card" id="stockCheck" style="display:none;margin-top:12px;padding:14px 16px"></div>
+
   <!-- MÉTRICAS DO MÊS -->
   <div class="section-title">Movimento do mês</div>
   <div class="prod-grid">
@@ -513,6 +524,9 @@ main{padding-top:18px}
       <div><div style="font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center">🗑️ Perda</div><input id="kPerda" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
   </div>
+  <div class="field"><label>📸 Contagem física — opcional</label>
+    <input id="kCount" class="big-input" type="text" inputmode="numeric" placeholder="cocos contados no depósito">
+  </div>
   <div class="consume-note" id="kNote"></div>
   <button class="btn-primary" id="saveStock" disabled>Salvar</button>
   <button class="btn-ghost" id="deleteStock" style="display:none">Excluir este registro</button>
@@ -582,12 +596,12 @@ const Cloud={
     db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,note:r.note||''}));
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
-    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,degustacao:r.degustacao||0,perda:r.perda||0,note:r.note||''})); }
+    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,degustacao:r.degustacao||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     Store.save(db);
   },
   async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
-  async pushStock(s){ if(!this.on)return; try{ await this.client.from('stock').upsert({date:s.date,comprados:s.comprados||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushStock(s){ if(!this.on)return; const pl={date:s.date,comprados:s.comprados||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''}; if(s.contagem!=null && s.contagem!=='') pl.contagem=+s.contagem; else pl.contagem=null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date);}catch(e){} },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,goals:db.goals});}catch(e){} },
   subscribe(){
@@ -667,18 +681,23 @@ function reconcile(c){
 /* ---------- estoque de coco ---------- */
 function stockOf(key){ return db.stock.filter(s=> s.date.slice(0,7)===key); }
 function consumedCocos(date){ const c=db.closings.find(x=>x.date===date); return c?(c.gelatos||0)/GEL_PER_COCO:0; }
-function currentStock(){
-  let bought=0,deg=0,perda=0,gel=0;
-  db.stock.forEach(s=>{ bought+=s.comprados||0; deg+=s.degustacao||0; perda+=s.perda||0; });
-  db.closings.forEach(c=>{ gel+=c.gelatos||0; });
-  return bought - gel/GEL_PER_COCO - deg - perda;
+/* Saldo tipo "livro-caixa": soma compras, tira consumo(vendas)/degustação/perda.
+   Quando há CONTAGEM FÍSICA num dia, calcula a quebra (teórico − contado) e
+   ANCORA o saldo no valor contado (a contagem vira a verdade dali pra frente). */
+function computeBalances(){
+  const dates=new Set(); db.stock.forEach(s=>dates.add(s.date)); db.closings.forEach(c=>dates.add(c.date));
+  const sorted=[...dates].sort();
+  let bal=0; const balBy={}, counts=[];
+  for(const d of sorted){
+    const s=db.stock.find(x=>x.date===d)||{};
+    bal += (s.comprados||0) - consumedCocos(d) - (s.degustacao||0) - (s.perda||0);
+    if(s.contagem!=null && s.contagem!==''){ const c=+s.contagem; counts.push({date:d,count:c,quebra:bal-c,teorico:bal}); bal=c; }
+    balBy[d]=bal;
+  }
+  return {balBy, counts, current:bal};
 }
-function balanceUpTo(date){
-  let bought=0,deg=0,perda=0,gel=0;
-  db.stock.forEach(s=>{ if(s.date<=date){ bought+=s.comprados||0; deg+=s.degustacao||0; perda+=s.perda||0; } });
-  db.closings.forEach(c=>{ if(c.date<=date) gel+=c.gelatos||0; });
-  return bought - gel/GEL_PER_COCO - deg - perda;
-}
+function currentStock(){ return computeBalances().current; }
+function balanceUpTo(date){ const b=computeBalances().balBy; return b[date]!=null?b[date]:0; }
 function avgDailyConsumo(){
   const days=db.closings.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
   if(!days.length) return 0;
@@ -688,7 +707,7 @@ function avgDailyConsumo(){
 function r1(n){ return Math.round(n*10)/10; }
 function renderEstoque(){
   const key=viewMonth;
-  const now=currentStock(), avg=avgDailyConsumo(), auto=avg>0?now/avg:null;
+  const B=computeBalances(); const now=B.current, avg=avgDailyConsumo(), auto=avg>0?now/avg:null;
   document.getElementById('stockUnit').textContent='Depósito';
   document.getElementById('stockNow').textContent=NUM.format(Math.round(now));
   const chip=document.getElementById('stockChip'), sub=document.getElementById('stockSub'),
@@ -700,8 +719,21 @@ function renderEstoque(){
   const icon=alClass==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
   alertEl.className='stock-alert '+alClass;
   alertEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span>'+alMsg+'</span>';
-  sub.textContent=avg>0?('Consumo médio ~'+r1(avg)+' cocos/dia'):'Registre compras e vendas para ver o consumo';
+  const lastCount=B.counts.length?B.counts[B.counts.length-1]:null;
+  sub.textContent=(avg>0?('Consumo médio ~'+r1(avg)+' cocos/dia'):'Registre compras e vendas para ver o consumo')
+                  + (lastCount?' · ancorado na contagem de '+lastCount.date.split('-').reverse().slice(0,2).join('/'):'');
   autoEl.innerHTML=auto!=null?'<span class="dias">📦 Autonomia</span><span class="proj '+(auto<3?'miss':'ok')+'"><b>~'+Math.floor(auto)+' dias</b> de estoque</span>':'';
+  // conferência (contagem física × teórico)
+  const chk=document.getElementById('stockCheck');
+  if(lastCount){
+    const q=lastCount.quebra, cls=Math.abs(q)<1?'ok':(q>0?'crit':'warn');
+    const totQ=B.counts.reduce((s,c)=>s+c.quebra,0);
+    chk.style.display='block';
+    chk.innerHTML='<div class="chk-head"><span>📸 Última contagem física</span><b>'+NUM.format(lastCount.count)+' cocos</b></div>'
+      +'<div class="chk-row"><span>Teórico no dia</span><span>'+NUM.format(Math.round(lastCount.teorico))+'</span></div>'
+      +'<div class="chk-row quebra '+cls+'"><span>'+(q>0?'Quebra (faltou)':(q<0?'Sobra':'Bateu certinho'))+'</span><b>'+(q>0?'−':(q<0?'+':''))+NUM.format(Math.abs(Math.round(q)))+' cocos</b></div>'
+      +(B.counts.length>1?'<div class="chk-row"><span>Quebra acumulada</span><span>'+NUM.format(Math.round(totQ))+' cocos</span></div>':'');
+  } else { chk.style.display='none'; }
   // métricas do mês
   let comprados=0,deg=0,perda=0; stockOf(key).forEach(s=>{comprados+=s.comprados||0;deg+=s.degustacao||0;perda+=s.perda||0;});
   let consumidos=0; closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/GEL_PER_COCO);
@@ -717,9 +749,11 @@ function renderEstoque(){
   if(!sorted.length){ led.innerHTML='<div class="empty"><div class="em">🥥</div><p>Nenhum movimento neste mês.<br>Toque em <b>+ Registrar cocos</b>.</p></div>'; }
   else { led.innerHTML=sorted.map(d=>{
     const s=db.stock.find(x=>x.date===d)||{}; const buy=s.comprados||0,dg=s.degustacao||0,pr=s.perda||0,cons=consumedCocos(d);
-    const bal=balanceUpTo(d); const parts=[];
+    const bal=B.balBy[d]; const parts=[];
     if(buy)parts.push('+'+buy+' comprados'); if(cons)parts.push('−'+r1(cons)+' vendas'); if(dg)parts.push('−'+dg+' degust.'); if(pr)parts.push('−'+pr+' perda');
-    return '<div class="lrow"><div class="ld">'+dayLabel(d)+'</div><div class="lmid">'+(parts.join(' · ')||'—')+'</div><div class="lbal '+(bal<0?'neg':'')+'">'+NUM.format(Math.round(bal))+'<small>saldo</small></div></div>';
+    const counted=(s.contagem!=null&&s.contagem!=='');
+    if(counted)parts.push('📸 contou '+(+s.contagem));
+    return '<div class="lrow"><div class="ld">'+dayLabel(d)+'</div><div class="lmid">'+(parts.join(' · ')||'—')+'</div><div class="lbal '+(bal<0?'neg':'')+'">'+NUM.format(Math.round(bal))+'<small>'+(counted?'contado':'saldo')+'</small></div></div>';
   }).join(''); }
 }
 
@@ -1028,26 +1062,42 @@ $('ddEdit').addEventListener('click', ()=>{ const c=ddClosing; closeSheets(); if
 
 /* ---- registrar cocos (estoque) ---- */
 let editingStock=null;
-function kDraft(){ return { date:$('kDate').value||todayISO(), comprados:parseInt2($('kBuy').value), degustacao:parseInt2($('kDeg').value), perda:parseInt2($('kPerda').value) }; }
+function kDraft(){ const cv=$('kCount').value.trim(); return { date:$('kDate').value||todayISO(), comprados:parseInt2($('kBuy').value), degustacao:parseInt2($('kDeg').value), perda:parseInt2($('kPerda').value), contagem: cv===''?null:parseInt2(cv) }; }
+/* teórico até a data (honra contagens anteriores como âncora; usa o rascunho no dia atual) */
+function theoreticalAt(date, draft){
+  const dates=new Set(); db.stock.forEach(s=>dates.add(s.date)); db.closings.forEach(c=>dates.add(c.date)); dates.add(date);
+  const sorted=[...dates].sort(); let bal=0;
+  for(const d of sorted){ if(d>date) break;
+    const s=db.stock.find(x=>x.date===d)||{};
+    let buy=s.comprados||0,dg=s.degustacao||0,pr=s.perda||0;
+    if(d===date && draft){ buy=draft.comprados; dg=draft.degustacao; pr=draft.perda; }
+    bal += buy - consumedCocos(d) - dg - pr;
+    if(d<date && s.contagem!=null && s.contagem!=='') bal=+s.contagem;
+  }
+  return bal;
+}
 function renderKNote(){
   const d=kDraft(); const c=db.closings.find(x=>x.date===d.date); const cons=consumedCocos(d.date);
   let msg = c ? ('Vendas do dia: <b>'+(c.gelatos||0)+' gelatos</b> → consumo <b>'+r1(cons)+' cocos</b>. ')
               : 'Sem fechamento de vendas nesse dia ainda. ';
   const net=d.comprados-cons-d.degustacao-d.perda;
   msg+='Saldo do dia: <b>'+(net>=0?'+':'')+r1(net)+' cocos</b>.';
+  if(d.contagem!=null){ const teo=theoreticalAt(d.date,d), q=teo-d.contagem;
+    msg+='<br>📸 Contagem <b>'+d.contagem+'</b> × teórico <b>'+r1(teo)+'</b> → '+(Math.abs(q)<1?'<b>bateu ✓</b>':(q>0?'quebra de <b>'+r1(q)+' cocos</b>':'sobra de <b>'+r1(-q)+' cocos</b>'));
+  }
   $('kNote').innerHTML=msg;
-  $('saveStock').disabled=!(d.comprados>0 || d.degustacao>0 || d.perda>0);
+  $('saveStock').disabled=!(d.comprados>0 || d.degustacao>0 || d.perda>0 || d.contagem!=null);
 }
-['kDate','kBuy','kDeg','kPerda'].forEach(id=>$(id).addEventListener('input', renderKNote));
+['kDate','kBuy','kDeg','kPerda','kCount'].forEach(id=>$(id).addEventListener('input', renderKNote));
 function openStock(existing){
   editingStock=null;
   if(existing){ editingStock=existing.id||existing.date; $('stockTitle').textContent='Editar registro';
-    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kDeg').value=existing.degustacao||''; $('kPerda').value=existing.perda||''; $('deleteStock').style.display='block';
-  } else { $('stockTitle').textContent='Registrar cocos'; $('kDate').value=todayISO(); ['kBuy','kDeg','kPerda'].forEach(id=>$(id).value=''); $('deleteStock').style.display='none'; }
+    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kDeg').value=existing.degustacao||''; $('kPerda').value=existing.perda||''; $('kCount').value=(existing.contagem!=null?existing.contagem:''); $('deleteStock').style.display='block';
+  } else { $('stockTitle').textContent='Registrar cocos'; $('kDate').value=todayISO(); ['kBuy','kDeg','kPerda','kCount'].forEach(id=>$(id).value=''); $('deleteStock').style.display='none'; }
   renderKNote(); openSheet(stockSheet);
 }
 $('saveStock').addEventListener('click', ()=>{
-  const d=kDraft(); if(!(d.comprados>0||d.degustacao>0||d.perda>0)) return;
+  const d=kDraft(); if(!(d.comprados>0||d.degustacao>0||d.perda>0||d.contagem!=null)) return;
   let target=null, oldDate=null;
   if(editingStock){ target=db.stock.find(s=>(s.id||s.date)===editingStock); if(target) oldDate=target.date; }
   const same=db.stock.find(s=>s.date===d.date && s!==target);
