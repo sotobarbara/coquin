@@ -40,6 +40,19 @@ Toggle **Coco | Sorvete**. Rendimento: **1 coco = 2 gelatos**, **1 caixa (10L) =
 - **📸 Contagem física**: calcula a **quebra** (teórico − contado) e **ancora** o saldo no
   contado (a contagem vira a verdade dali pra frente). Pega desperdício/desvio automático.
 
+## Caixa (contas a pagar e receber)
+
+- **Entrada automática das vendas**: o faturamento do mês (soma dos fechamentos) já entra
+  como entrada — não precisa lançar. Entrada manual fica só pra casos pontuais (evento, aporte).
+- **Situação** de cada lançamento: **Pago/Recebido** (realizado) ou **A pagar/A receber**
+  (pendente) com **vencimento**.
+- **A pagar / A receber**: listas ordenadas por vencimento, com **chip** (atrasado / vence essa
+  semana) e botão **✓** pra marcar como pago/recebido num toque.
+- **Alerta** no topo: contas **atrasadas** e as que **vencem essa semana** (soma em R$).
+- **Saídas pagas por categoria** (toque pra ver cada lançamento) e lista de todas as movimentações.
+- Só o que está **pago/recebido** entra no **Resultado do caixa** e no **lucro (DRE)**;
+  pendências ficam de fora até serem quitadas.
+
 ## Dados (dashboard)
 
 - **Destaques**: melhor **dia da semana**, **pico de horário**, **margem/lucro**, ticket,

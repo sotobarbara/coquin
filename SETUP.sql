@@ -47,9 +47,13 @@ create table if not exists public.cashflow (
   type       text not null,          -- 'in' (entrada) | 'out' (saída)
   category   text,
   amount     numeric not null default 0,
+  status     text default 'pago',    -- 'pago' (realizado) | 'pendente' (a pagar/receber)
+  due        date,                   -- vencimento (contas pendentes)
   note       text default '',
   created_at timestamptz not null default now()
 );
+alter table public.cashflow add column if not exists status text default 'pago';
+alter table public.cashflow add column if not exists due date;
 
 -- ============ Ajustes (linha única) ============
 create table if not exists public.app_settings (

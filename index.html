@@ -330,6 +330,23 @@ main{padding-top:18px}
 .cash-split > div{flex:1;background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px}
 .cash-split .cs-lab{font-size:11.5px;opacity:.85;font-weight:700;display:block}
 .cash-split .cs-v{font-size:18px;font-weight:800;display:block;margin-top:2px;letter-spacing:-.4px}
+.cash-split-3 > div{padding:9px 10px}
+.cash-split-3 .cs-lab{font-size:10.5px}
+.cash-split-3 .cs-v{font-size:15px}
+/* alerta de vencimento */
+.due-alert{border-radius:16px;padding:13px 15px;margin-bottom:4px;display:flex;flex-direction:column;gap:7px}
+.due-alert .da-row{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700}
+.due-alert .da-row b{font-weight:800}
+.due-alert.over{background:#FBEEEC;border:1.5px solid #E7C3BE;color:#8E342B}
+.due-alert.soon{background:#FDF4DE;border:1.5px solid #EBDBAE;color:#8A5D00}
+/* chip de vencimento */
+.duechip{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:2px}
+.duechip.over{background:#F6DAD5;color:#8E342B}
+.duechip.soon{background:#FBECC4;color:#8A5D00}
+.duechip.future{background:var(--line);color:var(--ink-soft)}
+.sale .pay{flex:none;width:34px;height:34px;border-radius:10px;border:2px solid #BFE3CC;background:#EAF6EE;color:#1E6B34;display:grid;place-items:center;cursor:pointer;margin-left:2px}
+.sale .pay:active{background:#D6EEDD}
+.sale .pay svg{width:18px;height:18px}
 .cash-cats{display:flex;flex-wrap:wrap;gap:8px}
 .cash-cats .cat{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer}
 .cash-cats .cat.sel{border-color:var(--green);background:var(--green-tint);color:var(--green-700)}
@@ -344,6 +361,8 @@ main{padding-top:18px}
 .seg2 button.out.sel .ic{background:var(--danger)}
 .seg2 button.in.sel{border-color:#1E6B34;background:#E9F5EC;color:#1E6B34}
 .seg2 button.in.sel .ic{background:#2A9D53}
+.seg2 button.warn.sel{border-color:#C88A00;background:#FDF4DE;color:#8A5D00}
+.seg2 button.warn.sel .ic{background:#E0A400}
 .catrow{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line);-webkit-tap-highlight-color:transparent}
 .catrow:last-child{border-bottom:0}
 .catrow[data-catrow]{cursor:pointer}
@@ -562,20 +581,29 @@ main{padding-top:18px}
   <div class="card meta">
     <div class="meta-lab">Resultado do caixa</div>
     <div class="meta-nums"><span class="big" id="cashSaldo">R$ 0</span></div>
-    <div class="meta-sub" id="cashSub">Entradas − saídas do mês (fora vendas e insumos)</div>
-    <div class="cash-split">
-      <div><span class="cs-lab">↑ Entradas</span><span class="cs-v" id="cashIn">R$ 0</span></div>
-      <div><span class="cs-lab">↓ Saídas</span><span class="cs-v" id="cashOut">R$ 0</span></div>
+    <div class="meta-sub" id="cashSub">Vendas + outras entradas − saídas pagas</div>
+    <div class="cash-split cash-split-3">
+      <div><span class="cs-lab">🍨 Vendas</span><span class="cs-v" id="cashSales">R$ 0</span></div>
+      <div><span class="cs-lab">↑ Outras entradas</span><span class="cs-v" id="cashIn">R$ 0</span></div>
+      <div><span class="cs-lab">↓ Saídas pagas</span><span class="cs-v" id="cashOut">R$ 0</span></div>
     </div>
   </div>
 
-  <div class="section-title">Saídas por categoria</div>
+  <div id="dueAlert"></div>
+
+  <div class="section-title" id="apagarTitle" style="display:none">A pagar <span class="st-side" id="apagarTot"></span></div>
+  <div class="card sales" id="aPagarList" style="display:none"></div>
+
+  <div class="section-title" id="areceberTitle" style="display:none">A receber <span class="st-side" id="areceberTot"></span></div>
+  <div class="card sales" id="aReceberList" style="display:none"></div>
+
+  <div class="section-title">Saídas pagas por categoria</div>
   <div class="card" id="cashCats" style="padding:4px 0"></div>
 
-  <div class="section-title">Movimentações <span class="st-side" id="cashCount"></span></div>
+  <div class="section-title">Todas as movimentações <span class="st-side" id="cashCount"></span></div>
   <div class="card sales" id="cashList"></div>
 
-  <div class="foot"><div>Vendas e insumos já entram no lucro pela aba Dados</div></div>
+  <div class="foot"><div>Vendas entram automático. Insumos entram no lucro pela aba Dados</div></div>
 
  </div><!-- /viewCaixa -->
 
@@ -667,6 +695,7 @@ main{padding-top:18px}
   </div>
   <button class="btn-primary" id="saveGoal">Salvar</button>
   <div class="acct" id="acctRow"></div>
+  <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--ink-faint);font-weight:700" id="verStamp"></div>
 </div>
 
 <!-- SHEET: registrar cocos -->
@@ -732,8 +761,10 @@ main{padding-top:18px}
   <div class="field"><label>Tipo</label><div class="seg2" id="cashType"></div></div>
   <div class="field"><label>Valor</label><div class="money"><span class="cur">R$</span><input id="cAmount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
   <div class="field"><label>Categoria</label><div class="cash-cats" id="cashCatPick"></div></div>
-  <div class="field"><label>Dia</label><input id="cfDate" class="date-input" type="date"></div>
-  <div class="field"><label>Observação (opcional)</label><input id="cfNote" class="txt-input" type="text" placeholder="ex.: aluguel de julho" autocomplete="off"></div>
+  <div class="field"><label>Situação</label><div class="seg2" id="cashStatus"></div></div>
+  <div class="field" id="dueField" style="display:none"><label>Vencimento</label><input id="cfDue" class="date-input" type="date"></div>
+  <div class="field"><label id="cfDateLab">Dia</label><input id="cfDate" class="date-input" type="date"></div>
+  <div class="field"><label>Observação (opcional)</label><input id="cfNote" class="txt-input" type="text" placeholder="ex.: Paulo, aluguel de julho…" autocomplete="off"></div>
   <button class="btn-primary" id="saveCash" disabled>Salvar</button>
   <button class="btn-ghost" id="deleteCash" style="display:none">Excluir</button>
 </div>
@@ -763,6 +794,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
+const APP_VERSION='v3.0 · contas a pagar/receber';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -806,7 +838,7 @@ const Cloud={
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     const {data:cf,error:eCf}=await c.from('cashflow').select('*').order('date',{ascending:false});
     if(!eCf && cf){
-      const rows=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,note:r.note||'',createdAt:r.created_at||'',synced:true}));
+      const rows=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,status:r.status||'pago',due:r.due||null,note:r.note||'',createdAt:r.created_at||'',synced:true}));
       const ids=new Set(rows.map(r=>r.id));
       // local mas fora da nuvem: se NUNCA subiu (!synced) = reenvia e mantém; se já subiu = foi apagado em outro aparelho = descarta
       const pending=(db.cashflow||[]).filter(m=>m&&!ids.has(m.id)&&!m.synced);
@@ -819,7 +851,7 @@ const Cloud={
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
   async pushStock(s){ if(!this.on)return; const pl={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''}; pl.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date,product'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
-  async pushCash(m){ if(!this.on)return; try{ await this.client.from('cashflow').upsert({id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,note:m.note||''},{onConflict:'id'}); m.synced=true; Store.save(db); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushCash(m){ if(!this.on)return; try{ await this.client.from('cashflow').upsert({id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,status:m.status||'pago',due:m.due||null,note:m.note||''},{onConflict:'id'}); m.synced=true; Store.save(db); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals});}catch(e){} },
   subscribe(){
@@ -863,6 +895,7 @@ if(!db.closings) db.closings=[];
 if(!db.stock) db.stock=[];
 if(!db.cashflow) db.cashflow=[];
 db.stock.forEach(s=>{ if(!s.product) s.product='coco'; if(s.treinamento==null) s.treinamento=0; });
+db.cashflow.forEach(m=>{ if(!m.status) m.status='pago'; });   // lançamentos antigos = já realizados
 
 let viewMonth=ym(new Date());
 let editingId=null;
@@ -891,6 +924,8 @@ function closingsOf(key){ return db.closings.filter(c=> c.date.slice(0,7)===key)
 function parseMoney(str){ if(!str)return 0; let s=String(str).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'); const v=parseFloat(s); return isNaN(v)?0:v; }
 function parseInt2(str){ const v=parseInt(String(str||'').replace(/\D/g,''),10); return isNaN(v)?0:v; }
 function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function daysUntil(iso){ if(!iso) return null; const [Y,M,D]=iso.split('-').map(Number); const dt=new Date(Y,M-1,D); const t0=new Date(); t0.setHours(0,0,0,0); return Math.round((dt-t0)/86400000); }
+function dueInfo(iso){ const d=daysUntil(iso); if(d==null) return {cls:'future',txt:'sem vencimento'}; if(d<0) return {cls:'over',txt:(-d)+(-d===1?' dia atrasado':' dias atrasado')}; if(d===0) return {cls:'soon',txt:'vence hoje'}; if(d<=7) return {cls:'soon',txt:'vence em '+d+(d===1?' dia':' dias')}; const [Y,M,D]=iso.split('-'); return {cls:'future',txt:'vence '+D+'/'+M}; }
 function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dayLabel(dstr){
   const [Y,M,D]=dstr.split('-').map(Number); const dt=new Date(Y,M-1,D);
@@ -1110,7 +1145,7 @@ function renderDados(){
   const kq=document.getElementById('kQuebra'); kq.textContent=(qMonth>0.5?'−':'')+NUM.format(Math.round(Math.abs(qMonth))); kq.className='kv'+(qMonth>0.5?' neg':'');
   // custo / lucro / margem
   let taxaMonth=0; list.forEach(c=>taxaMonth+=c.taxa||0);
-  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(m.type==='in') cashIn+=m.amount||0; else cashOut+=m.amount||0; });
+  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in') cashIn+=m.amount||0; else cashOut+=m.amount||0; });
   const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
   const cogsPerGel=cocoC/PRODUCTS.coco.yield + sorvC/PRODUCTS.sorvete.yield, cogs=gel*cogsPerGel;
   const lucro=rev + cashIn - cogs - taxaMonth - cashOut, margem=rev>0?lucro/rev*100:0;
@@ -1181,27 +1216,65 @@ function renderDados(){
 
 /* ---------- Caixa (entrada e saída) ---------- */
 function cashOf(key){ return db.cashflow.filter(c=>c.date.slice(0,7)===key); }
+function isPaid(m){ return (m.status||'pago')!=='pendente'; }
+function salesRevenueOf(key){ return closingsOf(key).reduce((s,c)=>s+(c.revenue||0),0); }
+const penIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const checkIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+function cashRow(m,opts){ opts=opts||{}; const isIn=m.type==='in'; const [Y,M,D]=m.date.split('-');
+  let meta=(m.note?m.note+' · ':'')+m.category;
+  if(opts.due && m.status==='pendente'){ const di=dueInfo(m.due); meta+=' <span class="duechip '+di.cls+'">'+di.txt+'</span>'; }
+  else meta+=' · '+D+'/'+M;
+  const payBtn = m.status==='pendente' ? '<button class="pay" data-pay="'+m.id+'" aria-label="Marcar como '+(isIn?'recebido':'pago')+'">'+checkIcon+'</button>' : '';
+  return '<div class="sale" data-cash="'+m.id+'"><div class="m" style="background:'+(isIn?'var(--dinheiro)':'var(--danger)')+';color:#fff"><b>'+(isIn?'↑':'↓')+'</b></div>'
+    +'<div class="info"><div class="r1 cf-amt '+(isIn?'in':'out')+'">'+(isIn?'+':'−')+money(m.amount||0)+'</div><div class="r2">'+meta+'</div></div>'
+    +payBtn+'<button class="del" data-cashedit="'+m.id+'" aria-label="Editar">'+penIcon+'</button></div>';
+}
 function renderCaixa(){
   const key=viewMonth, list=cashOf(key).slice().sort((a,b)=> b.date.localeCompare(a.date)||(b.createdAt||'').localeCompare(a.createdAt||''));
+  const sales=salesRevenueOf(key);
   let inn=0,out=0; const byCat={}, cntCat={};
-  list.forEach(m=>{ if(m.type==='in') inn+=m.amount||0; else { out+=m.amount||0; byCat[m.category]=(byCat[m.category]||0)+(m.amount||0); cntCat[m.category]=(cntCat[m.category]||0)+1; } });
-  document.getElementById('cashSaldo').textContent=money(inn-out);
-  document.getElementById('cashIn').textContent=money(inn);
-  document.getElementById('cashOut').textContent=money(out);
-  document.getElementById('cashSub').textContent = list.length? (list.length+' movimenta'+(list.length>1?'ções':'ção')+' no mês') : 'Despesas e outras entradas (fora vendas/insumos)';
+  list.forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in') inn+=m.amount||0; else { out+=m.amount||0; byCat[m.category]=(byCat[m.category]||0)+(m.amount||0); cntCat[m.category]=(cntCat[m.category]||0)+1; } });
+  $('cashSales').textContent=money(sales);
+  $('cashSaldo').textContent=money(sales+inn-out);
+  $('cashIn').textContent=money(inn);
+  $('cashOut').textContent=money(out);
+  $('cashSub').textContent='Vendas + outras entradas − saídas pagas';
+
+  // A pagar / A receber (pendentes do mês) — ordenados por vencimento
+  const byDue=(a,b)=>(a.due||'9999').localeCompare(b.due||'9999');
+  const aPagar=list.filter(m=>m.type==='out'&&m.status==='pendente').sort(byDue);
+  const aReceber=list.filter(m=>m.type==='in'&&m.status==='pendente').sort(byDue);
+  const fillPend=(items,titleEl,listEl,totEl)=>{
+    if(!items.length){ $(titleEl).style.display='none'; $(listEl).style.display='none'; return; }
+    const tot=items.reduce((s,m)=>s+(m.amount||0),0);
+    $(titleEl).style.display=''; $(listEl).style.display='';
+    $(totEl).textContent=money(tot);
+    $(listEl).innerHTML=items.map(m=>cashRow(m,{due:true})).join('');
+  };
+  fillPend(aPagar,'apagarTitle','aPagarList','apagarTot');
+  fillPend(aReceber,'areceberTitle','aReceberList','areceberTot');
+
+  // alerta global de vencimentos (todos os meses)
+  const pend=db.cashflow.filter(m=>m.status==='pendente'&&m.due);
+  const over=pend.filter(m=>daysUntil(m.due)<0), soon=pend.filter(m=>{const d=daysUntil(m.due);return d>=0&&d<=7;});
+  const sum=arr=>arr.reduce((s,m)=>s+(m.amount||0),0);
+  let al='';
+  if(over.length) al+='<div class="da-row">🔴 <span><b>'+over.length+'</b> conta'+(over.length>1?'s':'')+' atrasada'+(over.length>1?'s':'')+' · <b>'+money(sum(over))+'</b></span></div>';
+  if(soon.length) al+='<div class="da-row">🟡 <span><b>'+soon.length+'</b> vence'+(soon.length>1?'m':'')+' essa semana · <b>'+money(sum(soon))+'</b></span></div>';
+  $('dueAlert').innerHTML = al? '<div class="due-alert '+(over.length?'over':'soon')+'">'+al+'</div>' : '';
+
+  // saídas PAGAS por categoria
   const cats=Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]), maxCat=Math.max(1,...cats.map(c=>byCat[c]));
   const chev='<svg class="cchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
-  document.getElementById('cashCats').innerHTML = cats.length? cats.map(c=>{ const n=cntCat[c]||0;
+  $('cashCats').innerHTML = cats.length? cats.map(c=>{ const n=cntCat[c]||0;
       return '<div class="catrow" data-catrow="'+c.replace(/"/g,'&quot;')+'"><span class="cn">'+c+(n>1?'<small>'+n+' lançamentos</small>':'')+'</span><span class="cbar"><i style="width:'+(byCat[c]/maxCat*100)+'%"></i></span><span class="cvv">'+money(byCat[c])+'</span>'+chev+'</div>'; }).join('')
-    : '<div class="empty" style="padding:22px 16px"><p>Nenhuma saída lançada neste mês.</p></div>';
-  document.getElementById('cashCount').textContent=list.length?list.length+' itens':'';
-  const cl=document.getElementById('cashList');
-  if(!list.length){ cl.innerHTML='<div class="empty"><div class="em">💵</div><p>Nenhuma movimentação.<br>Toque em <b>+ Nova movimentação</b>.</p></div>'; }
-  else { cl.innerHTML=list.map(m=>{ const isIn=m.type==='in'; const [Y,M,D]=m.date.split('-');
-    return '<div class="sale" data-cash="'+m.id+'"><div class="m" style="background:'+(isIn?'var(--dinheiro)':'var(--danger)')+';color:#fff"><b>'+(isIn?'↑':'↓')+'</b></div>'
-      +'<div class="info"><div class="r1 cf-amt '+(isIn?'in':'out')+'">'+(isIn?'+':'−')+money(m.amount||0)+'</div><div class="r2">'+m.category+' · '+D+'/'+M+(m.note?' · '+m.note:'')+'</div></div>'
-      +'<button class="del" data-cashedit="'+m.id+'" aria-label="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></div>';
-  }).join(''); }
+    : '<div class="empty" style="padding:22px 16px"><p>Nenhuma saída paga neste mês.</p></div>';
+
+  // todas as movimentações
+  $('cashCount').textContent=list.length?list.length+' itens':'';
+  const cl=$('cashList');
+  cl.innerHTML=list.length? list.map(m=>cashRow(m,{due:true})).join('')
+    : '<div class="empty"><div class="em">💵</div><p>Nenhuma movimentação.<br>Toque em <b>+ Nova movimentação</b>.</p></div>';
 }
 
 /* ---------- render ---------- */
@@ -1602,38 +1675,55 @@ $('ledger').addEventListener('click', e=>{ const row=e.target.closest('.lrow'); 
 $('prodToggle').addEventListener('click', e=>{ const b=e.target.closest('[data-prod]'); if(!b) return; stockProduct=b.dataset.prod; render(); updateFabLabel(); });
 
 /* ---- caixa: movimentações ---- */
-let editingCash=null, cashDraft={type:'out',category:null};
+let editingCash=null, cashDraft={type:'out',category:null,status:'pago'};
 function renderCashType(){
   $('cashType').innerHTML=
     '<button type="button" class="out'+(cashDraft.type==='out'?' sel':'')+'" data-ctype="out"><span class="ic">−</span><span class="tl">Saída</span><span class="ds">Despesa / conta</span></button>'+
     '<button type="button" class="in'+(cashDraft.type==='in'?' sel':'')+'" data-ctype="in"><span class="ic">+</span><span class="tl">Entrada</span><span class="ds">Dinheiro que entrou</span></button>';
-  renderCashCats();
+  renderCashCats(); renderCashStatus();
+}
+function renderCashStatus(){
+  const isOut=cashDraft.type==='out', pend=cashDraft.status==='pendente';
+  const dLab=isOut?'Pago':'Recebido', dDesc=isOut?'Já saiu do caixa':'Já entrou no caixa';
+  const pLab=isOut?'A pagar':'A receber', pDesc='Ainda vai '+(isOut?'sair':'entrar');
+  $('cashStatus').innerHTML=
+    '<button type="button" class="in'+(!pend?' sel':'')+'" data-cstatus="pago"><span class="ic">✓</span><span class="tl">'+dLab+'</span><span class="ds">'+dDesc+'</span></button>'+
+    '<button type="button" class="warn'+(pend?' sel':'')+'" data-cstatus="pendente"><span class="ic">⏳</span><span class="tl">'+pLab+'</span><span class="ds">'+pDesc+'</span></button>';
+  $('dueField').style.display=pend?'':'none';
+  $('cfDateLab').textContent=pend?'Lançado em':(isOut?'Dia do pagamento':'Dia do recebimento');
 }
 function renderCashCats(){ $('cashCatPick').innerHTML=CASH_CATS[cashDraft.type].map(c=>'<div class="cat '+(c===cashDraft.category?'sel':'')+'" data-cat="'+c+'">'+c+'</div>').join(''); }
 function validateCash(){ $('saveCash').disabled=!(parseMoney($('cAmount').value)>0 && cashDraft.category); }
 $('cAmount').addEventListener('input', validateCash);
 $('cashType').addEventListener('click', e=>{ const b=e.target.closest('[data-ctype]'); if(!b) return; cashDraft.type=b.dataset.ctype; cashDraft.category=null; renderCashType(); validateCash(); });
+$('cashStatus').addEventListener('click', e=>{ const b=e.target.closest('[data-cstatus]'); if(!b) return; cashDraft.status=b.dataset.cstatus; renderCashStatus(); });
 $('cashCatPick').addEventListener('click', e=>{ const b=e.target.closest('[data-cat]'); if(!b) return; cashDraft.category=b.dataset.cat; renderCashCats(); validateCash(); });
 function openCash(existing){
   editingCash=null;
-  if(existing){ editingCash=existing.id; cashDraft={type:existing.type,category:existing.category}; $('cashTitle').textContent='Editar movimentação';
-    $('cAmount').value=existing.amount?String(existing.amount.toFixed(2)).replace('.',','):''; $('cfDate').value=existing.date; $('cfNote').value=existing.note||''; $('deleteCash').style.display='block';
-  } else { cashDraft={type:'out',category:null}; $('cashTitle').textContent='Nova movimentação'; $('cAmount').value=''; $('cfDate').value=todayISO(); $('cfNote').value=''; $('deleteCash').style.display='none'; }
+  if(existing){ editingCash=existing.id; cashDraft={type:existing.type,category:existing.category,status:existing.status||'pago'}; $('cashTitle').textContent='Editar movimentação';
+    $('cAmount').value=existing.amount?String(existing.amount.toFixed(2)).replace('.',','):''; $('cfDate').value=existing.date; $('cfDue').value=existing.due||''; $('cfNote').value=existing.note||''; $('deleteCash').style.display='block';
+  } else { cashDraft={type:'out',category:null,status:'pago'}; $('cashTitle').textContent='Nova movimentação'; $('cAmount').value=''; $('cfDate').value=todayISO(); $('cfDue').value=''; $('cfNote').value=''; $('deleteCash').style.display='none'; }
   renderCashType(); validateCash(); openSheet(cashSheet);
 }
 $('saveCash').addEventListener('click', ()=>{
   const amount=parseMoney($('cAmount').value); if(!(amount>0)||!cashDraft.category) return;
   $('saveCash').disabled=true;   // trava toque-duplo (sem isso, 2 toques = 2 lançamentos)
-  const d={ date:$('cfDate').value||todayISO(), type:cashDraft.type, category:cashDraft.category, amount, note:$('cfNote').value.trim() };
+  const pend=cashDraft.status==='pendente';
+  const d={ date:$('cfDate').value||todayISO(), type:cashDraft.type, category:cashDraft.category, amount, status:pend?'pendente':'pago', due:pend?($('cfDue').value||null):null, note:$('cfNote').value.trim() };
   let saved=null;
   if(editingCash){ saved=db.cashflow.find(x=>x.id===editingCash); if(saved) Object.assign(saved,d); }
   if(!saved){ saved={ id:'cf'+Date.now()+Math.floor(Math.random()*1000), ...d, createdAt:new Date().toISOString() }; db.cashflow.push(saved); }
   Store.save(db); closeSheets(); viewMonth=d.date.slice(0,7); switchView('caixa'); render();
   Cloud.pushCash(saved);
-  toast((d.type==='in'?'Entrada':'Saída')+' · <b>'+money(amount)+'</b>');
+  const lab = d.type==='in' ? (pend?'A receber':'Entrada') : (pend?'A pagar':'Saída');
+  toast(lab+' · <b>'+money(amount)+'</b>');
 });
 $('deleteCash').addEventListener('click', ()=>{ if(!editingCash) return; db.cashflow=db.cashflow.filter(x=>x.id!==editingCash); Store.save(db); closeSheets(); render(); Cloud.delCash(editingCash); toast('Movimentação excluída'); });
-$('cashList').addEventListener('click', e=>{ const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(m) openCash(m); });
+function markPaid(id){ const m=db.cashflow.find(x=>x.id===id); if(!m) return; m.status='pago'; m.due=null; m.synced=false; Store.save(db); render(); Cloud.pushCash(m); toast('✓ Marcado como '+(m.type==='in'?'recebido':'pago')); }
+document.getElementById('viewCaixa').addEventListener('click', e=>{
+  const pay=e.target.closest('[data-pay]'); if(pay){ e.stopPropagation(); markPaid(pay.getAttribute('data-pay')); return; }
+  const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(m) openCash(m);
+});
 
 /* detalhe por categoria: cada lançamento separado (ex.: Salário Paulo, Salário Ionnara) */
 function openCatDetail(cat){
@@ -1708,7 +1798,7 @@ function reportData(key){
   const list=closingsOf(key), goal=goalFor(key);
   let rev=0,gel=0,taxa=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
   list.forEach(c=>{ const r=reconcile(c); rev+=c.revenue||0; gel+=c.gelatos||0; taxa+=c.taxa||0; byM.pix+=c.pix||0; byM.debito+=c.debito||0; byM.credito+=c.credito||0; byM.dinheiro+=r.dinheiro; });
-  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(m.type==='in')cashIn+=m.amount||0; else cashOut+=m.amount||0; });
+  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in')cashIn+=m.amount||0; else cashOut+=m.amount||0; });
   const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
   const cogs=gel*(cocoC/PRODUCTS.coco.yield+sorvC/PRODUCTS.sorvete.yield);
   const lucro=rev+cashIn-cogs-taxa-cashOut, margem=rev>0?lucro/rev*100:0;
@@ -1844,6 +1934,7 @@ async function boot(){
   try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; updateAcct(); showGate(true); } }); }catch(e){}
 }
 initChartTips();
+$('verStamp').textContent='Coquin · '+APP_VERSION;
 boot();
 </script>
 </body>
