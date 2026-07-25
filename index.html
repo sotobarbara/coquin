@@ -223,6 +223,45 @@ main{padding-top:18px}
 .foot .share{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:650;color:var(--green-700);cursor:pointer;margin-bottom:14px}
 .foot .share:active{background:var(--green-tint)}
 .foot .share svg{width:16px;height:16px}
+/* abas Vendas | Estoque */
+.tabs{display:flex;gap:8px;max-width:520px;margin:0 auto;padding:16px 16px 2px}
+.tabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:14px;font-weight:750;padding:12px;border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.tabs button.sel{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 5px 14px rgba(52,80,58,.28)}
+.tabs button svg{width:17px;height:17px;stroke:currentColor}
+.hide{display:none!important}
+/* estoque */
+.stock-alert{display:flex;gap:11px;align-items:flex-start;border-radius:var(--r);padding:14px 16px;font-size:13.5px;font-weight:650;line-height:1.4;box-shadow:var(--shadow)}
+.stock-alert svg{width:20px;height:20px;flex:none;margin-top:1px}
+.stock-alert.warn{background:#FBEBD8;color:#8A5A1E}.stock-alert.warn svg{stroke:#B5771F}
+.stock-alert.crit{background:#F7DFD6;color:#8f3626}.stock-alert.crit svg{stroke:#A6432E}
+.stock-alert.ok{background:var(--green-tint);color:#1E6B34}.stock-alert.ok svg{stroke:#2FA36B}
+.stock-alert b{font-weight:800}
+.ledger{overflow:hidden}
+.lrow{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow .ld{width:56px;flex:none;font-size:12px;font-weight:800;color:var(--green-700);text-transform:capitalize;line-height:1.2}
+.lrow .lmid{flex:1;font-size:12.5px;color:var(--ink-faint);min-width:0}
+.lrow .lmid b{color:var(--ink);font-weight:700}
+.lrow .lbal{font-size:17px;font-weight:800;letter-spacing:-.4px;text-align:right}
+.lrow .lbal.neg{color:var(--danger)}
+.lrow .lbal small{display:block;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.2px;text-transform:uppercase}
+.num2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.small-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:11px 14px;font-size:20px;font-weight:800;outline:0;color:var(--ink);background:#fff;text-align:center}
+.small-input:focus{border-color:var(--green)}
+.consume-note{font-size:12.5px;color:var(--ink-soft);background:var(--green-tint);border-radius:11px;padding:10px 12px;font-weight:600;line-height:1.4;margin-bottom:4px}
+.consume-note b{color:var(--green-700);font-weight:800}
+/* detalhe do dia */
+.dd-sec{margin:2px 0 16px}
+.dd-sec h3{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-faint);margin:0 0 10px}
+.dd-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.dd-row:last-child{border-bottom:0}
+.dd-row .l{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-weight:600}
+.dd-row .l .sw{width:10px;height:10px;border-radius:50%;flex:none}
+.dd-row b{font-weight:800;letter-spacing:-.3px}
+.dd-big{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0 4px}
+.dd-big .v{font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--green-700)}
+.dd-big .g{font-size:14px;color:var(--ink-soft);font-weight:700}
+
 /* login / sincronia */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -261,7 +300,14 @@ main{padding-top:18px}
   </div>
 </header>
 
+<div class="tabs">
+  <button id="tabVendas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Vendas</button>
+  <button id="tabEstoque"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Estoque</button>
+</div>
+
 <main class="wrap">
+
+ <div id="viewVendas">
 
   <!-- META -->
   <div class="section-title">Meta do mês</div>
@@ -325,14 +371,55 @@ main{padding-top:18px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
       Compartilhar resumo do mês
     </button>
-    <div>Coquin · Fase 1 · dados neste aparelho</div>
+    <div>Coquin · controle de operação</div>
   </div>
+
+ </div><!-- /viewVendas -->
+
+ <div id="viewEstoque" class="hide">
+
+  <!-- ALERTA -->
+  <div class="section-title">Estoque de coco <span class="st-side">1 coco = 2 gelatos</span></div>
+  <div id="stockAlert"></div>
+
+  <!-- ESTOQUE ATUAL (hero) -->
+  <div class="card meta" style="margin-top:12px">
+    <div class="meta-top">
+      <div>
+        <div class="meta-lab">Cocos em estoque</div>
+        <div class="meta-unit" id="stockUnit">Depósito</div>
+      </div>
+      <span class="chip" id="stockChip" style="background:rgba(255,255,255,.16);color:#fff">—</span>
+    </div>
+    <div class="meta-nums"><span class="big" id="stockNow">0</span><span class="of">cocos</span></div>
+    <div class="meta-sub" id="stockSub">Registre as compras para acompanhar o estoque</div>
+    <div class="meta-proj" id="stockAuto"></div>
+  </div>
+
+  <!-- MÉTRICAS DO MÊS -->
+  <div class="section-title">Movimento do mês</div>
+  <div class="prod-grid">
+    <div class="card prod"><div class="ic coco">🥥</div><div><div class="pv" id="mComprados">0</div><div class="pl">Comprados</div></div></div>
+    <div class="card prod"><div class="ic gel">🍨</div><div><div class="pv" id="mConsumidos">0</div><div class="pl">Consumidos (vendas)</div></div></div>
+  </div>
+  <div class="prod-grid" style="margin-top:12px">
+    <div class="card prod"><div class="ic coco" style="background:#EDE7F3">🎁</div><div><div class="pv" id="mDeg">0</div><div class="pl">Degustação</div></div></div>
+    <div class="card prod"><div class="ic coco" style="background:#F6E3DE">🗑️</div><div><div class="pv" id="mPerda">0</div><div class="pl">Perda / quebra</div></div></div>
+  </div>
+
+  <!-- LEDGER -->
+  <div class="section-title">Estoque por dia <span class="st-side" id="stockDays"></span></div>
+  <div class="card ledger" id="ledger"></div>
+
+  <div class="foot"><div>Consumo estimado por vendas · 1 coco rende 2 gelatos</div></div>
+
+ </div><!-- /viewEstoque -->
 
 </main>
 
 <button class="fab" id="fab">
   <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  Fechar o dia
+  <span id="fabLabel">Fechar o dia</span>
 </button>
 
 <!-- SHEET: fechar o dia -->
@@ -411,6 +498,33 @@ main{padding-top:18px}
   <div class="acct" id="acctRow"></div>
 </div>
 
+<!-- SHEET: registrar cocos -->
+<div class="sheet" id="stockSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2 id="stockTitle">Registrar cocos</h2>
+  <p class="h2sub">Compras e baixas de coco do dia.</p>
+  <div class="field"><label>Dia</label><input id="kDate" class="date-input" type="date"></div>
+  <div class="field"><label>Cocos comprados no dia</label><input id="kBuy" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+  <div class="field"><label>Baixas do dia (opcional)</label>
+    <div class="num2">
+      <div><div style="font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center">🎁 Degustação</div><input id="kDeg" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
+      <div><div style="font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center">🗑️ Perda</div><input id="kPerda" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
+    </div>
+  </div>
+  <div class="consume-note" id="kNote"></div>
+  <button class="btn-primary" id="saveStock" disabled>Salvar</button>
+  <button class="btn-ghost" id="deleteStock" style="display:none">Excluir este registro</button>
+</div>
+
+<!-- SHEET: detalhe do dia -->
+<div class="sheet" id="dayDetail" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2 id="ddTitle">Dia</h2>
+  <p class="h2sub" id="ddSub"></p>
+  <div id="ddBody"></div>
+  <button class="btn-primary" id="ddEdit">Editar fechamento</button>
+</div>
+
 <!-- LOGIN / SINCRONIA -->
 <div class="authgate" id="authGate">
   <div class="auth-card">
@@ -437,6 +551,7 @@ const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
+const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos
 
 const METHODS={
   pix:{label:'Pix',color:'var(--pix)',icon:'<path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/>'},
@@ -464,14 +579,19 @@ const Cloud={
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
     db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,note:r.note||''}));
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE}; db.goals=st.goals||{}; }
+    const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
+    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,degustacao:r.degustacao||0,perda:r.perda||0,note:r.note||''})); }
     Store.save(db);
   },
   async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
+  async pushStock(s){ if(!this.on)return; try{ await this.client.from('stock').upsert({date:s.date,comprados:s.comprados||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async delStock(date){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date);}catch(e){} },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,goals:db.goals});}catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
+      .on('postgres_changes',{event:'*',schema:'public',table:'stock'},()=>this.pull().then(render).catch(()=>{}))
       .on('postgres_changes',{event:'*',schema:'public',table:'app_settings'},()=>this.pull().then(render).catch(()=>{}))
       .subscribe(); }catch(e){}
   }
@@ -504,6 +624,7 @@ if(!db||db.version!==2){ db=migrateV1(); Store.save(db); }
 if(!db.settings) db.settings={unit:DEFAULT_UNIT,price:DEFAULT_PRICE};
 if(!db.goals) db.goals={};
 if(!db.closings) db.closings=[];
+if(!db.stock) db.stock=[];
 
 let viewMonth=ym(new Date());
 let editingId=null;
@@ -539,6 +660,65 @@ function reconcile(c){
   if(dinheiro < -0.5) issues.push('A Stone ('+money(stone)+') passou do faturamento lançado — confira os valores.');
   if(Math.abs(valueDiff) > 0.5) issues.push('Valor não fecha com '+ (c.gelatos||0) +' × '+money(price())+' = '+money(expected)+' (dif. '+(valueDiff>0?'+':'')+money(valueDiff)+'). Combo, desconto ou erro?');
   return {stone,dinheiro,expected,valueDiff,issues,ok:issues.length===0};
+}
+
+/* ---------- estoque de coco ---------- */
+function stockOf(key){ return db.stock.filter(s=> s.date.slice(0,7)===key); }
+function consumedCocos(date){ const c=db.closings.find(x=>x.date===date); return c?(c.gelatos||0)/GEL_PER_COCO:0; }
+function currentStock(){
+  let bought=0,deg=0,perda=0,gel=0;
+  db.stock.forEach(s=>{ bought+=s.comprados||0; deg+=s.degustacao||0; perda+=s.perda||0; });
+  db.closings.forEach(c=>{ gel+=c.gelatos||0; });
+  return bought - gel/GEL_PER_COCO - deg - perda;
+}
+function balanceUpTo(date){
+  let bought=0,deg=0,perda=0,gel=0;
+  db.stock.forEach(s=>{ if(s.date<=date){ bought+=s.comprados||0; deg+=s.degustacao||0; perda+=s.perda||0; } });
+  db.closings.forEach(c=>{ if(c.date<=date) gel+=c.gelatos||0; });
+  return bought - gel/GEL_PER_COCO - deg - perda;
+}
+function avgDailyConsumo(){
+  const days=db.closings.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
+  if(!days.length) return 0;
+  const g=days.reduce((s,c)=>s+(c.gelatos||0),0);
+  return (g/GEL_PER_COCO)/days.length;
+}
+function r1(n){ return Math.round(n*10)/10; }
+function renderEstoque(){
+  const key=viewMonth;
+  const now=currentStock(), avg=avgDailyConsumo(), auto=avg>0?now/avg:null;
+  document.getElementById('stockUnit').textContent='Depósito';
+  document.getElementById('stockNow').textContent=NUM.format(Math.round(now));
+  const chip=document.getElementById('stockChip'), sub=document.getElementById('stockSub'),
+        autoEl=document.getElementById('stockAuto'), alertEl=document.getElementById('stockAlert');
+  let alClass,alMsg;
+  if(now<=0){ alClass='crit'; alMsg='<b>Estoque zerado ou negativo.</b> Confira as contagens — compra não lançada, perda ou desvio.'; chip.textContent='Crítico'; }
+  else if(auto!=null && auto<3){ alClass='warn'; alMsg='<b>Estoque baixo:</b> dá para ~'+Math.floor(auto)+' dia(s) no ritmo atual. Hora de comprar cocos.'; chip.textContent='Baixo'; }
+  else { alClass='ok'; alMsg='<b>Estoque saudável.</b>'+(auto!=null?' Dá para ~'+Math.floor(auto)+' dias no ritmo atual.':''); chip.textContent='Ok'; }
+  const icon=alClass==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+  alertEl.className='stock-alert '+alClass;
+  alertEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span>'+alMsg+'</span>';
+  sub.textContent=avg>0?('Consumo médio ~'+r1(avg)+' cocos/dia'):'Registre compras e vendas para ver o consumo';
+  autoEl.innerHTML=auto!=null?'<span class="dias">📦 Autonomia</span><span class="proj '+(auto<3?'miss':'ok')+'"><b>~'+Math.floor(auto)+' dias</b> de estoque</span>':'';
+  // métricas do mês
+  let comprados=0,deg=0,perda=0; stockOf(key).forEach(s=>{comprados+=s.comprados||0;deg+=s.degustacao||0;perda+=s.perda||0;});
+  let consumidos=0; closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/GEL_PER_COCO);
+  document.getElementById('mComprados').textContent=NUM.format(comprados);
+  document.getElementById('mConsumidos').textContent=NUM.format(Math.round(consumidos));
+  document.getElementById('mDeg').textContent=NUM.format(deg);
+  document.getElementById('mPerda').textContent=NUM.format(perda);
+  // ledger
+  const dates=new Set(); stockOf(key).forEach(s=>dates.add(s.date)); closingsOf(key).forEach(c=>dates.add(c.date));
+  const sorted=[...dates].sort((a,b)=>b.localeCompare(a));
+  document.getElementById('stockDays').textContent=sorted.length?sorted.length+' dias':'';
+  const led=document.getElementById('ledger');
+  if(!sorted.length){ led.innerHTML='<div class="empty"><div class="em">🥥</div><p>Nenhum movimento neste mês.<br>Toque em <b>+ Registrar cocos</b>.</p></div>'; }
+  else { led.innerHTML=sorted.map(d=>{
+    const s=db.stock.find(x=>x.date===d)||{}; const buy=s.comprados||0,dg=s.degustacao||0,pr=s.perda||0,cons=consumedCocos(d);
+    const bal=balanceUpTo(d); const parts=[];
+    if(buy)parts.push('+'+buy+' comprados'); if(cons)parts.push('−'+r1(cons)+' vendas'); if(dg)parts.push('−'+dg+' degust.'); if(pr)parts.push('−'+pr+' perda');
+    return '<div class="lrow"><div class="ld">'+dayLabel(d)+'</div><div class="lmid">'+(parts.join(' · ')||'—')+'</div><div class="lbal '+(bal<0?'neg':'')+'">'+NUM.format(Math.round(bal))+'<small>saldo</small></div></div>';
+  }).join(''); }
 }
 
 /* ---------- render ---------- */
@@ -631,6 +811,7 @@ function render(){
       </div>`;
     }).join('');
   }
+  renderEstoque();
 }
 
 /* ---------- toast ---------- */
@@ -638,10 +819,25 @@ let toastT;
 function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
 
 /* ---------- sheets ---------- */
-const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet');
+const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); closeSheet.classList.remove('on'); goalSheet.classList.remove('on'); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail].forEach(s=>s.classList.remove('on')); }
 scrim.addEventListener('click', closeSheets);
+
+/* ---------- abas Vendas | Estoque ---------- */
+let currentView='vendas';
+function switchView(v){
+  currentView=v;
+  document.getElementById('viewVendas').classList.toggle('hide', v!=='vendas');
+  document.getElementById('viewEstoque').classList.toggle('hide', v!=='estoque');
+  document.getElementById('tabVendas').classList.toggle('sel', v==='vendas');
+  document.getElementById('tabEstoque').classList.toggle('sel', v==='estoque');
+  document.getElementById('fabLabel').textContent=(v==='estoque')?'Registrar cocos':'Fechar o dia';
+  window.scrollTo(0,0);
+}
+document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
+document.getElementById('tabEstoque').addEventListener('click',()=>switchView('estoque'));
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
@@ -753,7 +949,7 @@ function openClose(existing){
   }
   renderRecon(); openSheet(closeSheet);
 }
-$('fab').addEventListener('click', ()=> openClose(null));
+$('fab').addEventListener('click', ()=>{ if(currentView==='estoque') openStock(null); else openClose(null); });
 
 $('saveClose').addEventListener('click', ()=>{
   const d=draftFromForm();
@@ -782,11 +978,74 @@ $('deleteClose').addEventListener('click', ()=>{
   Store.save(db); closeSheets(); render(); if(dt) Cloud.delClosing(dt); toast('Fechamento excluído');
 });
 
-/* editar via lista */
+/* clicar num dia -> detalhe do dia */
 $('salesList').addEventListener('click', e=>{
-  const btn=e.target.closest('[data-edit]'); if(!btn) return;
-  const id=btn.getAttribute('data-edit');
-  const c=db.closings.find(x=>(x.id||x.date)===id); if(c) openClose(c);
+  const row=e.target.closest('.sale'); if(!row) return;
+  const id=row.getAttribute('data-id');
+  const c=db.closings.find(x=>(x.id||x.date)===id); if(c) openDayDetail(c);
+});
+
+/* ---- detalhe do dia ---- */
+let ddClosing=null;
+function openDayDetail(c){
+  ddClosing=c; const r=reconcile(c); const cons=consumedCocos(c.date);
+  const [Y,M,D]=c.date.split('-');
+  $('ddTitle').textContent=dayLabel(c.date)+' · '+D+'/'+M;
+  $('ddSub').textContent=(c.gelatos||0)+' gelatos · '+money(c.revenue||0);
+  const cardGel=Math.round(price()>0?r.stone/price():0), cashGel=Math.round(price()>0?r.dinheiro/price():0);
+  const row=(sw,l,v)=>'<div class="dd-row"><span class="l">'+(sw?'<span class="sw" style="background:'+sw+'"></span>':'')+l+'</span><b>'+v+'</b></div>';
+  $('ddBody').innerHTML=
+    '<div class="dd-sec"><div class="dd-big"><span class="v">'+money(c.revenue||0)+'</span><span class="g">'+(c.gelatos||0)+' gelatos</span></div></div>'
+    +'<div class="dd-sec"><h3>Formas de pagamento</h3>'
+      +row('var(--pix)','Pix',money(c.pix||0))+row('var(--debito)','Débito',money(c.debito||0))
+      +row('var(--credito)','Crédito',money(c.credito||0))+row('var(--dinheiro)','Dinheiro',money(r.dinheiro))+'</div>'
+    +'<div class="dd-sec"><h3>Gelatos & coco</h3>'
+      +row('','🍨 Cartão/Pix',cardGel+' gelatos')+row('','💵 Dinheiro',cashGel+' gelatos')
+      +row('','🥥 Coco consumido','~'+r1(cons)+' cocos')+'</div>'
+    +(r.issues.length?'<div class="recon-alert"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>'+r.issues.join(' ')+'</span></div>':'');
+  openSheet(dayDetail);
+}
+$('ddEdit').addEventListener('click', ()=>{ const c=ddClosing; closeSheets(); if(c) setTimeout(()=>openClose(c),140); });
+
+/* ---- registrar cocos (estoque) ---- */
+let editingStock=null;
+function kDraft(){ return { date:$('kDate').value||todayISO(), comprados:parseInt2($('kBuy').value), degustacao:parseInt2($('kDeg').value), perda:parseInt2($('kPerda').value) }; }
+function renderKNote(){
+  const d=kDraft(); const c=db.closings.find(x=>x.date===d.date); const cons=consumedCocos(d.date);
+  let msg = c ? ('Vendas do dia: <b>'+(c.gelatos||0)+' gelatos</b> → consumo <b>'+r1(cons)+' cocos</b>. ')
+              : 'Sem fechamento de vendas nesse dia ainda. ';
+  const net=d.comprados-cons-d.degustacao-d.perda;
+  msg+='Saldo do dia: <b>'+(net>=0?'+':'')+r1(net)+' cocos</b>.';
+  $('kNote').innerHTML=msg;
+  $('saveStock').disabled=!(d.comprados>0 || d.degustacao>0 || d.perda>0);
+}
+['kDate','kBuy','kDeg','kPerda'].forEach(id=>$(id).addEventListener('input', renderKNote));
+function openStock(existing){
+  editingStock=null;
+  if(existing){ editingStock=existing.id||existing.date; $('stockTitle').textContent='Editar registro';
+    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kDeg').value=existing.degustacao||''; $('kPerda').value=existing.perda||''; $('deleteStock').style.display='block';
+  } else { $('stockTitle').textContent='Registrar cocos'; $('kDate').value=todayISO(); ['kBuy','kDeg','kPerda'].forEach(id=>$(id).value=''); $('deleteStock').style.display='none'; }
+  renderKNote(); openSheet(stockSheet);
+}
+$('saveStock').addEventListener('click', ()=>{
+  const d=kDraft(); if(!(d.comprados>0||d.degustacao>0||d.perda>0)) return;
+  let target=null, oldDate=null;
+  if(editingStock){ target=db.stock.find(s=>(s.id||s.date)===editingStock); if(target) oldDate=target.date; }
+  const same=db.stock.find(s=>s.date===d.date && s!==target);
+  if(same && !editingStock){ target=same; oldDate=same.date; }
+  let saved;
+  if(target){ Object.assign(target,d); saved=target; }
+  else { saved={ id:'k'+Date.now()+Math.floor(Math.random()*1000), ...d, note:'', createdAt:new Date().toISOString() }; db.stock.push(saved); }
+  Store.save(db); closeSheets(); viewMonth=d.date.slice(0,7); switchView('estoque'); render();
+  if(oldDate && oldDate!==saved.date) Cloud.delStock(oldDate);
+  Cloud.pushStock(saved);
+  toast('Estoque atualizado 🥥');
+});
+$('deleteStock').addEventListener('click', ()=>{
+  if(!editingStock) return;
+  const s=db.stock.find(x=>(x.id||x.date)===editingStock); const dt=s&&s.date;
+  db.stock=db.stock.filter(x=>(x.id||x.date)!==editingStock);
+  Store.save(db); closeSheets(); render(); if(dt) Cloud.delStock(dt); toast('Registro excluído');
 });
 
 /* ---- ajustes ---- */
@@ -843,8 +1102,9 @@ async function onLoggedIn(sess){
   Cloud.on=true; Cloud.email=sess.user.email; showGate(false);
   try{
     const {data:cl}=await Cloud.client.from('closings').select('date').limit(1);
-    if((!cl||!cl.length) && db.closings.length){         // 1ª vez: semeia a nuvem com o que já existe local
+    if((!cl||!cl.length) && (db.closings.length||db.stock.length)){   // 1ª vez: semeia a nuvem com o que já existe local
       for(const c of db.closings){ await Cloud.pushClosing(c); }
+      for(const s of db.stock){ await Cloud.pushStock(s); }
       await Cloud.pushSettings();
     }
     await Cloud.pull();
