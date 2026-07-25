@@ -1,52 +1,83 @@
 # Coquin — Controle de operação
 
-Controle da operação da Coquin, pensado para o **celular**. Um único `index.html`
-(sem build). A Coquin vende **só gelato**, com **preço fixo de R$ 35,00** por unidade.
+App **mobile** de controle da Coquin (vende **gelato**, preço fixo **R$ 35**). Página única
+(`index.html`, sem build), hospedada na Vercel. Funciona com **login da equipe** e
+**sincroniza entre celulares** via Supabase; sem login, funciona local no aparelho.
 
-O controle é por **fechamento do dia** (não venda a venda): no fim do dia você lança
-quantos gelatos venderam e concilia com a maquininha **Stone**.
+O controle é por **fechamento do dia** (não venda a venda) e tem 3 abas: **Vendas**,
+**Estoque** e **Dados**.
 
-## O que controla
+---
 
-- **Fechamento diário**: total de gelatos + faturamento do dia.
-- **Conciliação Stone**: você informa (ou **importa o CSV** da Stone) o quanto entrou por
-  **Pix / Débito / Crédito**; o app **deduz o dinheiro** sozinho
+## Vendas (fechamento diário + Stone)
+
+- **Fechar o dia**: total de **gelatos** vendidos + **faturamento** do dia.
+- **Conciliação Stone**: informe (ou **importe o CSV** da Stone) o que entrou por
+  **Pix / Débito / Crédito**. O app **deduz o dinheiro** sozinho
   (`dinheiro = faturamento − Stone`) e mostra o split *cartão/Pix × dinheiro*.
 - **Check de valor**: alerta quando `gelatos × preço` não bate com o faturamento
-  (combo, desconto ou erro de digitação) ou quando a Stone passa do total.
-- **Faturamento do mês** por forma de pagamento (Pix, Dinheiro, Débito, Crédito) e **ticket médio**.
-- **Meta do mês** de gelatos (padrão **1.200** · **Imprensa**) com **ritmo**, **dias para fechar
-  o mês** e **projeção** de fechamento.
-- **Histórico** dos fechamentos, com aviso ⚠︎ nos dias que não batem.
+  (combo, desconto ou erro) ou quando a Stone passa do total.
+- **Import do CSV da Stone** (relatório de vendas, separado por `;`): usa as colunas
+  `DATA DA VENDA`, `PRODUTO`, `VALOR BRUTO`, `VALOR LIQUIDO` e `ULTIMO STATUS`
+  (conta só **Aprovadas**). Agrupa por dia, soma por forma de pagamento, guarda o
+  **fluxo por hora** e a **taxa da Stone** (bruto − líquido). Arquivo com vários dias →
+  botão **"Lançar/atualizar os N dias"** (cria os que faltam e atualiza os existentes).
+- **Detalhe do dia** (toque num dia): pagamentos, split cartão/dinheiro e insumos consumidos.
+  Toque no **lápis** para editar direto.
 
-## Import do CSV da Stone
+> A conciliação de **vendas** usa o **VALOR BRUTO** (o que o cliente pagou = 1 gelato),
+> então bate com as vendas. A **taxa** de crédito/débito é tratada como **custo à parte**.
 
-O app lê o **relatório de vendas** exportado da Stone (CSV separado por `;`). Ele usa as colunas
-`DATA DA VENDA`, `PRODUTO`, `VALOR BRUTO` e `ULTIMO STATUS` (conta só as **Aprovadas**),
-agrupa por dia e soma por forma de pagamento. Se o arquivo tiver vários dias, mostra um chip
-por dia para você escolher. A quantidade de gelatos vem pré-preenchida com o **piso**
-(o que passou no cartão/Pix); basta ajustar para o **total do dia** que o restante vira dinheiro.
+## Estoque (2 produtos)
 
-## Como usar
+Toggle **Coco | Sorvete**. Rendimento: **1 coco = 2 gelatos**, **1 caixa (10L) = 25 gelatos**.
 
-1. Abra o `index.html` no navegador do celular.
-2. Toque em **+ Fechar o dia** → escolha a data, **Importar CSV da Stone** (ou digite os valores),
-   informe o **total de gelatos** do dia e confira a conciliação. Toque em **Salvar fechamento**.
-3. Setas **‹ ›** no topo navegam entre os meses.
-4. **Ajustes** define a meta de gelatos, a unidade e o **preço do gelato**.
-5. **Compartilhar resumo do mês** gera um texto pronto para WhatsApp.
+- **Registrar** compras (com **custo por unidade**) e baixas: **degustação**, **treinamento**
+  e **perda** — sempre na unidade do produto (cocos/caixas).
+- **Consumo automático** pelas vendas: `consumo = gelatos ÷ rendimento`.
+- **Saldo tipo livro-caixa** por produto + **autonomia** (dias de estoque) e **alertas**
+  (baixo/crítico).
+- **📸 Contagem física**: calcula a **quebra** (teórico − contado) e **ancora** o saldo no
+  contado (a contagem vira a verdade dali pra frente). Pega desperdício/desvio automático.
 
-> **Dica (iPhone/Android):** abra o link e use *"Adicionar à Tela de Início"* para virar um ícone de app.
+## Dados (dashboard)
 
-## Status / roadmap
+- **Destaques**: melhor **dia da semana**, **pico de horário**, **margem/lucro**, ticket,
+  estoque, e **comparativo vs mês passado**.
+- **KPIs**: faturamento, gelatos (% meta), **lucro estimado** (margem líquida), ticket, quebra.
+- **Mini-DRE**: `faturamento − insumos − taxa Stone = lucro estimado` + **recebido líquido na conta**.
+- **Gráficos** (SVG, com **tooltip** ao tocar): faturamento por dia, **rende mais por dia da
+  semana**, **pico de vendas por hora** (do CSV da Stone), **formas de pagamento** (donut) e
+  **estoque de coco no mês**. Paleta testada para daltonismo.
 
-- **Fase 1 (atual)** — fechamento diário + conciliação Stone (dados **locais**, neste aparelho).
-- **Fase 2** — **multi-celular** (Supabase) para sincronizar entre aparelhos.
-- **Fase 3** — **estoque de coco** (comprado → descascado → vendido → degustação → sobra) com
-  detecção de desperdício/perda.
+## Metas
 
-## Personalização
+Meta mensal de gelatos (padrão **1.200 · Imprensa**) com **ritmo**, **dias para fechar o mês**
+e **projeção** de fechamento.
 
-- Padrões: constantes `DEFAULT_GOAL` / `DEFAULT_UNIT` / `DEFAULT_PRICE` no `<script>`
-  (meta, unidade e preço também são editáveis em **Ajustes**).
-- Cores da marca: variáveis CSS no início do `<style>` (`--green`, etc.).
+---
+
+## Ajustes
+
+Botão **Ajustes** (card verde de Vendas): unidade/loja, **meta**, **preço do gelato** e
+**custo planejado do coco**. Login/sincronia: card de conta (sincronizando / sair).
+
+## Backend (Supabase)
+
+Tabelas: `closings` (fechamentos), `stock` (estoque por produto) e `app_settings` (1 linha).
+Segurança por **RLS + login** (a `anon key` é pública por design; só quem loga lê/escreve).
+Realtime liga a sincronia entre celulares.
+
+O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL Editor** do Supabase.
+
+## Como hospedar
+
+Site estático: qualquer host serve o `index.html`. Neste projeto, deploy automático pela
+**Vercel** a cada push. No celular, use *"Adicionar à Tela de Início"* para virar um app.
+
+## Personalização (no código)
+
+- Produtos e rendimento: `PRODUCTS` no `<script>` (coco = 2, sorvete = 25 gelatos/unidade).
+- Padrões: `DEFAULT_GOAL` / `DEFAULT_UNIT` / `DEFAULT_PRICE` / `DEFAULT_COST`.
+- Config do Supabase: `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>`.
+- Cores da marca: variáveis CSS no início do `<style>` (`--green`, cores das formas de pagamento…).
