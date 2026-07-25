@@ -231,6 +231,9 @@ main{padding-top:18px}
 .tabs button.sel{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 5px 14px rgba(52,80,58,.28)}
 .tabs button svg{width:17px;height:17px;stroke:currentColor}
 .hide{display:none!important}
+.prodtoggle{display:flex;gap:8px;margin-bottom:2px}
+.prodtoggle button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:13.5px;font-weight:750;padding:10px;border-radius:11px;cursor:pointer}
+.prodtoggle button.sel{background:var(--green-tint);border-color:var(--green);color:var(--green-700)}
 /* estoque */
 .stock-alert{display:flex;gap:11px;align-items:flex-start;border-radius:var(--r);padding:14px 16px;font-size:13.5px;font-weight:650;line-height:1.4;box-shadow:var(--shadow)}
 .stock-alert svg{width:20px;height:20px;flex:none;margin-top:1px}
@@ -248,6 +251,9 @@ main{padding-top:18px}
 .lrow .lbal.neg{color:var(--danger)}
 .lrow .lbal small{display:block;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.2px;text-transform:uppercase}
 .num2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.num3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.num3 .mlbl{font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center}
+.num3 .small-input{font-size:18px;padding:10px 6px}
 .small-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:11px 14px;font-size:20px;font-weight:800;outline:0;color:var(--ink);background:#fff;text-align:center}
 .small-input:focus{border-color:var(--green)}
 .chk-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--ink-soft);padding-bottom:9px;margin-bottom:6px;border-bottom:1px solid var(--line)}
@@ -414,20 +420,22 @@ main{padding-top:18px}
 
  <div id="viewEstoque" class="hide">
 
+  <div class="prodtoggle" id="prodToggle"></div>
+
   <!-- ALERTA -->
-  <div class="section-title">Estoque de coco <span class="st-side">1 coco = 2 gelatos</span></div>
+  <div class="section-title">Estoque <span class="st-side" id="stockHint">1 coco = 2 gelatos</span></div>
   <div id="stockAlert"></div>
 
   <!-- ESTOQUE ATUAL (hero) -->
   <div class="card meta" style="margin-top:12px">
     <div class="meta-top">
       <div>
-        <div class="meta-lab">Cocos em estoque</div>
-        <div class="meta-unit" id="stockUnit">Depósito</div>
+        <div class="meta-lab" id="stockLab">Coco em estoque</div>
+        <div class="meta-unit">Depósito</div>
       </div>
       <span class="chip" id="stockChip" style="background:rgba(255,255,255,.16);color:#fff">—</span>
     </div>
-    <div class="meta-nums"><span class="big" id="stockNow">0</span><span class="of">cocos</span></div>
+    <div class="meta-nums"><span class="big" id="stockNow">0</span><span class="of" id="stockNowUnit">cocos</span></div>
     <div class="meta-sub" id="stockSub">Registre as compras para acompanhar o estoque</div>
     <div class="meta-proj" id="stockAuto"></div>
   </div>
@@ -437,11 +445,11 @@ main{padding-top:18px}
   <!-- MÉTRICAS DO MÊS -->
   <div class="section-title">Movimento do mês</div>
   <div class="prod-grid">
-    <div class="card prod"><div class="ic coco">🥥</div><div><div class="pv" id="mComprados">0</div><div class="pl">Comprados</div></div></div>
+    <div class="card prod"><div class="ic coco">📦</div><div><div class="pv" id="mComprados">0</div><div class="pl">Comprados</div></div></div>
     <div class="card prod"><div class="ic gel">🍨</div><div><div class="pv" id="mConsumidos">0</div><div class="pl">Consumidos (vendas)</div></div></div>
   </div>
   <div class="prod-grid" style="margin-top:12px">
-    <div class="card prod"><div class="ic coco" style="background:#EDE7F3">🎁</div><div><div class="pv" id="mDeg">0</div><div class="pl">Degustação</div></div></div>
+    <div class="card prod"><div class="ic coco" style="background:#EDE7F3">🎁</div><div><div class="pv" id="mDeg">0</div><div class="pl" id="mDegLab">Degustação</div></div></div>
     <div class="card prod"><div class="ic coco" style="background:#F6E3DE">🗑️</div><div><div class="pv" id="mPerda">0</div><div class="pl">Perda / quebra</div></div></div>
   </div>
 
@@ -449,7 +457,7 @@ main{padding-top:18px}
   <div class="section-title">Estoque por dia <span class="st-side" id="stockDays"></span></div>
   <div class="card ledger" id="ledger"></div>
 
-  <div class="foot"><div>Consumo estimado por vendas · 1 coco rende 2 gelatos</div></div>
+  <div class="foot"><div>Consumo estimado pelas vendas de gelato</div></div>
 
  </div><!-- /viewEstoque -->
 
@@ -576,21 +584,23 @@ main{padding-top:18px}
 <!-- SHEET: registrar cocos -->
 <div class="sheet" id="stockSheet" role="dialog" aria-modal="true">
   <div class="grip"></div>
-  <h2 id="stockTitle">Registrar cocos</h2>
-  <p class="h2sub">Compras e baixas de coco do dia.</p>
+  <h2 id="stockTitle">Registrar estoque</h2>
+  <p class="h2sub">Compras e baixas do dia (na unidade do produto).</p>
+  <div class="field"><label>Produto</label><div class="methods" id="kProdPick"></div></div>
   <div class="field"><label>Dia</label><input id="kDate" class="date-input" type="date"></div>
-  <div class="field"><label>Cocos comprados no dia</label><input id="kBuy" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></div>
-  <div class="field"><label>Custo por coco <span class="hintlink" style="color:var(--ink-faint);cursor:default">o que pagou hoje</span></label>
-    <div class="money"><span class="cur">R$</span><input id="kCost" type="text" inputmode="decimal" placeholder="1,50"></div>
+  <div class="field"><label id="kBuyLab">Comprados no dia</label><input id="kBuy" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+  <div class="field"><label id="kCostLab">Custo por unidade <span class="hintlink" style="color:var(--ink-faint);cursor:default">o que pagou hoje</span></label>
+    <div class="money"><span class="cur">R$</span><input id="kCost" type="text" inputmode="decimal" placeholder="0,00"></div>
   </div>
-  <div class="field"><label>Baixas do dia (opcional)</label>
-    <div class="num2">
-      <div><div style="font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center">🎁 Degustação</div><input id="kDeg" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
-      <div><div style="font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center">🗑️ Perda</div><input id="kPerda" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
+  <div class="field"><label>Baixas do dia — opcional <span class="hintlink" id="kUnitHint" style="color:var(--ink-faint);cursor:default">em cocos</span></label>
+    <div class="num3">
+      <div><div class="mlbl">🎁 Degust.</div><input id="kDeg" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
+      <div><div class="mlbl">🎓 Treino</div><input id="kTreino" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
+      <div><div class="mlbl">🗑️ Perda</div><input id="kPerda" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
     </div>
   </div>
   <div class="field"><label>📸 Contagem física — opcional</label>
-    <input id="kCount" class="big-input" type="text" inputmode="numeric" placeholder="cocos contados no depósito">
+    <input id="kCount" class="big-input" type="text" inputmode="numeric" placeholder="quanto tem no depósito">
   </div>
   <div class="consume-note" id="kNote"></div>
   <button class="btn-primary" id="saveStock" disabled>Salvar</button>
@@ -632,8 +642,15 @@ const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
-const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos
+const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
+/* Produtos do estoque — rendimento = gelatos por unidade */
+const PRODUCTS={
+  coco:   {name:'Coco',    unit:'cocos',  unit1:'coco',  yield:2,  emoji:'🥥'},
+  sorvete:{name:'Sorvete', unit:'caixas', unit1:'caixa', yield:25, emoji:'🍦'}   // caixa 10L rende 25 gelatos
+};
+const PRODUCT_ORDER=['coco','sorvete'];
+function prodYield(p){ return PRODUCTS[p]?PRODUCTS[p].yield:GEL_PER_COCO; }
 
 const METHODS={
   pix:{label:'Pix',color:'var(--pix)',icon:'<path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/>'},
@@ -662,13 +679,13 @@ const Cloud={
     db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),note:r.note||''}));
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
-    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
+    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     Store.save(db);
   },
   async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
-  async pushStock(s){ if(!this.on)return; const pl={date:s.date,comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''}; if(s.contagem!=null && s.contagem!=='') pl.contagem=+s.contagem; else pl.contagem=null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
-  async delStock(date){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date);}catch(e){} },
+  async pushStock(s){ if(!this.on)return; const pl={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''}; pl.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date,product'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,goals:db.goals});}catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -708,9 +725,11 @@ if(db.settings.custoPlan==null) db.settings.custoPlan=DEFAULT_COST;
 if(!db.goals) db.goals={};
 if(!db.closings) db.closings=[];
 if(!db.stock) db.stock=[];
+db.stock.forEach(s=>{ if(!s.product) s.product='coco'; if(s.treinamento==null) s.treinamento=0; });
 
 let viewMonth=ym(new Date());
 let editingId=null;
+let stockProduct='coco';   // produto ativo na aba Estoque
 
 /* ---------- helpers ---------- */
 function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
@@ -745,90 +764,102 @@ function reconcile(c){
   return {stone,dinheiro,expected,valueDiff,issues,ok:issues.length===0};
 }
 
-/* ---------- estoque de coco ---------- */
-function stockOf(key){ return db.stock.filter(s=> s.date.slice(0,7)===key); }
-function consumedCocos(date){ const c=db.closings.find(x=>x.date===date); return c?(c.gelatos||0)/GEL_PER_COCO:0; }
-/* Saldo tipo "livro-caixa": soma compras, tira consumo(vendas)/degustação/perda.
-   Quando há CONTAGEM FÍSICA num dia, calcula a quebra (teórico − contado) e
-   ANCORA o saldo no valor contado (a contagem vira a verdade dali pra frente). */
-function computeBalances(){
-  const dates=new Set(); db.stock.forEach(s=>dates.add(s.date)); db.closings.forEach(c=>dates.add(c.date));
+/* ---------- estoque (por produto) ---------- */
+function stockEntry(date, prod){ return db.stock.find(s=> s.date===date && (s.product||'coco')===prod); }
+function stockOf(key, prod){ return db.stock.filter(s=> s.date.slice(0,7)===key && (s.product||'coco')===prod); }
+function consumedUnits(date, prod){ const c=db.closings.find(x=>x.date===date); return c?(c.gelatos||0)/prodYield(prod):0; }
+/* Saldo tipo "livro-caixa" por produto: compras − consumo(vendas)/degustação/treino/perda.
+   Com CONTAGEM FÍSICA, calcula a quebra (teórico − contado) e ANCORA o saldo no contado. */
+function computeBalances(prod){
+  prod=prod||'coco';
+  const dates=new Set(); db.stock.forEach(s=>{ if((s.product||'coco')===prod) dates.add(s.date); }); db.closings.forEach(c=>dates.add(c.date));
   const sorted=[...dates].sort();
   let bal=0; const balBy={}, counts=[];
   for(const d of sorted){
-    const s=db.stock.find(x=>x.date===d)||{};
-    bal += (s.comprados||0) - consumedCocos(d) - (s.degustacao||0) - (s.perda||0);
+    const s=stockEntry(d,prod)||{};
+    bal += (s.comprados||0) - consumedUnits(d,prod) - (s.degustacao||0) - (s.treinamento||0) - (s.perda||0);
     if(s.contagem!=null && s.contagem!==''){ const c=+s.contagem; counts.push({date:d,count:c,quebra:bal-c,teorico:bal}); bal=c; }
     balBy[d]=bal;
   }
   return {balBy, counts, current:bal};
 }
-function currentStock(){ return computeBalances().current; }
-function balanceUpTo(date){ const b=computeBalances().balBy; return b[date]!=null?b[date]:0; }
-function avgDailyConsumo(){
+function currentStock(prod){ return computeBalances(prod).current; }
+function balanceUpTo(date, prod){ const b=computeBalances(prod).balBy; return b[date]!=null?b[date]:0; }
+function avgDailyConsumo(prod){
+  prod=prod||'coco';
   const days=db.closings.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
   if(!days.length) return 0;
   const g=days.reduce((s,c)=>s+(c.gelatos||0),0);
-  return (g/GEL_PER_COCO)/days.length;
+  return (g/prodYield(prod))/days.length;
 }
+/* compat: consumo de coco por data (usado no detalhe do dia) */
+function consumedCocos(date){ return consumedUnits(date,'coco'); }
 function r1(n){ return Math.round(n*10)/10; }
 function costPlan(){ return db.settings.custoPlan>0?db.settings.custoPlan:DEFAULT_COST; }
-function lastCocoCost(){ const w=db.stock.filter(s=>s.custo>0).sort((a,b)=>b.date.localeCompare(a.date)); return w.length?w[0].custo:costPlan(); }
-function avgCocoCost(arr){
-  let q=0,c=0; (arr||db.stock).forEach(s=>{ if(s.custo>0&&s.comprados>0){ q+=s.comprados; c+=s.comprados*s.custo; } });
+function lastUnitCost(prod){ const w=db.stock.filter(s=>(s.product||'coco')===prod && s.custo>0).sort((a,b)=>b.date.localeCompare(a.date)); return w.length?w[0].custo:(prod==='coco'?costPlan():0); }
+function avgUnitCost(arr, prod){
+  let q=0,c=0; (arr||db.stock).forEach(s=>{ if((s.product||'coco')===prod && s.custo>0 && s.comprados>0){ q+=s.comprados; c+=s.comprados*s.custo; } });
   if(q>0) return c/q;
-  if(arr){ let q2=0,c2=0; db.stock.forEach(s=>{ if(s.custo>0&&s.comprados>0){ q2+=s.comprados; c2+=s.comprados*s.custo; } }); if(q2>0) return c2/q2; }
-  return costPlan();
+  let q2=0,c2=0; db.stock.forEach(s=>{ if((s.product||'coco')===prod && s.custo>0 && s.comprados>0){ q2+=s.comprados; c2+=s.comprados*s.custo; } });
+  if(q2>0) return c2/q2;
+  return prod==='coco'?costPlan():0;
 }
+/* custo do coco (compat p/ margem) */
+function avgCocoCost(arr){ return avgUnitCost(arr,'coco'); }
+function lastCocoCost(){ return lastUnitCost('coco'); }
 function renderEstoque(){
-  const key=viewMonth;
-  const B=computeBalances(); const now=B.current, avg=avgDailyConsumo(), auto=avg>0?now/avg:null;
-  document.getElementById('stockUnit').textContent='Depósito';
+  const key=viewMonth, prod=stockProduct, P=PRODUCTS[prod], U=P.unit, U1=P.unit1;
+  // toggle de produto
+  document.getElementById('prodToggle').innerHTML=PRODUCT_ORDER.map(k=>'<button class="'+(k===prod?'sel':'')+'" data-prod="'+k+'">'+PRODUCTS[k].emoji+' '+PRODUCTS[k].name+'</button>').join('');
+  document.getElementById('stockHint').textContent='1 '+U1+' = '+P.yield+' gelatos';
+  const B=computeBalances(prod); const now=B.current, avg=avgDailyConsumo(prod), auto=avg>0?now/avg:null;
+  document.getElementById('stockLab').textContent=P.name+' em estoque';
   document.getElementById('stockNow').textContent=NUM.format(Math.round(now));
+  document.getElementById('stockNowUnit').textContent=U;
   const chip=document.getElementById('stockChip'), sub=document.getElementById('stockSub'),
         autoEl=document.getElementById('stockAuto'), alertEl=document.getElementById('stockAlert');
   let alClass,alMsg;
   if(now<=0){ alClass='crit'; alMsg='<b>Estoque zerado ou negativo.</b> Confira as contagens — compra não lançada, perda ou desvio.'; chip.textContent='Crítico'; }
-  else if(auto!=null && auto<3){ alClass='warn'; alMsg='<b>Estoque baixo:</b> dá para ~'+Math.floor(auto)+' dia(s) no ritmo atual. Hora de comprar cocos.'; chip.textContent='Baixo'; }
+  else if(auto!=null && auto<3){ alClass='warn'; alMsg='<b>Estoque baixo:</b> dá para ~'+Math.floor(auto)+' dia(s) no ritmo atual. Hora de comprar '+U+'.'; chip.textContent='Baixo'; }
   else { alClass='ok'; alMsg='<b>Estoque saudável.</b>'+(auto!=null?' Dá para ~'+Math.floor(auto)+' dias no ritmo atual.':''); chip.textContent='Ok'; }
   const icon=alClass==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
   alertEl.className='stock-alert '+alClass;
   alertEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span>'+alMsg+'</span>';
   const lastCount=B.counts.length?B.counts[B.counts.length-1]:null;
-  sub.textContent=(avg>0?('Consumo médio ~'+r1(avg)+' cocos/dia'):'Registre compras e vendas para ver o consumo')
+  sub.textContent=(avg>0?('Consumo médio ~'+r1(avg)+' '+U+'/dia'):'Registre compras e vendas para ver o consumo')
                   + (lastCount?' · ancorado na contagem de '+lastCount.date.split('-').reverse().slice(0,2).join('/'):'');
   autoEl.innerHTML=auto!=null?'<span class="dias">📦 Autonomia</span><span class="proj '+(auto<3?'miss':'ok')+'"><b>~'+Math.floor(auto)+' dias</b> de estoque</span>':'';
   // conferência (contagem física × teórico)
   const chk=document.getElementById('stockCheck');
   if(lastCount){
-    const q=lastCount.quebra, cls=Math.abs(q)<1?'ok':(q>0?'crit':'warn');
-    const totQ=B.counts.reduce((s,c)=>s+c.quebra,0);
+    const q=lastCount.quebra, cls=Math.abs(q)<1?'ok':(q>0?'crit':'warn'), totQ=B.counts.reduce((s,c)=>s+c.quebra,0);
     chk.style.display='block';
-    chk.innerHTML='<div class="chk-head"><span>📸 Última contagem física</span><b>'+NUM.format(lastCount.count)+' cocos</b></div>'
+    chk.innerHTML='<div class="chk-head"><span>📸 Última contagem física</span><b>'+NUM.format(lastCount.count)+' '+U+'</b></div>'
       +'<div class="chk-row"><span>Teórico no dia</span><span>'+NUM.format(Math.round(lastCount.teorico))+'</span></div>'
-      +'<div class="chk-row quebra '+cls+'"><span>'+(q>0?'Quebra (faltou)':(q<0?'Sobra':'Bateu certinho'))+'</span><b>'+(q>0?'−':(q<0?'+':''))+NUM.format(Math.abs(Math.round(q)))+' cocos</b></div>'
-      +(B.counts.length>1?'<div class="chk-row"><span>Quebra acumulada</span><span>'+NUM.format(Math.round(totQ))+' cocos</span></div>':'');
+      +'<div class="chk-row quebra '+cls+'"><span>'+(q>0?'Quebra (faltou)':(q<0?'Sobra':'Bateu certinho'))+'</span><b>'+(q>0?'−':(q<0?'+':''))+NUM.format(Math.abs(Math.round(q)))+' '+U+'</b></div>'
+      +(B.counts.length>1?'<div class="chk-row"><span>Quebra acumulada</span><span>'+NUM.format(Math.round(totQ))+' '+U+'</span></div>':'');
   } else { chk.style.display='none'; }
   // métricas do mês
-  let comprados=0,deg=0,perda=0; stockOf(key).forEach(s=>{comprados+=s.comprados||0;deg+=s.degustacao||0;perda+=s.perda||0;});
-  let consumidos=0; closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/GEL_PER_COCO);
+  let comprados=0,deg=0,treino=0,perda=0; stockOf(key,prod).forEach(s=>{comprados+=s.comprados||0;deg+=s.degustacao||0;treino+=s.treinamento||0;perda+=s.perda||0;});
+  let consumidos=0; closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/P.yield);
   document.getElementById('mComprados').textContent=NUM.format(comprados);
   document.getElementById('mConsumidos').textContent=NUM.format(Math.round(consumidos));
-  document.getElementById('mDeg').textContent=NUM.format(deg);
+  document.getElementById('mDeg').textContent=NUM.format(deg+treino);
+  document.getElementById('mDegLab').textContent=treino?'Degust.+treino':'Degustação';
   document.getElementById('mPerda').textContent=NUM.format(perda);
   // ledger
-  const dates=new Set(); stockOf(key).forEach(s=>dates.add(s.date)); closingsOf(key).forEach(c=>dates.add(c.date));
+  const dates=new Set(); stockOf(key,prod).forEach(s=>dates.add(s.date)); closingsOf(key).forEach(c=>dates.add(c.date));
   const sorted=[...dates].sort((a,b)=>b.localeCompare(a));
   document.getElementById('stockDays').textContent=sorted.length?sorted.length+' dias':'';
   const led=document.getElementById('ledger');
-  if(!sorted.length){ led.innerHTML='<div class="empty"><div class="em">🥥</div><p>Nenhum movimento neste mês.<br>Toque em <b>+ Registrar cocos</b>.</p></div>'; }
+  if(!sorted.length){ led.innerHTML='<div class="empty"><div class="em">'+P.emoji+'</div><p>Nenhum movimento neste mês.<br>Toque em <b>+ Registrar</b>.</p></div>'; }
   else { led.innerHTML=sorted.map(d=>{
-    const s=db.stock.find(x=>x.date===d)||{}; const buy=s.comprados||0,dg=s.degustacao||0,pr=s.perda||0,cons=consumedCocos(d);
+    const s=stockEntry(d,prod)||{}; const buy=s.comprados||0,dg=s.degustacao||0,tr=s.treinamento||0,pr=s.perda||0,cons=consumedUnits(d,prod);
     const bal=B.balBy[d]; const parts=[];
-    if(buy)parts.push('+'+buy+' comprados'); if(cons)parts.push('−'+r1(cons)+' vendas'); if(dg)parts.push('−'+dg+' degust.'); if(pr)parts.push('−'+pr+' perda');
+    if(buy)parts.push('+'+buy+' comprados'); if(cons)parts.push('−'+r1(cons)+' vendas'); if(dg)parts.push('−'+dg+' degust.'); if(tr)parts.push('−'+tr+' treino'); if(pr)parts.push('−'+pr+' perda');
     const counted=(s.contagem!=null&&s.contagem!=='');
     if(counted)parts.push('📸 contou '+(+s.contagem));
-    return '<div class="lrow"><div class="ld">'+dayLabel(d)+'</div><div class="lmid">'+(parts.join(' · ')||'—')+'</div><div class="lbal '+(bal<0?'neg':'')+'">'+NUM.format(Math.round(bal))+'<small>'+(counted?'contado':'saldo')+'</small></div></div>';
+    return '<div class="lrow" data-date="'+d+'"><div class="ld">'+dayLabel(d)+'</div><div class="lmid">'+(parts.join(' · ')||'—')+'</div><div class="lbal '+(bal<0?'neg':'')+'">'+NUM.format(Math.round(bal))+'<small>'+(counted?'contado':'saldo')+'</small></div></div>';
   }).join(''); }
 }
 
@@ -908,16 +939,17 @@ function renderDados(){
   const B=computeBalances(); const qMonth=B.counts.filter(c=>c.date.slice(0,7)===key).reduce((s,c)=>s+c.quebra,0);
   const kq=document.getElementById('kQuebra'); kq.textContent=(qMonth>0.5?'−':'')+NUM.format(Math.round(Math.abs(qMonth))); kq.className='kv'+(qMonth>0.5?' neg':'');
   // custo / lucro / margem
-  const avgC=avgCocoCost(stockOf(key)), cogsPerGel=avgC/GEL_PER_COCO, cogs=gel*cogsPerGel, lucro=rev-cogs, margem=rev>0?lucro/rev*100:0;
+  const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
+  const cogsPerGel=cocoC/PRODUCTS.coco.yield + sorvC/PRODUCTS.sorvete.yield, cogs=gel*cogsPerGel, lucro=rev-cogs, margem=rev>0?lucro/rev*100:0;
   const kl=document.getElementById('kLucro'); kl.textContent=money(lucro); kl.className='kv'+(lucro<0?' neg':'');
-  document.getElementById('kMargem').textContent='margem '+Math.round(margem)+'% (só coco)';
-  const plan=costPlan(), above=avgC>plan*1.005;
+  document.getElementById('kMargem').textContent='margem '+Math.round(margem)+'% (insumos)';
+  const plan=costPlan(), above=cocoC>plan*1.005;
   document.getElementById('custoCard').innerHTML=
-    '<div class="chk-head"><span>🥥 Custo médio do coco</span><b>'+money(avgC)+'</b></div>'
-    +'<div class="chk-row"><span>Planejado</span><span>'+money(plan)+'</span></div>'
-    +'<div class="chk-row"><span>Custo por gelato (½ coco)</span><span>'+money(cogsPerGel)+'</span></div>'
-    +'<div class="chk-row"><span>Custo dos cocos vendidos</span><span>'+money(cogs)+'</span></div>'
-    +(above?'<div class="chk-row quebra warn"><span>Compra acima do planejado</span><b>+'+Math.round((avgC/plan-1)*100)+'%</b></div>':'');
+    '<div class="chk-head"><span>🍨 Custo por gelato (insumos)</span><b>'+money(cogsPerGel)+'</b></div>'
+    +'<div class="chk-row"><span>🥥 Coco (½ · '+money(cocoC)+'/coco)</span><span>'+money(cocoC/PRODUCTS.coco.yield)+'</span></div>'
+    +'<div class="chk-row"><span>🍦 Sorvete (1⁄25 · '+money(sorvC)+'/caixa)</span><span>'+money(sorvC/PRODUCTS.sorvete.yield)+'</span></div>'
+    +'<div class="chk-row"><span>Custo dos insumos vendidos</span><span>'+money(cogs)+'</span></div>'
+    +(above?'<div class="chk-row quebra warn"><span>Coco acima do planejado</span><b>+'+Math.round((cocoC/plan-1)*100)+'%</b></div>':'');
   // faturamento por dia
   document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00','')}) : emptyChart();
   // rende mais por dia da semana (todo o histórico, média por ocorrência)
@@ -1060,6 +1092,7 @@ scrim.addEventListener('click', closeSheets);
 
 /* ---------- abas Vendas | Estoque ---------- */
 let currentView='vendas';
+function updateFabLabel(){ document.getElementById('fabLabel').textContent=(currentView==='estoque')?('Registrar '+PRODUCTS[stockProduct].name.toLowerCase()):'Fechar o dia'; }
 function switchView(v){
   currentView=v;
   [['Vendas','vendas'],['Estoque','estoque'],['Dados','dados']].forEach(([n,k])=>{
@@ -1067,7 +1100,7 @@ function switchView(v){
     document.getElementById('tab'+n).classList.toggle('sel', v===k);
   });
   document.getElementById('fab').style.display = v==='dados'?'none':'flex';
-  document.getElementById('fabLabel').textContent=(v==='estoque')?'Registrar cocos':'Fechar o dia';
+  updateFabLabel();
   window.scrollTo(0,0);
 }
 document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
@@ -1147,21 +1180,26 @@ function applyStoneDay(d){
   $('importHint').innerHTML='No cartão/Pix: <b>'+cardGel+' gelatos</b> ('+money(tot)+'). Tem dinheiro? Ajuste o <b>total de gelatos</b> acima que o resto vira dinheiro.';
   showStoneChips(d.date);
   $('bulkBtn').style.display = stoneParsed.length? 'block':'none';
-  $('bulkBtn').textContent = 'Lançar os '+stoneParsed.length+' dia'+(stoneParsed.length>1?'s':'')+' do arquivo';
+  $('bulkBtn').textContent = 'Lançar/atualizar os '+stoneParsed.length+' dia'+(stoneParsed.length>1?'s':'')+' do arquivo';
   renderRecon();
 }
 /* lança de uma vez os dias do arquivo que ainda não têm fechamento */
 function bulkImportStone(){
   if(!stoneParsed.length) return;
-  let created=0, skipped=0, seed=Date.now();
+  let created=0, updated=0, seed=Date.now();
   stoneParsed.forEach((d,i)=>{
-    if(db.closings.find(x=>x.date===d.date)){ skipped++; return; }
-    const tot=d.pix+d.debito+d.credito, gel=Math.round(price()>0?tot/price():0);
-    const c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, stoneTx:d.tx, hours:d.hours||null, note:'', createdAt:new Date().toISOString() };
-    db.closings.push(c); created++; Cloud.pushClosing(c);
+    const tot=d.pix+d.debito+d.credito;
+    let c=db.closings.find(x=>x.date===d.date);
+    if(c){ // atualiza Stone + fluxo por hora, mantém gelatos/faturamento/contagem
+      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; if(d.hours) c.hours=d.hours; updated++; Cloud.pushClosing(c);
+    } else {
+      const gel=Math.round(price()>0?tot/price():0);
+      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, stoneTx:d.tx, hours:d.hours||null, note:'', createdAt:new Date().toISOString() };
+      db.closings.push(c); created++; Cloud.pushClosing(c);
+    }
   });
   Store.save(db); closeSheets(); render();
-  toast(created+' dia(s) lançado(s)'+(skipped?' · '+skipped+' já existiam':'')+' — revise os que tiveram dinheiro');
+  toast(created+' criado(s) · '+updated+' atualizado(s)'+(created?' — revise os que tiveram dinheiro':''));
 }
 $('bulkBtn').addEventListener('click', bulkImportStone);
 $('importBtn').addEventListener('click', ()=> $('csvFile').click());
@@ -1243,7 +1281,7 @@ $('salesList').addEventListener('click', e=>{
 /* ---- detalhe do dia ---- */
 let ddClosing=null;
 function openDayDetail(c){
-  ddClosing=c; const r=reconcile(c); const cons=consumedCocos(c.date);
+  ddClosing=c; const r=reconcile(c); const consCoco=consumedUnits(c.date,'coco'), consSorv=consumedUnits(c.date,'sorvete');
   const [Y,M,D]=c.date.split('-');
   $('ddTitle').textContent=dayLabel(c.date)+' · '+D+'/'+M;
   $('ddSub').textContent=(c.gelatos||0)+' gelatos · '+money(c.revenue||0);
@@ -1254,72 +1292,88 @@ function openDayDetail(c){
     +'<div class="dd-sec"><h3>Formas de pagamento</h3>'
       +row('var(--pix)','Pix',money(c.pix||0))+row('var(--debito)','Débito',money(c.debito||0))
       +row('var(--credito)','Crédito',money(c.credito||0))+row('var(--dinheiro)','Dinheiro',money(r.dinheiro))+'</div>'
-    +'<div class="dd-sec"><h3>Gelatos & coco</h3>'
+    +'<div class="dd-sec"><h3>Gelatos & insumos</h3>'
       +row('','🍨 Cartão/Pix',cardGel+' gelatos')+row('','💵 Dinheiro',cashGel+' gelatos')
-      +row('','🥥 Coco consumido','~'+r1(cons)+' cocos')+'</div>'
+      +row('','🥥 Coco','~'+r1(consCoco)+' cocos')+row('','🍦 Sorvete','~'+r1(consSorv)+' caixas')+'</div>'
     +(r.issues.length?'<div class="recon-alert"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>'+r.issues.join(' ')+'</span></div>':'');
   openSheet(dayDetail);
 }
 $('ddEdit').addEventListener('click', ()=>{ const c=ddClosing; closeSheets(); if(c) setTimeout(()=>openClose(c),140); });
 
-/* ---- registrar cocos (estoque) ---- */
-let editingStock=null;
-function kDraft(){ const cv=$('kCount').value.trim(); return { date:$('kDate').value||todayISO(), comprados:parseInt2($('kBuy').value), custo:parseMoney($('kCost').value), degustacao:parseInt2($('kDeg').value), perda:parseInt2($('kPerda').value), contagem: cv===''?null:parseInt2(cv) }; }
-/* teórico até a data (honra contagens anteriores como âncora; usa o rascunho no dia atual) */
-function theoreticalAt(date, draft){
-  const dates=new Set(); db.stock.forEach(s=>dates.add(s.date)); db.closings.forEach(c=>dates.add(c.date)); dates.add(date);
+/* ---- registrar estoque (por produto) ---- */
+let editingStock=null, stockDraftProduct='coco';
+function kDraft(){ const cv=$('kCount').value.trim(); return { date:$('kDate').value||todayISO(), product:stockDraftProduct, comprados:parseInt2($('kBuy').value), custo:parseMoney($('kCost').value), degustacao:parseInt2($('kDeg').value), treinamento:parseInt2($('kTreino').value), perda:parseInt2($('kPerda').value), contagem: cv===''?null:parseInt2(cv) }; }
+/* teórico até a data (por produto; honra contagens anteriores como âncora) */
+function theoreticalAt(date, draft, prod){
+  prod=prod||'coco';
+  const dates=new Set(); db.stock.forEach(s=>{ if((s.product||'coco')===prod) dates.add(s.date); }); db.closings.forEach(c=>dates.add(c.date)); dates.add(date);
   const sorted=[...dates].sort(); let bal=0;
   for(const d of sorted){ if(d>date) break;
-    const s=db.stock.find(x=>x.date===d)||{};
-    let buy=s.comprados||0,dg=s.degustacao||0,pr=s.perda||0;
-    if(d===date && draft){ buy=draft.comprados; dg=draft.degustacao; pr=draft.perda; }
-    bal += buy - consumedCocos(d) - dg - pr;
+    const s=stockEntry(d,prod)||{};
+    let buy=s.comprados||0,dg=s.degustacao||0,tr=s.treinamento||0,pr=s.perda||0;
+    if(d===date && draft){ buy=draft.comprados; dg=draft.degustacao; tr=draft.treinamento; pr=draft.perda; }
+    bal += buy - consumedUnits(d,prod) - dg - tr - pr;
     if(d<date && s.contagem!=null && s.contagem!=='') bal=+s.contagem;
   }
   return bal;
 }
+function renderKProd(){
+  $('kProdPick').innerHTML=PRODUCT_ORDER.map(k=>'<div class="method '+(k===stockDraftProduct?'sel':'')+'" data-kprod="'+k+'"><span>'+PRODUCTS[k].emoji+' '+PRODUCTS[k].name+'</span></div>').join('');
+  const P=PRODUCTS[stockDraftProduct];
+  $('kBuyLab').textContent='Comprados hoje — '+P.unit;
+  $('kCostLab').innerHTML='Custo por '+P.unit1+' <span class="hintlink" style="color:var(--ink-faint);cursor:default">o que pagou hoje</span>';
+  $('kUnitHint').textContent='em '+P.unit;
+}
 function renderKNote(){
-  const d=kDraft(); const c=db.closings.find(x=>x.date===d.date); const cons=consumedCocos(d.date);
-  let msg = c ? ('Vendas do dia: <b>'+(c.gelatos||0)+' gelatos</b> → consumo <b>'+r1(cons)+' cocos</b>. ')
+  const d=kDraft(), prod=d.product, U=PRODUCTS[prod].unit;
+  const c=db.closings.find(x=>x.date===d.date); const cons=consumedUnits(d.date,prod);
+  let msg = c ? ('Vendas do dia: <b>'+(c.gelatos||0)+' gelatos</b> → consumo <b>'+r1(cons)+' '+U+'</b>. ')
               : 'Sem fechamento de vendas nesse dia ainda. ';
-  const net=d.comprados-cons-d.degustacao-d.perda;
-  msg+='Saldo do dia: <b>'+(net>=0?'+':'')+r1(net)+' cocos</b>.';
+  const net=d.comprados-cons-d.degustacao-d.treinamento-d.perda;
+  msg+='Saldo do dia: <b>'+(net>=0?'+':'')+r1(net)+' '+U+'</b>.';
   if(d.comprados>0 && d.custo>0){ msg+='<br>💵 Compra: '+d.comprados+' × '+money(d.custo)+' = <b>'+money(d.comprados*d.custo)+'</b>';
-    if(d.custo>costPlan()*1.005){ msg+=' — <b>'+Math.round((d.custo/costPlan()-1)*100)+'% acima do planejado</b> ('+money(costPlan())+')'; } }
-  if(d.contagem!=null){ const teo=theoreticalAt(d.date,d), q=teo-d.contagem;
-    msg+='<br>📸 Contagem <b>'+d.contagem+'</b> × teórico <b>'+r1(teo)+'</b> → '+(Math.abs(q)<1?'<b>bateu ✓</b>':(q>0?'quebra de <b>'+r1(q)+' cocos</b>':'sobra de <b>'+r1(-q)+' cocos</b>'));
+    if(prod==='coco' && d.custo>costPlan()*1.005){ msg+=' — <b>'+Math.round((d.custo/costPlan()-1)*100)+'% acima do planejado</b>'; } }
+  if(d.contagem!=null){ const teo=theoreticalAt(d.date,d,prod), q=teo-d.contagem;
+    msg+='<br>📸 Contagem <b>'+d.contagem+'</b> × teórico <b>'+r1(teo)+'</b> → '+(Math.abs(q)<1?'<b>bateu ✓</b>':(q>0?'quebra de <b>'+r1(q)+' '+U+'</b>':'sobra de <b>'+r1(-q)+' '+U+'</b>'));
   }
   $('kNote').innerHTML=msg;
-  $('saveStock').disabled=!(d.comprados>0 || d.degustacao>0 || d.perda>0 || d.contagem!=null);
+  $('saveStock').disabled=!(d.comprados>0||d.degustacao>0||d.treinamento>0||d.perda>0||d.contagem!=null);
 }
-['kDate','kBuy','kDeg','kPerda','kCount'].forEach(id=>$(id).addEventListener('input', renderKNote));
+['kDate','kBuy','kCost','kDeg','kTreino','kPerda','kCount'].forEach(id=>$(id).addEventListener('input', renderKNote));
+$('kProdPick').addEventListener('click', e=>{ const b=e.target.closest('[data-kprod]'); if(!b) return; stockDraftProduct=b.dataset.kprod; renderKProd();
+  if(!editingStock){ const lc=lastUnitCost(stockDraftProduct); $('kCost').value=lc>0?String(lc).replace('.',','):''; } renderKNote(); });
 function openStock(existing){
-  editingStock=null;
-  if(existing){ editingStock=existing.id||existing.date; $('stockTitle').textContent='Editar registro';
-    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kCost').value=(existing.custo>0?String(existing.custo).replace('.',','):''); $('kDeg').value=existing.degustacao||''; $('kPerda').value=existing.perda||''; $('kCount').value=(existing.contagem!=null?existing.contagem:''); $('deleteStock').style.display='block';
-  } else { $('stockTitle').textContent='Registrar cocos'; $('kDate').value=todayISO(); ['kBuy','kDeg','kPerda','kCount'].forEach(id=>$(id).value=''); $('kCost').value=String(lastCocoCost()).replace('.',','); $('deleteStock').style.display='none'; }
+  editingStock=null; stockDraftProduct = existing ? (existing.product||'coco') : stockProduct;
+  renderKProd();
+  if(existing){ editingStock=existing.id; $('stockTitle').textContent='Editar registro';
+    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kCost').value=(existing.custo>0?String(existing.custo).replace('.',','):''); $('kDeg').value=existing.degustacao||''; $('kTreino').value=existing.treinamento||''; $('kPerda').value=existing.perda||''; $('kCount').value=(existing.contagem!=null?existing.contagem:''); $('deleteStock').style.display='block';
+  } else { $('stockTitle').textContent='Registrar estoque'; $('kDate').value=todayISO(); ['kBuy','kDeg','kTreino','kPerda','kCount'].forEach(id=>$(id).value=''); const lc=lastUnitCost(stockDraftProduct); $('kCost').value=lc>0?String(lc).replace('.',','):''; $('deleteStock').style.display='none'; }
   renderKNote(); openSheet(stockSheet);
 }
 $('saveStock').addEventListener('click', ()=>{
-  const d=kDraft(); if(!(d.comprados>0||d.degustacao>0||d.perda>0||d.contagem!=null)) return;
-  let target=null, oldDate=null;
-  if(editingStock){ target=db.stock.find(s=>(s.id||s.date)===editingStock); if(target) oldDate=target.date; }
-  const same=db.stock.find(s=>s.date===d.date && s!==target);
-  if(same && !editingStock){ target=same; oldDate=same.date; }
+  const d=kDraft(); if(!(d.comprados>0||d.degustacao>0||d.treinamento>0||d.perda>0||d.contagem!=null)) return;
+  let target=null, oldKey=null;
+  if(editingStock){ target=db.stock.find(s=>s.id===editingStock); if(target) oldKey={date:target.date,product:target.product||'coco'}; }
+  const same=db.stock.find(s=>s.date===d.date && (s.product||'coco')===d.product && s!==target);
+  if(same && !editingStock){ target=same; oldKey={date:same.date,product:same.product||'coco'}; }
   let saved;
   if(target){ Object.assign(target,d); saved=target; }
   else { saved={ id:'k'+Date.now()+Math.floor(Math.random()*1000), ...d, note:'', createdAt:new Date().toISOString() }; db.stock.push(saved); }
-  Store.save(db); closeSheets(); viewMonth=d.date.slice(0,7); switchView('estoque'); render();
-  if(oldDate && oldDate!==saved.date) Cloud.delStock(oldDate);
+  Store.save(db); closeSheets(); viewMonth=d.date.slice(0,7); stockProduct=d.product; switchView('estoque'); render();
+  if(oldKey && (oldKey.date!==saved.date || oldKey.product!==saved.product)) Cloud.delStock(oldKey.date, oldKey.product);
   Cloud.pushStock(saved);
-  toast('Estoque atualizado 🥥');
+  toast(PRODUCTS[d.product].name+' atualizado '+PRODUCTS[d.product].emoji);
 });
 $('deleteStock').addEventListener('click', ()=>{
   if(!editingStock) return;
-  const s=db.stock.find(x=>(x.id||x.date)===editingStock); const dt=s&&s.date;
-  db.stock=db.stock.filter(x=>(x.id||x.date)!==editingStock);
-  Store.save(db); closeSheets(); render(); if(dt) Cloud.delStock(dt); toast('Registro excluído');
+  const s=db.stock.find(x=>x.id===editingStock); const k=s?{date:s.date,product:s.product||'coco'}:null;
+  db.stock=db.stock.filter(x=>x.id!==editingStock);
+  Store.save(db); closeSheets(); render(); if(k) Cloud.delStock(k.date,k.product); toast('Registro excluído');
 });
+/* editar registro pelo histórico do estoque */
+$('ledger').addEventListener('click', e=>{ const row=e.target.closest('.lrow'); if(!row) return; const s=stockEntry(row.getAttribute('data-date'),stockProduct); if(s) openStock(s); });
+/* alternar produto no estoque */
+$('prodToggle').addEventListener('click', e=>{ const b=e.target.closest('[data-prod]'); if(!b) return; stockProduct=b.dataset.prod; render(); updateFabLabel(); });
 
 /* ---- ajustes ---- */
 $('editGoal').addEventListener('click', ()=>{
