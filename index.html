@@ -56,18 +56,16 @@ body{
 /* ---------- Header ---------- */
 header{
   position:sticky;top:0;z-index:20;
-  background:rgba(245,243,238,.86);
-  backdrop-filter:saturate(1.4) blur(12px);
-  -webkit-backdrop-filter:saturate(1.4) blur(12px);
-  border-bottom:1px solid var(--line);
+  background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 78%,var(--green-900) 100%);
+  box-shadow:0 4px 18px rgba(52,80,58,.22);
   padding-top:env(safe-area-inset-top);
 }
-.head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;max-width:520px;margin:0 auto}
-.brand img{height:26px;display:block}
-.month-nav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
-.month-nav button{border:0;background:transparent;width:34px;height:32px;border-radius:999px;font-size:18px;color:var(--green);cursor:pointer;display:grid;place-items:center}
-.month-nav button:active{background:var(--green-tint)}
-.month-nav .label{font-size:13px;font-weight:650;color:var(--ink);min-width:104px;text-align:center;text-transform:capitalize;letter-spacing:.2px}
+.head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 15px;max-width:520px;margin:0 auto}
+.brand img{height:30px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}
+.month-nav{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.20);border-radius:999px;padding:3px}
+.month-nav button{border:0;background:transparent;width:34px;height:32px;border-radius:999px;font-size:18px;color:#fff;cursor:pointer;display:grid;place-items:center;opacity:.9}
+.month-nav button:active{background:rgba(255,255,255,.18)}
+.month-nav .label{font-size:13px;font-weight:700;color:#fff;min-width:104px;text-align:center;text-transform:capitalize;letter-spacing:.2px}
 
 /* ---------- Sections ---------- */
 main{padding-top:18px}
@@ -233,7 +231,7 @@ main{padding-top:18px}
 
 <header>
   <div class="head-inner">
-    <div class="brand"><img src="logo-coquin.png" alt="Coquin"></div>
+    <div class="brand"><img src="logo-coquin-white.png" alt="Coquin"></div>
     <div class="month-nav">
       <button id="prevMonth" aria-label="Mês anterior">‹</button>
       <span class="label" id="monthLabel">—</span>
