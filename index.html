@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#446349">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coquin Vendas">
+<title>Coquin · Controle de Vendas</title>
+<style>
+/* ============================================================
+   COQUIN — Controle de Vendas
+   Marca: verde #446349 · visual clean & sofisticado
+   App 100% offline · dados salvos no próprio aparelho
+   ============================================================ */
+:root{
+  --green:#446349;
+  --green-700:#35503A;
+  --green-900:#26381F;
+  --green-tint:#E9EFE9;
+  --green-tint-2:#DDE7DD;
+  --gold:#C79A3E;
+  --gold-soft:#F3E9CF;
+
+  --pix:#0E9C8E;
+  --dinheiro:#4F8A57;
+  --debito:#3B77B4;
+  --credito:#7C5CB0;
+
+  --bg:#F5F3EE;
+  --surface:#FFFFFF;
+  --ink:#26302A;
+  --ink-soft:#5E6B60;
+  --ink-faint:#95A096;
+  --line:#E7E4DC;
+  --danger:#C0483F;
+
+  --shadow:0 1px 2px rgba(38,48,42,.05), 0 8px 24px rgba(38,48,42,.06);
+  --shadow-lg:0 8px 40px rgba(38,48,42,.16);
+  --r:20px;
+  --r-sm:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.45;
+  padding-bottom:calc(120px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky;top:0;z-index:20;
+  background:rgba(245,243,238,.86);
+  backdrop-filter:saturate(1.4) blur(12px);
+  -webkit-backdrop-filter:saturate(1.4) blur(12px);
+  border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top);
+}
+.head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;max-width:520px;margin:0 auto}
+.brand img{height:26px;display:block}
+.month-nav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
+.month-nav button{border:0;background:transparent;width:34px;height:32px;border-radius:999px;font-size:18px;color:var(--green);cursor:pointer;display:grid;place-items:center}
+.month-nav button:active{background:var(--green-tint)}
+.month-nav .label{font-size:13px;font-weight:650;color:var(--ink);min-width:104px;text-align:center;text-transform:capitalize;letter-spacing:.2px}
+
+/* ---------- Sections ---------- */
+main{padding-top:18px}
+.section-title{font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-faint);margin:26px 4px 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* ---------- Meta (hero) ---------- */
+.meta{
+  padding:20px;color:#fff;border:0;overflow:hidden;position:relative;
+  background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 62%,var(--green-900) 100%);
+  box-shadow:0 10px 30px rgba(52,80,58,.30);
+}
+.meta::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06)}
+.meta-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:relative}
+.meta-lab{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.85}
+.meta-unit{font-size:12.5px;opacity:.8;margin-top:2px}
+.meta-edit{background:rgba(255,255,255,.14);border:0;color:#fff;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.meta-edit:active{background:rgba(255,255,255,.26)}
+.meta-nums{display:flex;align-items:baseline;gap:8px;margin:14px 0 3px;position:relative}
+.meta-nums .big{font-size:46px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.meta-nums .of{font-size:16px;opacity:.82;font-weight:600}
+.meta-sub{font-size:13.5px;opacity:.9;position:relative}
+.bar{height:11px;border-radius:999px;background:rgba(255,255,255,.20);margin:16px 0 12px;overflow:hidden;position:relative}
+.bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#EAD9A6,#C79A3E);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.bar .pace-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:rgba(255,255,255,.75);border-radius:2px}
+.meta-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;position:relative}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:999px}
+.chip.ahead{background:#DFF3E4;color:#1E6B34}
+.chip.ontrack{background:var(--gold-soft);color:#8A6A1E}
+.chip.behind{background:#F7DFD6;color:#A6432E}
+.chip.done{background:#E9F6EC;color:#1E6B34}
+.meta-pace{font-size:12px;opacity:.85;text-align:right}
+.meta-proj{display:flex;justify-content:space-between;align-items:center;gap:10px;position:relative;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.16);font-size:12.5px}
+.meta-proj .dias{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.meta-proj .proj{text-align:right;opacity:.92}
+.meta-proj .proj b{font-weight:800}
+.meta-proj .proj.ok b{color:#EAD9A6}
+.meta-proj .proj.miss b{color:#F4C9B6}
+.meta-proj:empty{display:none}
+
+/* ---------- Faturamento ---------- */
+.total{padding:20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.total .lab{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.total .val{font-size:34px;font-weight:800;letter-spacing:-1px;color:var(--green-700);margin-top:2px}
+.total .n{font-size:12.5px;color:var(--ink-faint);margin-top:3px}
+.total .coin{width:52px;height:52px;border-radius:16px;background:var(--green-tint);display:grid;place-items:center;flex:none}
+.total .coin svg{width:26px;height:26px}
+
+/* ---------- Payment grid ---------- */
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pay{padding:15px 15px 14px;position:relative;overflow:hidden}
+.pay .dot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:11px}
+.pay .dot svg{width:19px;height:19px;stroke:#fff}
+.pay .pname{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.pay .pval{font-size:20px;font-weight:750;letter-spacing:-.4px;margin-top:2px}
+.pay .ppct{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+.pay .prail{height:4px;border-radius:999px;background:var(--line);margin-top:10px;overflow:hidden}
+.pay .prail > i{display:block;height:100%;border-radius:999px;transition:width .5s}
+
+/* ---------- Produtos ---------- */
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prod{padding:16px;display:flex;align-items:center;gap:13px}
+.prod .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;flex:none}
+.prod .ic.coco{background:#F0E7D8}
+.prod .ic.gel{background:var(--green-tint)}
+.prod .pv{font-size:26px;font-weight:800;letter-spacing:-.6px;line-height:1}
+.prod .pl{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-weight:600}
+
+/* ---------- Vendas list ---------- */
+.sales{overflow:hidden}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;background:var(--green-tint);border-bottom:1px solid var(--line)}
+.dayhead .dl{font-size:12.5px;font-weight:800;color:var(--green-700);text-transform:capitalize;letter-spacing:.2px}
+.dayhead .dr{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink-soft);font-weight:600}
+.dayhead .dr b{color:var(--green-700);font-weight:800}
+.dayhead .badge{display:inline-flex;align-items:center;gap:3px}
+.sale{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.sale:last-child{border-bottom:0}
+.sale .m{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none}
+.sale .m svg{width:18px;height:18px;stroke:#fff}
+.sale .info{flex:1;min-width:0}
+.sale .info .r1{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.sale .info .r2{font-size:12px;color:var(--ink-faint);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sale .del{border:0;background:transparent;color:var(--ink-faint);width:34px;height:34px;border-radius:10px;cursor:pointer;display:grid;place-items:center;flex:none}
+.sale .del:active{background:#F7E9E7;color:var(--danger)}
+.sale .del svg{width:17px;height:17px}
+.empty{padding:40px 24px;text-align:center;color:var(--ink-faint)}
+.empty .em{font-size:34px;margin-bottom:8px}
+.empty p{margin:0;font-size:14px}
+
+/* ---------- FAB ---------- */
+.fab{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;
+  background:var(--green);color:#fff;border:0;border-radius:999px;
+  padding:15px 26px;font-size:16px;font-weight:700;letter-spacing:.2px;
+  box-shadow:0 10px 26px rgba(52,80,58,.42);cursor:pointer;
+  display:flex;align-items:center;gap:9px;
+}
+.fab:active{transform:translateX(-50%) scale(.97)}
+.fab svg{width:20px;height:20px;stroke:#fff}
+
+/* ---------- Sheet / Modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(30,38,32,.42);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:41;
+  background:var(--surface);border-radius:26px 26px 0 0;
+  padding:8px 20px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.85,.25,1);
+  max-width:520px;margin:0 auto;box-shadow:var(--shadow-lg);max-height:92vh;overflow-y:auto;
+}
+.sheet.on{transform:translateY(0)}
+.grip{width:42px;height:5px;border-radius:999px;background:var(--line);margin:10px auto 14px}
+.sheet h2{font-size:19px;font-weight:800;margin:0 0 18px;letter-spacing:-.3px}
+.field{margin-bottom:18px}
+.field > label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.money{display:flex;align-items:center;border:2px solid var(--line);border-radius:var(--r-sm);padding:0 16px;transition:border-color .15s;background:#fff}
+.money:focus-within{border-color:var(--green)}
+.money .cur{font-size:22px;font-weight:700;color:var(--ink-soft);margin-right:6px}
+.money input{border:0;outline:0;font-size:30px;font-weight:800;padding:14px 0;width:100%;color:var(--ink);letter-spacing:-.5px;background:transparent}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.method{border:2px solid var(--line);border-radius:var(--r-sm);padding:13px;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;transition:.15s;user-select:none}
+.method .mi{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
+.method .mi svg{width:17px;height:17px;stroke:#fff}
+.method span{font-size:14.5px;font-weight:700}
+.method.sel{border-color:var(--green);background:var(--green-tint)}
+.steppers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stepper{border:2px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center;background:#fff}
+.stepper .sl{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;gap:5px}
+.stepper .sc{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
+.stepper .sc button{width:38px;height:38px;border-radius:11px;border:0;background:var(--green-tint);color:var(--green-700);font-size:22px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1}
+.stepper .sc button:active{background:var(--green-tint-2)}
+.stepper .sc .qty{font-size:24px;font-weight:800;min-width:40px}
+.qtybig{display:flex;align-items:center;justify-content:space-between;gap:14px;border:2px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;background:#fff}
+.qtybig .qb{width:56px;height:56px;border-radius:16px;border:0;background:var(--green-tint);color:var(--green-700);font-size:30px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1;flex:none}
+.qtybig .qb:active{background:var(--green-tint-2)}
+.qtymid{text-align:center;flex:1}
+.qtymid .qn{font-size:44px;font-weight:800;line-height:1;letter-spacing:-1px;color:var(--ink)}
+.qtymid .qtot{font-size:15px;font-weight:800;color:var(--green-700);margin-top:4px}
+.qhint{font-size:12px;color:var(--ink-faint);text-align:center;margin-top:9px}
+.qchips{display:flex;gap:8px;margin-top:12px}
+.qchips button{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 0;font-size:15px;font-weight:750;color:var(--ink-soft);cursor:pointer}
+.qchips button:active{background:var(--green-tint);border-color:var(--green);color:var(--green-700)}
+.btn-primary{width:100%;border:0;background:var(--green);color:#fff;font-size:16.5px;font-weight:750;padding:16px;border-radius:var(--r-sm);cursor:pointer;letter-spacing:.2px;box-shadow:0 6px 18px rgba(52,80,58,.28)}
+.btn-primary:active{background:var(--green-700)}
+.btn-primary:disabled{opacity:.45;box-shadow:none}
+.goal-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;font-size:24px;font-weight:800;text-align:center;outline:0;color:var(--ink)}
+.goal-input:focus{border-color:var(--green)}
+.txt-input{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);padding:13px 16px;font-size:16px;font-weight:600;outline:0;color:var(--ink)}
+.txt-input:focus{border-color:var(--green)}
+
+/* ---------- Misc ---------- */
+.foot{ text-align:center;color:var(--ink-faint);font-size:11.5px;padding:22px 0 6px}
+.foot .share{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:650;color:var(--green-700);cursor:pointer;margin-bottom:14px}
+.foot .share:active{background:var(--green-tint)}
+.foot .share svg{width:16px;height:16px}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(96px + env(safe-area-inset-bottom));z-index:50;background:var(--green-900);color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast b{color:#EAD9A6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><img src="logo-coquin.png" alt="Coquin"></div>
+    <div class="month-nav">
+      <button id="prevMonth" aria-label="Mês anterior">‹</button>
+      <span class="label" id="monthLabel">—</span>
+      <button id="nextMonth" aria-label="Próximo mês">›</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- META -->
+  <div class="section-title">Meta do mês</div>
+  <div class="card meta">
+    <div class="meta-top">
+      <div>
+        <div class="meta-lab">Gelatos vendidos</div>
+        <div class="meta-unit" id="metaUnit">Imprensa</div>
+      </div>
+      <button class="meta-edit" id="editGoal">Editar meta</button>
+    </div>
+    <div class="meta-nums">
+      <span class="big" id="gelSold">0</span>
+      <span class="of">/ <span id="gelGoal">1.200</span> gelatos</span>
+    </div>
+    <div class="meta-sub" id="metaSub">Faltam 1.200 para a meta</div>
+    <div class="bar"><i id="metaBar" style="width:0%"></i><span class="pace-mark" id="paceMark" style="left:0%;display:none"></span></div>
+    <div class="meta-foot">
+      <span class="chip ontrack" id="metaChip">—</span>
+      <span class="meta-pace" id="metaPace"></span>
+    </div>
+    <div class="meta-proj" id="metaProj"></div>
+  </div>
+
+  <!-- FATURAMENTO -->
+  <div class="section-title">Faturamento</div>
+  <div class="card total">
+    <div>
+      <div class="lab">Total recebido no mês</div>
+      <div class="val" id="revTotal">R$ 0,00</div>
+      <div class="n" id="salesCount">Nenhuma venda registrada</div>
+    </div>
+    <div class="coin">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#446349" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+  </div>
+
+  <!-- FORMAS DE PAGAMENTO -->
+  <div class="section-title">Por forma de pagamento</div>
+  <div class="pay-grid" id="payGrid"></div>
+
+  <!-- GELATOS -->
+  <div class="section-title">Gelatos vendidos</div>
+  <div class="prod-grid">
+    <div class="card prod">
+      <div class="ic gel">🍨</div>
+      <div><div class="pv" id="gelCount">0</div><div class="pl">No mês</div></div>
+    </div>
+    <div class="card prod">
+      <div class="ic coco">📅</div>
+      <div><div class="pv" id="gelToday">0</div><div class="pl">Hoje</div></div>
+    </div>
+  </div>
+
+  <!-- VENDAS -->
+  <div class="section-title">Histórico por dia</div>
+  <div class="card sales" id="salesList"></div>
+
+  <div class="foot">
+    <button class="share" id="shareBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      Compartilhar resumo do mês
+    </button>
+    <div>Coquin · dados salvos só neste aparelho</div>
+  </div>
+
+</main>
+
+<button class="fab" id="fab">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Nova venda
+</button>
+
+<!-- SHEET: nova venda -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="saleSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Registrar venda</h2>
+
+  <div class="field">
+    <label>Quantos gelatos?</label>
+    <div class="qtybig">
+      <button class="qb" data-d="-1" aria-label="Menos">−</button>
+      <div class="qtymid"><div class="qn" id="qGel">1</div><div class="qtot" id="saleTotal">R$ 35,00</div></div>
+      <button class="qb" data-d="1" aria-label="Mais">+</button>
+    </div>
+    <div class="qchips" id="qChips">
+      <button data-set="1">1</button>
+      <button data-set="2">2</button>
+      <button data-set="3">3</button>
+      <button data-set="5">5</button>
+      <button data-set="10">10</button>
+    </div>
+    <div class="qhint" id="qHint">Preço unitário R$ 35,00 · valor calculado automaticamente</div>
+  </div>
+
+  <div class="field">
+    <label>Forma de pagamento</label>
+    <div class="methods" id="methodPick"></div>
+  </div>
+
+  <button class="btn-primary" id="saveSale" disabled>Registrar venda</button>
+</div>
+
+<!-- SHEET: editar meta -->
+<div class="sheet" id="goalSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Ajustes do mês</h2>
+  <div class="field">
+    <label>Unidade / loja</label>
+    <input id="goalUnit" class="txt-input" type="text" placeholder="Imprensa" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>Meta de gelatos no mês</label>
+    <input id="goalValue" class="goal-input" type="text" inputmode="numeric" placeholder="1200">
+  </div>
+  <div class="field">
+    <label>Preço do gelato</label>
+    <div class="money">
+      <span class="cur">R$</span>
+      <input id="goalPrice" type="text" inputmode="decimal" placeholder="35,00" autocomplete="off">
+    </div>
+  </div>
+  <button class="btn-primary" id="saveGoal">Salvar</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Coquin — lógica (vanilla JS, sem dependências)
+   Persistência: localStorage (fica só no aparelho)
+   ============================================================ */
+const STORE = 'coquin_sales_v1';
+const DEFAULT_GOAL = 1200;
+const DEFAULT_UNIT = 'Imprensa';
+const DEFAULT_PRICE = 35;   // Coquin vende só gelato, preço fixo
+
+const METHODS = {
+  pix:      {label:'Pix',      color:'var(--pix)',      icon:'<path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/>'},
+  dinheiro: {label:'Dinheiro', color:'var(--dinheiro)', icon:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>'},
+  debito:   {label:'Débito',   color:'var(--debito)',   icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>'},
+  credito:  {label:'Crédito',  color:'var(--credito)',  icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'}
+};
+const METHOD_ORDER = ['pix','dinheiro','debito','credito'];
+
+/* ---- estado ---- */
+function load(){
+  try{ return JSON.parse(localStorage.getItem(STORE)) || {}; }catch(e){ return {}; }
+}
+function save(d){ localStorage.setItem(STORE, JSON.stringify(d)); }
+let db = load();
+if(!db.sales) db.sales = [];
+if(!db.goals) db.goals = {};        // { 'YYYY-MM': {gelatos, unit} }
+if(db.price==null) db.price = DEFAULT_PRICE;
+
+let viewMonth = ym(new Date());     // 'YYYY-MM'
+let draft = {method:null, qty:1};
+
+/* qtd/valor de uma venda (compatível com registros antigos) */
+function qtyOf(s){ return s.qty!=null ? s.qty : (s.gel||0); }
+function amountOf(s){ return s.amount!=null ? s.amount : qtyOf(s)*db.price; }
+
+/* ---- helpers ---- */
+function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function monthName(key){
+  const [y,m]=key.split('-').map(Number);
+  return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+}
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const NUM = new Intl.NumberFormat('pt-BR');
+function money(v){ return BRL.format(v||0); }
+function goalFor(key){
+  const g = db.goals[key] || {};
+  return { gelatos: (g.gelatos!=null?g.gelatos:DEFAULT_GOAL), unit: (g.unit||DEFAULT_UNIT) };
+}
+function localDay(ts){ const d=new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function salesOf(key){ return db.sales.filter(s=> localDay(s.ts).slice(0,7)===key); }
+function dayLabel(dstr){
+  const [Y,M,D]=dstr.split('-').map(Number);
+  const dt=new Date(Y,M-1,D);
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const diff=Math.round((t0-dt)/86400000);
+  if(diff===0) return 'Hoje';
+  if(diff===1) return 'Ontem';
+  return dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+}
+
+/* ---- render ---- */
+function render(){
+  const key = viewMonth;
+  document.getElementById('monthLabel').textContent = monthName(key);
+  const list = salesOf(key).sort((a,b)=> b.ts.localeCompare(a.ts));
+  const goal = goalFor(key);
+
+  // agregados (só gelato; valor = qtd × preço)
+  let rev=0, gel=0, gelToday=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
+  const todayLocal = localDay(new Date());
+  list.forEach(s=>{ const a=amountOf(s), q=qtyOf(s); rev+=a; gel+=q; if(localDay(s.ts)===todayLocal) gelToday+=q; if(byM[s.method]!=null) byM[s.method]+=a; });
+
+  // meta gelatos
+  const g = goal.gelatos;
+  const pct = g>0 ? Math.min(100, gel/g*100) : 0;
+  document.getElementById('metaUnit').textContent = goal.unit;
+  document.getElementById('gelSold').textContent = NUM.format(gel);
+  document.getElementById('gelGoal').textContent = NUM.format(g);
+  document.getElementById('metaBar').style.width = pct+'%';
+
+  const falta = Math.max(0, g-gel);
+  const sub = document.getElementById('metaSub');
+  const chip = document.getElementById('metaChip');
+  const paceEl = document.getElementById('metaPace');
+  const paceMark = document.getElementById('paceMark');
+  const projEl = document.getElementById('metaProj');
+  projEl.innerHTML = '';
+
+  const today = new Date();
+  const isCurrent = key === ym(today);
+  const isPast = key < ym(today);
+  const [yy,mm] = key.split('-').map(Number);
+  const daysInMonth = new Date(yy,mm,0).getDate();
+
+  if(gel>=g && g>0){
+    sub.textContent = '🎉 Meta batida! ' + NUM.format(gel-g) + ' acima do objetivo';
+    chip.className='chip done'; chip.textContent='✓ Meta alcançada';
+    paceEl.textContent=''; paceMark.style.display='none';
+    if(isCurrent){
+      const daysLeft = daysInMonth - today.getDate();
+      projEl.innerHTML = '<span class="dias">🗓️ ' + (daysLeft>0? 'Faltam '+daysLeft+(daysLeft>1?' dias':' dia')+' no mês' : 'Último dia do mês') +
+        '</span><span class="proj ok">Meta garantida 🎯</span>';
+    }
+  } else if(isCurrent){
+    const day = today.getDate();
+    const daysLeft = daysInMonth - day;
+    const expected = g * (day/daysInMonth);           // ritmo esperado até hoje
+    const expPct = Math.min(100, expected/g*100);
+    paceMark.style.display='block'; paceMark.style.left = expPct+'%';
+    const diff = Math.round(gel - expected);
+    const perDayNeeded = (g-gel)/Math.max(1,daysLeft);
+    sub.textContent = 'Faltam ' + NUM.format(falta) + ' gelatos · ' + Math.ceil(perDayNeeded) + '/dia p/ bater';
+    if(diff >= 0){
+      chip.className='chip ahead'; chip.textContent='▲ ' + NUM.format(Math.abs(diff)) + ' à frente do ritmo';
+    } else if(diff > -Math.max(8, g*0.05)){
+      chip.className='chip ontrack'; chip.textContent='No ritmo da meta';
+    } else {
+      chip.className='chip behind'; chip.textContent='▼ ' + NUM.format(Math.abs(diff)) + ' atrás do ritmo';
+    }
+    paceEl.textContent = 'Ritmo ideal hoje: ' + NUM.format(Math.round(expected));
+
+    // dias restantes + projeção no ritmo atual
+    const projected = Math.round(gel / day * daysInMonth);
+    const willHit = projected >= g;
+    const diasTxt = daysLeft>0 ? 'Faltam <b>'+daysLeft+'</b>'+(daysLeft>1?' dias':' dia')+' p/ fechar o mês' : 'Último dia do mês';
+    const projTxt = willHit
+        ? 'Projeção: <b>~'+NUM.format(projected)+'</b> · bate a meta 🎯'
+        : 'Projeção: <b>~'+NUM.format(projected)+'</b> · faltariam '+NUM.format(Math.max(0,g-projected));
+    projEl.innerHTML = '<span class="dias">🗓️ '+diasTxt+'</span><span class="proj '+(willHit?'ok':'miss')+'">'+projTxt+'</span>';
+  } else if(isPast){
+    sub.textContent = 'Faltaram ' + NUM.format(falta) + ' para a meta';
+    chip.className='chip behind'; chip.textContent = Math.round(pct)+'% da meta';
+    paceEl.textContent=''; paceMark.style.display='none';
+  } else {
+    sub.textContent = 'Meta de ' + NUM.format(g) + ' gelatos';
+    chip.className='chip ontrack'; chip.textContent='Mês futuro';
+    paceEl.textContent=''; paceMark.style.display='none';
+  }
+
+  // faturamento
+  document.getElementById('revTotal').textContent = money(rev);
+  document.getElementById('salesCount').textContent = list.length
+      ? list.length + (list.length>1?' vendas':' venda') + ' · ' + NUM.format(gel) + ' gelatos'
+      : 'Nenhuma venda registrada';
+
+  // pagamento
+  const pg = document.getElementById('payGrid');
+  pg.innerHTML = METHOD_ORDER.map(m=>{
+    const v = byM[m]; const p = rev>0 ? (v/rev*100) : 0; const M=METHODS[m];
+    return `<div class="card pay">
+      <div class="dot" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
+      <div class="pname">${M.label}</div>
+      <div class="pval">${money(v)}</div>
+      <div class="ppct">${rev>0?Math.round(p)+'% do total':'—'}</div>
+      <div class="prail"><i style="width:${p}%;background:${M.color}"></i></div>
+    </div>`;
+  }).join('');
+
+  // gelatos (mês / hoje)
+  document.getElementById('gelCount').textContent = NUM.format(gel);
+  document.getElementById('gelToday').textContent = NUM.format(gelToday);
+
+  // histórico por dia (agrupado)
+  const sl = document.getElementById('salesList');
+  if(!list.length){
+    sl.innerHTML = `<div class="empty"><div class="em">🍨</div><p>Nenhuma venda neste mês.<br>Toque em <b>+ Nova venda</b> para começar.</p></div>`;
+  } else {
+    const groups = {};
+    list.forEach(s=>{ const d=localDay(s.ts); (groups[d]=groups[d]||[]).push(s); });
+    const dayKeys = Object.keys(groups).sort((a,b)=> b.localeCompare(a));
+    sl.innerHTML = dayKeys.map(dk=>{
+      const items = groups[dk];
+      let dRev=0,dGel=0;
+      items.forEach(s=>{ dRev+=amountOf(s); dGel+=qtyOf(s); });
+      const head = `<div class="dayhead"><span class="dl">${dayLabel(dk)}</span><span class="dr"><span class="badge">🍨 ${dGel}</span><b>${money(dRev)}</b></span></div>`;
+      const rows = items.map(s=>{
+        const M = METHODS[s.method] || METHODS.dinheiro;
+        const t = new Date(s.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+        const q = qtyOf(s);
+        return `<div class="sale">
+          <div class="m" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
+          <div class="info"><div class="r1">${money(amountOf(s))}</div><div class="r2">${M.label} · ${t} · ${q} 🍨</div></div>
+          <button class="del" data-id="${s.id}" aria-label="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div>`;
+      }).join('');
+      return head+rows;
+    }).join('');
+  }
+}
+
+/* ---- valor monetário: parse pt-BR ---- */
+function parseMoney(str){
+  if(!str) return 0;
+  let s = String(str).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');
+  const v = parseFloat(s);
+  return isNaN(v)?0:v;
+}
+
+/* ---- toast ---- */
+let toastT;
+function toast(html){
+  const t=document.getElementById('toast'); t.innerHTML=html; t.classList.add('on');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2600);
+}
+
+/* ---- sheet nova venda ---- */
+const scrim=document.getElementById('scrim');
+const saleSheet=document.getElementById('saleSheet');
+const goalSheet=document.getElementById('goalSheet');
+function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
+function closeSheets(){ scrim.classList.remove('on'); saleSheet.classList.remove('on'); goalSheet.classList.remove('on'); }
+scrim.addEventListener('click', closeSheets);
+
+// montar chips de método
+document.getElementById('methodPick').innerHTML = METHOD_ORDER.map(m=>{
+  const M=METHODS[m];
+  return `<div class="method" data-m="${m}">
+    <div class="mi" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
+    <span>${M.label}</span></div>`;
+}).join('');
+
+function syncQty(){
+  document.getElementById('qGel').textContent = draft.qty;
+  document.getElementById('saleTotal').textContent = money(draft.qty*db.price);
+  document.getElementById('qHint').textContent = 'Preço unitário '+money(db.price)+' · valor calculado automaticamente';
+}
+function resetDraft(){
+  draft={method:null, qty:1};
+  syncQty();
+  document.querySelectorAll('.method').forEach(x=>x.classList.remove('sel'));
+  validate();
+}
+function validate(){
+  document.getElementById('saveSale').disabled = !(draft.qty>0 && draft.method);
+}
+document.querySelectorAll('.method').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.method').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel'); draft.method=el.dataset.m; validate();
+  });
+});
+// stepper de quantidade
+document.querySelectorAll('.qtybig .qb').forEach(b=>{
+  b.addEventListener('click', ()=>{ draft.qty=Math.max(1, draft.qty+(+b.dataset.d)); syncQty(); });
+});
+// atalhos de quantidade
+document.querySelectorAll('#qChips button').forEach(b=>{
+  b.addEventListener('click', ()=>{ draft.qty=+b.dataset.set; syncQty(); });
+});
+
+document.getElementById('fab').addEventListener('click', ()=>{ resetDraft(); openSheet(saleSheet); });
+
+document.getElementById('saveSale').addEventListener('click', ()=>{
+  if(!(draft.qty>0) || !draft.method) return;
+  const amount = draft.qty*db.price;
+  // registra no mês em visualização (dia/hora atual se for o mês corrente, senão dia 1)
+  const now = new Date();
+  let ts;
+  if(viewMonth === ym(now)){ ts = now.toISOString(); }
+  else { const [y,m]=viewMonth.split('-').map(Number); ts = new Date(y,m-1,1,12,0,0).toISOString(); }
+  db.sales.push({ id:'s'+now.getTime()+Math.floor(Math.random()*1000), ts, method:draft.method, qty:draft.qty, amount });
+  save(db); closeSheets(); render();
+  toast(draft.qty+' gelato'+(draft.qty>1?'s':'')+' · <b>'+money(amount)+'</b>');
+});
+
+/* ---- excluir venda ---- */
+document.getElementById('salesList').addEventListener('click', e=>{
+  const btn=e.target.closest('.del'); if(!btn) return;
+  const id=btn.dataset.id;
+  const removed = db.sales.find(s=>s.id===id);
+  db.sales = db.sales.filter(s=>s.id!==id);
+  save(db); render();
+  toast('Venda excluída');
+});
+
+/* ---- meta ---- */
+document.getElementById('editGoal').addEventListener('click', ()=>{
+  const goal = goalFor(viewMonth);
+  document.getElementById('goalUnit').value = goal.unit;
+  document.getElementById('goalValue').value = goal.gelatos;
+  document.getElementById('goalPrice').value = String(db.price).replace('.',',');
+  openSheet(goalSheet);
+});
+document.getElementById('saveGoal').addEventListener('click', ()=>{
+  const unit = document.getElementById('goalUnit').value.trim() || DEFAULT_UNIT;
+  const val = parseInt(String(document.getElementById('goalValue').value).replace(/\D/g,''),10);
+  const price = parseMoney(document.getElementById('goalPrice').value);
+  db.price = price>0 ? price : DEFAULT_PRICE;
+  db.goals[viewMonth] = { gelatos: (isNaN(val)?DEFAULT_GOAL:val), unit };
+  save(db); closeSheets(); render();
+  toast('Ajustes salvos');
+});
+
+/* ---- navegação de mês ---- */
+function shiftMonth(delta){
+  const [y,m]=viewMonth.split('-').map(Number);
+  const d=new Date(y,m-1+delta,1); viewMonth=ym(d); render();
+}
+document.getElementById('prevMonth').addEventListener('click', ()=>shiftMonth(-1));
+document.getElementById('nextMonth').addEventListener('click', ()=>shiftMonth(1));
+
+/* ---- compartilhar resumo ---- */
+document.getElementById('shareBtn').addEventListener('click', ()=>{
+  const key=viewMonth; const list=salesOf(key); const goal=goalFor(key);
+  let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
+  list.forEach(s=>{const a=amountOf(s);rev+=a;gel+=qtyOf(s);if(byM[s.method]!=null)byM[s.method]+=a;});
+  const txt =
+`🍨 COQUIN · ${monthName(key)} (${goal.unit})
+━━━━━━━━━━━━━━━
+🍨 Gelatos: ${NUM.format(gel)} / ${NUM.format(goal.gelatos)} (${Math.round(goal.gelatos>0?gel/goal.gelatos*100:0)}% da meta)
+💰 Total: ${money(rev)}
+  • Pix: ${money(byM.pix)}
+  • Dinheiro: ${money(byM.dinheiro)}
+  • Débito: ${money(byM.debito)}
+  • Crédito: ${money(byM.credito)}`;
+  if(navigator.share){ navigator.share({title:'Resumo Coquin',text:txt}).catch(()=>{}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast('Resumo copiado')); }
+  else { toast('Resumo pronto'); }
+});
+
+/* ---- start ---- */
+render();
+</script>
+</body>
+</html>
