@@ -285,7 +285,21 @@ main{padding-top:18px}
 .kpi .kv{font-size:24px;font-weight:800;letter-spacing:-.8px;color:var(--green-700);margin-top:4px}
 .kpi .kd{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
 .kpi .kv.neg{color:var(--danger)}
-.chart-card{padding:16px 14px 12px}
+.chart-card{padding:16px 14px 12px;position:relative}
+.charttip{position:absolute;z-index:6;background:var(--green-900);color:#fff;font-size:12px;font-weight:700;padding:7px 11px;border-radius:10px;pointer-events:none;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%);white-space:nowrap;box-shadow:var(--shadow-lg);left:0;top:0}
+.charttip.on{opacity:1}
+.charttip b{color:#EAD9A6;font-weight:800}
+.chart .hit{cursor:pointer;fill:transparent;pointer-events:all}
+.chart .hit.hl{fill:rgba(52,80,58,.07)}
+/* insights / destaques */
+.insights{padding:18px 18px 6px;color:#fff;border:0;overflow:hidden;position:relative;background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 65%,var(--green-900) 100%);box-shadow:0 10px 30px rgba(52,80,58,.30)}
+.insights::after{content:"";position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.insights .ih{font-size:11.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;opacity:.82;margin-bottom:6px;position:relative}
+.irow{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid rgba(255,255,255,.13);position:relative}
+.irow:first-of-type{border-top:0}
+.irow .ici{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:16px;flex:none}
+.irow .it{flex:1;min-width:0;font-size:13px;opacity:.9;line-height:1.3}
+.irow .it b{opacity:1;font-weight:800;font-size:14.5px;display:block;letter-spacing:-.2px}
 .chart-card .ch-t{font-size:14px;font-weight:800;color:var(--ink);margin:0 2px 2px;letter-spacing:-.2px}
 .chart-card .ch-s{font-size:12px;color:var(--ink-faint);margin:0 2px 12px}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
@@ -463,6 +477,9 @@ main{padding-top:18px}
 
  <div id="viewDados" class="hide">
 
+  <div class="section-title">Destaques do mês</div>
+  <div class="card insights"><div class="ih">O que os números dizem</div><div id="insights"></div></div>
+
   <div class="section-title">Saúde do mês</div>
   <div class="kpi-grid">
     <div class="card kpi"><div class="kl">Faturamento</div><div class="kv" id="kFat">R$ 0</div><div class="kd" id="kFatD">—</div></div>
@@ -474,20 +491,20 @@ main{padding-top:18px}
 
   <div class="card" id="custoCard" style="margin-top:12px;padding:14px 16px"></div>
 
-  <div class="section-title">Faturamento por dia</div>
-  <div class="card chart-card"><div class="chart" id="chFat"></div></div>
+  <div class="section-title">Faturamento por dia <span class="st-side">toque nas barras</span></div>
+  <div class="card chart-card"><div class="chart" id="chFat"></div><div class="charttip" id="tipFat"></div></div>
 
   <div class="section-title">Rende mais por dia <span class="st-side">média · todo o histórico</span></div>
-  <div class="card chart-card"><div class="ch-s" id="wdaySub" style="margin:0 2px 8px"></div><div class="chart" id="chWday"></div></div>
+  <div class="card chart-card"><div class="ch-s" id="wdaySub" style="margin:0 2px 8px"></div><div class="chart" id="chWday"></div><div class="charttip" id="tipWday"></div></div>
 
   <div class="section-title">Pico de vendas <span class="st-side">horário · cartão/Pix</span></div>
-  <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div></div>
+  <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div><div class="charttip" id="tipHours"></div></div>
 
   <div class="section-title">Formas de pagamento</div>
   <div class="card chart-card"><div class="chart" id="chPay"></div><div class="legend" id="lgPay"></div></div>
 
   <div class="section-title">Estoque de coco no mês</div>
-  <div class="card chart-card"><div class="ch-s" id="chStockSub" style="margin:0 2px 10px"></div><div class="chart" id="chStock"></div><div class="legend" id="lgStock"></div></div>
+  <div class="card chart-card"><div class="ch-s" id="chStockSub" style="margin:0 2px 10px"></div><div class="chart" id="chStock"></div><div class="charttip" id="tipStock"></div><div class="legend" id="lgStock"></div></div>
 
   <div class="foot"><div>Coquin · dados do mês selecionado</div></div>
 
@@ -863,20 +880,22 @@ function renderEstoque(){
   }).join(''); }
 }
 
-/* ---------- Dados / gráficos (SVG puro) ---------- */
+/* ---------- Dados / gráficos (SVG puro, com tooltip) ---------- */
 function emptyChart(){ return '<div class="ch-s" style="padding:18px 2px">Sem dados neste mês ainda.</div>'; }
+function gridY(padL,rightX,padT,plotH){ let g=''; for(let k=1;k<=3;k++){ const y=padT+plotH-plotH*k/3; g+='<line class="gridln" x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+rightX+'" y2="'+y.toFixed(1)+'"/>'; } return g; }
 function svgBars(data, opts){
   const W=340,H=opts.h||150,padL=6,padR=6,padT=16,padB=18,n=data.length;
   if(!n) return emptyChart();
   const max=Math.max(1,...data.map(d=>d.value)), bw=(W-padL-padR)/n, barW=Math.min(28,bw*0.6), plotH=H-padT-padB;
-  const step=Math.ceil(n/10); let bars='';
+  const step=Math.ceil(n/10); let bars='',hits='';
   data.forEach((d,i)=>{
-    const x=padL+bw*i+(bw-barW)/2, h=max>0?(d.value/max)*plotH:0, y=padT+plotH-h;
+    const cx=padL+bw*i, x=cx+(bw-barW)/2, h=max>0?(d.value/max)*plotH:0, y=padT+plotH-h;
     bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="4" fill="'+opts.color+'"/>';
-    if(d.value===max) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+opts.fmt(d.value)+'</text>';
+    if(d.value===max && opts.fmt) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+opts.fmt(d.value)+'</text>';
     if(n<=12||i%step===0) bars+='<text class="lbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+d.label+'</text>';
+    hits+='<rect class="hit" x="'+cx.toFixed(1)+'" y="'+padT+'" width="'+bw.toFixed(1)+'" height="'+plotH.toFixed(1)+'" data-tip="'+(opts.tip?opts.tip(d):'')+'"/>';
   });
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+'</svg>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+gridY(padL,W-padR,padT,plotH)+'<line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+hits+'</svg>';
 }
 function svgDonut(segs, centerText){
   const total=segs.reduce((s,x)=>s+x.value,0), S=150,cx=S/2,cy=S/2,r=54,sw=22,C=2*Math.PI*r;
@@ -896,22 +915,24 @@ function svgArea(points, opts){
   const X=i=> padL+(n===1?plotW/2:plotW*i/(n-1)), Y=v=> padT+plotH-((v-min)/((max-min)||1))*plotH, zeroY=Y(0), step=Math.ceil(n/10);
   const line=points.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.value).toFixed(1)).join(' ');
   const area='M'+X(0).toFixed(1)+' '+zeroY.toFixed(1)+' '+points.map((p,i)=>'L'+X(i).toFixed(1)+' '+Y(p.value).toFixed(1)).join(' ')+' L'+X(n-1).toFixed(1)+' '+zeroY.toFixed(1)+' Z';
-  let dots='',labels='';
+  let dots='',labels='',hits=''; const hw=plotW/Math.max(1,n);
   points.forEach((p,i)=>{ dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.value).toFixed(1)+'" r="3" fill="'+opts.color+'"/>';
-    if(n<=12||i%step===0) labels+='<text class="lbl" x="'+X(i).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+p.label+'</text>'; });
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><path d="'+area+'" fill="'+opts.color+'" opacity="0.12"/><path d="'+line+'" fill="none" stroke="'+opts.color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'<line class="axis" x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+zeroY.toFixed(1)+'"/>'+labels+'</svg>';
+    if(n<=12||i%step===0) labels+='<text class="lbl" x="'+X(i).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+p.label+'</text>';
+    hits+='<rect class="hit" x="'+(X(i)-hw/2).toFixed(1)+'" y="'+padT+'" width="'+hw.toFixed(1)+'" height="'+plotH.toFixed(1)+'" data-tip="'+(opts.tip?opts.tip(p):'')+'"/>'; });
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+gridY(padL,W-padR,padT,plotH)+'<path d="'+area+'" fill="'+opts.color+'" opacity="0.12"/><path d="'+line+'" fill="none" stroke="'+opts.color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'<line class="axis" x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+zeroY.toFixed(1)+'"/>'+labels+hits+'</svg>';
 }
-function svgBarsH(data, hiIdx, fmt){
+function svgBarsH(data, hiIdx, fmt, tip){
   const W=340,H=150,padL=6,padR=6,padT=16,padB=18,n=data.length;
   if(!n||!data.some(d=>d.value>0)) return emptyChart();
   const max=Math.max(1,...data.map(d=>d.value)), bw=(W-padL-padR)/n, barW=Math.min(34,bw*0.6), plotH=H-padT-padB;
-  let bars='';
-  data.forEach((d,i)=>{ const x=padL+bw*i+(bw-barW)/2, hh=(d.value/max)*plotH, y=padT+plotH-hh, col=i===hiIdx?'var(--gold)':'var(--green)';
+  let bars='',hits='';
+  data.forEach((d,i)=>{ const cx=padL+bw*i, x=cx+(bw-barW)/2, hh=(d.value/max)*plotH, y=padT+plotH-hh, col=i===hiIdx?'var(--gold)':'var(--green)';
     bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,hh).toFixed(1)+'" rx="4" fill="'+col+'" opacity="'+(d.value>0?1:0.28)+'"/>';
     if(i===hiIdx && fmt) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+fmt(d.value)+'</text>';
     bars+='<text class="lbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+d.label+'</text>';
+    hits+='<rect class="hit" x="'+cx.toFixed(1)+'" y="'+padT+'" width="'+bw.toFixed(1)+'" height="'+plotH.toFixed(1)+'" data-tip="'+(tip?tip(d):'')+'"/>';
   });
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+'</svg>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+gridY(padL,W-padR,padT,plotH)+'<line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+hits+'</svg>';
 }
 function svgHours(hours, peakIdx){
   if(!hours.some(h=>h>0)) return emptyChart();
@@ -919,13 +940,30 @@ function svgHours(hours, peakIdx){
   const data=[]; for(let h=first;h<=last;h++) data.push({h,value:hours[h]});
   const W=340,H=150,padL=6,padR=6,padT=16,padB=18,n=data.length;
   const max=Math.max(1,...data.map(d=>d.value)), bw=(W-padL-padR)/n, barW=Math.min(30,bw*0.62), plotH=H-padT-padB, step=n>10?2:1;
-  let bars='';
-  data.forEach((d,i)=>{ const x=padL+bw*i+(bw-barW)/2, hh=(d.value/max)*plotH, y=padT+plotH-hh, col=d.h===peakIdx?'var(--gold)':'var(--green)';
+  let bars='',hits='';
+  data.forEach((d,i)=>{ const cx=padL+bw*i, x=cx+(bw-barW)/2, hh=(d.value/max)*plotH, y=padT+plotH-hh, col=d.h===peakIdx?'var(--gold)':'var(--green)';
     bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(0,hh).toFixed(1)+'" rx="4" fill="'+col+'"/>';
     if(d.h===peakIdx) bars+='<text class="vlbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+d.value+'</text>';
     if(i%step===0) bars+='<text class="lbl" x="'+(x+barW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+d.h+'h</text>';
+    hits+='<rect class="hit" x="'+cx.toFixed(1)+'" y="'+padT+'" width="'+bw.toFixed(1)+'" height="'+plotH.toFixed(1)+'" data-tip="'+d.h+'h às '+((d.h+1)%24)+'h · <b>'+d.value+' vendas</b>"/>';
   });
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+'</svg>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+gridY(padL,W-padR,padT,plotH)+'<line class="axis" x1="'+padL+'" y1="'+(padT+plotH)+'" x2="'+(W-padR)+'" y2="'+(padT+plotH)+'"/>'+bars+hits+'</svg>';
+}
+/* tooltips dos gráficos (hover no desktop, toque no celular) */
+function initChartTips(){
+  [['chFat','tipFat'],['chWday','tipWday'],['chHours','tipHours'],['chStock','tipStock']].forEach(([cid,tid])=>{
+    const c=document.getElementById(cid), tip=document.getElementById(tid); if(!c||!tip) return;
+    const card=c.closest('.chart-card');
+    function show(e){ const hit=e.target.closest('.hit'); if(!hit||!hit.dataset.tip){ tip.classList.remove('on'); return; }
+      c.querySelectorAll('.hit.hl').forEach(h=>h.classList.remove('hl')); hit.classList.add('hl');
+      const rect=card.getBoundingClientRect(); let x=e.clientX-rect.left; x=Math.max(46,Math.min(rect.width-46,x));
+      tip.style.left=x+'px'; tip.style.top=(e.clientY-rect.top-12)+'px'; tip.innerHTML=hit.dataset.tip; tip.classList.add('on'); }
+    function hide(){ tip.classList.remove('on'); c.querySelectorAll('.hit.hl').forEach(h=>h.classList.remove('hl')); }
+    c.addEventListener('pointermove', show);
+    c.addEventListener('pointerdown', show);
+    c.addEventListener('pointerleave', hide);
+    c.addEventListener('pointerup', ()=>setTimeout(hide,1400));
+  });
 }
 function renderDados(){
   const key=viewMonth, list=closingsOf(key).slice().sort((a,b)=>a.date.localeCompare(b.date)), goal=goalFor(key);
@@ -951,7 +989,7 @@ function renderDados(){
     +'<div class="chk-row"><span>Custo dos insumos vendidos</span><span>'+money(cogs)+'</span></div>'
     +(above?'<div class="chk-row quebra warn"><span>Coco acima do planejado</span><b>+'+Math.round((cocoC/plan-1)*100)+'%</b></div>':'');
   // faturamento por dia
-  document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00','')}) : emptyChart();
+  document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0, gel:c.gelatos||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00',''),tip:d=>'Dia '+d.label+' · <b>'+money(d.value)+'</b> · '+d.gel+' gelatos'}) : emptyChart();
   // rende mais por dia da semana (todo o histórico, média por ocorrência)
   const WD=Array.from({length:7},()=>({sum:0,n:0})), WDN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'], WDF=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   db.closings.forEach(c=>{ const [Y,M,D]=c.date.split('-').map(Number); const w=new Date(Y,M-1,D).getDay(); WD[w].sum+=c.revenue||0; WD[w].n++; });
@@ -961,7 +999,7 @@ function renderDados(){
   const wdSub=document.getElementById('wdaySub');
   if(wbi>=0){ const best=wdData[wbi];
     wdSub.innerHTML='🏆 Melhor dia: <b>'+WDF[best.w]+'</b> · média <b>'+money(wbv)+'</b>/dia'+(best.n>1?' · '+best.n+' registros':'');
-    document.getElementById('chWday').innerHTML=svgBarsH(wdData, wbi, v=>money(v).replace(',00',''));
+    document.getElementById('chWday').innerHTML=svgBarsH(wdData, wbi, v=>money(v).replace(',00',''), d=>d.label+' · média <b>'+money(d.value)+'</b>'+(d.n?' · '+d.n+'x':''));
   } else { wdSub.textContent='Feche alguns dias para ver o padrão por dia da semana.'; document.getElementById('chWday').innerHTML=emptyChart(); }
   // pico de vendas por hora (do CSV da Stone)
   const hoursAgg=new Array(24).fill(0); let hasHours=false, daysWithHours=0;
@@ -977,12 +1015,24 @@ function renderDados(){
   const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
   document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
   document.getElementById('lgPay').innerHTML= segs.map(s=>'<span class="lg"><span class="sw" style="background:'+s.color+'"></span>'+s.label+' <b>'+money(s.v)+'</b> <small>'+(rev>0?Math.round(s.v/rev*100):0)+'%</small></span>').join('');
-  // estoque no mês
-  const movDates=[...new Set([...stockOf(key).map(s=>s.date), ...list.map(c=>c.date)])].sort();
-  document.getElementById('chStock').innerHTML= movDates.length? svgArea(movDates.map(d=>({label:(+d.slice(8)).toString(), value:Math.round(B.balBy[d])})),{color:'var(--green)'}) : emptyChart();
-  let comprados=0,consumidos=0; stockOf(key).forEach(s=>comprados+=s.comprados||0); closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/GEL_PER_COCO);
+  // estoque de coco no mês
+  const movDates=[...new Set([...stockOf(key,'coco').map(s=>s.date), ...list.map(c=>c.date)])].sort();
+  document.getElementById('chStock').innerHTML= movDates.length? svgArea(movDates.map(d=>({label:(+d.slice(8)).toString(), value:Math.round(B.balBy[d]||0)})),{color:'var(--green)',tip:p=>'Dia '+p.label+' · <b>'+p.value+' cocos</b> em estoque'}) : emptyChart();
+  let comprados=0,consumidos=0; stockOf(key,'coco').forEach(s=>comprados+=s.comprados||0); closingsOf(key).forEach(c=>consumidos+=(c.gelatos||0)/PRODUCTS.coco.yield);
   document.getElementById('chStockSub').textContent='Comprados '+NUM.format(comprados)+' · Consumidos ~'+NUM.format(Math.round(consumidos))+' · Saldo atual '+NUM.format(Math.round(B.current));
   document.getElementById('lgStock').innerHTML='<span class="lg"><span class="sw" style="background:var(--green)"></span>Saldo de coco no fim de cada dia</span>';
+
+  // ---- Destaques (insights) ----
+  const ins=document.getElementById('insights'); const rows=[];
+  const irow=(ic,txt)=>'<div class="irow"><div class="ici">'+ic+'</div><div class="it">'+txt+'</div></div>';
+  if(wbi>=0) rows.push(irow('🏆','Seu dia mais forte é <b>'+WDF[wdData[wbi].w]+'</b><span class="muted"> — média de '+money(wbv)+'/dia</span>'));
+  if(hasHours && hoursAgg.some(h=>h>0)){ let pk=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[pk]) pk=h;
+    rows.push(irow('🔥','Pico de movimento entre <b>'+pk+'h e '+((pk+1)%24)+'h</b><span class="muted"> — '+hoursAgg[pk]+' vendas no horário</span>')); }
+  if(gel>0) rows.push(irow('💰','Margem de <b>'+Math.round(margem)+'%</b> sobre os insumos<span class="muted"> — lucro bruto '+money(lucro)+' no mês</span>'));
+  if(gel>0) rows.push(irow('🍨','Ticket médio de <b>'+money(rev/gel)+'</b><span class="muted"> — '+NUM.format(gel)+' gelatos vendidos</span>'));
+  const cocoNow=Math.round(currentStock('coco')), sorvNow=Math.round(currentStock('sorvete'));
+  if(db.stock.length) rows.push(irow('📦','Estoque: <b>'+NUM.format(cocoNow)+' cocos</b> e <b>'+NUM.format(sorvNow)+' caixas</b><span class="muted"> de sorvete</span>'));
+  ins.innerHTML = rows.length? rows.join('') : '<div class="irow"><div class="it">Feche alguns dias e importe a Stone para ver os destaques.</div></div>';
 }
 
 /* ---------- render ---------- */
@@ -1465,6 +1515,7 @@ async function boot(){
   else { showGate(true); }
   try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; updateAcct(); showGate(true); } }); }catch(e){}
 }
+initChartTips();
 boot();
 </script>
 </body>
