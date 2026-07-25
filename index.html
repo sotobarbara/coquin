@@ -459,9 +459,12 @@ main{padding-top:18px}
   <div class="kpi-grid">
     <div class="card kpi"><div class="kl">Faturamento</div><div class="kv" id="kFat">R$ 0</div><div class="kd" id="kFatD">—</div></div>
     <div class="card kpi"><div class="kl">Gelatos</div><div class="kv" id="kGel">0</div><div class="kd" id="kGelD">meta —</div></div>
+    <div class="card kpi"><div class="kl">Lucro bruto</div><div class="kv" id="kLucro">R$ 0</div><div class="kd" id="kMargem">margem —</div></div>
     <div class="card kpi"><div class="kl">Ticket médio</div><div class="kv" id="kTicket">R$ 0</div><div class="kd">por gelato</div></div>
     <div class="card kpi"><div class="kl">Quebra de coco</div><div class="kv" id="kQuebra">0</div><div class="kd">no mês</div></div>
   </div>
+
+  <div class="card" id="custoCard" style="margin-top:12px;padding:14px 16px"></div>
 
   <div class="section-title">Faturamento por dia</div>
   <div class="card chart-card"><div class="chart" id="chFat"></div></div>
@@ -556,6 +559,10 @@ main{padding-top:18px}
     <label>Preço do gelato</label>
     <div class="money"><span class="cur">R$</span><input id="goalPrice" type="text" inputmode="decimal" placeholder="35,00"></div>
   </div>
+  <div class="field">
+    <label>Custo planejado do coco <span class="hintlink" style="color:var(--ink-faint);cursor:default">referência</span></label>
+    <div class="money"><span class="cur">R$</span><input id="goalCost" type="text" inputmode="decimal" placeholder="1,50"></div>
+  </div>
   <button class="btn-primary" id="saveGoal">Salvar</button>
   <div class="acct" id="acctRow"></div>
 </div>
@@ -567,6 +574,9 @@ main{padding-top:18px}
   <p class="h2sub">Compras e baixas de coco do dia.</p>
   <div class="field"><label>Dia</label><input id="kDate" class="date-input" type="date"></div>
   <div class="field"><label>Cocos comprados no dia</label><input id="kBuy" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+  <div class="field"><label>Custo por coco <span class="hintlink" style="color:var(--ink-faint);cursor:default">o que pagou hoje</span></label>
+    <div class="money"><span class="cur">R$</span><input id="kCost" type="text" inputmode="decimal" placeholder="1,50"></div>
+  </div>
   <div class="field"><label>Baixas do dia (opcional)</label>
     <div class="num2">
       <div><div style="font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-align:center">🎁 Degustação</div><input id="kDeg" class="small-input" type="text" inputmode="numeric" placeholder="0"></div>
@@ -617,6 +627,7 @@ const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const STORE='coquin_v2';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos
+const DEFAULT_COST=1.5; // custo planejado por coco
 
 const METHODS={
   pix:{label:'Pix',color:'var(--pix)',icon:'<path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/>'},
@@ -643,16 +654,16 @@ const Cloud={
     if(e1) throw e1;
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
     db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,stoneTx:r.stone_tx||0,note:r.note||''}));
-    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE}; db.goals=st.goals||{}; }
+    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
-    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,degustacao:r.degustacao||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
+    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date,date:r.date,comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     Store.save(db);
   },
   async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
-  async pushStock(s){ if(!this.on)return; const pl={date:s.date,comprados:s.comprados||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''}; if(s.contagem!=null && s.contagem!=='') pl.contagem=+s.contagem; else pl.contagem=null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushStock(s){ if(!this.on)return; const pl={date:s.date,comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''}; if(s.contagem!=null && s.contagem!=='') pl.contagem=+s.contagem; else pl.contagem=null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,goals:db.goals});}catch(e){} },
+  async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,goals:db.goals});}catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
@@ -687,6 +698,7 @@ function migrateV1(){
 let db=Store.load();
 if(!db||db.version!==2){ db=migrateV1(); Store.save(db); }
 if(!db.settings) db.settings={unit:DEFAULT_UNIT,price:DEFAULT_PRICE};
+if(db.settings.custoPlan==null) db.settings.custoPlan=DEFAULT_COST;
 if(!db.goals) db.goals={};
 if(!db.closings) db.closings=[];
 if(!db.stock) db.stock=[];
@@ -754,6 +766,14 @@ function avgDailyConsumo(){
   return (g/GEL_PER_COCO)/days.length;
 }
 function r1(n){ return Math.round(n*10)/10; }
+function costPlan(){ return db.settings.custoPlan>0?db.settings.custoPlan:DEFAULT_COST; }
+function lastCocoCost(){ const w=db.stock.filter(s=>s.custo>0).sort((a,b)=>b.date.localeCompare(a.date)); return w.length?w[0].custo:costPlan(); }
+function avgCocoCost(arr){
+  let q=0,c=0; (arr||db.stock).forEach(s=>{ if(s.custo>0&&s.comprados>0){ q+=s.comprados; c+=s.comprados*s.custo; } });
+  if(q>0) return c/q;
+  if(arr){ let q2=0,c2=0; db.stock.forEach(s=>{ if(s.custo>0&&s.comprados>0){ q2+=s.comprados; c2+=s.comprados*s.custo; } }); if(q2>0) return c2/q2; }
+  return costPlan();
+}
 function renderEstoque(){
   const key=viewMonth;
   const B=computeBalances(); const now=B.current, avg=avgDailyConsumo(), auto=avg>0?now/avg:null;
@@ -855,6 +875,17 @@ function renderDados(){
   document.getElementById('kTicket').textContent=gel>0?money(rev/gel):'R$ 0';
   const B=computeBalances(); const qMonth=B.counts.filter(c=>c.date.slice(0,7)===key).reduce((s,c)=>s+c.quebra,0);
   const kq=document.getElementById('kQuebra'); kq.textContent=(qMonth>0.5?'−':'')+NUM.format(Math.round(Math.abs(qMonth))); kq.className='kv'+(qMonth>0.5?' neg':'');
+  // custo / lucro / margem
+  const avgC=avgCocoCost(stockOf(key)), cogsPerGel=avgC/GEL_PER_COCO, cogs=gel*cogsPerGel, lucro=rev-cogs, margem=rev>0?lucro/rev*100:0;
+  const kl=document.getElementById('kLucro'); kl.textContent=money(lucro); kl.className='kv'+(lucro<0?' neg':'');
+  document.getElementById('kMargem').textContent='margem '+Math.round(margem)+'% (só coco)';
+  const plan=costPlan(), above=avgC>plan*1.005;
+  document.getElementById('custoCard').innerHTML=
+    '<div class="chk-head"><span>🥥 Custo médio do coco</span><b>'+money(avgC)+'</b></div>'
+    +'<div class="chk-row"><span>Planejado</span><span>'+money(plan)+'</span></div>'
+    +'<div class="chk-row"><span>Custo por gelato (½ coco)</span><span>'+money(cogsPerGel)+'</span></div>'
+    +'<div class="chk-row"><span>Custo dos cocos vendidos</span><span>'+money(cogs)+'</span></div>'
+    +(above?'<div class="chk-row quebra warn"><span>Compra acima do planejado</span><b>+'+Math.round((avgC/plan-1)*100)+'%</b></div>':'');
   // faturamento por dia
   document.getElementById('chFat').innerHTML= list.length? svgBars(list.map(c=>({label:(+c.date.slice(8)).toString(), value:c.revenue||0})),{color:'var(--green)',h:150,fmt:v=>money(v).replace(/\s/g,'').replace(',00','')}) : emptyChart();
   // formas de pagamento
@@ -1177,7 +1208,7 @@ $('ddEdit').addEventListener('click', ()=>{ const c=ddClosing; closeSheets(); if
 
 /* ---- registrar cocos (estoque) ---- */
 let editingStock=null;
-function kDraft(){ const cv=$('kCount').value.trim(); return { date:$('kDate').value||todayISO(), comprados:parseInt2($('kBuy').value), degustacao:parseInt2($('kDeg').value), perda:parseInt2($('kPerda').value), contagem: cv===''?null:parseInt2(cv) }; }
+function kDraft(){ const cv=$('kCount').value.trim(); return { date:$('kDate').value||todayISO(), comprados:parseInt2($('kBuy').value), custo:parseMoney($('kCost').value), degustacao:parseInt2($('kDeg').value), perda:parseInt2($('kPerda').value), contagem: cv===''?null:parseInt2(cv) }; }
 /* teórico até a data (honra contagens anteriores como âncora; usa o rascunho no dia atual) */
 function theoreticalAt(date, draft){
   const dates=new Set(); db.stock.forEach(s=>dates.add(s.date)); db.closings.forEach(c=>dates.add(c.date)); dates.add(date);
@@ -1197,6 +1228,8 @@ function renderKNote(){
               : 'Sem fechamento de vendas nesse dia ainda. ';
   const net=d.comprados-cons-d.degustacao-d.perda;
   msg+='Saldo do dia: <b>'+(net>=0?'+':'')+r1(net)+' cocos</b>.';
+  if(d.comprados>0 && d.custo>0){ msg+='<br>💵 Compra: '+d.comprados+' × '+money(d.custo)+' = <b>'+money(d.comprados*d.custo)+'</b>';
+    if(d.custo>costPlan()*1.005){ msg+=' — <b>'+Math.round((d.custo/costPlan()-1)*100)+'% acima do planejado</b> ('+money(costPlan())+')'; } }
   if(d.contagem!=null){ const teo=theoreticalAt(d.date,d), q=teo-d.contagem;
     msg+='<br>📸 Contagem <b>'+d.contagem+'</b> × teórico <b>'+r1(teo)+'</b> → '+(Math.abs(q)<1?'<b>bateu ✓</b>':(q>0?'quebra de <b>'+r1(q)+' cocos</b>':'sobra de <b>'+r1(-q)+' cocos</b>'));
   }
@@ -1207,8 +1240,8 @@ function renderKNote(){
 function openStock(existing){
   editingStock=null;
   if(existing){ editingStock=existing.id||existing.date; $('stockTitle').textContent='Editar registro';
-    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kDeg').value=existing.degustacao||''; $('kPerda').value=existing.perda||''; $('kCount').value=(existing.contagem!=null?existing.contagem:''); $('deleteStock').style.display='block';
-  } else { $('stockTitle').textContent='Registrar cocos'; $('kDate').value=todayISO(); ['kBuy','kDeg','kPerda','kCount'].forEach(id=>$(id).value=''); $('deleteStock').style.display='none'; }
+    $('kDate').value=existing.date; $('kBuy').value=existing.comprados||''; $('kCost').value=(existing.custo>0?String(existing.custo).replace('.',','):''); $('kDeg').value=existing.degustacao||''; $('kPerda').value=existing.perda||''; $('kCount').value=(existing.contagem!=null?existing.contagem:''); $('deleteStock').style.display='block';
+  } else { $('stockTitle').textContent='Registrar cocos'; $('kDate').value=todayISO(); ['kBuy','kDeg','kPerda','kCount'].forEach(id=>$(id).value=''); $('kCost').value=String(lastCocoCost()).replace('.',','); $('deleteStock').style.display='none'; }
   renderKNote(); openSheet(stockSheet);
 }
 $('saveStock').addEventListener('click', ()=>{
@@ -1235,12 +1268,13 @@ $('deleteStock').addEventListener('click', ()=>{
 /* ---- ajustes ---- */
 $('editGoal').addEventListener('click', ()=>{
   const goal=goalFor(viewMonth);
-  $('goalUnit').value=goal.unit; $('goalValue').value=goal.gelatos; $('goalPrice').value=String(price()).replace('.',',');
+  $('goalUnit').value=goal.unit; $('goalValue').value=goal.gelatos; $('goalPrice').value=String(price()).replace('.',','); $('goalCost').value=String(costPlan()).replace('.',',');
   updateAcct(); openSheet(goalSheet);
 });
 $('saveGoal').addEventListener('click', ()=>{
   db.settings.unit=$('goalUnit').value.trim()||DEFAULT_UNIT;
   const p=parseMoney($('goalPrice').value); db.settings.price=p>0?p:DEFAULT_PRICE;
+  const cp=parseMoney($('goalCost').value); db.settings.custoPlan=cp>0?cp:DEFAULT_COST;
   const val=parseInt2($('goalValue').value); db.goals[viewMonth]={gelatos:val>0?val:DEFAULT_GOAL};
   Store.save(db); closeSheets(); render(); Cloud.pushSettings(); toast('Ajustes salvos');
 });
