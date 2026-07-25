@@ -333,6 +333,17 @@ main{padding-top:18px}
 .cash-cats{display:flex;flex-wrap:wrap;gap:8px}
 .cash-cats .cat{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer}
 .cash-cats .cat.sel{border-color:var(--green);background:var(--green-tint);color:var(--green-700)}
+/* toggle entrada/saída */
+.seg2{display:flex;gap:10px}
+.seg2 button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px 8px 12px;cursor:pointer;font-family:inherit;color:var(--ink-soft);-webkit-tap-highlight-color:transparent;transition:border-color .12s,background .12s,color .12s}
+.seg2 button .ic{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-size:20px;font-weight:900;line-height:1;background:#D9D5CC;color:#fff}
+.seg2 button .tl{font-size:15.5px;font-weight:800;letter-spacing:-.2px}
+.seg2 button .ds{font-size:11px;font-weight:600;opacity:.75}
+.seg2 button:active{transform:scale(.98)}
+.seg2 button.out.sel{border-color:var(--danger);background:#FBEEEC;color:var(--danger)}
+.seg2 button.out.sel .ic{background:var(--danger)}
+.seg2 button.in.sel{border-color:#1E6B34;background:#E9F5EC;color:#1E6B34}
+.seg2 button.in.sel .ic{background:#2A9D53}
 .catrow{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line)}
 .catrow:last-child{border-bottom:0}
 .catrow .cn{width:96px;flex:none;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -704,7 +715,7 @@ main{padding-top:18px}
   <div class="grip"></div>
   <h2 id="cashTitle">Nova movimentação</h2>
   <p class="h2sub">Despesas e outras entradas (não lance vendas nem compra de insumo aqui).</p>
-  <div class="field"><label>Tipo</label><div class="methods" id="cashType"></div></div>
+  <div class="field"><label>Tipo</label><div class="seg2" id="cashType"></div></div>
   <div class="field"><label>Valor</label><div class="money"><span class="cur">R$</span><input id="cAmount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
   <div class="field"><label>Categoria</label><div class="cash-cats" id="cashCatPick"></div></div>
   <div class="field"><label>Dia</label><input id="cfDate" class="date-input" type="date"></div>
@@ -780,7 +791,13 @@ const Cloud={
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
     const {data:cf,error:eCf}=await c.from('cashflow').select('*').order('date',{ascending:false});
-    if(!eCf && cf){ db.cashflow=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,note:r.note||'',createdAt:r.created_at||''})); }
+    if(!eCf && cf){
+      const rows=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,note:r.note||'',createdAt:r.created_at||''}));
+      const ids=new Set(rows.map(r=>r.id));
+      const pending=(db.cashflow||[]).filter(m=>m&&!ids.has(m.id));   // lançados aqui, ainda não chegaram na nuvem
+      db.cashflow=rows.concat(pending);
+      pending.forEach(m=>this.pushCash(m));                           // reenvia (não perde nada)
+    }
     Store.save(db);
   },
   async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
@@ -1570,7 +1587,9 @@ $('prodToggle').addEventListener('click', e=>{ const b=e.target.closest('[data-p
 /* ---- caixa: movimentações ---- */
 let editingCash=null, cashDraft={type:'out',category:null};
 function renderCashType(){
-  $('cashType').innerHTML='<div class="method '+(cashDraft.type==='out'?'sel':'')+'" data-ctype="out"><span>↓ Saída</span></div><div class="method '+(cashDraft.type==='in'?'sel':'')+'" data-ctype="in"><span>↑ Entrada</span></div>';
+  $('cashType').innerHTML=
+    '<button type="button" class="out'+(cashDraft.type==='out'?' sel':'')+'" data-ctype="out"><span class="ic">−</span><span class="tl">Saída</span><span class="ds">Despesa / conta</span></button>'+
+    '<button type="button" class="in'+(cashDraft.type==='in'?' sel':'')+'" data-ctype="in"><span class="ic">+</span><span class="tl">Entrada</span><span class="ds">Dinheiro que entrou</span></button>';
   renderCashCats();
 }
 function renderCashCats(){ $('cashCatPick').innerHTML=CASH_CATS[cashDraft.type].map(c=>'<div class="cat '+(c===cashDraft.category?'sel':'')+'" data-cat="'+c+'">'+c+'</div>').join(''); }
