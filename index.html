@@ -808,7 +808,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v3.0 · contas a pagar/receber';
+const APP_VERSION='v3.1 · sync à prova de perda';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -846,10 +846,22 @@ const Cloud={
     const {data:cl,error:e1}=await c.from('closings').select('*').order('date',{ascending:false});
     if(e1) throw e1;
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
-    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa:+r.taxa||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),hoursRev:(Array.isArray(r.hours_rev)?r.hours_rev:null),note:r.note||''}));
+    { // merge closings: mantém e reenvia os que ainda não subiram (não apaga o que é só local)
+      const rows=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa:+r.taxa||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),hoursRev:(Array.isArray(r.hours_rev)?r.hours_rev:null),note:r.note||'',synced:true}));
+      const dates=new Set(rows.map(r=>r.date));
+      const pending=(db.closings||[]).filter(x=>x&&!dates.has(x.date)&&!x.synced);
+      db.closings=rows.concat(pending);
+      pending.forEach(x=>this.pushClosing(x));
+    }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
-    if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
+    if(!eSk && sk){ // merge stock (chave data+produto)
+      const rows=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||'',synced:true}));
+      const keys=new Set(rows.map(r=>r.date+'|'+r.product));
+      const pending=(db.stock||[]).filter(x=>x&&!keys.has(x.date+'|'+(x.product||'coco'))&&!x.synced);
+      db.stock=rows.concat(pending);
+      pending.forEach(x=>this.pushStock(x));
+    }
     const {data:cf,error:eCf}=await c.from('cashflow').select('*').order('date',{ascending:false});
     if(!eCf && cf){
       const rows=cf.map(r=>({id:r.id,date:r.date,type:r.type,category:r.category,amount:+r.amount||0,status:r.status||'pago',due:r.due||null,note:r.note||'',createdAt:r.created_at||'',synced:true}));
@@ -861,11 +873,31 @@ const Cloud={
     }
     Store.save(db);
   },
-  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  // upsert resiliente: tenta o formato completo; se a nuvem rejeitar (coluna nova ainda não existe),
+  // reenvia só as colunas básicas. Só marca 'synced' quando a nuvem confirma DE VERDADE (sem erro).
+  async _upsert(table, full, core, conflict){
+    let {error}=await this.client.from(table).upsert(full,{onConflict:conflict});
+    if(error && core){ ({error}=await this.client.from(table).upsert(core,{onConflict:conflict})); }
+    return error;
+  },
+  async pushClosing(c){ if(!this.on)return;
+    const full={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),note:c.note||''};
+    const core={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''};
+    try{ const err=await this._upsert('closings',full,core,'date'); if(err) throw err; c.synced=true; Store.save(db); }
+    catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
-  async pushStock(s){ if(!this.on)return; const pl={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''}; pl.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date,product'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushStock(s){ if(!this.on)return;
+    const full={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''};
+    full.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null;
+    const core={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,degustacao:s.degustacao||0,perda:s.perda||0,note:s.note||''};
+    try{ const err=await this._upsert('stock',full,core,'date,product'); if(err) throw err; s.synced=true; Store.save(db); }
+    catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
-  async pushCash(m){ if(!this.on)return; try{ await this.client.from('cashflow').upsert({id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,status:m.status||'pago',due:m.due||null,note:m.note||''},{onConflict:'id'}); m.synced=true; Store.save(db); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushCash(m){ if(!this.on)return;
+    const full={id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,status:m.status||'pago',due:m.due||null,note:m.note||''};
+    const core={id:m.id,date:m.date,type:m.type,category:m.category,amount:m.amount,note:m.note||''};
+    try{ const err=await this._upsert('cashflow',full,core,'id'); if(err) throw err; m.synced=true; Store.save(db); }
+    catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals});}catch(e){} },
   subscribe(){
