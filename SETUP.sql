@@ -12,11 +12,13 @@ create table if not exists public.closings (
   taxa       numeric not null default 0,   -- taxa da Stone (bruto - líquido)
   stone_tx   integer not null default 0,
   hours      jsonb,                         -- fluxo por hora (0..23) do CSV
+  hours_rev  jsonb,                          -- receita bruta por hora (0..23) do CSV
   note       text default '',
   updated_at timestamptz not null default now()
 );
 alter table public.closings add column if not exists taxa numeric default 0;
 alter table public.closings add column if not exists hours jsonb;
+alter table public.closings add column if not exists hours_rev jsonb;   -- receita bruta por hora (0..23), do CSV da Stone
 
 -- ============ Estoque (por produto: coco / sorvete) ============
 create table if not exists public.stock (

@@ -317,6 +317,17 @@ main{padding-top:18px}
 .tbl td{padding:7px 2px;font-size:13px;border-bottom:1px solid var(--line)}
 .tbl td:last-child{text-align:right;font-weight:800;color:var(--ink)}
 .tbl td:first-child{color:var(--ink-soft);font-weight:600}
+/* fluxo por horário */
+.hwin{background:var(--green-tint);border-radius:12px;padding:11px 13px;margin:12px 0 4px;font-size:13px;font-weight:700;color:var(--green-700);display:flex;gap:8px;align-items:baseline}
+.hwin b{font-weight:800}
+.htbl{margin-top:8px}
+.htbl th{text-align:left;font-size:11px;color:var(--ink-faint);font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:4px 2px;border-bottom:1.5px solid var(--line)}
+.htbl th:not(:first-child),.htbl td:not(:first-child){text-align:right}
+.htbl td:last-child{color:var(--ink-soft);font-weight:700}
+.htbl tr.pk td{background:#FCF3DD;color:var(--gold-ink,#8A5D00);font-weight:800}
+.htbl tr.pk td:first-child{border-radius:8px 0 0 8px}
+.htbl tr.pk td:last-child{border-radius:0 8px 8px 0;color:#8A5D00}
+.hnote{font-size:11.5px;color:var(--ink-faint);margin-top:8px;font-weight:600}
 
 /* metas por dia */
 .wk-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
@@ -556,8 +567,11 @@ main{padding-top:18px}
   <div class="section-title">Rende mais por dia <span class="st-side">média · todo o histórico</span></div>
   <div class="card chart-card"><div class="ch-s" id="wdaySub" style="margin:0 2px 8px"></div><div class="chart" id="chWday"></div><div class="charttip" id="tipWday"></div></div>
 
-  <div class="section-title">Pico de vendas <span class="st-side">horário · cartão/Pix</span></div>
-  <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div><div class="charttip" id="tipHours"></div></div>
+  <div class="section-title">Fluxo por horário <span class="st-side">cartão/Pix da Stone</span></div>
+  <div class="card chart-card"><div class="ch-s" id="peakSub" style="margin:0 2px 8px"></div><div class="chart" id="chHours"></div><div class="charttip" id="tipHours"></div>
+    <div id="hourWindow"></div>
+    <div id="hourTable"></div>
+  </div>
 
   <div class="section-title">Formas de pagamento <span class="st-side">toque nas fatias</span></div>
   <div class="card chart-card"><div class="chart" id="chPay"></div><div class="charttip" id="tipPay"></div><div class="legend" id="lgPay"></div></div>
@@ -832,7 +846,7 @@ const Cloud={
     const {data:cl,error:e1}=await c.from('closings').select('*').order('date',{ascending:false});
     if(e1) throw e1;
     const {data:st}=await c.from('app_settings').select('*').eq('id',1).maybeSingle();
-    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa:+r.taxa||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),note:r.note||''}));
+    db.closings=(cl||[]).map(r=>({id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa:+r.taxa||0,stoneTx:r.stone_tx||0,hours:(Array.isArray(r.hours)?r.hours:null),hoursRev:(Array.isArray(r.hours_rev)?r.hours_rev:null),note:r.note||''}));
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ db.stock=sk.map(r=>({id:'k'+r.date+'|'+(r.product||'coco'),date:r.date,product:r.product||'coco',comprados:r.comprados||0,custo:+r.custo||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||''})); }
@@ -847,7 +861,7 @@ const Cloud={
     }
     Store.save(db);
   },
-  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
+  async pushClosing(c){ if(!this.on)return; try{ await this.client.from('closings').upsert({date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),note:c.note||''},{onConflict:'date'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delClosing(date){ if(!this.on)return; try{ await this.client.from('closings').delete().eq('date',date);}catch(e){} },
   async pushStock(s){ if(!this.on)return; const pl={date:s.date,product:(s.product||'coco'),comprados:s.comprados||0,custo:s.custo||0,degustacao:s.degustacao||0,treinamento:s.treinamento||0,perda:s.perda||0,note:s.note||''}; pl.contagem=(s.contagem!=null && s.contagem!=='')?+s.contagem:null; try{ await this.client.from('stock').upsert(pl,{onConflict:'date,product'}); }catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delStock(date, product){ if(!this.on)return; try{ await this.client.from('stock').delete().eq('date',date).eq('product',product||'coco');}catch(e){} },
@@ -1175,16 +1189,34 @@ function renderDados(){
     wdSub.innerHTML='🏆 Melhor dia: <b>'+WDF[best.w]+'</b> · média <b>'+money(wbv)+'</b>/dia'+(best.n>1?' · '+best.n+' registros':'');
     document.getElementById('chWday').innerHTML=svgBarsH(wdData, wbi, v=>money(v).replace(',00',''), d=>d.label+' · média <b>'+money(d.value)+'</b>'+(d.n?' · '+d.n+'x':''));
   } else { wdSub.textContent='Feche alguns dias para ver o padrão por dia da semana.'; document.getElementById('chWday').innerHTML=emptyChart(); }
-  // pico de vendas por hora (do CSV da Stone)
-  const hoursAgg=new Array(24).fill(0); let hasHours=false, daysWithHours=0;
-  closingsOf(key).forEach(c=>{ if(Array.isArray(c.hours)&&c.hours.length===24){ hasHours=true; daysWithHours++; c.hours.forEach((n,h)=>hoursAgg[h]+=(n||0)); } });
-  const chH=document.getElementById('chHours'), peakSub=document.getElementById('peakSub');
+  // fluxo por horário (do CSV da Stone) — movimento + receita real por hora
+  const hoursAgg=new Array(24).fill(0), hoursRevAgg=new Array(24).fill(0);
+  let hasHours=false, hasRev=false, daysWithHours=0;
+  closingsOf(key).forEach(c=>{
+    if(Array.isArray(c.hours)&&c.hours.length===24){ hasHours=true; daysWithHours++; c.hours.forEach((n,h)=>hoursAgg[h]+=(n||0)); }
+    if(Array.isArray(c.hoursRev)&&c.hoursRev.length===24){ hasRev=true; c.hoursRev.forEach((v,h)=>hoursRevAgg[h]+=(+v||0)); }
+  });
+  const chH=$('chHours'), peakSub=$('peakSub'), hWin=$('hourWindow'), hTab=$('hourTable');
   if(hasHours && hoursAgg.some(h=>h>0)){
     let peak=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[peak]) peak=h;
-    const totalTx=hoursAgg.reduce((a,b)=>a+b,0);
-    peakSub.innerHTML='🔥 Pico: <b>'+peak+'h–'+((peak+1)%24)+'h</b> · '+hoursAgg[peak]+' vendas ('+Math.round(hoursAgg[peak]/totalTx*100)+'% do fluxo) · base de '+daysWithHours+' dia'+(daysWithHours>1?'s':'');
+    const totalTx=hoursAgg.reduce((a,b)=>a+b,0), totalRev=hoursRevAgg.reduce((a,b)=>a+b,0);
+    peakSub.innerHTML='🔥 Hora de pico: <b>'+peak+'h–'+((peak+1)%24)+'h</b> · '+hoursAgg[peak]+' vendas ('+Math.round(hoursAgg[peak]/totalTx*100)+'% do fluxo) · base de '+daysWithHours+' dia'+(daysWithHours>1?'s':'');
     chH.innerHTML=svgHours(hoursAgg, peak);
-  } else { peakSub.textContent='Importe o CSV da Stone (Fechar o dia) para ver o fluxo por horário.'; chH.innerHTML=emptyChart(); }
+    // melhor faixa de 3h contíguas (por receita se houver, senão por movimento)
+    const base=hasRev?hoursRevAgg:hoursAgg, baseTot=hasRev?totalRev:totalTx;
+    let bw0=0,bwv=-1; for(let h=0;h<=21;h++){ const s=base[h]+base[h+1]+base[h+2]; if(s>bwv){bwv=s;bw0=h;} }
+    hWin.innerHTML='<div class="hwin">🕒 <span>Faixa mais forte: <b>'+bw0+'h–'+((bw0+3)%24)+'h</b> concentra <b>'+Math.round(bwv/baseTot*100)+'%</b> '+(hasRev?'da receita':'do movimento')+'</div>';
+    // tabela por hora (só horas com movimento)
+    let first=0,last=23; while(first<23&&hoursAgg[first]===0) first++; while(last>0&&hoursAgg[last]===0) last--;
+    let rows='';
+    for(let h=first;h<=last;h++){ if(!hoursAgg[h]) continue;
+      const pct=Math.round(hoursAgg[h]/totalTx*100);
+      const rec=hasRev?money(hoursRevAgg[h]).replace(',00',''):'—';
+      rows+='<tr'+(h===peak?' class="pk"':'')+'><td><b>'+h+'h</b></td><td>'+hoursAgg[h]+'</td><td>'+rec+'</td><td>'+pct+'%</td></tr>';
+    }
+    hTab.innerHTML='<table class="tbl htbl"><thead><tr><th>Hora</th><th>Vendas</th><th>Receita</th><th>%</th></tr></thead><tbody>'+rows+'</tbody></table>'
+      +(hasRev?'':'<div class="hnote">Receita por hora aparece nos próximos imports da Stone.</div>');
+  } else { peakSub.textContent='Importe o CSV da Stone (Fechar o dia) para ver o fluxo por horário.'; chH.innerHTML=emptyChart(); hWin.innerHTML=''; hTab.innerHTML=''; }
   // formas de pagamento
   const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
   document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({label:s.label,value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
@@ -1447,14 +1479,14 @@ function parseStoneCSV(text){
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
     const liq=iLiq>=0?parseMoney(r[iLiq]):val;   // valor líquido (após taxa Stone)
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,hours:new Array(24).fill(0)});
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
     if(prod.indexOf('pix')>=0) d.pix+=val;
     else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0) d.debito+=val;
     else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0) d.credito+=val;
     else continue;
     d.taxa += Math.max(0, val-liq);   // taxa da Stone desse dia
     d.tx++;
-    const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; if(hh>=0&&hh<24) d.hours[hh]++;
+    const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; if(hh>=0&&hh<24){ d.hours[hh]++; d.hoursRev[hh]+=val; }   // receita bruta por hora
   }
   return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
 }
@@ -1488,10 +1520,10 @@ function bulkImportStone(){
     const tot=d.pix+d.debito+d.credito;
     let c=db.closings.find(x=>x.date===d.date);
     if(c){ // atualiza Stone + fluxo por hora + taxa, mantém gelatos/faturamento/contagem
-      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; if(d.hours) c.hours=d.hours; updated++; Cloud.pushClosing(c);
+      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; updated++; Cloud.pushClosing(c);
     } else {
       const gel=Math.round(price()>0?tot/price():0);
-      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, hours:d.hours||null, note:'', createdAt:new Date().toISOString() };
+      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, hours:d.hours||null, hoursRev:d.hoursRev||null, note:'', createdAt:new Date().toISOString() };
       db.closings.push(c); created++; Cloud.pushClosing(c);
     }
   });
@@ -1552,7 +1584,7 @@ $('saveClose').addEventListener('click', ()=>{
   if(target){ Object.assign(target, d); saved=target; }
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
   // fluxo por hora + taxa Stone vindos do CSV importado (se houver para esta data)
-  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; saved.taxa=sp.taxa||0; }
+  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; saved.taxa=sp.taxa||0; }
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
   // nuvem: se a data mudou na edição, remove a antiga
