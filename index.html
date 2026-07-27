@@ -633,7 +633,7 @@ main{padding-top:18px}
 <div class="sheet" id="closeSheet" role="dialog" aria-modal="true">
   <div class="grip"></div>
   <h2 id="closeTitle">Fechamento do dia</h2>
-  <p class="h2sub">Lance o total do dia. O dinheiro é deduzido pela Stone.</p>
+  <p class="h2sub">Cartão/Pix vêm da Stone. Conte o dinheiro no fim do dia — o app soma o total e calcula os gelatos pelo valor.</p>
 
   <div class="field">
     <label>Dia</label>
@@ -652,17 +652,7 @@ main{padding-top:18px}
   </div>
 
   <div class="field">
-    <label>Gelatos vendidos no dia <span class="hintlink" style="color:var(--ink-faint);cursor:default">total, com dinheiro</span></label>
-    <input id="cGel" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
-  </div>
-
-  <div class="field">
-    <label>Faturamento total <span class="hintlink" id="fillRev">usar preço × qtd</span></label>
-    <div class="money"><span class="cur">R$</span><input id="cRev" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
-  </div>
-
-  <div class="field">
-    <label>Recebido pela Stone (por forma)</label>
+    <label>Recebido pela Stone (cartão/Pix) <span class="hintlink" style="color:var(--ink-faint);cursor:default">do import</span></label>
     <div class="stone-row">
       <span class="sl"><span class="mi" style="background:var(--pix)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 22 12 12 22 2 12z"/><path d="M7 12h10"/></svg></span>Pix</span>
       <div class="money"><span class="cur">R$</span><input id="sPix" type="text" inputmode="decimal" placeholder="0,00"></div>
@@ -675,6 +665,21 @@ main{padding-top:18px}
       <span class="sl"><span class="mi" style="background:var(--credito)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></span>Crédito</span>
       <div class="money"><span class="cur">R$</span><input id="sCred" type="text" inputmode="decimal" placeholder="0,00"></div>
     </div>
+  </div>
+
+  <div class="field">
+    <label>💵 Dinheiro no fim do dia <span class="hintlink" style="color:var(--ink-faint);cursor:default">conte a gaveta</span></label>
+    <div class="money"><span class="cur">R$</span><input id="cCash" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+  </div>
+
+  <div class="field">
+    <label>Faturamento total <span class="hintlink" style="color:var(--ink-faint);cursor:default">Stone + dinheiro</span></label>
+    <div class="money"><span class="cur">R$</span><input id="cRev" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+  </div>
+
+  <div class="field">
+    <label>Gelatos vendidos <span class="hintlink" id="fillRev">calculado pelo valor · ajuste se teve combo</span></label>
+    <input id="cGel" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
   </div>
 
   <!-- conciliação ao vivo -->
@@ -808,7 +813,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v3.1 · sync à prova de perda';
+const APP_VERSION='v3.2 · dinheiro no fechamento';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1229,25 +1234,30 @@ function renderDados(){
     if(Array.isArray(c.hoursRev)&&c.hoursRev.length===24){ hasRev=true; c.hoursRev.forEach((v,h)=>hoursRevAgg[h]+=(+v||0)); }
   });
   const chH=$('chHours'), peakSub=$('peakSub'), hWin=$('hourWindow'), hTab=$('hourTable');
-  if(hasHours && hoursAgg.some(h=>h>0)){
-    let peak=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[peak]) peak=h;
-    const totalTx=hoursAgg.reduce((a,b)=>a+b,0), totalRev=hoursRevAgg.reduce((a,b)=>a+b,0);
-    peakSub.innerHTML='🔥 Hora de pico: <b>'+peak+'h–'+((peak+1)%24)+'h</b> · '+hoursAgg[peak]+' vendas ('+Math.round(hoursAgg[peak]/totalTx*100)+'% do fluxo) · base de '+daysWithHours+' dia'+(daysWithHours>1?'s':'');
-    chH.innerHTML=svgHours(hoursAgg, peak);
-    // melhor faixa de 3h contíguas (por receita se houver, senão por movimento)
-    const base=hasRev?hoursRevAgg:hoursAgg, baseTot=hasRev?totalRev:totalTx;
-    let bw0=0,bwv=-1; for(let h=0;h<=21;h++){ const s=base[h]+base[h+1]+base[h+2]; if(s>bwv){bwv=s;bw0=h;} }
-    hWin.innerHTML='<div class="hwin">🕒 <span>Faixa mais forte: <b>'+bw0+'h–'+((bw0+3)%24)+'h</b> concentra <b>'+Math.round(bwv/baseTot*100)+'%</b> '+(hasRev?'da receita':'do movimento')+'</div>';
-    // tabela por hora (só horas com movimento)
-    let first=0,last=23; while(first<23&&hoursAgg[first]===0) first++; while(last>0&&hoursAgg[last]===0) last--;
+  if((hasRev && hoursRevAgg.some(v=>v>0)) || (hasHours && hoursAgg.some(h=>h>0))){
+    const pr=price()>0?price():DEFAULT_PRICE;
+    // gelatos por hora pelo VALOR (receita/hora ÷ preço) — venda dividida não conta a mais.
+    // dias antigos só têm contagem de transações: usa como aproximação.
+    const gelPerHour=new Array(24).fill(0);
+    for(let h=0;h<24;h++){ gelPerHour[h] = hasRev ? hoursRevAgg[h]/pr : hoursAgg[h]; }
+    let peak=0; for(let h=1;h<24;h++) if(gelPerHour[h]>gelPerHour[peak]) peak=h;
+    const totalGel=gelPerHour.reduce((a,b)=>a+b,0)||1;
+    const gelH=v=>Math.round(v);
+    peakSub.innerHTML='🔥 Hora de pico: <b>'+peak+'h–'+((peak+1)%24)+'h</b> · '+gelH(gelPerHour[peak])+' gelatos ('+Math.round(gelPerHour[peak]/totalGel*100)+'% do dia) · base de '+daysWithHours+' dia'+(daysWithHours>1?'s':'');
+    chH.innerHTML=svgHours(gelPerHour.map(gelH), peak);
+    // melhor faixa de 3h contíguas (pelo valor)
+    let bw0=0,bwv=-1; for(let h=0;h<=21;h++){ const s=gelPerHour[h]+gelPerHour[h+1]+gelPerHour[h+2]; if(s>bwv){bwv=s;bw0=h;} }
+    hWin.innerHTML='<div class="hwin">🕒 <span>Faixa mais forte: <b>'+bw0+'h–'+((bw0+3)%24)+'h</b> concentra <b>'+Math.round(bwv/totalGel*100)+'%</b> das vendas</span></div>';
+    // tabela por hora
+    let first=0,last=23; while(first<23&&gelPerHour[first]<0.5) first++; while(last>0&&gelPerHour[last]<0.5) last--;
     let rows='';
-    for(let h=first;h<=last;h++){ if(!hoursAgg[h]) continue;
-      const pct=Math.round(hoursAgg[h]/totalTx*100);
+    for(let h=first;h<=last;h++){ if(gelPerHour[h]<0.5) continue;
+      const pct=Math.round(gelPerHour[h]/totalGel*100);
       const rec=hasRev?money(hoursRevAgg[h]).replace(',00',''):'—';
-      rows+='<tr'+(h===peak?' class="pk"':'')+'><td><b>'+h+'h</b></td><td>'+hoursAgg[h]+'</td><td>'+rec+'</td><td>'+pct+'%</td></tr>';
+      rows+='<tr'+(h===peak?' class="pk"':'')+'><td><b>'+h+'h</b></td><td>'+gelH(gelPerHour[h])+'</td><td>'+rec+'</td><td>'+pct+'%</td></tr>';
     }
-    hTab.innerHTML='<table class="tbl htbl"><thead><tr><th>Hora</th><th>Vendas</th><th>Receita</th><th>%</th></tr></thead><tbody>'+rows+'</tbody></table>'
-      +(hasRev?'':'<div class="hnote">Receita por hora aparece nos próximos imports da Stone.</div>');
+    hTab.innerHTML='<table class="tbl htbl"><thead><tr><th>Hora</th><th>Gelatos</th><th>Receita</th><th>%</th></tr></thead><tbody>'+rows+'</tbody></table>'
+      +(hasRev?'<div class="hnote">Gelatos por hora calculados pelo valor — venda dividida não conta a mais.</div>':'<div class="hnote">Aproximado por transações. Gelatos/receita exatos por hora aparecem nos próximos imports da Stone.</div>');
   } else { peakSub.textContent='Importe o CSV da Stone (Fechar o dia) para ver o fluxo por horário.'; chH.innerHTML=emptyChart(); hWin.innerHTML=''; hTab.innerHTML=''; }
   // formas de pagamento
   const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
@@ -1269,8 +1279,8 @@ function renderDados(){
   if(rev>0 && prevRev>0){ const dp=(rev-prevRev)/prevRev*100, up=dp>=0;
     rows.push(irow(up?'📈':'📉','Faturamento <b>'+(up?'+':'')+Math.round(dp)+'%</b> vs mês passado<span class="muted"> — de '+money(prevRev)+' para '+money(rev)+'</span>')); }
   if(wbi>=0) rows.push(irow('🏆','Seu dia mais forte é <b>'+WDF[wdData[wbi].w]+'</b><span class="muted"> — média de '+money(wbv)+'/dia</span>'));
-  if(hasHours && hoursAgg.some(h=>h>0)){ let pk=0; for(let h=1;h<24;h++) if(hoursAgg[h]>hoursAgg[pk]) pk=h;
-    rows.push(irow('🔥','Pico de movimento entre <b>'+pk+'h e '+((pk+1)%24)+'h</b><span class="muted"> — '+hoursAgg[pk]+' vendas no horário</span>')); }
+  if((hasRev&&hoursRevAgg.some(v=>v>0))||(hasHours&&hoursAgg.some(h=>h>0))){ const pr=price()>0?price():DEFAULT_PRICE; const gph=new Array(24).fill(0); for(let h=0;h<24;h++) gph[h]=hasRev?hoursRevAgg[h]/pr:hoursAgg[h]; let pk=0; for(let h=1;h<24;h++) if(gph[h]>gph[pk]) pk=h;
+    rows.push(irow('🔥','Pico de vendas entre <b>'+pk+'h e '+((pk+1)%24)+'h</b><span class="muted"> — '+Math.round(gph[pk])+' gelatos no horário</span>')); }
   if(gel>0) rows.push(irow('💰','Margem líquida de <b>'+Math.round(margem)+'%</b><span class="muted"> — lucro líquido '+money(lucro)+' no mês</span>'));
   if(gel>0) rows.push(irow('🍨','Ticket médio de <b>'+money(rev/gel)+'</b><span class="muted"> — '+NUM.format(gel)+' gelatos vendidos</span>'));
   const cocoNow=Math.round(currentStock('coco')), sorvNow=Math.round(currentStock('sorvete'));
@@ -1473,7 +1483,14 @@ function draftFromForm(){
     revenue:parseMoney($('cRev').value), pix:parseMoney($('sPix').value),
     debito:parseMoney($('sDeb').value), credito:parseMoney($('sCred').value) };
 }
-function autoRev(){ const q=parseInt2($('cGel').value); if(q>0){ $('cRev').value=String((q*price()).toFixed(2)).replace('.',','); } }
+function recompute(){   // dinheiro (contado) + Stone (cartão/Pix) -> total e gelatos, pelo VALOR
+  const stone=parseMoney($('sPix').value)+parseMoney($('sDeb').value)+parseMoney($('sCred').value);
+  const cash=parseMoney($('cCash').value);
+  const total=stone+cash;
+  $('cRev').value = total>0 ? String(total.toFixed(2)).replace('.',',') : '';
+  if(price()>0) $('cGel').value = total>0 ? Math.round(total/price()) : '';
+  renderRecon();
+}
 function renderRecon(){
   const c=draftFromForm(); const r=reconcile(c);
   const cardGel=price()>0?Math.round(r.stone/price()):0;
@@ -1482,15 +1499,15 @@ function renderRecon(){
   let html=`<div class="recon-row"><span>Faturamento</span><b>${money(c.revenue)}</b></div>
     <div class="recon-row"><span>Recebido Stone</span><b>${money(r.stone)}</b></div>
     ${split}
-    <div class="recon-row big"><span class="lbl">💵 Dinheiro (deduzido)</span><span class="dinheiro">${money(r.dinheiro)}</span></div>`;
+    <div class="recon-row big"><span class="lbl">💵 Dinheiro no caixa</span><span class="dinheiro">${money(r.dinheiro)}</span></div>`;
   if(r.issues.length){ r.issues.forEach(m=>{ html+=`<div class="recon-alert"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>${m}</span></div>`; }); }
   else if(c.gelatos>0){ html+=`<div class="recon-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tudo bate certinho</div>`; }
   $('recon').innerHTML=html;
   $('saveClose').disabled=!(c.gelatos>0 && c.revenue>0);
 }
-$('cGel').addEventListener('input', ()=>{ autoRev(); renderRecon(); });
-['cRev','sPix','sDeb','sCred','cDate'].forEach(id=> $(id).addEventListener('input', renderRecon));
-$('fillRev').addEventListener('click', ()=>{ autoRev(); renderRecon(); });
+['sPix','sDeb','sCred','cCash'].forEach(id=> $(id).addEventListener('input', recompute));
+['cGel','cRev','cDate'].forEach(id=> $(id).addEventListener('input', renderRecon));   // cGel/cRev = ajuste manual (combo/desconto)
+$('fillRev').addEventListener('click', ()=>{ const rev=parseMoney($('cRev').value); if(price()>0&&rev>0) $('cGel').value=Math.round(rev/price()); renderRecon(); });
 
 /* ---- import CSV da Stone ---- */
 let stoneParsed=[];
@@ -1534,11 +1551,11 @@ function applyStoneDay(d){
   $('sDeb').value=d.debito?String(d.debito.toFixed(2)).replace('.',','):'';
   $('sCred').value=d.credito?String(d.credito.toFixed(2)).replace('.',','):'';
   const tot=d.pix+d.debito+d.credito, cardGel=Math.round(price()>0?tot/price():0);
+  // preserva o dinheiro já lançado nesse dia, se houver
   const existing=db.closings.find(c=>c.date===d.date);
-  if(existing && existing.gelatos){ $('cGel').value=existing.gelatos; }
-  else if(!parseInt2($('cGel').value)){ $('cGel').value=cardGel; }   // piso: só cartão/Pix
-  autoRev();
-  $('importHint').innerHTML='No cartão/Pix: <b>'+cardGel+' gelatos</b> ('+money(tot)+'). Tem dinheiro? Ajuste o <b>total de gelatos</b> acima que o resto vira dinheiro.';
+  if(existing){ const cash=(existing.revenue||0)-((existing.pix||0)+(existing.debito||0)+(existing.credito||0)); $('cCash').value = cash>0.005?String(cash.toFixed(2)).replace('.',','):''; }
+  recompute();
+  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> ('+cardGel+' gelatos). Agora conte o <b>dinheiro</b> — o total e os gelatos se ajustam sozinhos.';
   showStoneChips(d.date);
   $('bulkBtn').style.display = stoneParsed.length? 'block':'none';
   $('bulkBtn').textContent = 'Lançar/atualizar os '+stoneParsed.length+' dia'+(stoneParsed.length>1?'s':'')+' do arquivo';
@@ -1591,11 +1608,13 @@ function openClose(existing){
     $('sPix').value=existing.pix?String(existing.pix.toFixed(2)).replace('.',','):'';
     $('sDeb').value=existing.debito?String(existing.debito.toFixed(2)).replace('.',','):'';
     $('sCred').value=existing.credito?String(existing.credito.toFixed(2)).replace('.',','):'';
+    const stone=(existing.pix||0)+(existing.debito||0)+(existing.credito||0), cash=(existing.revenue||0)-stone;
+    $('cCash').value = cash>0.005 ? String(cash.toFixed(2)).replace('.',',') : '';
     $('deleteClose').style.display='block';
   } else {
     $('closeTitle').textContent='Fechamento do dia';
     $('cDate').value=yesterdayISO();
-    ['cGel','cRev','sPix','sDeb','sCred'].forEach(id=>$(id).value='');
+    ['cGel','cRev','sPix','sDeb','sCred','cCash'].forEach(id=>$(id).value='');
     $('deleteClose').style.display='none';
   }
   renderRecon(); openSheet(closeSheet);
