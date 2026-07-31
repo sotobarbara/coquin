@@ -396,6 +396,17 @@ main{padding-top:18px}
 .emprow .es{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
 .emprow .es b{color:var(--ink);font-weight:800}
 .emprow .cchev{flex:none;color:var(--ink-faint);width:18px;height:18px}
+/* import extrato do banco */
+.bankrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.bankrow:last-child{border-bottom:0}
+.bankrow.dup{opacity:.5}
+.bchk{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:#fff;color:#fff;font-weight:900;font-size:13px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.bchk.on{background:var(--green);border-color:var(--green)}
+.binfo{flex:1;min-width:0}
+.binfo .bamt{font-size:14px;font-weight:800;color:var(--danger)}
+.binfo .bname{font-size:11.5px;color:var(--ink-soft);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.binfo .bname b{color:var(--green-700);font-weight:800}
+.bcat{flex:none;max-width:116px;border:1.5px solid var(--line);border-radius:9px;padding:7px 6px;font-size:11.5px;font-weight:700;color:var(--ink);background:#fff;font-family:inherit;-webkit-appearance:none;appearance:none}
 /* login / sincronia */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -571,6 +582,12 @@ main{padding-top:18px}
   </div>
 
   <div class="card" id="custoCard" style="margin-top:12px;padding:14px 16px"></div>
+
+  <button type="button" class="import-btn" id="bankBtn" style="margin-top:12px">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Importar extrato do banco (saídas)
+  </button>
+  <input type="file" id="bankFile" accept=".csv,text/csv" style="display:none">
 
   <div class="section-title">Faturamento por dia <span class="st-side">toque nas barras</span></div>
   <div class="card chart-card"><div class="chart" id="chFat"></div><div class="charttip" id="tipFat"></div></div>
@@ -825,6 +842,16 @@ main{padding-top:18px}
   <button class="btn-ghost" id="deleteCash" style="display:none">Excluir</button>
 </div>
 
+<!-- SHEET: importar extrato do banco -->
+<div class="sheet" id="bankSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Extrato do banco</h2>
+  <p class="h2sub" id="bankSub">Confira as saídas. Salários vão pra Equipe. Toque na categoria pra ajustar.</p>
+  <div id="bankList" class="card sales" style="margin-bottom:6px;max-height:52vh;overflow-y:auto"></div>
+  <button class="btn-primary" id="bankConfirm" disabled>Lançar saídas</button>
+  <button class="btn-ghost" id="bankToggleAll" style="margin-top:8px">Marcar / desmarcar todas</button>
+</div>
+
 <!-- SHEET: detalhe de um funcionário -->
 <div class="sheet" id="empDetail" role="dialog" aria-modal="true">
   <div class="grip"></div>
@@ -860,7 +887,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v3.4 · aba Equipe (pagamentos)';
+const APP_VERSION='v3.5 · importar extrato do banco';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -872,7 +899,8 @@ const PRODUCTS={
 const PRODUCT_ORDER=['coco','sorvete'];
 function prodYield(p){ return PRODUCTS[p]?PRODUCTS[p].yield:GEL_PER_COCO; }
 /* categorias do caixa (despesas e outras entradas) */
-const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
+const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
+const PAYROLL_CATS=['Salário','Adiantamento','Benefício','Vale','Comissão'];   // categorias que vão pra Equipe
 const PAY_TYPES=['Salário','Adiantamento','Benefício','Vale','Comissão','Outros'];   // tipos de pagamento à equipe (viram a categoria)
 
 const METHODS={
@@ -1510,9 +1538,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet].forEach(s=>s.classList.remove('on')); }
 scrim.addEventListener('click', closeSheets);
 
 /* ---------- abas Vendas | Estoque ---------- */
@@ -1944,6 +1972,91 @@ $('empPayList').addEventListener('click', e=>{
   const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(!m) return; closeSheets(); setTimeout(()=>openCash(m),140);
 });
 $('empAddPay').addEventListener('click', ()=>{ const n=empDetailName; closeSheets(); setTimeout(()=>openPayment(n,''),140); });
+
+/* ---- Importar extrato do banco (saídas) ---- */
+let bankRows=[];
+function parseCSVRows(text, delim){ const rows=[]; let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=ch; }
+    else { if(ch==='"')q=true; else if(ch===delim){row.push(f);f='';} else if(ch==='\r'){} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f='';} else f+=ch; } }
+  if(f.length||row.length){row.push(f);rows.push(row);} return rows; }
+function parseBankCSV(text){
+  const first=text.split(/\r?\n/)[0]||''; const delim=(first.split(',').length>=first.split(';').length)?',':';';
+  const rows=parseCSVRows(text, delim); if(rows.length<2) return [];
+  const hdr=rows[0].map(h=>h.trim().toLowerCase());
+  const find=(...ks)=>{ for(const k of ks){ const i=hdr.findIndex(h=>h.includes(k)); if(i>=0) return i; } return -1; };
+  const iVal=(hdr.indexOf('valor')>=0?hdr.indexOf('valor'):find('valor'));
+  const iDate=find('data','lançamento','lancamento'); const iName=find('destino','favorecido','beneficiário','beneficiario');
+  const iDoc=hdr.findIndex(h=>h.includes('destino')&&h.includes('documento'));
+  const iDesc=find('descrição','descricao','histórico','historico','movimentação','movimentacao');
+  if(iVal<0||iDate<0) return null;
+  const out=[];
+  for(let n=1;n<rows.length;n++){ const r=rows[n]; if(r.length<=iVal) continue;
+    const val=parseMoney(r[iVal]); if(!(val<0)) continue;   // só saídas (valor negativo)
+    const rawd=(r[iDate]||'').trim().split(' ')[0]; const dm=rawd.split(/[\/\-]/); if(dm.length!==3) continue;
+    const iso = dm[0].length===4 ? (dm[0]+'-'+dm[1].padStart(2,'0')+'-'+dm[2].padStart(2,'0')) : (dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0'));
+    let name=(iName>=0?r[iName]:'')||''; if(!name && iDesc>=0) name=r[iDesc]||'';
+    out.push({date:iso, amount:Math.abs(val), name:name.trim(), doc:(iDoc>=0?(r[iDoc]||'').trim():'')});
+  }
+  return out;
+}
+function titleName(s){ return String(s||'').toLowerCase().replace(/\d+/g,'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()+w.slice(1)).join(' ').trim(); }
+function deriveEmp(name){ const s=(name||'').toUpperCase(); for(const e of knownEmployees()){ const f=e.split(/\s+/)[0]; if(f.length>=3 && s.includes(f.toUpperCase())) return e; } return titleName(name); }
+function guessBank(name, doc){
+  const s=(name||'').toUpperCase();
+  for(const e of knownEmployees()){ const f=e.split(/\s+/)[0].toUpperCase(); if(f.length>=3 && s.includes(f)) return {category:'Salário', employee:e}; }
+  if(/PLUXEE|SODEXO|ALELO|TICKET|VALE ?REF|VALE ?ALIM|BENEFICI/.test(s)) return {category:'Benefício', employee:''};
+  if(/ALUGUEL|IMOBILI/.test(s)) return {category:'Aluguel', employee:''};
+  if(/ENERGIA|ENERGISA|ENEL|COELCE|CEMIG|EQUATORIAL|COMGAS|SABESP|\bGAS\b|\bAGUA\b/.test(s)) return {category:'Gás / Energia', employee:''};
+  if(/GELADOS|SORVETE|DISTRIBUID|ATACAD|EMBALAG|\bCOPO|INSUMO/.test(s)) return {category:'Fornecedor', employee:''};
+  if(/MARKETING|TRAFEGO|ANUNCIO|AGENCIA/.test(s)) return {category:'Marketing', employee:''};
+  if(/IMPOSTO|SIMPLES|\bDARF|\bDAS\b|TRIBUT|PREFEITURA|RECEITA FEDERAL/.test(s)) return {category:'Impostos', employee:''};
+  const isCNPJ=/\/\s?\d{4}/.test(doc)||/\d{2}\.\d{3}\.\d{3}\//.test(doc||'');
+  if(!isCNPJ && s.replace(/[^A-ZÀ-Ú ]/g,'').trim().length>4) return {category:'Salário', employee:titleName(name)};   // pessoa física -> provável salário
+  return {category:'Outros', employee:''};
+}
+function bankSig(date, amount, name){ return date+'|'+Math.round((+amount||0)*100)+'|'+String(name||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,26); }
+function openBankImport(text){
+  const parsed=parseBankCSV(text);
+  if(parsed===null){ toast('CSV não reconhecido — use o extrato do banco'); return; }
+  if(!parsed.length){ toast('Nenhuma saída encontrada no arquivo'); return; }
+  const existing=new Set(db.cashflow.filter(m=>m.type==='out').map(m=>bankSig(m.date,m.amount,m.note||m.employee||'')));
+  bankRows=parsed.map(p=>{ const g=guessBank(p.name,p.doc); const dup=existing.has(bankSig(p.date,p.amount,p.name));
+    return {date:p.date, amount:p.amount, name:p.name, doc:p.doc, category:g.category, employee:g.employee, include:!dup, dup}; });
+  renderBankPreview(); openSheet(bankSheet);
+}
+function renderBankPreview(){
+  const dups=bankRows.filter(b=>b.dup).length, news=bankRows.length-dups;
+  const selRows=bankRows.filter(b=>b.include&&!b.dup);
+  $('bankSub').innerHTML=news+' nova'+(news!==1?'s':'')+(dups?' · '+dups+' já lançada'+(dups>1?'s':''):'')+' · selecionado <b>'+money(selRows.reduce((s,b)=>s+b.amount,0))+'</b>';
+  const opts=CASH_CATS.out.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+  $('bankList').innerHTML=bankRows.map((b,i)=>{ const [Y,M,D]=b.date.split('-'); const payroll=PAYROLL_CATS.includes(b.category);
+    const emp=payroll?b.employee:'';
+    return '<div class="bankrow'+(b.dup?' dup':'')+'" data-i="'+i+'">'
+      +'<button type="button" class="bchk'+(b.include&&!b.dup?' on':'')+'" data-chk'+(b.dup?' disabled':'')+'>'+(b.include&&!b.dup?'✓':'')+'</button>'
+      +'<div class="binfo"><div class="bamt">− '+money(b.amount)+'</div><div class="bname">'+((b.name||'—').slice(0,40))+' · '+D+'/'+M+(b.dup?' · já lançada':'')+(emp?' · → <b>'+emp+'</b>':'')+'</div></div>'
+      +'<select class="bcat" data-cat'+(b.dup?' disabled':'')+'>'+opts+'</select></div>';
+  }).join('');
+  bankRows.forEach((b,i)=>{ const s=$('bankList').querySelector('[data-i="'+i+'"] .bcat'); if(s) s.value=b.category; });
+  $('bankConfirm').disabled=selRows.length===0;
+  $('bankConfirm').textContent='Lançar '+selRows.length+' saída'+(selRows.length!==1?'s':'');
+}
+function confirmBankImport(){
+  const seed=Date.now(); let added=0;
+  bankRows.forEach((b,i)=>{ if(!b.include||b.dup) return;
+    const payroll=PAYROLL_CATS.includes(b.category);
+    const saved={ id:'cf'+(seed+i)+Math.floor(Math.random()*1000), date:b.date, type:'out', category:b.category, amount:b.amount, status:'pago', due:null, employee:(payroll?b.employee:''), note:b.name, createdAt:new Date().toISOString() };
+    db.cashflow.push(saved); added++; Cloud.pushCash(saved);
+  });
+  Store.save(db); closeSheets(); render();
+  toast(added?added+' saída'+(added>1?'s':'')+' lançada'+(added>1?'s':'')+' ✓':'Nada selecionado');
+}
+$('bankBtn').addEventListener('click', ()=>$('bankFile').click());
+$('bankFile').addEventListener('change', e=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ openBankImport(String(rd.result)); }catch(err){ toast('Não consegui ler o arquivo'); } }; rd.readAsText(f); e.target.value=''; });
+$('bankList').addEventListener('click', e=>{ const chk=e.target.closest('[data-chk]'); if(!chk||chk.disabled) return; const row=e.target.closest('[data-i]'); const i=+row.getAttribute('data-i'); if(bankRows[i].dup) return; bankRows[i].include=!bankRows[i].include; renderBankPreview(); });
+$('bankList').addEventListener('change', e=>{ const s=e.target.closest('[data-cat]'); if(!s) return; const row=e.target.closest('[data-i]'); const i=+row.getAttribute('data-i'); bankRows[i].category=s.value; if(PAYROLL_CATS.includes(s.value)&&!bankRows[i].employee) bankRows[i].employee=deriveEmp(bankRows[i].name); renderBankPreview(); });
+$('bankToggleAll').addEventListener('click', ()=>{ const anyOn=bankRows.some(b=>b.include&&!b.dup); bankRows.forEach(b=>{ if(!b.dup) b.include=!anyOn; }); renderBankPreview(); });
+$('bankConfirm').addEventListener('click', confirmBankImport);
 
 /* ---- ajustes ---- */
 function refreshWkHint(){ $('wkGoalHint').innerHTML = weekdayGoalsSet()? '✅ Meta por dia ATIVA · mês = <b>'+NUM.format(monthGoalFor(viewMonth))+'</b> gelatos (a meta única acima fica ignorada)' : ''; }
