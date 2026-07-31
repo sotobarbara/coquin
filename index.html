@@ -899,7 +899,7 @@ const PRODUCTS={
 const PRODUCT_ORDER=['coco','sorvete'];
 function prodYield(p){ return PRODUCTS[p]?PRODUCTS[p].yield:GEL_PER_COCO; }
 /* categorias do caixa (despesas e outras entradas) */
-const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
+const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Insumos','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
 const PAYROLL_CATS=['Salário','Adiantamento','Benefício','Vale','Comissão'];   // categorias que vão pra Equipe
 const PAY_TYPES=['Salário','Adiantamento','Benefício','Vale','Comissão','Outros'];   // tipos de pagamento à equipe (viram a categoria)
 
@@ -1280,7 +1280,7 @@ function renderDados(){
   const kq=document.getElementById('kQuebra'); kq.textContent=(qMonth>0.5?'−':'')+NUM.format(Math.round(Math.abs(qMonth))); kq.className='kv'+(qMonth>0.5?' neg':'');
   // custo / lucro / margem
   let taxaMonth=0; list.forEach(c=>taxaMonth+=c.taxa||0);
-  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in') cashIn+=m.amount||0; else cashOut+=m.amount||0; });
+  let cashIn=0,cashOut=0,insumoCash=0; cashOf(key).forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in') cashIn+=m.amount||0; else if(m.category==='Insumos') insumoCash+=m.amount||0; else cashOut+=m.amount||0; });
   const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
   const cogsPerGel=cocoC/PRODUCTS.coco.yield + sorvC/PRODUCTS.sorvete.yield, cogs=gel*cogsPerGel;
   const lucro=rev + cashIn - cogs - taxaMonth - cashOut, margem=rev>0?lucro/rev*100:0;
@@ -1292,6 +1292,7 @@ function renderDados(){
     +'<div class="chk-row"><span>Faturamento (vendas)</span><span>'+money(rev)+'</span></div>'
     +(cashIn>0?'<div class="chk-row"><span>+ Outras entradas</span><span>+'+money(cashIn)+'</span></div>':'')
     +'<div class="chk-row"><span>− Insumos <small style="opacity:.65">('+money(cogsPerGel)+'/gelato)</small></span><span>−'+money(cogs)+'</span></div>'
+    +(insumoCash>0?'<div class="chk-row"><span style="opacity:.7">🥥 Compras de insumo (caixa) <small style="opacity:.75">já no custo acima</small></span><span style="opacity:.7">'+money(insumoCash)+'</span></div>':'')
     +'<div class="chk-row"><span>− Taxa Stone (créd/déb)</span><span>−'+money(taxaMonth)+'</span></div>'
     +(cashOut>0?'<div class="chk-row"><span>− Despesas (caixa)</span><span>−'+money(cashOut)+'</span></div>':'')
     +'<div class="chk-row quebra '+(lucro>=0?'ok':'crit')+'"><span>= Lucro líquido</span><b>'+money(lucro)+'</b></div>'
@@ -2114,7 +2115,7 @@ function reportData(key){
   const list=closingsOf(key), goal=goalFor(key);
   let rev=0,gel=0,taxa=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
   list.forEach(c=>{ const r=reconcile(c); rev+=c.revenue||0; gel+=c.gelatos||0; taxa+=c.taxa||0; byM.pix+=c.pix||0; byM.debito+=c.debito||0; byM.credito+=c.credito||0; byM.dinheiro+=r.dinheiro; });
-  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in')cashIn+=m.amount||0; else cashOut+=m.amount||0; });
+  let cashIn=0,cashOut=0; cashOf(key).forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in')cashIn+=m.amount||0; else if(m.category!=='Insumos') cashOut+=m.amount||0; });
   const cocoC=avgUnitCost(stockOf(key,'coco'),'coco'), sorvC=avgUnitCost(stockOf(key,'sorvete'),'sorvete');
   const cogs=gel*(cocoC/PRODUCTS.coco.yield+sorvC/PRODUCTS.sorvete.yield);
   const lucro=rev+cashIn-cogs-taxa-cashOut, margem=rev>0?lucro/rev*100:0;
