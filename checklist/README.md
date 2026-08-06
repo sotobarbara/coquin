@@ -27,9 +27,14 @@ Checklist **por dia**, com dois turnos independentes:
   - Faixa do **gelato** (ponto de bolear): **-15 a -12 °C**. Faixa do **freezer**: **-30 a -18 °C**.
     Ajuste em `CHECKLISTS` (`min`/`max`) se seu equipamento pedir outra.
 - **Ocorrências do dia**: campo de observação por turno (ex.: "freezer oscilando").
+- **Finalizar o turno**: depois de marcar tudo e escolher o responsável, o botão **Finalizar
+  entrada/saída** carimba **quem** e **a que horas** terminou. Enquanto falta algo, o botão avisa
+  o que falta. Dá pra **Reabrir** se precisar corrigir.
 - **Cada turno é opcional** — dá pra marcar só a entrada, só a saída, ou os dois.
-- **Histórico do mês**: por dia, mostra entrada e saída, quem foi o responsável, se ficou
-  **concluído** ou **parcial**, e um **⚠** quando houve temperatura fora da faixa.
+- **Histórico do mês**: por dia, mostra entrada e saída, quem foi o responsável, se está
+  **finalizado** ou **em andamento**, e um **⚠** quando houve temperatura fora da faixa.
+  **Toque num dia** para abrir o **detalhe**: tarefa por tarefa (com as temperaturas e números
+  medidos) e as **ocorrências** anotadas, de entrada e saída.
 
 ### Análise (aba no topo)
 
