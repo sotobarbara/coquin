@@ -231,72 +231,6 @@ main{padding-top:18px}
 .tabs button.sel{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 5px 14px rgba(52,80,58,.28)}
 .tabs button svg{width:17px;height:17px;stroke:currentColor}
 .hide{display:none!important}
-
-/* ---------- Checklist ---------- */
-.ck-status{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.ck-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 13px 12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.ck-tile.done{border-color:var(--green);background:linear-gradient(160deg,#F1F6F0,#E9EFE9)}
-.ck-tile .ck-tk{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.2px}
-.ck-tile.done .ck-tk{color:var(--green-700)}
-.ck-tile .ck-ring{margin:8px 0 6px}
-.ck-tile .ck-frac{font-size:22px;font-weight:850;letter-spacing:-.5px;color:var(--ink)}
-.ck-tile.done .ck-frac{color:var(--green-700)}
-.ck-tile .ck-frac small{font-size:12px;font-weight:700;color:var(--ink-faint);letter-spacing:0}
-.ck-tile .ck-by{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-top:5px;display:flex;align-items:center;gap:6px;min-height:20px}
-.ck-tile .ck-by .av{width:19px;height:19px;font-size:9.5px}
-.ck-tile .ck-time{color:var(--ink-faint);font-weight:650}
-.ck-tile .ck-pending{color:var(--ink-faint);font-weight:650}
-.ring{transform:rotate(-90deg)}
-.ring .bg{stroke:var(--green-tint-2)}
-.ring .fg{stroke:var(--green);transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1);stroke-linecap:round}
-
-.ck-seg{margin-bottom:14px}
-.ck-seg button{font-size:14.5px}
-.ck-seg button.sel{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 5px 14px rgba(52,80,58,.24)}
-
-.ck-whowrap{margin-bottom:14px}
-.ck-whotitle{font-size:12px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.6px;margin:0 2px 8px}
-.ck-who{display:flex;gap:8px}
-.ck-who button{flex:1;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r-sm);padding:11px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:.15s;font-family:inherit}
-.ck-who button:active{transform:scale(.97)}
-.ck-who button.sel{border-color:var(--pc);background:color-mix(in srgb,var(--pc) 12%,#fff)}
-.av{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;background:var(--pc);flex:none;box-shadow:0 2px 6px rgba(38,48,42,.16)}
-.ck-who button .nm{font-size:12.5px;font-weight:750;color:var(--ink-soft)}
-.ck-who button.sel .nm{color:var(--ink)}
-
-.ck-card{padding:16px 15px 8px}
-.ck-head{margin-bottom:6px}
-.ck-progtxt{font-size:12.5px;font-weight:800;color:var(--ink-soft);margin-bottom:7px}
-.ck-bar{height:8px;border-radius:999px;background:var(--green-tint-2);overflow:hidden}
-.ck-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green-700));border-radius:999px;transition:width .4s cubic-bezier(.4,0,.2,1)}
-
-.ck-item{display:flex;align-items:center;gap:13px;padding:14px 2px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
-.ck-item:last-child{border-bottom:0}
-.ck-item:active{opacity:.7}
-.ck-box{width:26px;height:26px;border-radius:9px;border:2px solid var(--green-tint-2);flex:none;display:grid;place-items:center;transition:.18s;background:var(--surface)}
-.ck-box svg{width:15px;height:15px;stroke:#fff;stroke-width:3.2;opacity:0;transform:scale(.4);transition:.18s}
-.ck-item.on .ck-box{background:var(--green);border-color:var(--green)}
-.ck-item.on .ck-box svg{opacity:1;transform:scale(1)}
-.ck-item .ck-lbl{font-size:15px;font-weight:600;color:var(--ink);line-height:1.3;transition:.18s}
-.ck-item.on .ck-lbl{color:var(--ink-faint);text-decoration:line-through}
-
-.ck-banner{display:flex;align-items:center;gap:10px;background:var(--green-tint);border:1px solid var(--green-tint-2);color:var(--green-700);border-radius:var(--r-sm);padding:12px 14px;font-size:13.5px;font-weight:750;margin-bottom:4px}
-.ck-banner.warn{background:var(--gold-soft);border-color:#EAD9A8;color:#8A6D1E}
-.ck-banner svg{width:19px;height:19px;flex:none;stroke:currentColor}
-.ck-banner .av{width:24px;height:24px;font-size:11px}
-
-.ck-hrow{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line)}
-.ck-hrow:last-child{border-bottom:0}
-.ck-hdate{width:66px;flex:none}
-.ck-hdate .d{font-size:14px;font-weight:800;color:var(--ink);text-transform:capitalize}
-.ck-hdate .m{font-size:11px;font-weight:650;color:var(--ink-faint)}
-.ck-htags{display:flex;gap:7px;flex-wrap:wrap;flex:1}
-.ck-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:750;padding:5px 9px 5px 6px;border-radius:999px;border:1px solid var(--line);color:var(--ink-faint);background:var(--surface)}
-.ck-tag.ok{border-color:var(--green-tint-2);background:var(--green-tint);color:var(--green-700)}
-.ck-tag.part{border-color:#EAD9A8;background:var(--gold-soft);color:#8A6D1E}
-.ck-tag .av{width:18px;height:18px;font-size:9px}
-.ck-tag .k{opacity:.65;font-weight:700}
-
 .prodtoggle{display:flex;gap:8px;margin-bottom:2px}
 .prodtoggle button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:13.5px;font-weight:750;padding:10px;border-radius:11px;cursor:pointer}
 .prodtoggle button.sel{background:var(--green-tint);border-color:var(--green);color:var(--green-700)}
@@ -513,7 +447,6 @@ main{padding-top:18px}
 
 <div class="tabs">
   <button id="tabVendas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Vendas</button>
-  <button id="tabChecklist"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Checklist</button>
   <button id="tabEstoque"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Estoque</button>
   <button id="tabCaixa"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M16 15h2"/></svg>Caixa</button>
   <button id="tabEquipe"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Equipe</button>
@@ -590,42 +523,6 @@ main{padding-top:18px}
   </div>
 
  </div><!-- /viewVendas -->
-
- <div id="viewChecklist" class="hide">
-
-  <div class="section-title">Checklist de hoje <span class="st-side" id="ckToday"></span></div>
-
-  <!-- resumo do dia: entrada + saída -->
-  <div class="ck-status" id="ckStatus"></div>
-
-  <!-- seletor entrada | saída -->
-  <div class="prodtoggle ck-seg" id="ckSeg">
-    <button data-kind="entrada">🌅 Entrada</button>
-    <button data-kind="saida">🌙 Saída</button>
-  </div>
-
-  <!-- quem é o responsável -->
-  <div class="ck-whowrap">
-    <div class="ck-whotitle">Quem está fazendo o checklist?</div>
-    <div class="ck-who" id="ckWho"></div>
-  </div>
-
-  <!-- lista de tarefas -->
-  <div class="card ck-card">
-    <div class="ck-head">
-      <div class="ck-progtxt" id="ckProgTxt">0 de 0</div>
-      <div class="ck-bar"><i id="ckBar" style="width:0%"></i></div>
-    </div>
-    <div id="ckBanner"></div>
-    <div id="ckItems"></div>
-  </div>
-
-  <div class="section-title">Histórico do mês <span class="st-side" id="ckHistCount"></span></div>
-  <div class="card sales" id="ckHist"></div>
-
-  <div class="foot"><div>Cada pessoa escolhe seu nome e assinala as tarefas — fica registrado quem foi o responsável de cada dia.</div></div>
-
- </div><!-- /viewChecklist -->
 
  <div id="viewEstoque" class="hide">
 
@@ -990,7 +887,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v3.6 · checklist operacional (entrada/saída)';
+const APP_VERSION='v3.5 · importar extrato do banco';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1013,40 +910,6 @@ const METHODS={
   credito:{label:'Crédito',color:'var(--credito)',icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'}
 };
 const METHOD_ORDER=['pix','dinheiro','debito','credito'];
-
-/* ---------- Checklist operacional ---------- */
-const TEAM=[
-  {name:'Ionnara', color:'#C86B4A'},
-  {name:'Ingrid',  color:'#3E7CB1'},
-  {name:'Paulo',   color:'#7A6BA8'}
-];
-function teamColor(name){ const p=TEAM.find(t=>t.name===name); return p?p.color:'var(--ink-faint)'; }
-function initials(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
-const CHECKLISTS={
-  entrada:{ label:'Entrada', emoji:'🌅', items:[
-    {k:'org',        t:'Organizar e limpar o ponto'},
-    {k:'temp_gel',   t:'Verificar temperatura do gelato'},
-    {k:'cocos',      t:'Verificar quantidade e qualidade dos cocos'},
-    {k:'descart',    t:'Repor descartáveis'},
-    {k:'acomp',      t:'Repor acompanhamentos e caldas'},
-    {k:'partir',     t:'Partir cocos para repor água dos clientes'},
-  ]},
-  saida:{ label:'Saída', emoji:'🌙', items:[
-    {k:'lavar',      t:'Lavar garrafas, bowls, colheres e afins'},
-    {k:'enxugar',    t:'Enxugar o que foi lavado'},
-    {k:'guardar',    t:'Organizar e guardar descartáveis'},
-    {k:'est_desc',   t:'Verificar estoque de descartáveis'},
-    {k:'est_acomp',  t:'Verificar estoque de acompanhamentos'},
-    {k:'caldas',     t:'Verificar caldas'},
-    {k:'limpeza',    t:'Limpeza do local'},
-    {k:'temp_frz',   t:'Verificar temperatura do freezer'},
-    {k:'desperd',    t:'Contar desperdício'},
-    {k:'sobra',      t:'Verificar quantidade de sobra de coco'},
-    {k:'armazen',    t:'Verificar armazenamento dos cocos e acompanhamentos'},
-    {k:'bateria',    t:'Verificar bateria das maquinetas'},
-  ]},
-};
-const CK_KINDS=['entrada','saida'];
 
 /* ---------- Store (abstração) ---------- */
 const Store={
@@ -1095,14 +958,6 @@ const Cloud={
       db.cashflow=rows.concat(pending);
       pending.forEach(m=>this.pushCash(m));
     }
-    const {data:ck,error:eCk}=await c.from('checklists').select('*').order('date',{ascending:false});
-    if(!eCk && ck){   // merge checklist (chave data+kind)
-      const rows=ck.map(r=>({id:'ck'+r.date+'|'+r.kind,date:r.date,kind:r.kind,person:r.person||'',items:(r.items&&typeof r.items==='object'?r.items:{}),doneAt:r.done_at||'',note:r.note||'',synced:true}));
-      const keys=new Set(rows.map(r=>r.date+'|'+r.kind));
-      const pending=(db.checklists||[]).filter(x=>x&&!keys.has(x.date+'|'+x.kind)&&!x.synced);
-      db.checklists=rows.concat(pending);
-      pending.forEach(x=>this.pushChecklist(x));
-    }
     Store.save(db);
   },
   // upsert resiliente: tenta o formato completo; se a nuvem rejeitar (coluna nova ainda não existe),
@@ -1133,18 +988,12 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushChecklist(c){ if(!this.on)return;
-    const full={date:c.date,kind:c.kind,person:c.person||'',items:(c.items||{}),done_at:(c.doneAt||null),note:c.note||''};
-    const core={date:c.date,kind:c.kind,person:c.person||'',items:(c.items||{}),note:c.note||''};   // sem done_at
-    try{ const err=await this._upsert('checklists',[full,core],'date,kind'); if(err) throw err; c.synced=true; Store.save(db); }
-    catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals});}catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
       .on('postgres_changes',{event:'*',schema:'public',table:'stock'},()=>this.pull().then(render).catch(()=>{}))
       .on('postgres_changes',{event:'*',schema:'public',table:'cashflow'},()=>this.pull().then(render).catch(()=>{}))
-      .on('postgres_changes',{event:'*',schema:'public',table:'checklists'},()=>this.pull().then(render).catch(()=>{}))
       .on('postgres_changes',{event:'*',schema:'public',table:'app_settings'},()=>this.pull().then(render).catch(()=>{}))
       .subscribe(); }catch(e){}
   }
@@ -1180,14 +1029,12 @@ if(!db.goals) db.goals={};
 if(!db.closings) db.closings=[];
 if(!db.stock) db.stock=[];
 if(!db.cashflow) db.cashflow=[];
-if(!db.checklists) db.checklists=[];
 db.stock.forEach(s=>{ if(!s.product) s.product='coco'; if(s.treinamento==null) s.treinamento=0; });
 db.cashflow.forEach(m=>{ if(!m.status) m.status='pago'; });   // lançamentos antigos = já realizados
 
 let viewMonth=ym(new Date());
 let editingId=null;
 let stockProduct='coco';   // produto ativo na aba Estoque
-let checkKind=(new Date().getHours()<15)?'entrada':'saida';   // aba de checklist ativa (auto pela hora)
 
 /* ---------- helpers ---------- */
 function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
@@ -1683,7 +1530,6 @@ function render(){
   renderEstoque();
   renderCaixa();
   renderEquipe();
-  renderChecklist();
   renderDados();
 }
 
@@ -1703,25 +1549,19 @@ let currentView='vendas';
 function updateFabLabel(){ document.getElementById('fabLabel').textContent=(currentView==='estoque')?('Registrar '+PRODUCTS[stockProduct].name.toLowerCase()):(currentView==='caixa'?'Nova movimentação':(currentView==='equipe'?'Novo pagamento':'Fechar o dia')); }
 function switchView(v){
   currentView=v;
-  [['Vendas','vendas'],['Checklist','checklist'],['Estoque','estoque'],['Caixa','caixa'],['Equipe','equipe'],['Dados','dados']].forEach(([n,k])=>{
+  [['Vendas','vendas'],['Estoque','estoque'],['Caixa','caixa'],['Equipe','equipe'],['Dados','dados']].forEach(([n,k])=>{
     document.getElementById('view'+n).classList.toggle('hide', v!==k);
     document.getElementById('tab'+n).classList.toggle('sel', v===k);
   });
-  document.getElementById('fab').style.display = (v==='dados'||v==='checklist')?'none':'flex';
+  document.getElementById('fab').style.display = v==='dados'?'none':'flex';
   updateFabLabel();
   window.scrollTo(0,0);
 }
 document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
-document.getElementById('tabChecklist').addEventListener('click',()=>switchView('checklist'));
 document.getElementById('tabEstoque').addEventListener('click',()=>switchView('estoque'));
 document.getElementById('tabCaixa').addEventListener('click',()=>switchView('caixa'));
 document.getElementById('tabEquipe').addEventListener('click',()=>switchView('equipe'));
 document.getElementById('tabDados').addEventListener('click',()=>switchView('dados'));
-
-/* ---- checklist: interações ---- */
-document.getElementById('ckSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; checkKind=b.dataset.kind; renderChecklist(); });
-document.getElementById('ckWho').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; setCheckPerson(checkKind, b.dataset.person); });
-document.getElementById('ckItems').addEventListener('click', e=>{ const it=e.target.closest('.ck-item'); if(!it)return; toggleCheckItem(checkKind, it.dataset.item); });
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
@@ -2116,123 +1956,6 @@ function renderEquipe(){
       +'<svg class="cchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>';
   }).join('');
 }
-
-/* ---------- Checklist ---------- */
-function checklistFor(date,kind){ return db.checklists.find(c=>c.date===date && c.kind===kind); }
-function ensureChecklist(date,kind){
-  let c=checklistFor(date,kind);
-  if(!c){ c={id:'ck'+date+'|'+kind,date,kind,person:'',items:{},doneAt:'',note:'',synced:false}; db.checklists.push(c); }
-  return c;
-}
-function ckDone(c){ if(!c) return 0; return CHECKLISTS[c.kind].items.filter(it=>c.items&&c.items[it.k]).length; }
-function ckTotal(kind){ return CHECKLISTS[kind].items.length; }
-function ckComplete(c){ return c && ckDone(c)===ckTotal(c.kind); }
-function saveChecklist(c){
-  const wasDone=!!c.doneAt, isDone=ckComplete(c);
-  if(isDone && !wasDone) c.doneAt=new Date().toISOString();
-  if(!isDone) c.doneAt='';
-  c.synced=false; Store.save(db); Cloud.pushChecklist(c);
-}
-function fmtTime(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
-function avatar(name,cls){ return '<span class="av '+(cls||'')+'" style="--pc:'+teamColor(name)+'">'+initials(name)+'</span>'; }
-
-function toggleCheckItem(kind,itemKey){
-  const c=ensureChecklist(todayISO(),kind);
-  c.items[itemKey]=!c.items[itemKey];
-  saveChecklist(c); renderChecklist();
-}
-function setCheckPerson(kind,name){
-  const c=ensureChecklist(todayISO(),kind);
-  c.person=(c.person===name)?'':name;
-  saveChecklist(c); renderChecklist();
-  if(c.person) toast(avatar(c.person)+' '+c.person+' · responsável pela '+CHECKLISTS[kind].label.toLowerCase());
-}
-
-function ckRing(done,total,size){
-  const r=(size-6)/2, cx=size/2, C=2*Math.PI*r, off=C*(1-(total?done/total:0));
-  return '<svg class="ring" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'
-    +'<circle class="bg" cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke-width="5"/>'
-    +'<circle class="fg" cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke-width="5" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
-}
-
-function renderChecklist(){
-  const today=todayISO();
-  $('ckToday').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
-
-  /* --- resumo: tiles entrada + saída (hoje) --- */
-  $('ckStatus').innerHTML=CK_KINDS.map(kind=>{
-    const c=checklistFor(today,kind), meta=CHECKLISTS[kind], tot=ckTotal(kind), done=ckDone(c), full=ckComplete(c);
-    let by;
-    if(full && c.person) by='<span class="ck-by">'+avatar(c.person)+'<span>'+c.person+' · <span class="ck-time">'+fmtTime(c.doneAt)+'</span></span></span>';
-    else if(c && c.person) by='<span class="ck-by">'+avatar(c.person)+'<span>'+c.person+' fazendo…</span></span>';
-    else by='<span class="ck-by ck-pending">'+(done?'em andamento':'não iniciado')+'</span>';
-    return '<div class="ck-tile'+(full?' done':'')+'">'
-      +'<div class="ck-tk">'+meta.emoji+' '+meta.label.toUpperCase()+'</div>'
-      +'<div class="ck-ring">'+ckRing(done,tot,54)+'</div>'
-      +'<div class="ck-frac">'+done+'<small>/'+tot+'</small></div>'
-      +by+'</div>';
-  }).join('');
-
-  /* --- seletor entrada|saída --- */
-  Array.from(document.querySelectorAll('#ckSeg button')).forEach(b=>b.classList.toggle('sel', b.dataset.kind===checkKind));
-
-  /* --- quem está fazendo --- */
-  const cur=checklistFor(today,checkKind);
-  $('ckWho').innerHTML=TEAM.map(p=>{
-    const sel=cur&&cur.person===p.name;
-    return '<button data-person="'+p.name+'" class="'+(sel?'sel':'')+'" style="--pc:'+p.color+'">'
-      +avatar(p.name)+'<span class="nm">'+p.name+'</span></button>';
-  }).join('');
-
-  /* --- barra + itens --- */
-  const meta=CHECKLISTS[checkKind], tot=ckTotal(checkKind), done=ckDone(cur), pct=tot?Math.round(done/tot*100):0;
-  $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
-  $('ckBar').style.width=pct+'%';
-  $('ckItems').innerHTML=meta.items.map(it=>{
-    const on=cur&&cur.items&&cur.items[it.k];
-    return '<div class="ck-item'+(on?' on':'')+'" data-item="'+it.k+'">'
-      +'<span class="ck-box"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>'
-      +'<span class="ck-lbl">'+it.t+'</span></div>';
-  }).join('');
-
-  /* --- banner de estado --- */
-  let banner='';
-  if(ckComplete(cur)){
-    if(cur.person) banner='<div class="ck-banner"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+meta.label+' concluída por <b>'+cur.person+'</b> às '+fmtTime(cur.doneAt)+'</span></div>';
-    else banner='<div class="ck-banner warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg><span>Tudo marcado! Escolha acima <b>quem foi o responsável</b>.</span></div>';
-  } else if(done>0 && (!cur||!cur.person)){
-    banner='<div class="ck-banner warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg><span>Não esqueça de marcar <b>seu nome</b> como responsável.</span></div>';
-  }
-  $('ckBanner').innerHTML=banner;
-
-  renderCkHist();
-}
-
-function renderCkHist(){
-  const key=viewMonth;
-  const days=db.checklists.filter(c=>c.date.slice(0,7)===key);
-  const byDate={}; days.forEach(c=>{ (byDate[c.date]=byDate[c.date]||{})[c.kind]=c; });
-  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
-  $('ckHistCount').textContent=dates.length?(dates.length+(dates.length>1?' dias':' dia')):'';
-  const el=$('ckHist');
-  if(!dates.length){ el.innerHTML='<div class="empty"><div class="em">📋</div><p>Nenhum checklist neste mês.<br>Comece marcando as tarefas de hoje.</p></div>'; return; }
-  el.innerHTML=dates.map(d=>{
-    const [Y,M,D]=d.split('-').map(Number), dt=new Date(Y,M-1,D);
-    const diff=Math.round((new Date(new Date().toDateString())-dt)/86400000);
-    const wdShort=dt.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
-    const big=diff===0?'Hoje':(diff===1?'Ontem':wdShort.charAt(0).toUpperCase()+wdShort.slice(1));
-    const tags=CK_KINDS.map(kind=>{
-      const c=byDate[d][kind], meta=CHECKLISTS[kind], tot=ckTotal(kind), done=ckDone(c);
-      if(!c||done===0) return '<span class="ck-tag"><span class="k">'+meta.emoji+' '+meta.label+'</span> —</span>';
-      const full=done===tot, cls=full?'ok':'part';
-      const who=c.person?avatar(c.person):'';
-      const txt=full?(c.person||'concluído'):(done+'/'+tot);
-      return '<span class="ck-tag '+cls+'"><span class="k">'+meta.emoji+'</span>'+who+' '+txt+'</span>';
-    }).join('');
-    return '<div class="ck-hrow"><div class="ck-hdate"><div class="d">'+big+'</div><div class="m">'+String(D).padStart(2,'0')+'/'+String(M).padStart(2,'0')+'</div></div><div class="ck-htags">'+tags+'</div></div>';
-  }).join('');
-}
-
 let empDetailName='';
 function openEmpDetail(name){
   empDetailName=name; const sum=arr=>arr.reduce((s,m)=>s+(m.amount||0),0);
@@ -2491,11 +2214,10 @@ async function onLoggedIn(sess){
   Cloud.on=true; Cloud.email=sess.user.email; showGate(false);
   try{
     const {data:cl}=await Cloud.client.from('closings').select('date').limit(1);
-    if((!cl||!cl.length) && (db.closings.length||db.stock.length||db.cashflow.length||db.checklists.length)){   // 1ª vez: semeia a nuvem com o que já existe local
+    if((!cl||!cl.length) && (db.closings.length||db.stock.length||db.cashflow.length)){   // 1ª vez: semeia a nuvem com o que já existe local
       for(const c of db.closings){ await Cloud.pushClosing(c); }
       for(const s of db.stock){ await Cloud.pushStock(s); }
       for(const m of db.cashflow){ await Cloud.pushCash(m); }
-      for(const k of db.checklists){ await Cloud.pushChecklist(k); }
       await Cloud.pushSettings();
     }
     await Cloud.pull();

@@ -59,18 +59,6 @@ alter table public.cashflow add column if not exists status text default 'pago';
 alter table public.cashflow add column if not exists due date;
 alter table public.cashflow add column if not exists employee text;   -- funcionário (aba Equipe)
 
--- ============ Checklist operacional (entrada / saída por dia) ============
-create table if not exists public.checklists (
-  date       date not null,
-  kind       text not null,               -- 'entrada' | 'saida'
-  person     text default '',             -- responsável do dia (Ionnara / Ingrid / Paulo)
-  items      jsonb default '{}'::jsonb,    -- { chave_da_tarefa: true, ... }
-  done_at    timestamptz,                  -- quando ficou 100% concluído
-  note       text default '',
-  updated_at timestamptz not null default now(),
-  primary key (date, kind)
-);
-
 -- ============ Ajustes (linha única) ============
 create table if not exists public.app_settings (
   id    integer primary key default 1 check (id = 1),
@@ -87,22 +75,18 @@ alter table public.app_settings add column if not exists wk_goals jsonb;
 alter table public.closings     enable row level security;
 alter table public.stock        enable row level security;
 alter table public.cashflow     enable row level security;
-alter table public.checklists   enable row level security;
 alter table public.app_settings enable row level security;
 drop policy if exists "equipe closings" on public.closings;
 drop policy if exists "equipe stock"    on public.stock;
 drop policy if exists "equipe cashflow" on public.cashflow;
-drop policy if exists "equipe checklists" on public.checklists;
 drop policy if exists "equipe settings" on public.app_settings;
 create policy "equipe closings" on public.closings     for all to authenticated using (true) with check (true);
 create policy "equipe stock"    on public.stock        for all to authenticated using (true) with check (true);
 create policy "equipe cashflow" on public.cashflow     for all to authenticated using (true) with check (true);
-create policy "equipe checklists" on public.checklists  for all to authenticated using (true) with check (true);
 create policy "equipe settings" on public.app_settings for all to authenticated using (true) with check (true);
 
 -- ============ Tempo real (sincronia entre celulares) ============
 do $$ begin alter publication supabase_realtime add table public.closings;     exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.stock;         exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.cashflow;      exception when duplicate_object then null; end $$;
-do $$ begin alter publication supabase_realtime add table public.checklists;    exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.app_settings;  exception when duplicate_object then null; end $$;
