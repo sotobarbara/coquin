@@ -133,9 +133,9 @@ header{
 .thermo{margin-top:12px;padding:13px 13px 11px;background:var(--bg);border:1px solid var(--line);border-radius:12px;transition:border-color .3s}
 .thermo.ok{border-color:var(--green-tint-2)}
 .thermo.out{border-color:#E9C4BE}
-.thermo-read{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;flex-wrap:wrap}
-.thermo-val{font-size:25px;font-weight:850;letter-spacing:-.6px;line-height:1;color:var(--ink-faint);transition:color .3s}
-.thermo-msg{font-size:12.5px;font-weight:800;color:var(--ink-faint);transition:color .3s}
+.thermo-read{margin-bottom:11px}
+.thermo-val{display:block;font-size:24px;font-weight:850;letter-spacing:-.6px;line-height:26px;height:26px;color:var(--ink-faint);transition:color .3s}
+.thermo-msg{display:block;margin-top:4px;font-size:12.5px;font-weight:800;line-height:17px;height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-faint);transition:color .3s}
 .thermo.ok .thermo-val,.thermo.ok .thermo-msg{color:var(--green-700)}
 .thermo.out .thermo-val,.thermo.out .thermo-msg{color:var(--danger)}
 .thermo-body{display:flex;align-items:center;padding:9px 0;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}
@@ -783,9 +783,9 @@ function thermoDragMove(e){
   row.classList.toggle('on', itemDone(c,dragTh.it));
   paintThermo(dragTh.el,c,dragTh.it);
   const tot=ckTotal(checkKind), done=ckDone(c), pct=tot?Math.round(done/tot*100):0;
-  $('ckBar').style.width=pct+'%';
+  $('ckBar').style.width=pct+'%';   // barra tem altura fixa — não empurra a régua
   $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
-  $('ckBanner').innerHTML=bannerHTML(c,CHECKLISTS[checkKind]);
+  // NÃO mexe no #ckBanner aqui: mudar a altura dele faria a régua "fugir" do dedo. Atualiza ao soltar.
   if(e.cancelable) e.preventDefault();
 }
 $('ckItems').addEventListener('pointerdown', e=>{
@@ -797,8 +797,9 @@ $('ckItems').addEventListener('pointerdown', e=>{
   thermoDragMove(e);
 });
 window.addEventListener('pointermove', e=>{ if(dragTh) thermoDragMove(e); });
-window.addEventListener('pointerup', ()=>{ if(!dragTh) return; saveChecklist(ensureChecklist(todayISO(),checkKind)); dragTh=null; renderTiles(); renderCkHist(); });
-window.addEventListener('pointercancel', ()=>{ if(!dragTh) return; saveChecklist(ensureChecklist(todayISO(),checkKind)); dragTh=null; renderTiles(); renderCkHist(); });
+function endThermoDrag(){ if(!dragTh) return; saveChecklist(ensureChecklist(todayISO(),checkKind)); dragTh=null; refreshLive(); renderCkHist(); }
+window.addEventListener('pointerup', endThermoDrag);
+window.addEventListener('pointercancel', endThermoDrag);
 $('ckItems').addEventListener('input', e=>{
   const inp=e.target.closest('input[data-val]'); if(!inp) return;
   const c=ensureChecklist(todayISO(),checkKind);
