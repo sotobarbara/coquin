@@ -1,0 +1,58 @@
+# Coquin — Checklist operacional
+
+App **independente** (projeto e link próprios, separados do controle de vendas/estoque) para a
+**rotina diária** da Coquin. Página única (`index.html`, sem build), pensada para o **celular**.
+Funciona com **login da equipe** e **sincroniza entre celulares** via Supabase; sem login,
+funciona local no aparelho.
+
+## O que faz
+
+Checklist **por dia**, com dois turnos independentes:
+
+- **🌅 Entrada** (abertura) e **🌙 Saída** (fechamento). A tela já abre no turno certo pela
+  **hora do dia** (antes das 15h = entrada).
+- **Responsável do dia**: quem for fazer **escolhe o próprio nome** (Ionnara, Ingrid ou Paulo).
+  Cada turno tem seu responsável — quem abre pode ser diferente de quem fecha. Fica registrado
+  **quem assinou** e **a que horas** concluiu.
+- **Tarefas com um toque** (check animado + risco). **Anel de progresso** por turno e **barra**
+  "X de Y tarefas".
+- **Cada turno é opcional** — dá pra marcar só a entrada, só a saída, ou os dois.
+- **Histórico do mês**: por dia, mostra entrada e saída, quem foi o responsável e se ficou
+  **concluído** ou **parcial** — a visão de controle pra gestão. Use as setas ‹ › no topo para
+  navegar entre os meses.
+
+### Tarefas
+
+**Entrada:** organizar e limpar o ponto · temperatura do gelato · quantidade e qualidade dos
+cocos · repor descartáveis · repor acompanhamentos e caldas · partir cocos para repor água.
+
+**Saída:** lavar utensílios (garrafas, bowls, colheres) · enxugar · guardar descartáveis ·
+estoque de descartáveis · estoque de acompanhamentos · caldas · limpeza do local · temperatura
+do freezer · contar desperdício · sobra de coco · armazenamento · bateria das maquinetas.
+
+## Backend (Supabase)
+
+Usa uma tabela própria `checklists` — **não toca** em vendas, estoque ou caixa. Por padrão
+aponta para o **mesmo projeto Supabase** da equipe (mesmo login, sem backend novo pra configurar).
+
+- Rode o [`SETUP.sql`](SETUP.sql) **uma vez** no **SQL Editor** do Supabase (cria a tabela,
+  liga RLS e o realtime). É idempotente.
+- Quer um backend 100% separado? Crie outro projeto no Supabase, rode o `SETUP.sql` nele e troque
+  `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>` do `index.html`.
+
+## Como hospedar (link próprio na Vercel)
+
+É um projeto separado, dentro da mesma pasta do repositório (`checklist/`):
+
+1. Na Vercel, **New Project** → importe o mesmo repositório `coquin`.
+2. Em **Root Directory**, selecione **`checklist`**.
+3. Deploy. Vai gerar **outro link**, independente do app de controle.
+
+No celular, use *"Adicionar à Tela de Início"* para virar um app.
+
+## Personalização (no código)
+
+- **Equipe**: constante `TEAM` (nomes e cores dos avatares).
+- **Tarefas**: constante `CHECKLISTS` (listas de `entrada` e `saida`).
+- **Supabase**: `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>`.
+- **Cores da marca**: variáveis CSS no início do `<style>` (`--green`, etc.).
