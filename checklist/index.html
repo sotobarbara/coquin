@@ -136,16 +136,17 @@ header{
 .thermo-msg{font-size:12.5px;font-weight:800;color:var(--ink-faint);transition:color .3s}
 .thermo.ok .thermo-val,.thermo.ok .thermo-msg{color:var(--green-700)}
 .thermo.out .thermo-val,.thermo.out .thermo-msg{color:var(--danger)}
-.thermo-body{display:flex;align-items:center}
+.thermo-body{display:flex;align-items:center;padding:9px 0;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}
 .thermo-bulb{width:20px;height:20px;border-radius:999px;flex:none;background:var(--green-tint-2);z-index:2;box-shadow:0 0 0 3px var(--surface);transition:background .35s}
 .thermo-tube{position:relative;flex:1;height:12px;border-radius:999px;background:var(--green-tint-2);margin-left:-7px;padding-left:7px}
 .thermo-zone{position:absolute;top:-2px;bottom:-2px;background:rgba(68,99,73,.14);border-left:2px dashed var(--green);border-right:2px dashed var(--green);border-radius:3px}
 .thermo-fill{position:absolute;top:0;bottom:0;left:0;border-radius:999px;background:var(--green-tint-2);transition:width .35s cubic-bezier(.4,0,.2,1),background .35s}
-.thermo-mark{position:absolute;top:50%;width:5px;height:22px;border-radius:3px;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px var(--ink-faint),0 1px 4px rgba(0,0,0,.2);transition:left .35s cubic-bezier(.4,0,.2,1),box-shadow .35s;z-index:3}
+.thermo-mark{position:absolute;top:50%;width:22px;height:22px;border-radius:999px;background:#fff;color:var(--ink-faint);transform:translate(-50%,-50%);box-shadow:0 0 0 3px currentColor,0 2px 6px rgba(0,0,0,.22);transition:left .18s cubic-bezier(.4,0,.2,1),color .35s;z-index:3}
+.thermo-mark::after{content:"";position:absolute;inset:0;margin:auto;width:8px;height:8px;border-radius:999px;background:currentColor}
 .thermo.ok .thermo-bulb,.thermo.ok .thermo-fill{background:var(--green)}
-.thermo.ok .thermo-mark{box-shadow:0 0 0 2px var(--green),0 1px 4px rgba(0,0,0,.2)}
+.thermo.ok .thermo-mark{color:var(--green)}
 .thermo.out .thermo-bulb,.thermo.out .thermo-fill{background:var(--danger)}
-.thermo.out .thermo-mark{box-shadow:0 0 0 2px var(--danger),0 1px 4px rgba(0,0,0,.2)}
+.thermo.out .thermo-mark{color:var(--danger)}
 .thermo.idle .thermo-mark{display:none}
 .thermo-scale{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-top:8px}
 .thermo-scale .z{color:var(--green-700)}
@@ -502,29 +503,42 @@ function renderTiles(){
   }).join('');
 }
 
-/* ---------- termômetro didático ---------- */
-function thermoBlock(c,it){
+/* ---------- termômetro didático (arrastável) ---------- */
+function thermoRange(it){ return {lo:it.min-5, hi:it.max+5}; }
+function thermoState(c,it){
   const v=c&&c.readings?c.readings[it.k]:null;
   const has=v!==undefined&&v!==null&&v!=='';
-  const lo=it.min-5, hi=it.max+5, span=(hi-lo)||1;
-  const clamp=x=>Math.max(0,Math.min(100,x));
+  const {lo,hi}=thermoRange(it), span=(hi-lo)||1, clamp=x=>Math.max(0,Math.min(100,x));
   const pct=has?clamp((v-lo)/span*100):0;
   const zL=clamp((it.min-lo)/span*100), zR=clamp((it.max-lo)/span*100), zW=Math.max(0,zR-zL);
-  let state='idle', msg='Registre a temperatura', valTxt='—';
+  let state='idle', msg='Arraste o ponteiro ou digite', valTxt='—';
   if(has){ valTxt=fmtNum(v)+it.unit;
     if(v<it.min){ state='out'; msg=it.cold||'Frio demais'; }
     else if(v>it.max){ state='out'; msg=it.hot||'Quente demais'; }
     else { state='ok'; msg=it.ok||'Na faixa ideal'; }
   }
-  return '<div class="thermo '+state+'" data-thermo="'+it.k+'">'
-    +'<div class="thermo-read"><span class="thermo-val">'+valTxt+'</span><span class="thermo-msg">'+msg+'</span></div>'
+  return {state,msg,valTxt,pct,zL,zW,lo,hi};
+}
+function thermoBlock(c,it){
+  const s=thermoState(c,it);
+  return '<div class="thermo '+s.state+'" data-thermo="'+it.k+'">'
+    +'<div class="thermo-read"><span class="thermo-val">'+s.valTxt+'</span><span class="thermo-msg">'+s.msg+'</span></div>'
     +'<div class="thermo-body"><span class="thermo-bulb"></span><span class="thermo-tube">'
-      +'<i class="thermo-zone" style="left:'+zL+'%;width:'+zW+'%"></i>'
-      +'<i class="thermo-fill" style="width:'+pct+'%"></i>'
-      +'<i class="thermo-mark" style="left:'+pct+'%"></i>'
+      +'<i class="thermo-zone" style="left:'+s.zL+'%;width:'+s.zW+'%"></i>'
+      +'<i class="thermo-fill" style="width:'+s.pct+'%"></i>'
+      +'<i class="thermo-mark" style="left:'+s.pct+'%"></i>'
     +'</span></div>'
-    +'<div class="thermo-scale"><span>'+fmtNum(lo)+'°</span><span class="z">zona ideal '+fmtNum(it.min)+' a '+fmtNum(it.max)+'°</span><span>'+fmtNum(hi)+'°</span></div>'
+    +'<div class="thermo-scale"><span>'+fmtNum(s.lo)+'°</span><span class="z">zona ideal '+fmtNum(it.min)+' a '+fmtNum(it.max)+'°</span><span>'+fmtNum(s.hi)+'°</span></div>'
     +'</div>';
+}
+/* atualiza um termômetro já existente, sem recriá-lo (não perde o arraste) */
+function paintThermo(el,c,it){
+  const s=thermoState(c,it);
+  el.className='thermo '+s.state;
+  el.querySelector('.thermo-val').textContent=s.valTxt;
+  el.querySelector('.thermo-msg').textContent=s.msg;
+  el.querySelector('.thermo-fill').style.width=s.pct+'%';
+  el.querySelector('.thermo-mark').style.left=s.pct+'%';
 }
 function bannerHTML(c,meta){
   let html='';
@@ -555,7 +569,7 @@ function renderItems(){
       const val=(v===undefined||v===null)?'':fmtNum(v);
       extra='<div class="ck-meas">'
         +'<span class="ck-inp"><input type="text" inputmode="'+(it.type==='temp'?'decimal':'numeric')+'" data-val="'+it.k+'" value="'+val+'" placeholder="—"><span class="u">'+it.unit+'</span></span>'
-        +(it.type==='temp'?'<span class="ck-hint">use o sinal de menos, ex.: -13</span>':'')+'</div>';
+        +(it.type==='temp'?'<span class="ck-hint">arraste o ponteiro ou digite (ex.: -13)</span>':'')+'</div>';
       if(it.type==='temp') extra+=thermoBlock(cur,it);
     }
     return '<div class="ck-item'+(on?' on':'')+(it.type?' meas':'')+'" data-item="'+it.k+'">'
@@ -573,7 +587,7 @@ function refreshLive(){
   meta.items.forEach(it=>{
     const row=$q('.ck-item[data-item="'+it.k+'"]'); if(!row) return;
     row.classList.toggle('on', itemDone(cur,it));
-    if(it.type==='temp'){ const el=row.querySelector('[data-thermo]'); if(el) el.outerHTML=thermoBlock(cur,it); }
+    if(it.type==='temp'){ const el=row.querySelector('[data-thermo]'); if(el) paintThermo(el,cur,it); }
   });
   $('ckBanner').innerHTML=bannerHTML(cur,meta);
   renderTiles();
@@ -706,12 +720,49 @@ $('viewSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); 
 $('ckSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; checkKind=b.dataset.kind; renderChecklist(); });
 $('ckWho').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; setCheckPerson(checkKind, b.dataset.person); });
 $('ckItems').addEventListener('click', e=>{
-  if(e.target.closest('input')) return;
+  if(e.target.closest('input')||e.target.closest('.thermo')) return;
   const row=e.target.closest('.ck-item'); if(!row) return;
   const key=row.dataset.item, def=CHECKLISTS[checkKind].items.find(x=>x.k===key);
   if(def && def.type){ const inp=row.querySelector('input[data-val]'); if(inp) inp.focus(); return; }
   toggleCheckItem(checkKind, key);
 });
+
+/* ---- arrastar o termômetro com o dedo ---- */
+let dragTh=null;
+function thermoValueAt(clientX){
+  const track=dragTh.track.getBoundingClientRect();
+  let ratio=(clientX-track.left)/track.width; ratio=Math.max(0,Math.min(1,ratio));
+  const {lo,hi}=thermoRange(dragTh.it);
+  return Math.round((lo+ratio*(hi-lo))*2)/2;   // encaixa de 0,5 em 0,5 °C
+}
+function thermoDragMove(e){
+  if(!dragTh) return;
+  const v=thermoValueAt(e.clientX);
+  const c=ensureChecklist(todayISO(),checkKind);
+  c.readings[dragTh.it.k]=v;
+  if(ckComplete(c)){ if(!c.doneAt) c.doneAt=new Date().toISOString(); } else c.doneAt='';
+  c.synced=false; Store.save(db);
+  const row=dragTh.el.closest('.ck-item');
+  const inp=row.querySelector('input[data-val="'+dragTh.it.k+'"]'); if(inp) inp.value=fmtNum(v);
+  row.classList.toggle('on', itemDone(c,dragTh.it));
+  paintThermo(dragTh.el,c,dragTh.it);
+  const tot=ckTotal(checkKind), done=ckDone(c), pct=tot?Math.round(done/tot*100):0;
+  $('ckBar').style.width=pct+'%';
+  $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
+  $('ckBanner').innerHTML=bannerHTML(c,CHECKLISTS[checkKind]);
+  if(e.cancelable) e.preventDefault();
+}
+$('ckItems').addEventListener('pointerdown', e=>{
+  const wrap=e.target.closest('.thermo'); if(!wrap||!wrap.dataset.thermo) return;
+  if(!e.target.closest('.thermo-body')) return;   // só arrasta pela régua, não pelo texto
+  const it=CHECKLISTS[checkKind].items.find(x=>x.k===wrap.dataset.thermo); if(!it) return;
+  dragTh={it, el:wrap, track:wrap.querySelector('.thermo-tube')};
+  try{ e.target.setPointerCapture(e.pointerId); }catch(_){}
+  thermoDragMove(e);
+});
+window.addEventListener('pointermove', e=>{ if(dragTh) thermoDragMove(e); });
+window.addEventListener('pointerup', ()=>{ if(!dragTh) return; saveChecklist(ensureChecklist(todayISO(),checkKind)); dragTh=null; renderTiles(); renderCkHist(); });
+window.addEventListener('pointercancel', ()=>{ if(!dragTh) return; saveChecklist(ensureChecklist(todayISO(),checkKind)); dragTh=null; renderTiles(); renderCkHist(); });
 $('ckItems').addEventListener('input', e=>{
   const inp=e.target.closest('input[data-val]'); if(!inp) return;
   const c=ensureChecklist(todayISO(),checkKind);

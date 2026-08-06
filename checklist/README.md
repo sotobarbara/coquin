@@ -17,9 +17,10 @@ Checklist **por dia**, com dois turnos independentes:
 - **Tarefas com um toque** (check animado + risco). **Anel de progresso** por turno e **barra**
   "X de Y tarefas".
 - **Medições, não só ✓**: temperatura do **gelato** e do **freezer** registram o **valor em °C**
-  com um **termômetro visual** — o ponteiro cai na **zona verde** (ideal) ou vai pro **vermelho**,
-  com frase didática ("ponto ideal para bolear", "mole demais", "muito duro"). **Desperdício** e
-  **sobra de coco** viram **número**.
+  com um **termômetro visual** — dá pra **arrastar o ponteiro com o dedo** (encaixa de 0,5 em
+  0,5 °C) ou digitar. O ponteiro cai na **zona verde** (ideal) ou vai pro **vermelho**, com frase
+  didática ("ponto ideal para bolear", "mole demais", "muito duro"). **Desperdício** e **sobra de
+  coco** viram **número**.
   - Faixa do **gelato** (ponto de bolear): **-15 a -12 °C**. Faixa do **freezer**: **-30 a -18 °C**.
     Ajuste em `CHECKLISTS` (`min`/`max`) se seu equipamento pedir outra.
 - **Ocorrências do dia**: campo de observação por turno (ex.: "freezer oscilando").
