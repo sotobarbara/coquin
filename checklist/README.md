@@ -16,10 +16,25 @@ Checklist **por dia**, com dois turnos independentes:
   **quem assinou** e **a que horas** concluiu.
 - **Tarefas com um toque** (check animado + risco). **Anel de progresso** por turno e **barra**
   "X de Y tarefas".
+- **Medições, não só ✓**: temperatura do **gelato** e do **freezer** registram o **valor em °C**
+  com **alerta** se sair da faixa segura; **desperdício** e **sobra de coco** viram **número**.
+- **Ocorrências do dia**: campo de observação por turno (ex.: "freezer oscilando").
 - **Cada turno é opcional** — dá pra marcar só a entrada, só a saída, ou os dois.
-- **Histórico do mês**: por dia, mostra entrada e saída, quem foi o responsável e se ficou
-  **concluído** ou **parcial** — a visão de controle pra gestão. Use as setas ‹ › no topo para
-  navegar entre os meses.
+- **Histórico do mês**: por dia, mostra entrada e saída, quem foi o responsável, se ficou
+  **concluído** ou **parcial**, e um **⚠** quando houve temperatura fora da faixa.
+
+### Análise (aba no topo)
+
+Painel sobre o histórico do mês selecionado:
+
+- **Cumprimento**: % de turnos iniciados que foram concluídos 100% (entrada e saída).
+- **Destaques**: sequência de dias 🔥, **alertas de temperatura**, **horário médio** de
+  abertura/fechamento, e **soma de desperdício/sobra** do mês.
+- **Tarefas mais puladas**: ranking das tarefas que mais ficam pendentes — onde a operação falha.
+- **Participação da equipe**: turnos concluídos por pessoa.
+
+As **faixas de temperatura** e as tarefas ficam nas constantes `CHECKLISTS` (no `<script>`) —
+ajuste os valores `min`/`max` de `temp_gel` e `temp_frz` para os do seu equipamento.
 
 ### Tarefas
 

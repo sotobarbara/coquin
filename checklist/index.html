@@ -13,7 +13,7 @@
 <style>
 /* ============================================================
    COQUIN — Checklist operacional (app independente)
-   Marca: verde #446349 · rotina de entrada e saída
+   Marca: verde #446349 · rotina de entrada e saída + análise
    ============================================================ */
 :root{
   --green:#446349; --green-700:#35503A; --green-900:#26381F;
@@ -21,7 +21,7 @@
   --gold:#C79A3E; --gold-soft:#F3E9CF;
   --bg:#F5F3EE; --surface:#FFFFFF;
   --ink:#26302A; --ink-soft:#5E6B60; --ink-faint:#95A096;
-  --line:#E7E4DC; --danger:#C0483F;
+  --line:#E7E4DC; --danger:#C0483F; --danger-soft:#F6E1DE;
   --shadow:0 1px 2px rgba(38,48,42,.05), 0 8px 24px rgba(38,48,42,.06);
   --shadow-lg:0 8px 40px rgba(38,48,42,.16);
   --r:20px; --r-sm:14px;
@@ -56,6 +56,11 @@ header{
 .month-nav button:active{background:rgba(255,255,255,.18)}
 .month-nav .label{font-size:12px;font-weight:700;color:#fff;min-width:92px;text-align:center;text-transform:capitalize;letter-spacing:.2px}
 
+/* ---------- seletor de tela ---------- */
+.viewseg{display:flex;gap:6px;max-width:520px;margin:14px auto 0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:4px}
+.viewseg button{flex:1;border:0;background:transparent;color:rgba(255,255,255,.85);font-size:13.5px;font-weight:750;padding:9px;border-radius:999px;cursor:pointer;font-family:inherit;transition:.15s}
+.viewseg button.sel{background:#fff;color:var(--green-700)}
+
 .section-title{font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-faint);margin:24px 4px 10px;display:flex;justify-content:space-between;align-items:baseline}
 .section-title .st-side{text-transform:none;letter-spacing:0;font-weight:600;color:var(--ink-faint)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
@@ -63,6 +68,7 @@ header{
 .empty .em{font-size:32px;margin-bottom:8px}
 .empty p{margin:0;font-size:14px;line-height:1.5}
 .foot{margin:26px 4px 8px;text-align:center;color:var(--ink-faint);font-size:12px;line-height:1.5}
+.hide{display:none!important}
 
 /* ---------- status tiles ---------- */
 .ck-status{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
@@ -105,19 +111,34 @@ header{
 .ck-progtxt{font-size:13px;font-weight:800;color:var(--ink-soft);margin-bottom:8px}
 .ck-bar{height:9px;border-radius:999px;background:var(--green-tint-2);overflow:hidden}
 .ck-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green-700));border-radius:999px;transition:width .4s cubic-bezier(.4,0,.2,1)}
-.ck-item{display:flex;align-items:center;gap:14px;padding:15px 2px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.ck-item{display:flex;align-items:flex-start;gap:14px;padding:15px 2px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
 .ck-item:last-child{border-bottom:0}
-.ck-item:active{opacity:.7}
-.ck-box{width:28px;height:28px;border-radius:9px;border:2px solid var(--green-tint-2);flex:none;display:grid;place-items:center;transition:.18s;background:var(--surface)}
+.ck-item:active{opacity:.75}
+.ck-box{width:28px;height:28px;border-radius:9px;border:2px solid var(--green-tint-2);flex:none;display:grid;place-items:center;transition:.18s;background:var(--surface);margin-top:1px}
 .ck-box svg{width:16px;height:16px;stroke:#fff;stroke-width:3.2;opacity:0;transform:scale(.4);transition:.18s}
 .ck-item.on .ck-box{background:var(--green);border-color:var(--green)}
 .ck-item.on .ck-box svg{opacity:1;transform:scale(1)}
-.ck-item .ck-lbl{font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3;transition:.18s}
-.ck-item.on .ck-lbl{color:var(--ink-faint);text-decoration:line-through}
-.ck-banner{display:flex;align-items:center;gap:10px;border-radius:var(--r-sm);padding:13px 15px;font-size:13.5px;font-weight:750;margin-bottom:4px}
+.ck-body{flex:1;min-width:0}
+.ck-lbl{font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3;transition:.18s}
+.ck-item.on:not(.meas) .ck-lbl{color:var(--ink-faint);text-decoration:line-through}
+.ck-meas{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.ck-inp{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);border-radius:11px;padding:8px 12px;background:var(--surface);transition:.15s}
+.ck-inp:focus-within{border-color:var(--green)}
+.ck-inp input{border:0;outline:0;background:transparent;width:64px;font-size:16px;font-weight:750;color:var(--ink);font-family:inherit}
+.ck-inp .u{font-size:13px;font-weight:700;color:var(--ink-faint)}
+.ck-hint{font-size:11.5px;font-weight:650;color:var(--ink-faint)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:750;padding:5px 10px;border-radius:999px}
+.chip.ok{background:var(--green-tint);color:var(--green-700)}
+.chip.warn{background:var(--danger-soft);color:var(--danger)}
+.ck-banner{display:flex;align-items:center;gap:10px;border-radius:var(--r-sm);padding:13px 15px;font-size:13.5px;font-weight:750;margin-bottom:8px}
 .ck-banner.ok{background:var(--green-tint);border:1px solid var(--green-tint-2);color:var(--green-700)}
 .ck-banner.warn{background:var(--gold-soft);border:1px solid #EAD9A8;color:#8A6D1E}
+.ck-banner.alert{background:var(--danger-soft);border:1px solid #E9C4BE;color:var(--danger)}
 .ck-banner svg{width:19px;height:19px;flex:none;stroke:currentColor}
+.ck-notewrap{padding:14px 0 6px}
+.ck-notewrap label{display:block;font-size:12px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ck-notewrap textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;font-size:15px;font-family:inherit;color:var(--ink);resize:vertical;min-height:56px;background:var(--surface)}
+.ck-notewrap textarea:focus{outline:0;border-color:var(--green)}
 
 /* ---------- histórico ---------- */
 .hist{padding:4px 16px}
@@ -132,6 +153,31 @@ header{
 .ck-tag.part{border-color:#EAD9A8;background:var(--gold-soft);color:#8A6D1E}
 .ck-tag .av{width:18px;height:18px;font-size:9px}
 .ck-tag .k{opacity:.7;font-weight:700}
+.ck-tag .warndot{color:var(--danger);font-weight:800}
+
+/* ---------- análise ---------- */
+.an-card{padding:17px 17px 16px;margin-top:14px}
+.an-title{font-size:14.5px;font-weight:800;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.an-title .em{font-size:16px}
+.an-comp{margin-bottom:15px}
+.an-comp:last-child{margin-bottom:0}
+.an-comp-h{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:700;color:var(--ink-soft);margin-bottom:7px}
+.an-comp-h b{font-size:15px;color:var(--ink)}
+.an-mini{height:8px;border-radius:999px;background:var(--green-tint-2);overflow:hidden}
+.an-mini>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--green-700));transition:width .4s}
+.an-sub{font-size:11.5px;font-weight:600;color:var(--ink-faint);margin-top:5px}
+.an-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.an-stat{background:var(--green-tint);border-radius:var(--r-sm);padding:13px 14px}
+.an-stat .v{font-size:22px;font-weight:850;letter-spacing:-.5px;color:var(--green-700);line-height:1}
+.an-stat .v.warn{color:var(--danger)}
+.an-stat .l{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-top:5px;line-height:1.3}
+.an-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.an-row:last-child{border-bottom:0}
+.an-row .nm{flex:1;font-size:14px;font-weight:650;color:var(--ink);min-width:0}
+.an-row .ct{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap}
+.an-pill{font-size:11px;font-weight:800;color:#fff;background:var(--danger);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.an-pbar{flex:1;height:7px;border-radius:999px;background:var(--green-tint-2);overflow:hidden}
+.an-pbar>i{display:block;height:100%;border-radius:999px;background:var(--pc,var(--green))}
 
 /* ---------- login gate ---------- */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
@@ -173,26 +219,29 @@ header{
       <button id="nextM" aria-label="Próximo mês">›</button>
     </div>
   </div>
+  <div class="viewseg" id="viewSeg">
+    <button data-view="checklist" class="sel">Checklist</button>
+    <button data-view="analise">Análise</button>
+  </div>
 </header>
 
 <main class="wrap">
 
-  <!-- resumo de hoje -->
+ <!-- ===================== CHECKLIST ===================== -->
+ <div id="viewChecklist">
+
   <div class="ck-status" id="ckStatus"></div>
 
-  <!-- seletor entrada | saída -->
   <div class="seg" id="ckSeg">
     <button data-kind="entrada">🌅 Entrada</button>
     <button data-kind="saida">🌙 Saída</button>
   </div>
 
-  <!-- responsável -->
   <div class="whowrap">
     <div class="whotitle">Quem está fazendo o checklist?</div>
     <div class="who" id="ckWho"></div>
   </div>
 
-  <!-- tarefas -->
   <div class="card ck-card">
     <div class="ck-head">
       <div class="ck-progtxt" id="ckProgTxt">0 de 0</div>
@@ -200,13 +249,24 @@ header{
     </div>
     <div id="ckBanner"></div>
     <div id="ckItems"></div>
+    <div class="ck-notewrap">
+      <label>Ocorrências do dia (opcional)</label>
+      <textarea id="noteInput" placeholder="Ex.: faltou coco, freezer oscilando, faltou troco…"></textarea>
+    </div>
   </div>
 
-  <!-- histórico -->
   <div class="section-title">Histórico do mês <span class="st-side" id="ckHistCount"></span></div>
   <div class="card hist" id="ckHist"></div>
 
   <div class="foot">Cada pessoa escolhe seu nome e assinala as tarefas.<br>Fica registrado quem foi o responsável de cada dia.</div>
+
+ </div><!-- /viewChecklist -->
+
+ <!-- ===================== ANÁLISE ===================== -->
+ <div id="viewAnalise" class="hide">
+  <div id="anContent"></div>
+  <div class="foot">Análise do mês selecionado acima. Use as setas ‹ › para navegar.</div>
+ </div><!-- /viewAnalise -->
 
 </main>
 
@@ -237,7 +297,7 @@ header{
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_checklist_v1';
-const APP_VERSION='v1.0';
+const APP_VERSION='v1.1 · medições + análise';
 
 /* ---- equipe (troque os nomes/cores aqui) ---- */
 const TEAM=[
@@ -248,11 +308,14 @@ const TEAM=[
 function teamColor(name){ const p=TEAM.find(t=>t.name===name); return p?p.color:'var(--ink-faint)'; }
 function initials(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
 
-/* ---- tarefas (troque/edite as listas aqui) ---- */
+/* ---- tarefas ----
+   type ausente = tarefa comum (✓)
+   type:'temp'  = mede temperatura (°C) com faixa segura [min,max] → alerta se sair
+   type:'num'   = conta um número (desperdício, sobra)                              */
 const CHECKLISTS={
   entrada:{ label:'Entrada', emoji:'🌅', items:[
     {k:'org',      t:'Organizar e limpar o ponto'},
-    {k:'temp_gel', t:'Verificar temperatura do gelato'},
+    {k:'temp_gel', t:'Verificar temperatura do gelato', type:'temp', unit:'°C', min:-18, max:-10},
     {k:'cocos',    t:'Verificar quantidade e qualidade dos cocos'},
     {k:'descart',  t:'Repor descartáveis'},
     {k:'acomp',    t:'Repor acompanhamentos e caldas'},
@@ -266,9 +329,9 @@ const CHECKLISTS={
     {k:'est_acomp',t:'Verificar estoque de acompanhamentos'},
     {k:'caldas',   t:'Verificar caldas'},
     {k:'limpeza',  t:'Limpeza do local'},
-    {k:'temp_frz', t:'Verificar temperatura do freezer'},
-    {k:'desperd',  t:'Contar desperdício'},
-    {k:'sobra',    t:'Verificar quantidade de sobra de coco'},
+    {k:'temp_frz', t:'Verificar temperatura do freezer', type:'temp', unit:'°C', min:-30, max:-18},
+    {k:'desperd',  t:'Contar desperdício', type:'num', unit:'un'},
+    {k:'sobra',    t:'Verificar quantidade de sobra de coco', type:'num', unit:'cocos'},
     {k:'armazen',  t:'Verificar armazenamento dos cocos e acompanhamentos'},
     {k:'bateria',  t:'Verificar bateria das maquinetas'},
   ]},
@@ -277,11 +340,14 @@ const CK_KINDS=['entrada','saida'];
 
 /* ---------- helpers ---------- */
 function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function monthName(key){ const [y,m]=key.split('-').map(Number); return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); }
-function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayISO(){ return isoOf(new Date()); }
 function fmtTime(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function fmtNum(v){ if(v==null) return ''; return (Math.round(v*10)/10).toString().replace('.',','); }
 function avatar(name,cls){ return '<span class="av '+(cls||'')+'" style="--pc:'+teamColor(name)+'">'+initials(name)+'</span>'; }
 function $(id){ return document.getElementById(id); }
+function $q(sel){ return document.querySelector(sel); }
 
 /* ---------- Store (local) ---------- */
 const Store={
@@ -291,9 +357,11 @@ const Store={
 let db=Store.load();
 if(!db||db.version!==1){ db={version:1, checklists:[]}; Store.save(db); }
 if(!db.checklists) db.checklists=[];
+db.checklists.forEach(c=>{ if(!c.readings) c.readings={}; });
 
 let viewMonth=ym(new Date());
 let checkKind=(new Date().getHours()<15)?'entrada':'saida';
+let currentView='checklist';
 
 /* ---------- Cloud (Supabase) ---------- */
 const Cloud={
@@ -304,7 +372,10 @@ const Cloud={
     const c=this.client;
     const {data:ck,error}=await c.from('checklists').select('*').order('date',{ascending:false});
     if(error) throw error;
-    const rows=(ck||[]).map(r=>({id:'ck'+r.date+'|'+r.kind,date:r.date,kind:r.kind,person:r.person||'',items:(r.items&&typeof r.items==='object'?r.items:{}),doneAt:r.done_at||'',note:r.note||'',synced:true}));
+    const rows=(ck||[]).map(r=>({id:'ck'+r.date+'|'+r.kind,date:r.date,kind:r.kind,person:r.person||'',
+      items:(r.items&&typeof r.items==='object'?r.items:{}),
+      readings:(r.readings&&typeof r.readings==='object'?r.readings:{}),
+      doneAt:r.done_at||'',note:r.note||'',synced:true}));
     const keys=new Set(rows.map(r=>r.date+'|'+r.kind));
     const pending=(db.checklists||[]).filter(x=>x&&!keys.has(x.date+'|'+x.kind)&&!x.synced);
     db.checklists=rows.concat(pending);
@@ -313,8 +384,8 @@ const Cloud={
   },
   async _upsert(tiers){ let error; for(const pl of tiers){ ({error}=await this.client.from('checklists').upsert(pl,{onConflict:'date,kind'})); if(!error) return null; } return error; },
   async push(c){ if(!this.on)return;
-    const full={date:c.date,kind:c.kind,person:c.person||'',items:(c.items||{}),done_at:(c.doneAt||null),note:c.note||''};
-    const core={date:c.date,kind:c.kind,person:c.person||'',items:(c.items||{}),note:c.note||''};
+    const full={date:c.date,kind:c.kind,person:c.person||'',items:(c.items||{}),readings:(c.readings||{}),done_at:(c.doneAt||null),note:c.note||''};
+    const core={date:c.date,kind:c.kind,person:c.person||'',items:(c.items||{}),note:c.note||''};   // sem readings/done_at (compat)
     try{ const err=await this._upsert([full,core]); if(err) throw err; c.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   subscribe(){
@@ -328,12 +399,25 @@ const Cloud={
 function checklistFor(date,kind){ return db.checklists.find(c=>c.date===date && c.kind===kind); }
 function ensureChecklist(date,kind){
   let c=checklistFor(date,kind);
-  if(!c){ c={id:'ck'+date+'|'+kind,date,kind,person:'',items:{},doneAt:'',note:'',synced:false}; db.checklists.push(c); }
+  if(!c){ c={id:'ck'+date+'|'+kind,date,kind,person:'',items:{},readings:{},doneAt:'',note:'',synced:false}; db.checklists.push(c); }
+  if(!c.readings) c.readings={};
   return c;
 }
-function ckDone(c){ if(!c) return 0; return CHECKLISTS[c.kind].items.filter(it=>c.items&&c.items[it.k]).length; }
+function itemDone(c,it){
+  if(!c) return false;
+  if(it.type==='temp'||it.type==='num'){ const v=c.readings&&c.readings[it.k]; return v!==undefined && v!==null && v!==''; }
+  return !!(c.items && c.items[it.k]);
+}
+function itemAlert(c,it){
+  if(it.type!=='temp') return false;
+  const v=c&&c.readings&&c.readings[it.k];
+  if(v===undefined||v===null||v==='') return false;
+  return (it.min!=null && v<it.min) || (it.max!=null && v>it.max);
+}
+function ckDone(c){ if(!c) return 0; return CHECKLISTS[c.kind].items.filter(it=>itemDone(c,it)).length; }
 function ckTotal(kind){ return CHECKLISTS[kind].items.length; }
 function ckComplete(c){ return c && ckDone(c)===ckTotal(c.kind); }
+function ckHasAlert(c){ return c && CHECKLISTS[c.kind].items.some(it=>itemAlert(c,it)); }
 function saveChecklist(c){
   const wasDone=!!c.doneAt, isDone=ckComplete(c);
   if(isDone && !wasDone) c.doneAt=new Date().toISOString();
@@ -358,20 +442,28 @@ function ckRing(done,total,size){
     +'<circle class="bg" cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke-width="5"/>'
     +'<circle class="fg" cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke-width="5" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
 }
+const svgCheck='<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const svgWarn='<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>';
 
-/* ---------- render ---------- */
+/* ---------- render principal ---------- */
 function render(){
   $('monthLabel').textContent=monthName(viewMonth);
   const now=new Date();
   $('todayBig').textContent=now.toLocaleDateString('pt-BR',{weekday:'long'});
   $('todaySub').textContent=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-  renderChecklist();
+  if(currentView==='analise') renderAnalise(); else renderChecklist();
+}
+function switchView(v){
+  currentView=v;
+  $('viewChecklist').classList.toggle('hide', v!=='checklist');
+  $('viewAnalise').classList.toggle('hide', v!=='analise');
+  Array.from(document.querySelectorAll('#viewSeg button')).forEach(b=>b.classList.toggle('sel', b.dataset.view===v));
+  render(); window.scrollTo(0,0);
 }
 
-function renderChecklist(){
+/* ---------- tiles de status (hoje) ---------- */
+function renderTiles(){
   const today=todayISO();
-
-  /* tiles entrada + saída (hoje) */
   $('ckStatus').innerHTML=CK_KINDS.map(kind=>{
     const c=checklistFor(today,kind), meta=CHECKLISTS[kind], tot=ckTotal(kind), done=ckDone(c), full=ckComplete(c);
     let by;
@@ -384,39 +476,84 @@ function renderChecklist(){
       +'<div class="ck-frac">'+done+'<small>/'+tot+'</small></div>'
       +by+'</div>';
   }).join('');
+}
 
-  /* seletor */
+/* ---------- chip de medição + banner ---------- */
+function measChip(c,it){
+  const v=c&&c.readings&&c.readings[it.k];
+  if(v===undefined||v===null||v==='') return '';
+  if(it.type==='temp') return itemAlert(c,it) ? '<span class="chip warn">⚠ fora da faixa</span>' : '<span class="chip ok">'+svgCheck.replace('stroke-width="2.4"','stroke-width="2.8"').replace('viewBox','style="width:12px;height:12px" viewBox')+' na faixa</span>';
+  return '';
+}
+function bannerHTML(c,meta){
+  let html='';
+  const alerts=meta.items.filter(it=>itemAlert(c,it));
+  alerts.forEach(it=>{
+    const v=c.readings[it.k];
+    html+='<div class="ck-banner alert">'+svgWarn+'<span>'+it.t.replace('Verificar ','').replace(/^./,m=>m.toUpperCase())
+      +': <b>'+fmtNum(v)+it.unit+'</b> fora da faixa segura ('+it.min+' a '+it.max+it.unit+')</span></div>';
+  });
+  const done=ckDone(c), tot=ckTotal(meta===CHECKLISTS.entrada?'entrada':'saida');
+  if(ckComplete(c)){
+    if(c.person) html+='<div class="ck-banner ok">'+svgCheck+'<span>'+meta.label+' concluída por <b>'+c.person+'</b> às '+fmtTime(c.doneAt)+'</span></div>';
+    else html+='<div class="ck-banner warn">'+svgWarn+'<span>Tudo preenchido! Escolha acima <b>quem foi o responsável</b>.</span></div>';
+  } else if(done>0 && (!c||!c.person)){
+    html+='<div class="ck-banner warn">'+svgWarn+'<span>Não esqueça de marcar <b>seu nome</b> como responsável.</span></div>';
+  }
+  return html;
+}
+
+/* ---------- render itens ---------- */
+function renderItems(){
+  const cur=checklistFor(todayISO(),checkKind), meta=CHECKLISTS[checkKind];
+  $('ckItems').innerHTML=meta.items.map(it=>{
+    const on=itemDone(cur,it);
+    let extra='';
+    if(it.type==='temp'||it.type==='num'){
+      const v=cur&&cur.readings?cur.readings[it.k]:null;
+      const val=(v===undefined||v===null)?'':fmtNum(v);
+      const hint=it.type==='temp'?('<span class="ck-hint">ideal '+it.min+' a '+it.max+it.unit+'</span>'):'';
+      extra='<div class="ck-meas">'
+        +'<span class="ck-inp"><input type="text" inputmode="'+(it.type==='temp'?'decimal':'numeric')+'" data-val="'+it.k+'" value="'+val+'" placeholder="—"><span class="u">'+it.unit+'</span></span>'
+        +'<span class="ck-chip">'+measChip(cur,it)+'</span>'+hint+'</div>';
+    }
+    return '<div class="ck-item'+(on?' on':'')+(it.type?' meas':'')+'" data-item="'+it.k+'">'
+      +'<span class="ck-box">'+svgCheck+'</span>'
+      +'<div class="ck-body"><span class="ck-lbl">'+it.t+'</span>'+extra+'</div></div>';
+  }).join('');
+}
+
+/* atualização leve (não re-renderiza os inputs → não perde o foco ao digitar) */
+function refreshLive(){
+  const today=todayISO(), cur=checklistFor(today,checkKind), meta=CHECKLISTS[checkKind];
+  const tot=ckTotal(checkKind), done=ckDone(cur), pct=tot?Math.round(done/tot*100):0;
+  $('ckBar').style.width=pct+'%';
+  $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
+  meta.items.forEach(it=>{
+    const row=$q('.ck-item[data-item="'+it.k+'"]'); if(!row) return;
+    row.classList.toggle('on', itemDone(cur,it));
+    const chip=row.querySelector('.ck-chip'); if(chip) chip.innerHTML=measChip(cur,it);
+  });
+  $('ckBanner').innerHTML=bannerHTML(cur,meta);
+  renderTiles();
+}
+
+function renderChecklist(){
+  const today=todayISO();
+  renderTiles();
   Array.from(document.querySelectorAll('#ckSeg button')).forEach(b=>b.classList.toggle('sel', b.dataset.kind===checkKind));
-
-  /* quem está fazendo */
   const cur=checklistFor(today,checkKind);
   $('ckWho').innerHTML=TEAM.map(p=>{
     const sel=cur&&cur.person===p.name;
     return '<button data-person="'+p.name+'" class="'+(sel?'sel':'')+'" style="--pc:'+p.color+'">'
       +avatar(p.name)+'<span class="nm">'+p.name+'</span></button>';
   }).join('');
-
-  /* barra + itens */
   const meta=CHECKLISTS[checkKind], tot=ckTotal(checkKind), done=ckDone(cur), pct=tot?Math.round(done/tot*100):0;
   $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
   $('ckBar').style.width=pct+'%';
-  $('ckItems').innerHTML=meta.items.map(it=>{
-    const on=cur&&cur.items&&cur.items[it.k];
-    return '<div class="ck-item'+(on?' on':'')+'" data-item="'+it.k+'">'
-      +'<span class="ck-box"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>'
-      +'<span class="ck-lbl">'+it.t+'</span></div>';
-  }).join('');
-
-  /* banner */
-  let banner='';
-  if(ckComplete(cur)){
-    if(cur.person) banner='<div class="ck-banner ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+meta.label+' concluída por <b>'+cur.person+'</b> às '+fmtTime(cur.doneAt)+'</span></div>';
-    else banner='<div class="ck-banner warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg><span>Tudo marcado! Escolha acima <b>quem foi o responsável</b>.</span></div>';
-  } else if(done>0 && (!cur||!cur.person)){
-    banner='<div class="ck-banner warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg><span>Não esqueça de marcar <b>seu nome</b> como responsável.</span></div>';
-  }
-  $('ckBanner').innerHTML=banner;
-
+  renderItems();
+  $('ckBanner').innerHTML=bannerHTML(cur,meta);
+  $('noteInput').value=(cur&&cur.note)||'';
   renderCkHist();
 }
 
@@ -438,10 +575,85 @@ function renderCkHist(){
       const full=done===tot, cls=full?'ok':'part';
       const who=c.person?avatar(c.person):'';
       const txt=full?(c.person||'concluído'):(done+'/'+tot);
-      return '<span class="ck-tag '+cls+'"><span class="k">'+meta.emoji+'</span>'+who+' '+txt+'</span>';
+      const warn=ckHasAlert(c)?' <span class="warndot">⚠</span>':'';
+      return '<span class="ck-tag '+cls+'"><span class="k">'+meta.emoji+'</span>'+who+' '+txt+warn+'</span>';
     }).join('');
     return '<div class="ck-hrow"><div class="ck-hdate"><div class="d">'+big+'</div><div class="m">'+String(D).padStart(2,'0')+'/'+String(M).padStart(2,'0')+'</div></div><div class="ck-htags">'+tags+'</div></div>';
   }).join('');
+}
+
+/* ---------- ANÁLISE ---------- */
+function avgTime(arr){ if(!arr.length) return null; const m=Math.round(arr.reduce((a,b)=>a+b,0)/arr.length); return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+function dayQualifies(ds){ const e=checklistFor(ds,'entrada'), s=checklistFor(ds,'saida'); return (e&&ckComplete(e))||(s&&ckComplete(s)); }
+function currentStreak(){
+  let streak=0, d=new Date();
+  if(!dayQualifies(isoOf(d))) d.setDate(d.getDate()-1);   // se hoje ainda não fez, mede até ontem
+  for(let i=0;i<400;i++){ if(dayQualifies(isoOf(d))){ streak++; d.setDate(d.getDate()-1); } else break; }
+  return streak;
+}
+function renderAnalise(){
+  const key=viewMonth, recs=db.checklists.filter(c=>c.date.slice(0,7)===key);
+  const K={entrada:{started:0,complete:0,times:[]}, saida:{started:0,complete:0,times:[]}};
+  const skip={}; const person={}; TEAM.forEach(p=>person[p.name]=0);
+  let tempAlerts=0, totalDesperd=0, totalSobra=0, hasDesperd=false, hasSobra=false;
+  recs.forEach(c=>{
+    const done=ckDone(c), tot=ckTotal(c.kind), full=done===tot;
+    if(done>0){
+      K[c.kind].started++;
+      CHECKLISTS[c.kind].items.forEach(it=>{
+        if(!itemDone(c,it)) (skip[it.k]=skip[it.k]||{label:it.t,count:0}).count++;
+        if(itemAlert(c,it)) tempAlerts++;
+      });
+      if(c.readings){
+        if(c.readings.desperd!=null){ totalDesperd+=+c.readings.desperd||0; hasDesperd=true; }
+        if(c.readings.sobra!=null){ totalSobra+=+c.readings.sobra||0; hasSobra=true; }
+      }
+    }
+    if(full){ K[c.kind].complete++; if(c.person&&person[c.person]!=null) person[c.person]++;
+      if(c.doneAt){ const dt=new Date(c.doneAt); if(!isNaN(dt)) K[c.kind].times.push(dt.getHours()*60+dt.getMinutes()); } }
+  });
+
+  const totalRecs=recs.filter(c=>ckDone(c)>0).length;
+  if(!totalRecs){ $('anContent').innerHTML='<div class="card an-card"><div class="empty"><div class="em">📊</div><p>Sem dados neste mês ainda.<br>Faça alguns checklists para ver a análise.</p></div></div>'; return; }
+
+  /* cumprimento */
+  let comp='<div class="card an-card"><div class="an-title"><span class="em">✅</span>Cumprimento — '+monthName(key)+'</div>';
+  CK_KINDS.forEach(kind=>{
+    const meta=CHECKLISTS[kind], s=K[kind].started, cpl=K[kind].complete, pct=s?Math.round(cpl/s*100):0;
+    comp+='<div class="an-comp"><div class="an-comp-h"><span>'+meta.emoji+' '+meta.label+'</span><b>'+cpl+'/'+s+'</b></div>'
+      +'<div class="an-mini"><i style="width:'+pct+'%"></i></div>'
+      +'<div class="an-sub">'+(s?(pct+'% dos dias iniciados foram concluídos 100%'):'nenhum registro neste mês')+'</div></div>';
+  });
+  comp+='</div>';
+
+  /* destaques */
+  const streak=currentStreak(), aE=avgTime(K.entrada.times), aS=avgTime(K.saida.times);
+  let dest='<div class="card an-card"><div class="an-title"><span class="em">✨</span>Destaques</div><div class="an-grid">';
+  dest+='<div class="an-stat"><div class="v">'+streak+(streak===1?' dia':' dias')+' 🔥</div><div class="l">Sequência atual (dias seguidos com checklist)</div></div>';
+  dest+='<div class="an-stat"><div class="v'+(tempAlerts?' warn':'')+'">'+tempAlerts+'</div><div class="l">Alertas de temperatura fora da faixa</div></div>';
+  dest+='<div class="an-stat"><div class="v" style="font-size:18px">'+(aE||'—')+' · '+(aS||'—')+'</div><div class="l">Horário médio de abertura · fechamento</div></div>';
+  if(hasDesperd||hasSobra){
+    dest+='<div class="an-stat"><div class="v" style="font-size:18px">'+(hasDesperd?totalDesperd+' un':'—')+' · '+(hasSobra?totalSobra:'—')+'</div><div class="l">Desperdício · sobra de coco (soma do mês)</div></div>';
+  }
+  dest+='</div></div>';
+
+  /* tarefas mais puladas */
+  const skips=Object.values(skip).sort((a,b)=>b.count-a.count).slice(0,5);
+  let sk='<div class="card an-card"><div class="an-title"><span class="em">🎯</span>Tarefas mais puladas</div>';
+  if(!skips.length) sk+='<div class="an-sub" style="padding:6px 0">🎉 Nenhuma tarefa ficou pendente neste mês. Excelente!</div>';
+  else sk+=skips.map(s=>'<div class="an-row"><span class="nm">'+s.label+'</span><span class="an-pill">'+s.count+'× esquecida</span></div>').join('');
+  sk+='</div>';
+
+  /* equipe */
+  const maxP=Math.max(1,...Object.values(person));
+  let eq='<div class="card an-card"><div class="an-title"><span class="em">👥</span>Participação da equipe</div>';
+  eq+=TEAM.map(p=>{ const n=person[p.name]||0, w=Math.round(n/maxP*100);
+    return '<div class="an-row">'+avatar(p.name)+'<span class="nm">'+p.name+'</span>'
+      +'<span class="an-pbar" style="--pc:'+p.color+'"><i style="width:'+w+'%"></i></span>'
+      +'<span class="ct">'+n+'</span></div>'; }).join('');
+  eq+='<div class="an-sub" style="margin-top:8px">Turnos concluídos 100% no mês</div></div>';
+
+  $('anContent').innerHTML=comp+dest+sk+eq;
 }
 
 /* ---------- toast ---------- */
@@ -449,9 +661,30 @@ let toastT;
 function toast(html){ const t=$('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
 
 /* ---------- eventos ---------- */
+$('viewSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; switchView(b.dataset.view); });
 $('ckSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; checkKind=b.dataset.kind; renderChecklist(); });
 $('ckWho').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b)return; setCheckPerson(checkKind, b.dataset.person); });
-$('ckItems').addEventListener('click', e=>{ const it=e.target.closest('.ck-item'); if(!it)return; toggleCheckItem(checkKind, it.dataset.item); });
+$('ckItems').addEventListener('click', e=>{
+  if(e.target.closest('input')) return;
+  const row=e.target.closest('.ck-item'); if(!row) return;
+  const key=row.dataset.item, def=CHECKLISTS[checkKind].items.find(x=>x.k===key);
+  if(def && def.type){ const inp=row.querySelector('input[data-val]'); if(inp) inp.focus(); return; }
+  toggleCheckItem(checkKind, key);
+});
+$('ckItems').addEventListener('input', e=>{
+  const inp=e.target.closest('input[data-val]'); if(!inp) return;
+  const c=ensureChecklist(todayISO(),checkKind);
+  const s=inp.value.replace(',','.').trim(), v=parseFloat(s);
+  if(s===''||isNaN(v)) delete c.readings[inp.dataset.val]; else c.readings[inp.dataset.val]=v;
+  if(ckComplete(c)){ if(!c.doneAt) c.doneAt=new Date().toISOString(); } else c.doneAt='';
+  c.synced=false; Store.save(db); refreshLive();   // leve: não re-renderiza os inputs (não perde o foco)
+});
+$('ckItems').addEventListener('change', e=>{   // ao sair do campo: sincroniza na nuvem, sem re-render destrutivo
+  const inp=e.target.closest('input[data-val]'); if(!inp) return;
+  saveChecklist(ensureChecklist(todayISO(),checkKind)); refreshLive(); renderCkHist();
+});
+$('noteInput').addEventListener('input', e=>{ const c=ensureChecklist(todayISO(),checkKind); c.note=e.target.value; c.synced=false; Store.save(db); });
+$('noteInput').addEventListener('change', e=>{ const c=ensureChecklist(todayISO(),checkKind); c.note=e.target.value; saveChecklist(c); });
 $('prevM').addEventListener('click', ()=>{ const [y,m]=viewMonth.split('-').map(Number); viewMonth=ym(new Date(y,m-2,1)); render(); });
 $('nextM').addEventListener('click', ()=>{ const [y,m]=viewMonth.split('-').map(Number); viewMonth=ym(new Date(y,m,1)); render(); });
 

@@ -9,12 +9,15 @@ create table if not exists public.checklists (
   date       date not null,
   kind       text not null,               -- 'entrada' | 'saida'
   person     text default '',             -- responsável do dia (Ionnara / Ingrid / Paulo)
-  items      jsonb default '{}'::jsonb,    -- { chave_da_tarefa: true, ... }
+  items      jsonb default '{}'::jsonb,    -- { chave_da_tarefa: true, ... }  (tarefas ✓)
+  readings   jsonb default '{}'::jsonb,    -- { chave: numero, ... }  (temperatura, desperdício, sobra)
   done_at    timestamptz,                  -- quando ficou 100% concluído
-  note       text default '',
+  note       text default '',              -- ocorrências / observações do dia
   updated_at timestamptz not null default now(),
   primary key (date, kind)
 );
+-- coluna nova (para quem já tinha a tabela): guarda os valores medidos (números)
+alter table public.checklists add column if not exists readings jsonb default '{}'::jsonb;
 
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
 alter table public.checklists enable row level security;
