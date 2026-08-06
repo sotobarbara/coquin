@@ -127,6 +127,28 @@ header{
 .ck-inp input{border:0;outline:0;background:transparent;width:64px;font-size:16px;font-weight:750;color:var(--ink);font-family:inherit}
 .ck-inp .u{font-size:13px;font-weight:700;color:var(--ink-faint)}
 .ck-hint{font-size:11.5px;font-weight:650;color:var(--ink-faint)}
+/* termômetro didático */
+.thermo{margin-top:12px;padding:13px 13px 11px;background:var(--bg);border:1px solid var(--line);border-radius:12px;transition:border-color .3s}
+.thermo.ok{border-color:var(--green-tint-2)}
+.thermo.out{border-color:#E9C4BE}
+.thermo-read{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;flex-wrap:wrap}
+.thermo-val{font-size:25px;font-weight:850;letter-spacing:-.6px;line-height:1;color:var(--ink-faint);transition:color .3s}
+.thermo-msg{font-size:12.5px;font-weight:800;color:var(--ink-faint);transition:color .3s}
+.thermo.ok .thermo-val,.thermo.ok .thermo-msg{color:var(--green-700)}
+.thermo.out .thermo-val,.thermo.out .thermo-msg{color:var(--danger)}
+.thermo-body{display:flex;align-items:center}
+.thermo-bulb{width:20px;height:20px;border-radius:999px;flex:none;background:var(--green-tint-2);z-index:2;box-shadow:0 0 0 3px var(--surface);transition:background .35s}
+.thermo-tube{position:relative;flex:1;height:12px;border-radius:999px;background:var(--green-tint-2);margin-left:-7px;padding-left:7px}
+.thermo-zone{position:absolute;top:-2px;bottom:-2px;background:rgba(68,99,73,.14);border-left:2px dashed var(--green);border-right:2px dashed var(--green);border-radius:3px}
+.thermo-fill{position:absolute;top:0;bottom:0;left:0;border-radius:999px;background:var(--green-tint-2);transition:width .35s cubic-bezier(.4,0,.2,1),background .35s}
+.thermo-mark{position:absolute;top:50%;width:5px;height:22px;border-radius:3px;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px var(--ink-faint),0 1px 4px rgba(0,0,0,.2);transition:left .35s cubic-bezier(.4,0,.2,1),box-shadow .35s;z-index:3}
+.thermo.ok .thermo-bulb,.thermo.ok .thermo-fill{background:var(--green)}
+.thermo.ok .thermo-mark{box-shadow:0 0 0 2px var(--green),0 1px 4px rgba(0,0,0,.2)}
+.thermo.out .thermo-bulb,.thermo.out .thermo-fill{background:var(--danger)}
+.thermo.out .thermo-mark{box-shadow:0 0 0 2px var(--danger),0 1px 4px rgba(0,0,0,.2)}
+.thermo.idle .thermo-mark{display:none}
+.thermo-scale{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-top:8px}
+.thermo-scale .z{color:var(--green-700)}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:750;padding:5px 10px;border-radius:999px}
 .chip.ok{background:var(--green-tint);color:var(--green-700)}
 .chip.warn{background:var(--danger-soft);color:var(--danger)}
@@ -315,7 +337,8 @@ function initials(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
 const CHECKLISTS={
   entrada:{ label:'Entrada', emoji:'🌅', items:[
     {k:'org',      t:'Organizar e limpar o ponto'},
-    {k:'temp_gel', t:'Verificar temperatura do gelato', type:'temp', unit:'°C', min:-18, max:-10},
+    {k:'temp_gel', t:'Verificar temperatura do gelato', type:'temp', unit:'°C', min:-15, max:-12,
+      ok:'❄️ Ponto ideal para bolear', cold:'🧊 Muito duro — está frio demais', hot:'🌡️ Mole demais — está quente'},
     {k:'cocos',    t:'Verificar quantidade e qualidade dos cocos'},
     {k:'descart',  t:'Repor descartáveis'},
     {k:'acomp',    t:'Repor acompanhamentos e caldas'},
@@ -329,7 +352,8 @@ const CHECKLISTS={
     {k:'est_acomp',t:'Verificar estoque de acompanhamentos'},
     {k:'caldas',   t:'Verificar caldas'},
     {k:'limpeza',  t:'Limpeza do local'},
-    {k:'temp_frz', t:'Verificar temperatura do freezer', type:'temp', unit:'°C', min:-30, max:-18},
+    {k:'temp_frz', t:'Verificar temperatura do freezer', type:'temp', unit:'°C', min:-30, max:-18,
+      ok:'✓ Temperatura segura', cold:'❄️ Mais frio que o necessário', hot:'⚠️ Quente demais — risco de descongelar'},
     {k:'desperd',  t:'Contar desperdício', type:'num', unit:'un'},
     {k:'sobra',    t:'Verificar quantidade de sobra de coco', type:'num', unit:'cocos'},
     {k:'armazen',  t:'Verificar armazenamento dos cocos e acompanhamentos'},
@@ -478,12 +502,29 @@ function renderTiles(){
   }).join('');
 }
 
-/* ---------- chip de medição + banner ---------- */
-function measChip(c,it){
-  const v=c&&c.readings&&c.readings[it.k];
-  if(v===undefined||v===null||v==='') return '';
-  if(it.type==='temp') return itemAlert(c,it) ? '<span class="chip warn">⚠ fora da faixa</span>' : '<span class="chip ok">'+svgCheck.replace('stroke-width="2.4"','stroke-width="2.8"').replace('viewBox','style="width:12px;height:12px" viewBox')+' na faixa</span>';
-  return '';
+/* ---------- termômetro didático ---------- */
+function thermoBlock(c,it){
+  const v=c&&c.readings?c.readings[it.k]:null;
+  const has=v!==undefined&&v!==null&&v!=='';
+  const lo=it.min-5, hi=it.max+5, span=(hi-lo)||1;
+  const clamp=x=>Math.max(0,Math.min(100,x));
+  const pct=has?clamp((v-lo)/span*100):0;
+  const zL=clamp((it.min-lo)/span*100), zR=clamp((it.max-lo)/span*100), zW=Math.max(0,zR-zL);
+  let state='idle', msg='Registre a temperatura', valTxt='—';
+  if(has){ valTxt=fmtNum(v)+it.unit;
+    if(v<it.min){ state='out'; msg=it.cold||'Frio demais'; }
+    else if(v>it.max){ state='out'; msg=it.hot||'Quente demais'; }
+    else { state='ok'; msg=it.ok||'Na faixa ideal'; }
+  }
+  return '<div class="thermo '+state+'" data-thermo="'+it.k+'">'
+    +'<div class="thermo-read"><span class="thermo-val">'+valTxt+'</span><span class="thermo-msg">'+msg+'</span></div>'
+    +'<div class="thermo-body"><span class="thermo-bulb"></span><span class="thermo-tube">'
+      +'<i class="thermo-zone" style="left:'+zL+'%;width:'+zW+'%"></i>'
+      +'<i class="thermo-fill" style="width:'+pct+'%"></i>'
+      +'<i class="thermo-mark" style="left:'+pct+'%"></i>'
+    +'</span></div>'
+    +'<div class="thermo-scale"><span>'+fmtNum(lo)+'°</span><span class="z">zona ideal '+fmtNum(it.min)+' a '+fmtNum(it.max)+'°</span><span>'+fmtNum(hi)+'°</span></div>'
+    +'</div>';
 }
 function bannerHTML(c,meta){
   let html='';
@@ -512,10 +553,10 @@ function renderItems(){
     if(it.type==='temp'||it.type==='num'){
       const v=cur&&cur.readings?cur.readings[it.k]:null;
       const val=(v===undefined||v===null)?'':fmtNum(v);
-      const hint=it.type==='temp'?('<span class="ck-hint">ideal '+it.min+' a '+it.max+it.unit+'</span>'):'';
       extra='<div class="ck-meas">'
         +'<span class="ck-inp"><input type="text" inputmode="'+(it.type==='temp'?'decimal':'numeric')+'" data-val="'+it.k+'" value="'+val+'" placeholder="—"><span class="u">'+it.unit+'</span></span>'
-        +'<span class="ck-chip">'+measChip(cur,it)+'</span>'+hint+'</div>';
+        +(it.type==='temp'?'<span class="ck-hint">use o sinal de menos, ex.: -13</span>':'')+'</div>';
+      if(it.type==='temp') extra+=thermoBlock(cur,it);
     }
     return '<div class="ck-item'+(on?' on':'')+(it.type?' meas':'')+'" data-item="'+it.k+'">'
       +'<span class="ck-box">'+svgCheck+'</span>'
@@ -532,7 +573,7 @@ function refreshLive(){
   meta.items.forEach(it=>{
     const row=$q('.ck-item[data-item="'+it.k+'"]'); if(!row) return;
     row.classList.toggle('on', itemDone(cur,it));
-    const chip=row.querySelector('.ck-chip'); if(chip) chip.innerHTML=measChip(cur,it);
+    if(it.type==='temp'){ const el=row.querySelector('[data-thermo]'); if(el) el.outerHTML=thermoBlock(cur,it); }
   });
   $('ckBanner').innerHTML=bannerHTML(cur,meta);
   renderTiles();
