@@ -11,7 +11,10 @@ Checklist **por dia**, com dois turnos independentes:
 
 - **🌅 Entrada** (abertura) e **🌙 Saída** (fechamento). A tela já abre no turno certo pela
   **hora do dia** (antes das 15h = entrada).
-- **Responsável do dia**: quem for fazer **escolhe o próprio nome** (Ionnara, Ingrid ou Paulo).
+- **Responsável do dia**: quem for fazer **escolhe o próprio nome** (Ionnara, Ingrid ou Paulo),
+  cada um com seu **avatar de desenho** (SVG paramétrico) que aparece no seletor, cartões,
+  histórico e análise. Traços ajustáveis em `TEAM[].face` (pele, cabelo, estilo, óculos, barba,
+  brinco, boné, cores).
   Cada turno tem seu responsável — quem abre pode ser diferente de quem fecha. Fica registrado
   **quem assinou** e **a que horas** concluiu.
 - **Tarefas com um toque** (check animado + risco). **Anel de progresso** por turno e **barra**

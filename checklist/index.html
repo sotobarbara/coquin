@@ -328,7 +328,7 @@ const APP_VERSION='v1.1 · medições + análise';
 const TEAM=[
   {name:'Ionnara', color:'#C86B4A', face:{bg:'#F6E4D9', skin:'#F5D8BE', hair:'#6E4A2E', style:'bun', glasses:true}},
   {name:'Ingrid',  color:'#3E7CB1', face:{bg:'#DEEAF4', skin:'#F3D4B6', hair:'#231A16', style:'longwave', earrings:true}},
-  {name:'Paulo',   color:'#7A6BA8', face:{bg:'#E9E3F1', skin:'#F4D6BA', hair:'#211A16', style:'short', beard:true}}
+  {name:'Paulo',   color:'#7A6BA8', face:{bg:'#E9E3F1', skin:'#F4D6BA', hair:'#2A2320', style:'short', cap:true, capCol:'#446349'}}
 ];
 function teamPerson(name){ return TEAM.find(t=>t.name===name); }
 function teamColor(name){ const p=teamPerson(name); return p?p.color:'var(--ink-faint)'; }
@@ -347,6 +347,12 @@ function avatarSVG(a){
   if(st==='curly') top='<g fill="'+hair+'"><circle cx="34" cy="31" r="11"/><circle cx="50" cy="25" r="12"/><circle cx="66" cy="31" r="11"/><circle cx="27" cy="43" r="8"/><circle cx="73" cy="43" r="8"/></g>';
   else if(st==='bun') top='<circle cx="50" cy="16" r="8" fill="'+hair+'"/><path d="M26 47 C26 29 36 21 50 21 C64 21 74 29 74 47 C74 38 66 32 50 32 C34 32 26 38 26 47 Z" fill="'+hair+'"/>';
   else top='<path d="M25 48 C25 28 36 18 50 18 C64 18 75 28 75 48 C75 39 66 31 50 31 C34 31 25 39 25 48 Z" fill="'+hair+'"/>';
+  let cap='';
+  if(a.cap){ const cc=a.capCol||'#446349';
+    cap='<path d="M25 41 C25 22 36 14 50 14 C64 14 75 22 75 41 C66 35.5 58 34 50 34 C42 34 34 35.5 25 41 Z" fill="'+cc+'"/>'
+      +'<path d="M23 40 C36 34 64 34 77 40 C83 42 82 46 74.5 45.5 C62 42 38 42 25.5 45.5 C18 46 17 42 23 40 Z" fill="'+cc+'" stroke="rgba(0,0,0,.12)" stroke-width="1"/>'
+      +'<circle cx="50" cy="14.5" r="2.3" fill="'+cc+'"/>';
+  }
   const brows='<path d="M37 45 q4.5 -2.5 9 0 M54 45 q4.5 -2.5 9 0" stroke="'+hair+'" stroke-width="1.7" fill="none" stroke-linecap="round"/>';
   const blush=(a.blush!==false)?'<ellipse cx="35" cy="61" rx="4" ry="2.4" fill="#EF9A8A" opacity=".5"/><ellipse cx="65" cy="61" rx="4" ry="2.4" fill="#EF9A8A" opacity=".5"/>':'';
   const eyes='<circle cx="41" cy="52" r="3.2" fill="'+eye+'"/><circle cx="59" cy="52" r="3.2" fill="'+eye+'"/><circle cx="42.1" cy="51" r="1" fill="#fff"/><circle cx="60.1" cy="51" r="1" fill="#fff"/>';
@@ -354,7 +360,7 @@ function avatarSVG(a){
   const glasses=a.glasses?'<g fill="none" stroke="#2C2C2C" stroke-width="2"><circle cx="41" cy="52" r="7.5"/><circle cx="59" cy="52" r="7.5"/><path d="M48.5 52 h3 M33.5 50 l-5 -1.5 M66.5 50 l5 -1.5"/></g>':'';
   const earrings=a.earrings?'<circle cx="26" cy="62" r="2.3" fill="#E8C15A"/><circle cx="74" cy="62" r="2.3" fill="#E8C15A"/>':'';
   return '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
-    +'<circle cx="50" cy="50" r="50" fill="'+bg+'"/>'+back+ears+face+beard+top+brows+blush+eyes+mouth+glasses+earrings+'</svg>';
+    +'<circle cx="50" cy="50" r="50" fill="'+bg+'"/>'+back+ears+face+beard+top+cap+brows+blush+eyes+mouth+glasses+earrings+'</svg>';
 }
 
 /* ---- tarefas ----
