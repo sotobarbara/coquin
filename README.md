@@ -4,8 +4,34 @@ App **mobile** de controle da Coquin (vende **gelato**, preço fixo **R$ 35**). 
 (`index.html`, sem build), hospedada na Vercel. Funciona com **login da equipe** e
 **sincroniza entre celulares** via Supabase; sem login, funciona local no aparelho.
 
-O controle é por **fechamento do dia** (não venda a venda) e tem 3 abas: **Vendas**,
-**Estoque** e **Dados**.
+O controle é por **fechamento do dia** (não venda a venda) e tem as abas: **Vendas**,
+**Checklist**, **Estoque**, **Caixa**, **Equipe** e **Dados**.
+
+---
+
+## Checklist (rotina de entrada e saída)
+
+Checklist operacional **por dia**, com dois turnos independentes: **🌅 Entrada** (abertura)
+e **🌙 Saída** (fechamento). A aba já abre no turno certo pela **hora do dia** (antes das 15h
+= entrada).
+
+- **Responsável do dia**: quem for fazer **escolhe o próprio nome** (Ionnara, Ingrid ou Paulo).
+  Cada turno tem seu responsável — quem abre pode ser diferente de quem fecha. Fica **registrado
+  quem assinou** e **a que horas** concluiu.
+- **Tarefas marcáveis** com um toque (risco + check animado). **Anel de progresso** por turno e
+  **barra** de "X de Y tarefas".
+- **Nem sempre os dois turnos acontecem** no mesmo dia — cada um é opcional e independente,
+  então dá pra marcar só entrada, só saída, ou os dois.
+- **Histórico do mês**: lista por dia mostrando entrada e saída, **quem foi o responsável** e se
+  ficou **concluído** ou **parcial** — a visão de controle pra gestão.
+- Tarefas de **entrada**: organizar/limpar o ponto · temperatura do gelato · quantidade e
+  qualidade dos cocos · repor descartáveis · repor acompanhamentos e caldas · partir cocos.
+- Tarefas de **saída**: lavar utensílios · enxugar · guardar descartáveis · estoque de
+  descartáveis · estoque de acompanhamentos · caldas · limpeza do local · temperatura do freezer ·
+  contar desperdício · sobra de coco · armazenamento · bateria das maquinetas.
+
+> Sincroniza entre celulares como o resto do app (tabela `checklists` no Supabase). Para editar
+> as tarefas, ajuste a constante `CHECKLISTS` no `<script>`; para trocar a equipe, `TEAM`.
 
 ---
 
