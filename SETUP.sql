@@ -33,11 +33,13 @@ create table if not exists public.stock (
   note       text default '',
   updated_at timestamptz not null default now()
 );
-alter table public.stock add column if not exists product text default 'coco';
+alter table public.stock add column if not exists product text default 'deposito';
 alter table public.stock add column if not exists custo numeric default 0;
 alter table public.stock add column if not exists treinamento integer default 0;
 alter table public.stock add column if not exists contagem integer;
-update public.stock set product='coco' where product is null;
+alter table public.stock add column if not exists recebido integer default 0;      -- quengas recebidas na loja (transferência)
+alter table public.stock add column if not exists transferido integer default 0;   -- cocos enviados do depósito p/ loja
+update public.stock set product='deposito' where product is null or product='coco';
 -- chave = (dia + produto) para permitir 2 produtos no mesmo dia
 alter table public.stock drop constraint if exists stock_pkey;
 alter table public.stock add primary key (date, product);
