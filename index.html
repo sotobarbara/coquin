@@ -939,7 +939,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.5 · transferencia nao some';
+const APP_VERSION='v4.6 · estoque previsivel';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1175,9 +1175,8 @@ function computeBalances(prod){
   let bal=0; const balBy={}, counts=[];
   for(const d of sorted){
     const s=stockEntry(d,prod)||{};
-    bal += (s.comprados||0) - consumedUnits(d,prod) - (s.degustacao||0) - (s.treinamento||0) - (s.perda||0);
-    if(s.contagem!=null && s.contagem!==''){ const c=+s.contagem; counts.push({date:d,count:c,quebra:bal-c,teorico:bal}); bal=c; }
-    bal += (s.recebido||0) - (s.transferido||0);   // transferências aplicam DEPOIS da contagem (conta e depois transfere)
+    bal += (s.comprados||0) + (s.recebido||0) - consumedUnits(d,prod) - (s.degustacao||0) - (s.treinamento||0) - (s.perda||0) - (s.transferido||0);
+    if(s.contagem!=null && s.contagem!==''){ const c=+s.contagem; counts.push({date:d,count:c,quebra:bal-c,teorico:bal}); bal=c; }   // contagem física = verdade absoluta
     balBy[d]=bal;
   }
   return {balBy, counts, current:bal};
@@ -1890,9 +1889,8 @@ function theoreticalAt(date, draft, prod){
     const s=stockEntry(d,prod)||{};
     let buy=s.comprados||0,dg=s.degustacao||0,tr=s.treinamento||0,pr=s.perda||0;
     if(d===date && draft){ buy=draft.comprados; dg=draft.degustacao; tr=draft.treinamento; pr=draft.perda; }
-    bal += buy - consumedUnits(d,prod) - dg - tr - pr;
+    bal += buy + (s.recebido||0) - consumedUnits(d,prod) - dg - tr - pr - (s.transferido||0);
     if(d<date && s.contagem!=null && s.contagem!=='') bal=+s.contagem;
-    bal += (s.recebido||0) - (s.transferido||0);
   }
   return bal;
 }
@@ -1980,8 +1978,10 @@ $('saveTransfer').addEventListener('click', ()=>{
   const qty=parseInt2($('tfQty').value); if(!(qty>0)) return;
   $('saveTransfer').disabled=true;
   const date=$('tfDate').value||todayISO();
-  const dep=stockRow(date,'deposito'); dep.transferido=(dep.transferido||0)+qty; dep.synced=false;
-  const loja=stockRow(date,'loja'); loja.recebido=(loja.recebido||0)+qty*QUENGAS_POR_COCO; loja.synced=false;
+  const quengas=qty*QUENGAS_POR_COCO;
+  // se o dia já tem contagem física, ajusta a contagem (ela é a verdade); senão, lança como baixa/entrada
+  const dep=stockRow(date,'deposito'); if(dep.contagem!=null && dep.contagem!=='') dep.contagem=Math.max(0,+dep.contagem-qty); else dep.transferido=(dep.transferido||0)+qty; dep.synced=false;
+  const loja=stockRow(date,'loja'); if(loja.contagem!=null && loja.contagem!=='') loja.contagem=(+loja.contagem)+quengas; else loja.recebido=(loja.recebido||0)+quengas; loja.synced=false;
   Store.save(db); closeSheets(); viewMonth=date.slice(0,7); stockProduct='loja'; switchView('estoque'); render();
   Cloud.pushStock(dep); Cloud.pushStock(loja);
   toast('Transferido: '+qty+' coco'+(qty>1?'s':'')+' → '+(qty*QUENGAS_POR_COCO)+' quengas 🥥');
