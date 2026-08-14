@@ -939,7 +939,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.2 · transferencia + reset';
+const APP_VERSION='v4.3 · conciliacao 30 e 35';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1144,16 +1144,17 @@ function dayLabel(dstr){
   return dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
 }
 
-/* conciliação de um fechamento */
+/* conciliação de um fechamento — cada gelato vale entre R$30 (2 bolas) e R$35 (3 bolas) */
 function reconcile(c){
   const stone=(c.pix||0)+(c.debito||0)+(c.credito||0);
   const dinheiro=(c.revenue||0)-stone;
-  const expected=(c.gelatos||0)*price();
-  const valueDiff=(c.revenue||0)-expected;               // >0 vendeu acima do preço base; <0 abaixo
+  const n=c.gelatos||0, rev=c.revenue||0;
+  const Phi=Math.max(price(),price2()), Plo=Math.min(price(),price2());
+  const lo=n*Plo, hi=n*Phi;                              // faixa válida: tudo 2 bolas … tudo 3 bolas
   const issues=[];
   if(dinheiro < -0.5) issues.push('A Stone ('+money(stone)+') passou do faturamento lançado — confira os valores.');
-  if(Math.abs(valueDiff) > 0.5) issues.push('Valor não fecha com '+ (c.gelatos||0) +' × '+money(price())+' = '+money(expected)+' (dif. '+(valueDiff>0?'+':'')+money(valueDiff)+'). Combo, desconto ou erro?');
-  return {stone,dinheiro,expected,valueDiff,issues,ok:issues.length===0};
+  if(n>0 && (rev < lo-0.5 || rev > hi+0.5)) issues.push('Valor fora da faixa de '+n+' gelatos ('+money(Plo)+' a '+money(Phi)+' cada = '+money(lo)+'–'+money(hi)+'). Combo, desconto ou erro?');
+  return {stone,dinheiro,expected:hi,valueDiff:rev-hi,issues,ok:issues.length===0};
 }
 
 /* ---------- estoque (por produto) ---------- */
@@ -1669,13 +1670,18 @@ function recompute(){   // dinheiro (contado) + Stone (cartão/Pix) -> total e g
   const cash=parseMoney($('cCash').value);
   const total=stone+cash;
   $('cRev').value = total>0 ? String(total.toFixed(2)).replace('.',',') : '';
-  if(price()>0) $('cGel').value = total>0 ? Math.round(total/price()) : '';
+  // se veio da Stone, usa a contagem exata 2/3 bolas do cartão + estima o dinheiro
+  const sp=stoneParsed.find(x=>x.date===$('cDate').value);
+  let gel;
+  if(sp){ gel = Math.round((sp.g30||0)+(sp.g35||0) + (price()>0?cash/price():0)); }
+  else { gel = (price()>0 && total>0) ? Math.round(total/price()) : 0; }
+  $('cGel').value = gel>0 ? gel : '';
   renderRecon();
 }
 function renderRecon(){
   const c=draftFromForm(); const r=reconcile(c);
-  const cardGel=price()>0?Math.round(r.stone/price()):0;
-  const cashGel=price()>0?Math.round(r.dinheiro/price()):0;
+  const cashGel=price()>0?Math.max(0,Math.round(r.dinheiro/price())):0;
+  const cardGel=Math.max(0,(c.gelatos||0)-cashGel);
   const split=c.gelatos>0?`<div class="recon-row"><span>🍨 ${c.gelatos} gelatos</span><b>${cardGel} cartão/Pix + ${cashGel} dinheiro</b></div>`:'';
   let html=`<div class="recon-row"><span>Faturamento</span><b>${money(c.revenue)}</b></div>
     <div class="recon-row"><span>Recebido Stone</span><b>${money(r.stone)}</b></div>
