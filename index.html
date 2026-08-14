@@ -939,7 +939,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.3 · conciliacao 30 e 35';
+const APP_VERSION='v4.4 · reimport recalcula gelatos';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1758,8 +1758,11 @@ function bulkImportStone(){
     const tot=d.pix+d.debito+d.credito;
     let c=db.closings.find(x=>x.date===d.date);
     const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0), cardGel=g30+g35;
-    if(c){ // atualiza Stone + fluxo por hora + taxa + split bolas, mantém gelatos/faturamento/contagem
-      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; c.gel30=g30; c.gel35=g35; if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; updated++; Cloud.pushClosing(c);
+    if(c){ // atualiza Stone + fluxo por hora + taxa + split bolas; recalcula gelatos pelo valor (2/3 bolas), preservando o dinheiro do dia
+      const cashDay=Math.max(0,(c.revenue||0)-((c.pix||0)+(c.debito||0)+(c.credito||0)));
+      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; c.gel30=g30; c.gel35=g35;
+      c.revenue=tot+cashDay; c.gelatos=cardGel+(cashDay>0.5&&price()>0?Math.round(cashDay/price()):0);
+      if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; updated++; Cloud.pushClosing(c);
     } else {
       c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:cardGel, revenue:tot, pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, gel30:g30, gel35:g35, hours:d.hours||null, hoursRev:d.hoursRev||null, note:'', createdAt:new Date().toISOString() };
       db.closings.push(c); created++; Cloud.pushClosing(c);
