@@ -786,7 +786,24 @@ main{padding-top:18px}
   </div>
   <button class="btn-primary" id="saveGoal">Salvar</button>
   <div class="acct" id="acctRow"></div>
+  <button type="button" class="btn-ghost" id="openReset" style="margin-top:14px;color:var(--danger);border-color:#E7C3BE">🧹 Zerar tudo e recomeçar</button>
   <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--ink-faint);font-weight:700" id="verStamp"></div>
+</div>
+
+<!-- SHEET: zerar tudo e recomeçar -->
+<div class="sheet" id="resetSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Zerar tudo e recomeçar</h2>
+  <p class="h2sub">Apaga <b>todas</b> as vendas, estoque e caixa (neste aparelho e na nuvem). Não dá pra desfazer.</p>
+  <div class="field"><label>Cocos no depósito hoje <span class="hintlink" style="color:var(--ink-faint);cursor:default">ponto de partida</span></label>
+    <input id="resetCocos" class="big-input" type="text" inputmode="numeric" placeholder="204" value="204">
+  </div>
+  <div class="field"><label>Quengas na loja hoje <span class="hintlink" style="color:var(--ink-faint);cursor:default">opcional</span></label>
+    <input id="resetQuengas" class="big-input" type="text" inputmode="numeric" placeholder="0" value="0">
+  </div>
+  <div class="due-alert over" style="margin-bottom:14px"><div class="da-row">⚠️ Isso apaga tudo e começa do zero com os números acima.</div></div>
+  <button class="btn-primary" id="doReset" style="background:var(--danger)">Apagar tudo e começar</button>
+  <button class="btn-ghost" id="cancelReset" style="margin-top:10px">Cancelar</button>
 </div>
 
 <!-- SHEET: registrar cocos -->
@@ -922,7 +939,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.1 · sorvete 2 bolas x 3 bolas';
+const APP_VERSION='v4.2 · transferencia + reset';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1153,8 +1170,9 @@ function computeBalances(prod){
   let bal=0; const balBy={}, counts=[];
   for(const d of sorted){
     const s=stockEntry(d,prod)||{};
-    bal += (s.comprados||0) + (s.recebido||0) - consumedUnits(d,prod) - (s.degustacao||0) - (s.treinamento||0) - (s.perda||0) - (s.transferido||0);
+    bal += (s.comprados||0) - consumedUnits(d,prod) - (s.degustacao||0) - (s.treinamento||0) - (s.perda||0);
     if(s.contagem!=null && s.contagem!==''){ const c=+s.contagem; counts.push({date:d,count:c,quebra:bal-c,teorico:bal}); bal=c; }
+    bal += (s.recebido||0) - (s.transferido||0);   // transferências aplicam DEPOIS da contagem (conta e depois transfere)
     balBy[d]=bal;
   }
   return {balBy, counts, current:bal};
@@ -1615,9 +1633,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet].forEach(s=>s.classList.remove('on')); }
 scrim.addEventListener('click', closeSheets);
 
 /* ---------- abas Vendas | Estoque ---------- */
@@ -1859,8 +1877,9 @@ function theoreticalAt(date, draft, prod){
     const s=stockEntry(d,prod)||{};
     let buy=s.comprados||0,dg=s.degustacao||0,tr=s.treinamento||0,pr=s.perda||0;
     if(d===date && draft){ buy=draft.comprados; dg=draft.degustacao; tr=draft.treinamento; pr=draft.perda; }
-    bal += buy + (s.recebido||0) - consumedUnits(d,prod) - dg - tr - pr - (s.transferido||0);
+    bal += buy - consumedUnits(d,prod) - dg - tr - pr;
     if(d<date && s.contagem!=null && s.contagem!=='') bal=+s.contagem;
+    bal += (s.recebido||0) - (s.transferido||0);
   }
   return bal;
 }
@@ -1953,6 +1972,26 @@ $('saveTransfer').addEventListener('click', ()=>{
   Store.save(db); closeSheets(); viewMonth=date.slice(0,7); stockProduct='loja'; switchView('estoque'); render();
   Cloud.pushStock(dep); Cloud.pushStock(loja);
   toast('Transferido: '+qty+' coco'+(qty>1?'s':'')+' → '+(qty*QUENGAS_POR_COCO)+' quengas 🥥');
+});
+
+/* ---- zerar tudo e recomeçar ---- */
+$('openReset').addEventListener('click', ()=>{ closeSheets(); openSheet(resetSheet); });
+$('cancelReset').addEventListener('click', closeSheets);
+$('doReset').addEventListener('click', async ()=>{
+  $('doReset').disabled=true;
+  const cocos=parseInt2($('resetCocos').value), quengas=parseInt2($('resetQuengas').value), today=todayISO();
+  // apaga na nuvem (uma a uma)
+  for(const c of db.closings.slice()) Cloud.delClosing(c.date);
+  for(const s of db.stock.slice()) Cloud.delStock(s.date, migProd(s.product));
+  for(const m of db.cashflow.slice()) Cloud.delCash(m.id);
+  // zera local
+  db.closings=[]; db.cashflow=[]; db.stock=[];
+  // ponto de partida do estoque (via compra, sem contagem = sem quebra)
+  if(cocos>0){ const dep={ id:'k'+Date.now()+'d', date:today, product:'deposito', comprados:cocos, custo:0, recebido:0, transferido:0, degustacao:0, treinamento:0, perda:0, contagem:null, note:'início', createdAt:new Date().toISOString() }; db.stock.push(dep); Cloud.pushStock(dep); }
+  if(quengas>0){ const lj={ id:'k'+Date.now()+'l', date:today, product:'loja', comprados:0, custo:0, recebido:quengas, transferido:0, degustacao:0, treinamento:0, perda:0, contagem:null, note:'início', createdAt:new Date().toISOString() }; db.stock.push(lj); Cloud.pushStock(lj); }
+  Store.save(db); closeSheets(); viewMonth=ym(new Date()); stockProduct='deposito'; switchView('estoque'); render();
+  $('doReset').disabled=false;
+  toast('Zerado ✓ Depósito começa com '+NUM.format(cocos)+' cocos');
 });
 
 /* ---- caixa: movimentações ---- */
