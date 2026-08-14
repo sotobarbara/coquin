@@ -939,7 +939,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.4 · reimport recalcula gelatos';
+const APP_VERSION='v4.5 · transferencia nao some';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -999,8 +999,12 @@ const Cloud={
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
-    if(!eSk && sk){ // merge stock (chave data+produto)
-      const rows=sk.map(r=>{ const prod=migProd(r.product); return {id:'k'+r.date+'|'+prod,date:r.date,product:prod,comprados:r.comprados||0,custo:+r.custo||0,recebido:r.recebido||0,transferido:r.transferido||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||'',synced:true}; });
+    if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
+      const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
+      const rows=sk.map(r=>{ const prod=migProd(r.product); const loc=locByKey[r.date+'|'+prod];
+        const recebido=(r.recebido!=null?+r.recebido:(loc&&loc.recebido))||0;
+        const transferido=(r.transferido!=null?+r.transferido:(loc&&loc.transferido))||0;
+        return {id:'k'+r.date+'|'+prod,date:r.date,product:prod,comprados:r.comprados||0,custo:+r.custo||0,recebido,transferido,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||'',synced:true}; });
       const keys=new Set(rows.map(r=>r.date+'|'+r.product));
       const pending=(db.stock||[]).filter(x=>x&&!keys.has(x.date+'|'+migProd(x.product))&&!x.synced);
       db.stock=rows.concat(pending);
