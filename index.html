@@ -328,6 +328,16 @@ main{padding-top:18px}
 .htbl tr.pk td:first-child{border-radius:8px 0 0 8px}
 .htbl tr.pk td:last-child{border-radius:0 8px 8px 0;color:#8A5D00}
 .hnote{font-size:11.5px;color:var(--ink-faint);margin-top:8px;font-weight:600}
+/* 2 bolas x 3 bolas */
+.bolas-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.bolas-row .bl{font-size:14px;color:var(--ink-soft);font-weight:600}
+.bolas-row .bl b{color:var(--ink);font-weight:800}
+.bolas-row .bv{font-size:18px;font-weight:800;color:var(--ink)}
+.bolas-row .bv small{font-size:12px;color:var(--ink-faint);font-weight:700}
+.brail{height:9px;border-radius:999px;background:var(--line);overflow:hidden}
+.brail>i{display:block;height:100%;border-radius:999px}
+.bolas-foot{font-size:12.5px;color:var(--ink-soft);font-weight:700;margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
+.bolas-foot b{color:var(--ink);font-weight:800}
 
 /* metas por dia */
 .wk-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
@@ -606,6 +616,9 @@ main{padding-top:18px}
     <div id="hourTable"></div>
   </div>
 
+  <div class="section-title" id="bolasTitle" style="display:none">Sorvete: 2 bolas × 3 bolas <span class="st-side">cartão/Pix da Stone</span></div>
+  <div class="card chart-card" id="bolasCard" style="display:none"><div class="ch-s" id="bolasSub" style="margin:0 2px 10px"></div><div id="bolasBody"></div></div>
+
   <div class="section-title">Formas de pagamento <span class="st-side">toque nas fatias</span></div>
   <div class="card chart-card"><div class="chart" id="chPay"></div><div class="charttip" id="tipPay"></div><div class="legend" id="lgPay"></div></div>
 
@@ -760,8 +773,12 @@ main{padding-top:18px}
     <div id="wkGoalHint" style="font-size:12px;color:var(--ink-faint);margin-top:8px;text-align:center"></div>
   </div>
   <div class="field">
-    <label>Preço do gelato</label>
+    <label>Preço 3 bolas <span class="hintlink" style="color:var(--ink-faint);cursor:default">gelato padrão</span></label>
     <div class="money"><span class="cur">R$</span><input id="goalPrice" type="text" inputmode="decimal" placeholder="35,00"></div>
+  </div>
+  <div class="field">
+    <label>Preço 2 bolas <span class="hintlink" style="color:var(--ink-faint);cursor:default">sorvete menor</span></label>
+    <div class="money"><span class="cur">R$</span><input id="goalPrice2" type="text" inputmode="decimal" placeholder="30,00"></div>
   </div>
   <div class="field">
     <label>Custo planejado do coco <span class="hintlink" style="color:var(--ink-faint);cursor:default">referência</span></label>
@@ -905,8 +922,8 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.0 · depósito + loja (2 estoques)';
-const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35;
+const APP_VERSION='v4.1 · sorvete 2 bolas x 3 bolas';
+const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
 const QUENGAS_POR_COCO=2;   // 1 coco = 2 quengas
@@ -955,14 +972,15 @@ const Cloud={
         const hours=(Array.isArray(r.hours)?r.hours:(loc&&Array.isArray(loc.hours)?loc.hours:null));
         const hoursRev=(Array.isArray(r.hours_rev)?r.hours_rev:(loc&&Array.isArray(loc.hoursRev)?loc.hoursRev:null));
         const taxa=(+r.taxa||0)||(loc&&loc.taxa)||0;
-        return {id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa,stoneTx:r.stone_tx||0,hours,hoursRev,note:r.note||'',synced:true};
+        const gel30=(r.gel30!=null?+r.gel30:(loc&&loc.gel30))||0, gel35=(r.gel35!=null?+r.gel35:(loc&&loc.gel35))||0;
+        return {id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa,stoneTx:r.stone_tx||0,gel30,gel35,hours,hoursRev,note:r.note||'',synced:true};
       });
       const dates=new Set(rows.map(r=>r.date));
       const pending=(db.closings||[]).filter(x=>x&&!dates.has(x.date)&&!x.synced);
       db.closings=rows.concat(pending);
       pending.forEach(x=>this.pushClosing(x));
     }
-    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
+    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto)
       const rows=sk.map(r=>{ const prod=migProd(r.product); return {id:'k'+r.date+'|'+prod,date:r.date,product:prod,comprados:r.comprados||0,custo:+r.custo||0,recebido:r.recebido||0,transferido:r.transferido||0,degustacao:r.degustacao||0,treinamento:r.treinamento||0,perda:r.perda||0,contagem:(r.contagem==null?null:r.contagem),note:r.note||'',synced:true}; });
@@ -990,8 +1008,8 @@ const Cloud={
     return error;
   },
   async pushClosing(c){ if(!this.on)return;
-    const full={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),note:c.note||''};
-    const mid ={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''};   // sem hours_rev
+    const full={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,gel30:c.gel30||0,gel35:c.gel35||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),note:c.note||''};
+    const mid ={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''};   // sem hours_rev/gel30/gel35
     const core={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''};
     try{ const err=await this._upsert('closings',[full,mid,core],'date'); if(err) throw err; c.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
@@ -1012,7 +1030,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; try{ await this.client.from('app_settings').upsert({id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals});}catch(e){} },
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2}); if(error) await this.client.from('app_settings').upsert(base); }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
@@ -1067,6 +1085,21 @@ const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const NUM=new Intl.NumberFormat('pt-BR');
 function money(v){ return BRL.format(v||0); }
 function price(){ return db.settings.price||DEFAULT_PRICE; }
+function price2(){ return db.settings.price2>0?db.settings.price2:DEFAULT_PRICE2; }   // sorvete 2 bolas
+/* classifica o valor de uma transação em gelatos de 3 bolas (P) e 2 bolas (P2) */
+function classifyBolas(v){
+  const P=price(), P2=price2(); const g={g30:0,g35:0};
+  if(v<=0) return g;
+  const near=(a,b)=>Math.abs(a-b)<0.02;
+  const n35=v/P, n30=v/P2;
+  if(near(n35,Math.round(n35)) && Math.round(n35)>=1) g.g35=Math.round(n35);        // múltiplo de 35 (3 bolas)
+  else if(near(n30,Math.round(n30)) && Math.round(n30)>=1) g.g30=Math.round(n30);   // múltiplo de 30 (2 bolas)
+  else if(near(v,P/2)) g.g35=0.5;         // split: metade de uma 3 bolas (ex.: 17,50)
+  else if(near(v,P2/2)) g.g30=0.5;        // split: metade de uma 2 bolas (ex.: 15,00)
+  else if(near(v,P+P2)) { g.g35=1; g.g30=1; }   // combo misto (ex.: 65 = 35+30)
+  else g.g35=v/P;                          // fallback: estima como 3 bolas pelo valor
+  return g;
+}
 function weekdayGoalsSet(){ const w=db.settings.weekdayGoals; return w && Object.keys(w).some(k=>+w[k]>0); }
 function monthGoalFor(key){
   if(weekdayGoalsSet()){ const [y,m]=key.split('-').map(Number), dim=new Date(y,m,0).getDate(); let g=0; for(let d=1;d<=dim;d++) g+=(+db.settings.weekdayGoals[new Date(y,m-1,d).getDay()]||0); return g; }
@@ -1377,6 +1410,20 @@ function renderDados(){
   const segs=[{label:'Pix',color:'var(--pix)',v:byM.pix},{label:'Dinheiro',color:'var(--dinheiro)',v:byM.dinheiro},{label:'Débito',color:'var(--debito)',v:byM.debito},{label:'Crédito',color:'var(--credito)',v:byM.credito}];
   document.getElementById('chPay').innerHTML= rev>0? svgDonut(segs.map(s=>({label:s.label,value:s.v,color:s.color})), money(rev).replace(',00','')) : emptyChart();
   document.getElementById('lgPay').innerHTML= segs.map(s=>'<span class="lg"><span class="sw" style="background:'+s.color+'"></span>'+s.label+' <b>'+money(s.v)+'</b> <small>'+(rev>0?Math.round(s.v/rev*100):0)+'%</small></span>').join('');
+  // sorvete: 2 bolas (R$30) x 3 bolas (R$35), do cartão/Pix
+  let g30=0,g35=0; list.forEach(c=>{ g30+=c.gel30||0; g35+=c.gel35||0; });
+  const totBolas=g30+g35;
+  if(totBolas>0){
+    $('bolasTitle').style.display=''; $('bolasCard').style.display='';
+    const rev35=g35*price(), rev30=g30*price2(), p30=Math.round(g30/totBolas*100), p35=100-p30;
+    $('bolasSub').innerHTML=NUM.format(totBolas)+' gelatos no cartão/Pix · <b>'+money(rev30+rev35)+'</b>';
+    $('bolasBody').innerHTML=
+      '<div class="bolas-row"><span class="bl">🍨 <b>3 bolas</b> · '+money(price())+'</span><span class="bv">'+NUM.format(g35)+' <small>'+p35+'%</small></span></div>'
+      +'<div class="brail"><i style="width:'+p35+'%;background:var(--credito)"></i></div>'
+      +'<div class="bolas-row" style="margin-top:13px"><span class="bl">🍦 <b>2 bolas</b> · '+money(price2())+'</span><span class="bv">'+NUM.format(g30)+' <small>'+p30+'%</small></span></div>'
+      +'<div class="brail"><i style="width:'+p30+'%;background:var(--pix)"></i></div>'
+      +'<div class="bolas-foot">Receita — 3 bolas <b>'+money(rev35)+'</b> · 2 bolas <b>'+money(rev30)+'</b></div>';
+  } else { $('bolasTitle').style.display='none'; $('bolasCard').style.display='none'; }
   // estoque de coco no depósito no mês
   const movDates=[...new Set([...stockOf(key,'deposito').map(s=>s.date), ...list.map(c=>c.date)])].sort();
   document.getElementById('chStock').innerHTML= movDates.length? svgArea(movDates.map(d=>({label:(+d.slice(8)).toString(), value:Math.round(B.balBy[d]||0)})),{color:'var(--green)',tip:p=>'Dia '+p.label+' · <b>'+p.value+' cocos</b> no depósito'}) : emptyChart();
@@ -1644,13 +1691,14 @@ function parseStoneCSV(text){
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
     const liq=iLiq>=0?parseMoney(r[iLiq]):val;   // valor líquido (após taxa Stone)
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
     if(prod.indexOf('pix')>=0) d.pix+=val;
     else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0) d.debito+=val;
     else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0) d.credito+=val;
     else continue;
     d.taxa += Math.max(0, val-liq);   // taxa da Stone desse dia
     d.tx++;
+    const cb=classifyBolas(val); d.g30+=cb.g30; d.g35+=cb.g35;   // 2 bolas (30) x 3 bolas (35)
     const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; if(hh>=0&&hh<24){ d.hours[hh]++; d.hoursRev[hh]+=val; }   // receita bruta por hora
   }
   return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
@@ -1666,12 +1714,13 @@ function applyStoneDay(d){
   $('sPix').value=d.pix?String(d.pix.toFixed(2)).replace('.',','):'';
   $('sDeb').value=d.debito?String(d.debito.toFixed(2)).replace('.',','):'';
   $('sCred').value=d.credito?String(d.credito.toFixed(2)).replace('.',','):'';
-  const tot=d.pix+d.debito+d.credito, cardGel=Math.round(price()>0?tot/price():0);
+  const tot=d.pix+d.debito+d.credito, cardGel=Math.round((d.g30||0)+(d.g35||0));
   // preserva o dinheiro já lançado nesse dia, se houver
   const existing=db.closings.find(c=>c.date===d.date);
   if(existing){ const cash=(existing.revenue||0)-((existing.pix||0)+(existing.debito||0)+(existing.credito||0)); $('cCash').value = cash>0.005?String(cash.toFixed(2)).replace('.',','):''; }
   recompute();
-  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> ('+cardGel+' gelatos). Agora conte o <b>dinheiro</b> — o total e os gelatos se ajustam sozinhos.';
+  const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0);
+  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+cardGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas). Conte o <b>dinheiro</b> pra fechar o total.';
   showStoneChips(d.date);
   $('bulkBtn').style.display = stoneParsed.length? 'block':'none';
   $('bulkBtn').textContent = 'Lançar/atualizar os '+stoneParsed.length+' dia'+(stoneParsed.length>1?'s':'')+' do arquivo';
@@ -1684,11 +1733,11 @@ function bulkImportStone(){
   stoneParsed.forEach((d,i)=>{
     const tot=d.pix+d.debito+d.credito;
     let c=db.closings.find(x=>x.date===d.date);
-    if(c){ // atualiza Stone + fluxo por hora + taxa, mantém gelatos/faturamento/contagem
-      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; updated++; Cloud.pushClosing(c);
+    const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0), cardGel=g30+g35;
+    if(c){ // atualiza Stone + fluxo por hora + taxa + split bolas, mantém gelatos/faturamento/contagem
+      c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; c.gel30=g30; c.gel35=g35; if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; updated++; Cloud.pushClosing(c);
     } else {
-      const gel=Math.round(price()>0?tot/price():0);
-      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:gel, revenue:gel*price(), pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, hours:d.hours||null, hoursRev:d.hoursRev||null, note:'', createdAt:new Date().toISOString() };
+      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:cardGel, revenue:tot, pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, gel30:g30, gel35:g35, hours:d.hours||null, hoursRev:d.hoursRev||null, note:'', createdAt:new Date().toISOString() };
       db.closings.push(c); created++; Cloud.pushClosing(c);
     }
   });
@@ -1751,7 +1800,7 @@ $('saveClose').addEventListener('click', ()=>{
   if(target){ Object.assign(target, d); saved=target; }
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
   // fluxo por hora + taxa Stone vindos do CSV importado (se houver para esta data)
-  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; saved.taxa=sp.taxa||0; }
+  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; saved.taxa=sp.taxa||0; saved.gel30=Math.round(sp.g30||0); saved.gel35=Math.round(sp.g35||0); }
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
   // nuvem: se a data mudou na edição, remove a antiga
@@ -2125,12 +2174,13 @@ $('bankConfirm').addEventListener('click', confirmBankImport);
 function refreshWkHint(){ $('wkGoalHint').innerHTML = weekdayGoalsSet()? '✅ Meta por dia ATIVA · mês = <b>'+NUM.format(monthGoalFor(viewMonth))+'</b> gelatos (a meta única acima fica ignorada)' : ''; }
 $('editGoal').addEventListener('click', ()=>{
   const rawGoal=(db.goals[viewMonth]&&db.goals[viewMonth].gelatos!=null)?db.goals[viewMonth].gelatos:DEFAULT_GOAL;
-  $('goalUnit').value=db.settings.unit||DEFAULT_UNIT; $('goalValue').value=rawGoal; $('goalPrice').value=String(price()).replace('.',','); $('goalCost').value=String(costPlan()).replace('.',',');
+  $('goalUnit').value=db.settings.unit||DEFAULT_UNIT; $('goalValue').value=rawGoal; $('goalPrice').value=String(price()).replace('.',','); $('goalPrice2').value=String(price2()).replace('.',','); $('goalCost').value=String(costPlan()).replace('.',',');
   refreshWkHint(); updateAcct(); openSheet(goalSheet);
 });
 $('saveGoal').addEventListener('click', ()=>{
   db.settings.unit=$('goalUnit').value.trim()||DEFAULT_UNIT;
   const p=parseMoney($('goalPrice').value); db.settings.price=p>0?p:DEFAULT_PRICE;
+  const p2=parseMoney($('goalPrice2').value); db.settings.price2=p2>0?p2:DEFAULT_PRICE2;
   const cp=parseMoney($('goalCost').value); db.settings.custoPlan=cp>0?cp:DEFAULT_COST;
   const val=parseInt2($('goalValue').value); db.goals[viewMonth]={gelatos:val>0?val:DEFAULT_GOAL};
   Store.save(db); closeSheets(); render(); Cloud.pushSettings(); toast('Ajustes salvos');

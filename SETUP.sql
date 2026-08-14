@@ -19,6 +19,8 @@ create table if not exists public.closings (
 alter table public.closings add column if not exists taxa numeric default 0;
 alter table public.closings add column if not exists hours jsonb;
 alter table public.closings add column if not exists hours_rev jsonb;   -- receita bruta por hora (0..23), do CSV da Stone
+alter table public.closings add column if not exists gel30 integer default 0;   -- gelatos 2 bolas (R$30) no cartão/Pix
+alter table public.closings add column if not exists gel35 integer default 0;   -- gelatos 3 bolas (R$35) no cartão/Pix
 
 -- ============ Estoque (por produto: coco / sorvete) ============
 create table if not exists public.stock (
@@ -72,6 +74,7 @@ create table if not exists public.app_settings (
 );
 alter table public.app_settings add column if not exists custo_plan numeric default 1.5;
 alter table public.app_settings add column if not exists wk_goals jsonb;
+alter table public.app_settings add column if not exists price2 numeric default 30;   -- preço 2 bolas
 
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
 alter table public.closings     enable row level security;
