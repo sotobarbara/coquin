@@ -951,7 +951,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.7 · trocar senha';
+const APP_VERSION='v4.8 · sair de todos';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -2387,19 +2387,25 @@ $('reportBtn').addEventListener('click', async ()=>{
 
 /* ---- login / sincronia ---- */
 function showGate(v){ document.getElementById('authGate').classList.toggle('on',v); }
+async function signOutAll(){
+  if(!confirm('Isso vai deslogar TODOS os aparelhos, inclusive o seu. Todos precisarão entrar de novo com a senha atual. Faça isso depois de trocar a senha, para tirar quem não deve mais ter acesso. Continuar?')) return;
+  try{ await Cloud.client.auth.signOut({scope:'global'}); }catch(e){}
+  toast('Todos os aparelhos foram deslogados ✓');
+}
 function updateAcct(){
   const el=document.getElementById('acctRow'); if(!el) return;
   if(!Cloud.ready()){ el.innerHTML=''; return; }
   if(Cloud.on){
     el.innerHTML='<span class="ai"><span class="sd on"></span>Sincronizando · <b>'+(Cloud.email||'')+'</b></span><button id="btnSignOut">Sair</button>';
-    el.querySelector('#btnSignOut').onclick=async()=>{ try{ await Cloud.client.auth.signOut(); }catch(e){} };
-    el.insertAdjacentHTML('afterend','');
+    el.querySelector('#btnSignOut').onclick=async()=>{ try{ await Cloud.client.auth.signOut({scope:'local'}); }catch(e){} };
     if(!document.getElementById('btnPass')){ el.insertAdjacentHTML('afterend','<button type="button" class="btn-ghost" id="btnPass" style="margin-top:10px">🔑 Trocar senha</button>'); document.getElementById('btnPass').addEventListener('click', openPassSheet); }
     else document.getElementById('btnPass').style.display='';
+    if(!document.getElementById('btnAllOut')){ document.getElementById('btnPass').insertAdjacentHTML('afterend','<button type="button" class="btn-ghost" id="btnAllOut" style="margin-top:10px;color:var(--danger);border-color:#E7C3BE">🚪 Sair de TODOS os aparelhos</button>'); document.getElementById('btnAllOut').addEventListener('click', signOutAll); }
+    else document.getElementById('btnAllOut').style.display='';
   } else {
     el.innerHTML='<span class="ai"><span class="sd off"></span>Só neste aparelho</span><button id="btnSignIn">Entrar</button>';
     el.querySelector('#btnSignIn').onclick=()=>{ closeSheets(); showGate(true); };
-    const bp=document.getElementById('btnPass'); if(bp) bp.style.display='none';
+    ['btnPass','btnAllOut'].forEach(id=>{ const x=document.getElementById(id); if(x) x.style.display='none'; });
   }
 }
 async function onLoggedIn(sess){
