@@ -715,8 +715,8 @@ main{padding-top:18px}
     </button>
     <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
     <div class="stone-chips" id="stoneChips"></div>
+    <button type="button" id="bulkBtn" style="display:none;width:100%;border:0;background:var(--green);color:#fff;font-size:15px;font-weight:800;padding:15px;border-radius:var(--r-sm);cursor:pointer;margin-top:10px;box-shadow:0 6px 18px rgba(52,80,58,.28);line-height:1.25">Salvar todos os dias do arquivo</button>
     <div class="import-hint" id="importHint"></div>
-    <button type="button" class="btn-ghost" id="bulkBtn" style="display:none;margin-top:10px">Lançar todos os dias do arquivo</button>
   </div>
 
   <div class="field">
@@ -951,7 +951,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.8 · sair de todos';
+const APP_VERSION='v4.9 · importar vários dias';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
@@ -1757,7 +1757,8 @@ function parseStoneCSV(text){
 function showStoneChips(sel){
   $('stoneChips').innerHTML=stoneParsed.map(d=>{
     const [Y,M,D]=d.date.split('-'); const tot=d.pix+d.debito+d.credito;
-    return `<button type="button" class="sc-chip ${d.date===sel?'sel':''}" data-day="${d.date}">${D}/${M} · <b>${money(tot)}</b></button>`;
+    const has=db.closings.some(c=>c.date===d.date);
+    return `<button type="button" class="sc-chip ${d.date===sel?'sel':''}" data-day="${d.date}" title="${has?'já lançado — será atualizado':'novo'}">${D}/${M} · <b>${money(tot)}</b>${has?' ✓':''}</button>`;
   }).join('');
 }
 function applyStoneDay(d){
@@ -1773,8 +1774,11 @@ function applyStoneDay(d){
   const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0);
   $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+cardGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas). Conte o <b>dinheiro</b> pra fechar o total.';
   showStoneChips(d.date);
-  $('bulkBtn').style.display = stoneParsed.length? 'block':'none';
-  $('bulkBtn').textContent = 'Lançar/atualizar os '+stoneParsed.length+' dia'+(stoneParsed.length>1?'s':'')+' do arquivo';
+  const novos=stoneParsed.filter(x=>!db.closings.some(c=>c.date===x.date)).length;
+  $('bulkBtn').style.display = stoneParsed.length>1? 'block':'none';
+  $('bulkBtn').textContent = novos>0
+    ? '⤓ Salvar os '+stoneParsed.length+' dias de uma vez — '+novos+' novo'+(novos>1?'s':'')
+    : '⤓ Atualizar os '+stoneParsed.length+' dias de uma vez';
   renderRecon();
 }
 /* lança de uma vez os dias do arquivo que ainda não têm fechamento */
@@ -1807,7 +1811,7 @@ $('csvFile').addEventListener('change', e=>{
     let res; try{ res=parseStoneCSV(String(reader.result)); }catch(err){ res=null; }
     if(res===null){ toast('CSV não reconhecido — use o relatório de vendas da Stone'); }
     else if(!res.length){ toast('Nenhuma venda aprovada no arquivo'); }
-    else { stoneParsed=res; applyStoneDay(res[0]); toast(res.length>1? res.length+' dias no arquivo — toque no dia p/ escolher':'Stone importada ✓'); }
+    else { stoneParsed=res; applyStoneDay(res[0]); toast(res.length>1? res.length+' dias no arquivo — toque no botão verde p/ salvar todos':'Stone importada ✓'); }
   };
   reader.readAsText(f); e.target.value='';
 });
