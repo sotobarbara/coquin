@@ -83,6 +83,15 @@ Realtime liga a sincronia entre celulares.
 
 O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL Editor** do Supabase.
 
+## Outros apps da Coquin (mesma pasta, links próprios)
+
+- [`checklist/`](checklist/) — **Checklist operacional** (rotina de entrada e saída + análise).
+- [`escala/`](escala/) — **Escala & Ponto**: escala dinâmica (equilibrada ou randômica) dentro
+  das regras da CLT, troca de folga com recálculo automático, ponto com comprovante e
+  fechamento do mês em CSV.
+
+Cada um é um projeto separado na Vercel (Root Directory = a pasta) e usa o mesmo login da equipe.
+
 ## Como hospedar
 
 Site estático: qualquer host serve o `index.html`. Neste projeto, deploy automático pela
