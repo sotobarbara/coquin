@@ -312,6 +312,23 @@ header{
 .receipt .rr b{color:var(--ink);font-weight:700;text-align:right}
 .receipt .rt{text-align:center;font-size:12.5px;font-weight:800;color:var(--green-700);letter-spacing:.5px;margin-bottom:9px;font-family:inherit}
 
+/* ---------- calendário de folgas ---------- */
+.viewtog{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.viewtog button{border:0;background:transparent;font-family:inherit;font-size:12px;font-weight:750;color:var(--ink-faint);padding:7px 12px;border-radius:999px;cursor:pointer}
+.viewtog button.sel{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(38,48,42,.06)}
+.calwrap{padding:12px 12px 14px}
+.calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.calhead span{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--ink-faint);text-align:center;text-transform:uppercase}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calcell{min-height:62px;border:1px solid var(--line);border-radius:9px;padding:4px 2px 5px;background:var(--surface);cursor:pointer;overflow:hidden}
+.calcell:active{background:var(--bg)}
+.calcell.out{background:transparent;border-color:transparent;cursor:default}
+.calcell.today{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
+.calcell .cd{font-size:10.5px;font-weight:800;color:var(--ink-soft);padding-left:2px}
+.calcell.sun .cd{color:var(--gold-ink)}
+.calcell.today .cd{color:var(--green)}
+.calpill{display:block;font-size:8.5px;font-weight:800;color:#fff;border-radius:4px;padding:2px 1px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:clip;line-height:1.3;text-align:center;letter-spacing:-.2px}
+
 /* ---------- pausas do ponto (escolha do tipo de saída) ---------- */
 .plist{margin-top:6px}
 .prow{display:flex;align-items:center;gap:13px;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 15px;margin-top:9px;cursor:pointer;font-family:inherit;text-align:left;transition:.15s}
@@ -481,11 +498,11 @@ const COMPANY={name:'Coquin', unit:'Imprensa'};
 
 /* ---- equipe (edite em 👥 Equipe; isto é só o cadastro inicial) ---- */
 const SEED_TEAM=[
-  {name:'Wagner', role:'Atendimento', color:'#C79A3E', scale:'6x1', start:'10:00', end:'19:00', lunch:60, contract:'clt',
+  {name:'Wagner', role:'Atendimento', color:'#C79A3E', scale:'6x1', start:'10:00', end:'19:00', lunch:60, contract:'clt', prefOff:[3], fixedOff:true,
    face:{bg:'#F3EAD8', skin:'#E8C39E', hair:'#2E2622', style:'short', beard:true}},
-  {name:'Paulo',  role:'Atendimento', color:'#446349', scale:'5x2', start:'15:00', end:'23:00', lunch:60, contract:'clt',
+  {name:'Paulo',  role:'Atendimento', color:'#446349', scale:'5x2', start:'15:00', end:'23:00', lunch:60, contract:'clt', prefOff:[1,3], fixedOff:true,
    face:{bg:'#E9E3F1', skin:'#F4D6BA', hair:'#2A2320', style:'short', cap:true, capCol:'#446349'}},
-  {name:'Ingrid', role:'Atendimento', color:'#3E7CB1', scale:'6x1', start:'15:00', end:'23:00', lunch:60, contract:'pj',
+  {name:'Ingrid', role:'Atendimento', color:'#3E7CB1', scale:'6x1', start:'15:00', end:'23:00', lunch:60, contract:'pj', prefOff:[2], fixedOff:true,
    face:{bg:'#DEEAF4', skin:'#F3D4B6', hair:'#231A16', style:'longwave', earrings:true}}
 ];
 
@@ -503,7 +520,7 @@ const SCALES={
   '4x3':{k:'4x3', label:'4x3', days:4, desc:'4 dias de trabalho, 3 de folga'}
 };
 /* mínimo de gente na loja em cada dia da semana (0=dom) */
-const DEFAULT_DEMAND={0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2};
+const DEFAULT_DEMAND={0:2, 1:2, 2:2, 3:1, 4:3, 5:3, 6:3};   /* dom seg ter qua qui sex sáb */
 const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60};
 const WD=['dom','seg','ter','qua','qui','sex','sáb'];
 const WDL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
@@ -544,8 +561,8 @@ function daysOfMonth(key){ const p=key.split('-').map(Number), n=new Date(p[0],p
 function wdOf(iso){ return dOf(iso).getDay(); }
 function dayLabel(iso){ const d=dOf(iso); return WD[d.getDay()]+' '+d.getDate()+'/'+pad(d.getMonth()+1); }
 function dayLong(iso){ const d=dOf(iso); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); }
-function weekKey(iso){ const d=dOf(iso); const off=(d.getDay()+6)%7; d.setDate(d.getDate()-off); return isoOf(d); }   /* semana seg→dom */
-function remainingInWeek(iso){ return 7-((wdOf(iso)+6)%7); }
+function weekKey(iso){ const d=dOf(iso); d.setDate(d.getDate()-d.getDay()); return isoOf(d); }   /* semana civil: dom→sáb */
+function remainingInWeek(iso){ return 7-wdOf(iso); }
 function t2m(t){ if(!t) return null; const p=String(t).split(':'); return (+p[0])*60+(+p[1]||0); }
 function m2t(m){ m=Math.max(0,Math.round(m)); return pad(Math.floor(m/60)%24)+':'+pad(m%60); }
 function hm(min,sign){ if(min==null||isNaN(min)) return '—'; const s=min<0?'−':(sign?'+':''); min=Math.abs(Math.round(min)); const h=Math.floor(min/60), m=min%60; return s+h+'h'+(m?pad(m):''); }
@@ -601,7 +618,7 @@ function freshDB(){
   return {version:2, emps:SEED_TEAM.map(t=>({
       id:slug(t.name), name:t.name, role:t.role, color:t.color, face:t.face, active:true,
       scale:t.scale, start:t.start, end:t.end, lunch:t.lunch, contract:t.contract,
-      prefOff:[], pin:'', admission:''
+      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:''
     })),
     sched:[], swaps:[], punch:[],
     cfg:{demand:Object.assign({},DEFAULT_DEMAND), rules:Object.assign({},DEFAULT_RULES)}};
@@ -622,10 +639,20 @@ db.sched.forEach(r=>{ r.shift=normCode(r.shift); });
 db.cfg=db.cfg||{};
 if(!db.cfg.demand || typeof db.cfg.demand[0]==='object') db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
 db.cfg.rules=Object.assign({},DEFAULT_RULES,db.cfg.rules||{});
+if((db.cfg.v||0)<3){                                   /* v3: semana civil + folga fixa do modelo da Coquin */
+  db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
+  db.emps.forEach(e=>{
+    if((e.prefOff||[]).length) return;
+    const seed=SEED_TEAM.find(t=>slug(t.name)===e.id);
+    if(seed && seed.prefOff){ e.prefOff=seed.prefOff.slice(); e.fixedOff=!!seed.fixedOff; }
+  });
+  db.cfg.v=3;
+}
 db.version=2;
 
 let viewMonth=ym(new Date());
 let currentView='escala';
+let escView='grid';                                  /* grade × calendário de folgas */
 let pnWho=(db.emps[0]||{}).id||'';
 
 /* ---------- pessoas e jornadas ---------- */
@@ -728,13 +755,19 @@ function ctxApplyDay(ctx,date){
 function ctxSeed(ctx,startDate){ for(let i=28;i>=1;i--) ctxApplyDay(ctx, addDays(startDate,-i)); }
 function consecBefore(ctx,empId,date){ let n=0,d=addDays(date,-1); while(n<40){ const c=ctxCode(ctx,d,empId); if(isWork(c)){ n++; d=addDays(d,-1); } else break; } return n; }
 
+/* a semana até aqui está toda registrada? (na virada de mês pode faltar o começo) */
+function weekKnown(ctx,date,empId){
+  const wk=weekKey(date);
+  for(let i=0;i<7;i++){ const d=addDays(wk,i); if(d>=date) break; if(!ctxCode(ctx,d,empId)) return false; }
+  return true;
+}
 /* por que esta pessoa TEM que folgar neste dia */
 function mustRest(ctx,date,emp){
   const R=RULES(), st=ctx.st[emp.id], wk=weekKey(date), wd=wdOf(date);
   if(st.consec>=R.maxConsec) return 'já trabalhou '+R.maxConsec+' dias seguidos (art. 67)';
   if(isCLT(emp) && wd===0 && R.sundayEvery>0 && st.sunSince>=R.sundayEvery-1) return 'domingo de folga (Lei 10.101/2000)';
   const falta=offQuota(emp)-(st.weekOff[wk]||0);
-  if(falta>0 && remainingInWeek(date)<=falta) return 'folga da escala '+emp.scale+' — DSR (art. 67)';
+  if(falta>0 && remainingInWeek(date)<=falta && weekKnown(ctx,date,emp.id)) return 'folga da escala '+emp.scale+' — DSR (art. 67)';
   return null;
 }
 /* pode trabalhar neste dia? */
@@ -759,10 +792,12 @@ function canWork(ctx,date,emp){
   return {ok:true, score, warn};
 }
 /* maior sequência de dias trabalhados na semana, dado um conjunto de folgas */
-function maxRunWeek(ctx,emp,days,picks){
+function maxRunWeek(ctx,emp,days,picks,inRange){
   let run=consecBefore(ctx,emp.id,days[0]), max=run;
   days.forEach(d=>{
-    const isRest = picks.indexOf(d)>=0 || isOff(ctxCode(ctx,d,emp.id));
+    const c=ctxCode(ctx,d,emp.id);
+    /* dia sem registro fora do intervalo gerado: não dá para supor que trabalhou */
+    const isRest = picks.indexOf(d)>=0 || isOff(c) || (!c && !(inRange&&inRange(d)));
     if(isRest) run=0; else { run++; if(run>max) max=run; }
   });
   return max;
@@ -780,9 +815,44 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
     if(need<=0) return;
     const free=days.filter(d=>inRange(d) && !ctx.fixed[d+'|'+e.id] && !ctxCode(ctx,d,e.id));
     const picks=[];
-    const sun=days[6];                                     /* semana seg→dom: domingo é o último */
+    const sun=days[0];                                     /* semana civil: domingo é o primeiro */
     const sunDue = isCLT(e) && R.sundayEvery>0 && ctx.st[e.id].sunSince>=R.sundayEvery-1;
-    if(sunDue && free.indexOf(sun)>=0){ picks.push(sun); need--; }
+    /* folga fixa: os mesmos dias da semana, toda semana */
+    if(e.fixedOff && (e.prefOff||[]).length){
+      free.forEach(d=>{ if(e.prefOff.indexOf(wdOf(d))>=0 && picks.indexOf(d)<0) picks.push(d); });
+      if(sunDue && free.indexOf(sun)>=0 && picks.indexOf(sun)<0) picks.push(sun);
+      /* o domingo entra no lugar de uma folga fixa (não sobra folga a mais) */
+      const nextFixed=Math.min.apply(null,e.prefOff);     /* primeira folga fixa da semana seguinte */
+      while(picks.length>offQuota(e)){
+        let worst=null;
+        picks.forEach(d=>{
+          if(d===sun && sunDue) return;
+          const rest=picks.filter(x=>x!==d);
+          const run=maxRunWeek(ctx,e,days,rest,inRange);
+          let sc=-run;
+          if(run>R.maxConsec) sc-=100;
+          /* quantos dias seguidos ficariam até a próxima folga fixa da semana que vem */
+          const last=rest.length? Math.max.apply(null,rest.map(x=>days.indexOf(x))) : -1;
+          const ponte=(6-last)+nextFixed;
+          if(last>=0 && ponte>R.maxConsec) sc-=100;
+          const i=days.indexOf(d);
+          if(picks.some(x=>x!==d && Math.abs(days.indexOf(x)-i)===1)) sc+=10;   /* tira a folga colada em outra */
+          if(!worst||sc>worst.sc) worst={d,sc};
+        });
+        if(!worst) break;
+        const drop=worst;
+        const rest=picks.filter(x=>x!==drop.d);
+        const last=rest.length? Math.max.apply(null,rest.map(x=>days.indexOf(x))) : -1;
+        /* se tirar a folga quebra a regra dos dias seguidos, a semana fica com uma folga a mais */
+        if(maxRunWeek(ctx,e,days,rest,inRange)>R.maxConsec || (last>=0 && (6-last)+nextFixed>R.maxConsec)) break;
+        picks.splice(picks.indexOf(drop.d),1);
+      }
+      need=0;                                              /* folga fixa é só nos dias fixos */
+    }else if(sunDue && free.indexOf(sun)>=0){ picks.push(sun); need--; }
+    if(need>0){                                            /* semana quebrada (virada de mês): cota proporcional */
+      const inWeek=days.filter(inRange).length;
+      if(inWeek<7) need=Math.min(need, Math.round(need*inWeek/7));
+    }
     while(need>0){
       const cand=free.filter(d=>picks.indexOf(d)<0);
       if(!cand.length) break;
@@ -795,7 +865,7 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
         if((e.prefOff||[]).indexOf(wdOf(d))>=0) sc+=12;
         if(wdOf(d)===0) sc += (ctx.st[e.id].sunSince>=1?5:-2);
         if(wdOf(d)===5||wdOf(d)===6) sc-=4;                 /* sexta e sábado são os dias cheios */
-        const run=maxRunWeek(ctx,e,days,picks.concat([d]));
+        const run=maxRunWeek(ctx,e,days,picks.concat([d]),inRange);
         if(run>R.maxConsec) sc-=80; else sc-=Math.max(0,run-(R.maxConsec-1))*6;
         sc += (opts.mode==='random'? rnd()*15 : rnd()*2.5);
         if(!best||sc>best.sc) best={d,sc};
@@ -804,12 +874,12 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
     }
     /* se ainda assim a sequência passar do limite, entra uma folga extra no melhor dia */
     let guard=0;
-    while(maxRunWeek(ctx,e,days,picks)>R.maxConsec && guard++<3){
+    while(maxRunWeek(ctx,e,days,picks,inRange)>R.maxConsec && guard++<3){
       const cand=days.filter(d=>inRange(d) && !ctx.fixed[d+'|'+e.id] && !ctxCode(ctx,d,e.id) && picks.indexOf(d)<0);
       if(!cand.length) break;
       let best=null;
       cand.forEach(d=>{
-        const run=maxRunWeek(ctx,e,days,picks.concat([d]));
+        const run=maxRunWeek(ctx,e,days,picks.concat([d]),inRange);
         let sc=-run*10 - dayOff[d]*6;
         if(wdOf(d)===5||wdOf(d)===6) sc-=4;
         if(!best||sc>best.sc) best={d,sc};
@@ -1247,7 +1317,7 @@ const Cloud={
     if(emps.length){
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
         active:e.active!==false, scale:e.scale||'6x1', start:e.start_t||'', end:e.end_t||'', lunch:(e.lunch==null?60:+e.lunch),
-        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], pin:e.pin||'', admission:e.admission||''}));
+        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||''}));
     }else if(db.emps.length){ for(const e of db.emps) await this.pushEmp(e); }
     db.sched=sched.map(s=>({date:s.date, emp:s.emp, shift:normCode(s.shift), locked:!!s.locked, src:s.src||'auto', note:s.note||'', synced:true}));
     db.swaps=swaps.map(s=>({id:s.id, at:s.created_at, emp:s.emp, from:s.from_date, to:s.to_date, cover:s.cover||null,
@@ -1262,7 +1332,7 @@ const Cloud={
   async pushEmp(e){ if(!this.on) return;
     try{ await this.client.from('shift_employees').upsert({id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
       active:e.active!==false, scale:e.scale||'6x1', start_t:e.start, end_t:e.end, lunch:e.lunch||0, contract:e.contract||'clt',
-      pref_off:e.prefOff||[], pin:e.pin||'', admission:e.admission||null},{onConflict:'id'}); }
+      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null},{onConflict:'id'}); }
     catch(err){ offlineToast(); } },
   async delEmp(id){ if(!this.on) return; try{ await this.client.from('shift_employees').delete().eq('id',id); }catch(e){} },
   async pushSchedule(){ if(!this.on) return;
@@ -1354,12 +1424,21 @@ function renderEscToday(){
 function renderEscGrid(){
   const dates=daysOfMonth(viewMonth), emps=activeEmps(), today=todayISO();
   const rows=monthRows(viewMonth).length;
-  let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">Escala de '+monthName(viewMonth)+'</div>'
-    +'<div class="gs">'+(rows?'arraste para ver o mês':'ainda não gerada')+'</div></div>'
-    +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">Gerar</button></div>';
+  let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">'+(escView==='cal'?'Folgas de ':'Escala de ')+monthName(viewMonth)+'</div>'
+    +'<div class="gs">'+(rows?(escView==='cal'?'toque num dia para editar':'arraste para ver o mês'):'ainda não gerada')+'</div></div>'
+    +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">Gerar</button></div>'
+    +'<div style="padding:10px 14px 0"><div class="viewtog" id="escTog" style="display:inline-flex">'
+    +'<button data-ev="grid" class="'+(escView==='grid'?'sel':'')+'">Grade</button>'
+    +'<button data-ev="cal" class="'+(escView==='cal'?'sel':'')+'">Folgas</button></div></div>';
   if(!emps.length){
-    h+='<div class="empty"><div class="em">👥</div><p>Cadastre a equipe para montar a escala.</p></div></div>';
+    h+='<div class="empty"><p>Cadastre a equipe para montar a escala.</p></div></div>';
     $('escGrid').innerHTML=h; bindGen(); return;
+  }
+  if(escView==='cal'){
+    h+=calendarHTML()+'</div>';
+    $('escGrid').innerHTML=h; bindGen(); bindEscTog();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-calday]'),b=>b.addEventListener('click',()=>openDaySheet(b.getAttribute('data-calday'))));
+    return;
   }
   h+='<div class="gridscroll"><table class="gtable"><thead><tr><th class="gname gd"><span class="hl">Equipe</span></th>';
   dates.forEach(d=>{
@@ -1387,7 +1466,7 @@ function renderEscGrid(){
   emps.forEach(e=>{ h+='<span class="who-l"><i style="background:'+e.color+'"></i>'+esc(e.name)+' '+e.start.slice(0,5)+'–'+e.end.slice(0,5)+'</span>'; });
   h+='<span><i style="background:#F5F3EE;border:1px solid #EAE7E0"></i>Folga</span></div></div>';
   $('escGrid').innerHTML=h;
-  bindGen();
+  bindGen(); bindEscTog();
   Array.prototype.forEach.call(document.querySelectorAll('[data-cell]'),b=>b.addEventListener('click',()=>{
     const p=b.getAttribute('data-cell').split('|'); openCellSheet(p[0],p[1]);
   }));
@@ -1395,6 +1474,31 @@ function renderEscGrid(){
   const tdEl=document.querySelector('.gd.today'); if(tdEl&&tdEl.scrollIntoView){ try{ tdEl.scrollIntoView({block:'nearest',inline:'center'}); }catch(err){} }
 }
 function bindGen(){ const b=$('btnGen'); if(b) b.addEventListener('click',openGenSheet); }
+function bindEscTog(){
+  Array.prototype.forEach.call(document.querySelectorAll('#escTog button'),b=>b.addEventListener('click',()=>{
+    escView=b.getAttribute('data-ev'); renderEscGrid();
+  }));
+}
+/* calendário do mês com as folgas de cada um — é o quadro que vai pro grupo */
+function calendarHTML(){
+  const dates=daysOfMonth(viewMonth), today=todayISO(), first=dates[0];
+  const lead=wdOf(first), total=lead+dates.length, cells=Math.ceil(total/7)*7;
+  let h='<div class="calwrap"><div class="calhead">'+WD.map(w=>'<span>'+w+'</span>').join('')+'</div><div class="calgrid">';
+  for(let i=0;i<cells;i++){
+    const idx=i-lead;
+    if(idx<0||idx>=dates.length){ h+='<div class="calcell out"></div>'; continue; }
+    const d=dates[idx];
+    const cls='calcell'+(wdOf(d)===0?' sun':'')+(d===today?' today':'');
+    let pills='';
+    activeEmps().forEach(e=>{
+      const c=codeOf(d,e.id);
+      if(c==='F') pills+='<span class="calpill" style="background:'+e.color+'">'+esc(e.name)+'</span>';
+      else if(c==='FE'||c==='AT') pills+='<span class="calpill" style="background:'+OFF_CODES[c].color+'">'+esc(e.name)+'</span>';
+    });
+    h+='<div class="'+cls+'" data-calday="'+d+'"><div class="cd">'+dOf(d).getDate()+'</div>'+pills+'</div>';
+  }
+  return h+'</div></div>';
+}
 function renderEscClt(){
   const v=validateMonth(viewMonth);
   const probs=v.bad.concat(v.warn), info=v.info||[], oks=v.ok||[];
@@ -1551,7 +1655,7 @@ function openTeamSheet(){
   db.emps.forEach(e=>{
     h+='<div class="tc-line" style="cursor:pointer" data-emp="'+e.id+'">'+avatar(e)
       +'<div class="nm">'+esc(e.name)+(isCLT(e)?'':'<span class="tag-pj">PJ</span>')+(e.active===false?' <span class="chip neutral">inativo</span>':'')
-      +'<small>'+e.scale+' · '+empRange(e)+' · '+hm(empMin(e))+'/dia</small></div>'
+      +'<small>'+e.scale+' · '+empRange(e)+(e.fixedOff&&(e.prefOff||[]).length?' · folga '+e.prefOff.slice().sort().map(i=>WD[i]).join('/'):'')+'</small></div>'
       +'<span class="chip neutral">'+hm(weeklyPlanned(e))+'/sem</span></div>';
   });
   if(!db.emps.length) h+='<div class="empty"><div class="em">👥</div><p>Nenhuma pessoa cadastrada ainda.</p></div>';
@@ -1577,16 +1681,25 @@ function openEmpSheet(id){
    +'<div class="fld"><label>Sai</label><input type="time" id="epEnd" value="'+e.end+'"></div></div>'
    +'<div class="fld"><label>Intervalo (min)</label><input type="number" inputmode="numeric" id="epLunch" value="'+(e.lunch||0)+'">'
    +'<div class="hint" id="epCalc">—</div></div>'
-   +'<div class="fld"><label>Folga preferida (opcional)</label><div class="wdays" id="epOff">'
+   +'<div class="fld"><label>Folga na semana</label><div class="wdays" id="epOff">'
    +WD.map((w,i)=>'<button data-w="'+i+'" class="'+((e.prefOff||[]).indexOf(i)>=0?'sel':'')+'">'+w+'</button>').join('')
-   +'</div><div class="hint">Preferência, não garantia: a folga semanal e o domingo vêm primeiro.</div></div>'
+   +'</div><div class="hint" id="epOffHint">—</div></div>'
+   +'<div class="switch"><div class="sl">Folga fixa toda semana<small>sempre nos mesmos dias; o domingo de folga entra no lugar de um deles quando é a vez</small></div><button class="sw '+(e.fixedOff?'on':'')+'" id="epFixed"></button></div>'
    +'<div class="fld2"><div class="fld"><label>Cor</label><input id="epColor" type="color" value="'+(e.color||'#446349')+'" style="padding:6px;height:48px"></div>'
    +'<div class="fld"><label>Senha do ponto</label><input id="epPin" inputmode="numeric" maxlength="6" value="'+esc(e.pin||'')+'" placeholder="4 dígitos"></div></div>'
    +'<div class="switch"><div class="sl">Ativo na escala<small>desligue em vez de excluir quem saiu</small></div><button class="sw '+(e.active!==false?'on':'')+'" id="epActive"></button></div>'
    +'<button class="btn btn-green" id="epSave" style="margin-top:16px">Salvar</button>';
   if(id) h+='<div class="btn-row"><button class="btn-ghost btn-danger" id="epDel">Excluir da equipe</button></div>';
   openSheet(id?'Editar pessoa':'Nova pessoa', h, ()=>{
-    let active=e.active!==false, prefOff=(e.prefOff||[]).slice(), scale=e.scale, contract=e.contract||'clt';
+    let active=e.active!==false, prefOff=(e.prefOff||[]).slice(), scale=e.scale, contract=e.contract||'clt', fixedOff=!!e.fixedOff;
+    function offHint(){
+      const q=7-(SCALES[scale]?SCALES[scale].days:6);
+      const el=$('epOffHint'); if(!el) return;
+      el.textContent = fixedOff
+        ? (prefOff.length? 'Folga fixa: '+prefOff.slice().sort().map(i=>WDL[i].toLowerCase()).join(' e ')+(prefOff.length===q?'':' — a escala '+scale+' pede '+q+' folga(s) por semana')
+                         : 'Escolha '+q+' dia(s) da semana para a folga fixa.')
+        : 'Só preferência: a folga semanal e o domingo vêm primeiro.';
+    }
     function calc(){
       const st=$('epStart').value, en=$('epEnd').value, lu=+$('epLunch').value||0;
       const gross=diffMin(st,en), net=Math.max(0,gross-lu), wk=net*(SCALES[scale]?SCALES[scale].days:6);
@@ -1599,7 +1712,7 @@ function openEmpSheet(id){
     ['epStart','epEnd','epLunch'].forEach(k=>$(k).addEventListener('input',calc));
     Array.prototype.forEach.call(document.querySelectorAll('#epScale button'),b=>b.addEventListener('click',()=>{
       scale=b.getAttribute('data-s');
-      Array.prototype.forEach.call(document.querySelectorAll('#epScale button'),x=>x.classList.toggle('sel',x===b)); calc();
+      Array.prototype.forEach.call(document.querySelectorAll('#epScale button'),x=>x.classList.toggle('sel',x===b)); calc(); offHint();
     }));
     Array.prototype.forEach.call(document.querySelectorAll('#epContract button'),b=>b.addEventListener('click',()=>{
       contract=b.getAttribute('data-v');
@@ -1609,9 +1722,10 @@ function openEmpSheet(id){
     Array.prototype.forEach.call(document.querySelectorAll('#epOff button'),b=>b.addEventListener('click',()=>{
       const w=+b.getAttribute('data-w'); const i=prefOff.indexOf(w);
       if(i>=0) prefOff.splice(i,1); else prefOff.push(w);
-      b.classList.toggle('sel',prefOff.indexOf(w)>=0);
+      b.classList.toggle('sel',prefOff.indexOf(w)>=0); offHint();
     }));
-    calc();
+    $('epFixed').addEventListener('click',()=>{ fixedOff=!fixedOff; $('epFixed').classList.toggle('on',fixedOff); offHint(); });
+    calc(); offHint();
     $('epSave').addEventListener('click',()=>{
       const name=$('epName').value.trim();
       if(!name){ toast('Coloque o nome'); return; }
@@ -1619,7 +1733,7 @@ function openEmpSheet(id){
       rec.name=name; rec.role=$('epRole').value.trim();
       rec.start=$('epStart').value||'10:00'; rec.end=$('epEnd').value||'19:00'; rec.lunch=+$('epLunch').value||0;
       rec.scale=scale; rec.contract=contract; rec.color=$('epColor').value; rec.pin=$('epPin').value.trim();
-      rec.prefOff=prefOff; rec.active=active;
+      rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active;
       if(!id) db.emps.push(rec);
       saveLocal(); Cloud.pushEmp(rec); closeSheet(); render(); toast('Equipe atualizada');
     });

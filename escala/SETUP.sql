@@ -20,7 +20,8 @@ create table if not exists public.shift_employees (
   contract    text default 'clt',           -- 'clt' | 'pj' (PJ fica fora das regras da CLT)
   shift_pref  text default '',              -- (legado v1)
   weekly      numeric default 44,           -- (legado v1)
-  pref_off    jsonb default '[]'::jsonb,    -- dias da semana de folga preferida [0..6]
+  pref_off    jsonb default '[]'::jsonb,    -- dias da semana da folga [0..6] (0=domingo)
+  fixed_off   boolean default false,        -- folga fixa: sempre nesses dias da semana
   pin         text default '',              -- senha do ponto (4 dígitos)
   admission   date,
   updated_at  timestamptz not null default now()
@@ -79,7 +80,8 @@ alter table public.shift_employees add column if not exists start_t  text defaul
 alter table public.shift_employees add column if not exists end_t    text default '19:00';
 alter table public.shift_employees add column if not exists lunch    integer default 60;
 alter table public.shift_employees add column if not exists contract text default 'clt';
-alter table public.shift_employees add column if not exists scale    text default '6x1';
+alter table public.shift_employees add column if not exists scale     text default '6x1';
+alter table public.shift_employees add column if not exists fixed_off boolean default false;
 -- a v1 guardava o turno em M/T/I; a v2 usa a jornada da própria pessoa
 update public.shift_schedule set shift='W' where shift in ('M','T','I');
 

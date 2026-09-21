@@ -14,17 +14,33 @@ Quatro abas: **Escala · Ponto · Trocas · Fechar**.
 Cada pessoa tem a **própria jornada** (entrada, saída e intervalo) e a **própria escala**
 (6x1, 5x2 ou 4x3), cadastradas em *👥 Equipe*. O cadastro inicial é o da Coquin:
 
-| Pessoa | Escala | Jornada | Vínculo | Dá |
-|---|---|---|---|---|
-| Wagner | 6x1 | 10h–19h (1h de intervalo) | CLT | 8h/dia · **48h/semana** |
-| Paulo | 5x2 | 15h–23h (1h de intervalo) | CLT | 7h/dia · 35h/semana |
-| Ingrid | 6x1 | 15h–23h (1h de intervalo) | PJ | 7h/dia · 42h/semana |
+| Pessoa | Escala | Jornada | Vínculo | Dá | Folga fixa |
+|---|---|---|---|---|---|
+| Wagner | 6x1 | 10h–19h (1h de intervalo) | CLT | 8h/dia · **48h/semana** | quarta |
+| Paulo | 5x2 | 15h–23h (1h de intervalo) | CLT | 7h/dia · 35h/semana | segunda e quarta |
+| Ingrid | 6x1 | 15h–23h (1h de intervalo) | PJ | 7h/dia · 42h/semana | terça |
 
 O app calcula isso na hora de cadastrar e avisa quando a conta passa do limite legal —
 a jornada do Wagner fecha **48h por semana**, acima das 44h do art. 58. Ou vira hora extra,
 ou a jornada cai para 7h20 (10h–18h20), ou entra uma folga a mais em algumas semanas.
 Quem é **PJ fica fora das regras da CLT**: a escala e as horas ficam só como controle da
 operação (o app sinaliza isso no cartão de conformidade).
+
+### Folga fixa e semana civil
+
+Cada pessoa pode ter **folga fixa** nos mesmos dias da semana (é o modelo da casa: Wagner
+quarta, Paulo segunda e quarta, Ingrid terça). O app repete esses dias todo mês e só mexe
+quando a CLT manda: quando chega a vez do **domingo de folga**, ele entra **no lugar** de uma
+das folgas fixas da semana — e, se tirar a fixa quebrar o limite de 6 dias seguidos, a semana
+fica com as duas (5 dias de trabalho), o que o app explica no cartão de conformidade.
+
+A semana usada é a **civil, de domingo a sábado** — a mesma do DSR e a do calendário que a
+loja já usa.
+
+### Cobertura mínima por dia
+
+Padrão lido da operação: **qui, sex e sáb com 3 pessoas**; **dom, seg e ter com 2**;
+**qua com 1** (só o turno da tarde/noite). Muda em *⚙︎ Ajustes*.
 
 ## Escala (dinâmica, com as regras da CLT)
 
@@ -33,8 +49,9 @@ operação (o app sinaliza isso no cartão de conformidade).
   - **⚖️ Equilibrada** — divide horas, folgas e fins de semana por igual entre a equipe.
   - **🎲 Randômica** — sorteia a escala respeitando exatamente as mesmas regras (dá pra
     **sortear de novo** até gostar do resultado; só grava quando você toca em *Aplicar*).
-- **Grade do mês**: pessoas × dias, com a hora de entrada de cada um no dia (10, 15…) e as
-  folgas. Toque numa célula para trocar o turno, marcar **férias**,
+- **Duas visões**: **Grade** (pessoas × dias, com a hora de entrada de cada um) e
+  **Folgas** — o calendário do mês com quem folga em cada dia, no formato que vai pro grupo
+  da equipe. Toque num dia para editar. Toque numa célula para trocar o turno, marcar **férias**,
   **atestado** ou **falta**, e **travar o dia** (o gerador e as trocas não mexem mais nele).
 - **Conformidade CLT**: cartão que confere o mês inteiro e diz o que está ok e o que precisa
   de ajuste, com o artigo de lei de cada regra.
