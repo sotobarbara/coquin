@@ -523,7 +523,7 @@ const SCALES={
 };
 /* mínimo de gente na loja em cada dia da semana (0=dom) */
 const DEFAULT_DEMAND={0:2, 1:2, 2:2, 3:1, 4:3, 5:3, 6:3};   /* dom seg ter qua qui sex sáb */
-const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60};
+const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60, minStaff:1};
 const WD=['dom','seg','ter','qua','qui','sex','sáb'];
 const WDL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
@@ -650,6 +650,7 @@ if((db.cfg.v||0)<3){                                   /* v3: semana civil + fol
   });
   db.cfg.v=3;
 }
+if(db.cfg.rules.minStaff==null) db.cfg.rules.minStaff=1;
 db.version=2;
 
 let viewMonth=ym(new Date());
@@ -717,6 +718,9 @@ function coverageText(date){
   return b.map(x=>x.from+'–'+x.to+': '+x.n+(x.n===1?' pessoa':' pessoas')).join(' · ');
 }
 function demandOf(date){ const d=db.cfg.demand[wdOf(date)]; return d==null?0:+d; }
+function minStaff(){ const n=RULES().minStaff; return n==null?1:Math.max(0,+n); }      /* piso absoluto: nunca menos que isso */
+function floorOf(date){ return Math.max(minStaff(), 0); }
+function workersOn(plan,date){ let n=0; activeEmps().forEach(e=>{ if(isWork(plan? plan[date+'|'+e.id] : codeOf(date,e.id))) n++; }); return n; }
 
 /* ============================================================
    MOTOR DA ESCALA
@@ -821,8 +825,13 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
     const sunDue = isCLT(e) && R.sundayEvery>0 && ctx.st[e.id].sunSince>=R.sundayEvery-1;
     /* folga fixa: os mesmos dias da semana, toda semana */
     if(e.fixedOff && (e.prefOff||[]).length){
-      free.forEach(d=>{ if(e.prefOff.indexOf(wdOf(d))>=0 && picks.indexOf(d)<0) picks.push(d); });
-      if(sunDue && free.indexOf(sun)>=0 && picks.indexOf(sun)<0) picks.push(sun);
+      let realoca=0;
+      free.forEach(d=>{
+        if(e.prefOff.indexOf(wdOf(d))<0 || picks.indexOf(d)>=0) return;
+        if(emps.length-(dayOff[d]+1) < minStaff()){ realoca++; return; }   /* a loja ficaria sem ninguém */
+        picks.push(d);
+      });
+      if(sunDue && free.indexOf(sun)>=0 && picks.indexOf(sun)<0 && emps.length-(dayOff[sun]+1)>=minStaff()) picks.push(sun);
       /* o domingo entra no lugar de uma folga fixa (não sobra folga a mais) */
       const nextFixed=Math.min.apply(null,e.prefOff);     /* primeira folga fixa da semana seguinte */
       while(picks.length>offQuota(e)){
@@ -849,8 +858,8 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
         if(maxRunWeek(ctx,e,days,rest,inRange)>R.maxConsec || (last>=0 && (6-last)+nextFixed>R.maxConsec)) break;
         picks.splice(picks.indexOf(drop.d),1);
       }
-      need=0;                                              /* folga fixa é só nos dias fixos */
-    }else if(sunDue && free.indexOf(sun)>=0){ picks.push(sun); need--; }
+      need=realoca;                                        /* folga fixa que não coube muda de dia nessa semana */
+    }else if(sunDue && free.indexOf(sun)>=0 && emps.length-(dayOff[sun]+1)>=minStaff()){ picks.push(sun); need--; }
     if(need>0){                                            /* semana quebrada (virada de mês): cota proporcional */
       const inWeek=days.filter(inRange).length;
       if(inWeek<7) need=Math.min(need, Math.round(need*inWeek/7));
@@ -862,6 +871,7 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
       cand.forEach(d=>{
         let sc=0;
         const wouldWork=emps.length-(dayOff[d]+1);
+        if(wouldWork < minStaff()) sc-=100000;              /* a loja nunca fica sem ninguém */
         if(wouldWork < demandOf(d)) sc-=60;                 /* não deixa o dia descoberto à toa */
         sc -= dayOff[d]*14;                                 /* espalha as folgas da equipe */
         if((e.prefOff||[]).indexOf(wdOf(d))>=0) sc+=12;
@@ -883,6 +893,7 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
       cand.forEach(d=>{
         const run=maxRunWeek(ctx,e,days,picks.concat([d]),inRange);
         let sc=-run*10 - dayOff[d]*6;
+        if(emps.length-(dayOff[d]+1) < minStaff()) sc-=100000;
         if(wdOf(d)===5||wdOf(d)===6) sc-=4;
         if(!best||sc>best.sc) best={d,sc};
       });
@@ -924,6 +935,17 @@ function generateSchedule(monthKey, opts){
       plan[k]= ok.ok ? WORK : 'F';
     });
     let workers=0; emps.forEach(e=>{ if(isWork(plan[date+'|'+e.id])) workers++; });
+    if(workers<minStaff()){                                  /* regra da casa: sempre alguém na loja */
+      const livres=emps.filter(e=>plan[date+'|'+e.id]==='F' && !ctx.fixed[date+'|'+e.id] && !mustRest(ctx,date,e))
+        .sort((a,b)=>(ctx.st[a.id].weekMin[weekKey(date)]||0)-(ctx.st[b.id].weekMin[weekKey(date)]||0));
+      while(workers<minStaff() && livres.length){
+        const v=livres.shift();
+        plan[date+'|'+v.id]=WORK; workers++;
+        const volta=giveBackRest(ctx,v.id,date,dates[dates.length-1]);
+        ctx.notes.push({date, emp:v.id, from:'F', to:WORK, why:'a loja não pode ficar sem ninguém'+(volta?' — folga vai para '+dayLabel(volta):'')});
+      }
+      if(workers<minStaff()) ctx.alerts.push({t:'vazio', date});
+    }
     const need=demandOf(date)-workers;
     if(need>0) ctx.alerts.push({t:'cobertura', date, n:need});
     ctxApplyDay(ctx,date);
@@ -988,12 +1010,12 @@ function repairFrom(plan, startDate, endDate, rnd, protect){
     });
     /* 2) cobertura mínima do dia */
     let have=0; emps.forEach(e=>{ if(isWork(ctxCode(ctx,date,e.id))) have++; });
-    let need=demandOf(date)-have;
+    let need=Math.max(demandOf(date), minStaff())-have;
     while(need>0){
       const sub=findCover(ctx,date,null,rnd,protect);
-      if(!sub){ ctx.alerts.push({t:'cobertura', date, n:need}); break; }
-      ctxSet(ctx,date,sub.id,WORK);
-      notes.push({date, emp:sub.id, from:'F', to:WORK, why:'cobre o dia'});
+      if(!sub){ ctx.alerts.push({t:(have<minStaff()?'vazio':'cobertura'), date, n:need}); break; }
+      ctxSet(ctx,date,sub.id,WORK); have++;
+      notes.push({date, emp:sub.id, from:'F', to:WORK, why:(have<=minStaff()?'a loja não pode ficar sem ninguém':'cobre o dia')});
       const back=giveBackRest(ctx,sub.id,date,endDate,protect);
       if(back) notes.push({date:back, emp:sub.id, from:WORK, to:'F', why:'folga devolvida a '+sub.name});
       need--;
@@ -1074,15 +1096,21 @@ function simulateSwap(empId, fromDate, toDate){
     });
     dd=addDays(dd,1);
   }
+  const vazioAfter=[];
+  { let d2=first; while(d2<=end){ let n=0; activeEmps().forEach(e=>{ if(isWork(plan[d2+'|'+e.id])) n++; });
+      let nb=0; activeEmps().forEach(e=>{ if(isWork(before[d2+'|'+e.id])) nb++; });
+      if(n<minStaff() && nb>=minStaff()) vazioAfter.push(d2);
+      d2=addDays(d2,1); } }
   const gapBefore=coverageMap((d,e)=>before[d+'|'+e], first, end);
   const gapAfter =coverageMap((d,e)=>plan[d+'|'+e],   first, end);
   const gaps=Object.keys(gapAfter).filter(k=>gapAfter[k]>(gapBefore[k]||0)).map(k=>({date:k, n:gapAfter[k]-(gapBefore[k]||0)}));
-  const blockers=(rep.violations||[]).map(v=>{
+  const blockers=vazioAfter.map(d=>'A loja ficaria sem ninguém em '+dayLabel(d)+' — sempre tem que ter alguém no salão.')
+   .concat((rep.violations||[]).map(v=>{
     const wk=weekKey(v.date);
     let t=empName(v.emp)+' não pode trabalhar em '+dayLabel(v.date)+' — '+v.why+'.';
     if(/DSR|folga da escala/i.test(v.why)) t+=' A troca precisa ficar dentro da mesma semana: entre '+dayLabel(wk)+' e '+dayLabel(addDays(wk,6))+'.';
     return t;
-  });
+  }));
   return {emp:empId, from:fromDate, to:toDate, cover:cover?cover.id:null, plan, before, changes, warns, gaps, blockers, first, end};
 }
 
@@ -1103,7 +1131,7 @@ function validateMonth(key){
   const out={ok:[], warn:[], bad:[], info:[]};
   const ctx=newCtx({}); ctxSeed(ctx,dates[0]);
   const P={}; emps.forEach(e=>P[e.id]={consecMax:0, weeks:{}, offs:{}, sunWork:0, sunOff:0, workDays:0, min:0, interj:0, noRest:[], longRun:[], overWeek:[]});
-  const gaps=[];
+  const gaps=[], vazios=[];
   dates.forEach(date=>{
     const wk=weekKey(date), wd=wdOf(date);
     let have=0;
@@ -1123,6 +1151,7 @@ function validateMonth(key){
       }else if(c){ p.offs[wk]=(p.offs[wk]||0)+1; if(wd===0) p.sunOff++; }
     });
     const need=demandOf(date)-have; if(need>0) gaps.push({date, n:need});
+    if(have<minStaff()) vazios.push(date);
     ctxApplyDay(ctx,date);
   });
   const wkList={}; dates.forEach(d=>{ const w=weekKey(d); wkList[w]=(wkList[w]||0)+1; });
@@ -1137,6 +1166,8 @@ function validateMonth(key){
     });
   });
   function it(level,text,sub){ out[level].push({text,sub}); }
+  if(vazios.length) it('bad','Loja sem ninguém em '+vazios.length+(vazios.length===1?' dia':' dias'),
+    vazios.slice(0,4).map(dayLabel).join(' · ')+(vazios.length>4?'…':'')+' — sempre tem que ter alguém na loja');
   const clt=emps.filter(isCLT);
   const noRest=clt.filter(e=>P[e.id].noRest.length);
   const longRun=emps.filter(e=>P[e.id].longRun.length);
@@ -1752,7 +1783,11 @@ function openEmpSheet(id){
 }
 function openSettingsSheet(){
   const R=RULES();
-  let h='<div class="section-title" style="margin:6px 4px 8px">Mínimo de gente na loja</div><div class="card" style="padding:6px 13px;box-shadow:none">';
+  let h='<div class="section-title" style="margin:6px 4px 8px">Regra da casa</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld" style="margin-top:8px"><label>A loja nunca fica com menos de</label>'
+   +'<input type="number" inputmode="numeric" min="1" max="9" id="rMin" value="'+minStaff()+'">'
+   +'<div class="hint">Piso absoluto: o app nunca monta (nem aceita troca) um dia com menos gente que isso. Folga de todo mundo no mesmo dia fica impossível.</div></div></div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Quantas pessoas por dia (alvo)</div><div class="card" style="padding:6px 13px;box-shadow:none">';
   for(let w=0;w<7;w++){
     h+='<div class="switch"><div class="sl">'+WDL[w]+'<small>quantas pessoas precisam estar escaladas</small></div>'
      +'<input type="number" inputmode="numeric" min="0" max="9" data-dm="'+w+'" value="'+(db.cfg.demand[w]||0)+'" style="width:64px;text-align:center;border:1.5px solid var(--line);border-radius:10px;padding:10px 4px;font-size:16px;font-family:inherit"></div>';
@@ -1774,6 +1809,7 @@ function openSettingsSheet(){
       const R2=RULES();
       R2.weekly=+$('rWeekly').value||44; R2.maxConsec=+$('rConsec').value||6;
       R2.sundayEvery=+$('rSunday').value||3; R2.interJornada=+$('rInter').value||11; R2.tolerance=+$('rTol').value||10;
+      R2.minStaff=Math.max(1,+$('rMin').value||1);
       saveLocal(); Cloud.pushCfg(); closeSheet(); render(); toast('Ajustes salvos');
     });
   });
