@@ -23,10 +23,10 @@
   --violet:#7A6BA8; --violet-soft:#EDE9F4;
   --bg:#F5F3EE; --surface:#FFFFFF;
   --ink:#26302A; --ink-soft:#5E6B60; --ink-faint:#95A096;
-  --line:#E7E4DC; --danger:#C0483F; --danger-soft:#F6E1DE;
-  --shadow:0 1px 2px rgba(38,48,42,.05), 0 8px 24px rgba(38,48,42,.06);
-  --shadow-lg:0 8px 40px rgba(38,48,42,.16);
-  --r:20px; --r-sm:14px;
+  --line:#EAE7E0; --danger:#C0483F; --danger-soft:#F6E1DE;
+  --shadow:0 1px 2px rgba(38,48,42,.03);
+  --shadow-lg:0 6px 24px rgba(38,48,42,.10);
+  --r:16px; --r-sm:12px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
@@ -40,8 +40,8 @@ body{
 /* ---------- Header ---------- */
 header{
   position:sticky;top:0;z-index:20;
-  background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 78%,var(--green-900) 100%);
-  color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 16px;box-shadow:0 6px 22px rgba(38,48,42,.18);
+  background:var(--green);
+  color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 15px;box-shadow:none;
 }
 .htop{max-width:520px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brand{display:flex;align-items:center;gap:11px}
@@ -61,18 +61,18 @@ header{
 /* ---------- seletor de tela ---------- */
 .viewseg{display:flex;gap:4px;max-width:520px;margin:14px auto 0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:4px}
 .viewseg button{flex:1;border:0;background:transparent;color:rgba(255,255,255,.85);font-size:12.5px;font-weight:750;padding:9px 4px;border-radius:999px;cursor:pointer;font-family:inherit;transition:.15s;position:relative}
-.viewseg button.sel{background:#fff;color:var(--green-700)}
+.viewseg button.sel{background:#fff;color:var(--green)}
 .viewseg button .badge{position:absolute;top:2px;right:6px;min-width:16px;height:16px;border-radius:999px;background:var(--gold);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;padding:0 4px}
 
-.section-title{font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-faint);margin:24px 4px 10px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.section-title{font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);margin:26px 4px 9px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .section-title .st-side{text-transform:none;letter-spacing:0;font-weight:600;color:var(--ink-faint)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 .empty{padding:34px 20px;text-align:center;color:var(--ink-faint)}
-.empty .em{font-size:32px;margin-bottom:8px}
+.empty .em{display:none}
 .empty p{margin:0;font-size:14px;line-height:1.5}
-.foot{margin:26px 4px 8px;text-align:center;color:var(--ink-faint);font-size:12px;line-height:1.5}
+.foot{margin:22px 4px 8px;text-align:center;color:var(--ink-faint);font-size:11.5px;line-height:1.5}
 .hide{display:none!important}
-.av{width:36px;height:36px;border-radius:999px;overflow:hidden;background:var(--pc);flex:none;box-shadow:0 2px 6px rgba(38,48,42,.16)}
+.av{width:36px;height:36px;border-radius:999px;overflow:hidden;background:var(--pc);flex:none}
 .av svg{width:100%;height:100%;display:block}
 .avi{display:grid;place-items:center;width:100%;height:100%;color:#fff;font-weight:800;font-size:15px}
 .av.sm{width:22px;height:22px}
@@ -81,7 +81,7 @@ header{
 /* ---------- botões ---------- */
 .btn{border:0;font-family:inherit;cursor:pointer;border-radius:13px;font-weight:800;transition:.15s}
 .btn:active{transform:scale(.985)}
-.btn-green{background:var(--green);color:#fff;font-size:15.5px;padding:14px;box-shadow:0 6px 16px rgba(52,80,58,.24);width:100%}
+.btn-green{background:var(--green);color:#fff;font-size:15.5px;padding:14px;box-shadow:none;width:100%}
 .btn-green:active{background:var(--green-700)}
 .btn-green:disabled{background:var(--green-tint-2);color:var(--ink-faint);box-shadow:none;cursor:default}
 .btn-ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);font-size:13.5px;font-weight:750;padding:11px 14px;border-radius:12px;cursor:pointer;font-family:inherit}
@@ -169,14 +169,14 @@ header{
 .bar>i.over{background:linear-gradient(90deg,var(--gold),#B4862F)}
 
 /* ---------- PONTO ---------- */
-.clock{padding:20px 18px 18px;margin-top:18px;text-align:center;background:linear-gradient(165deg,#FFFFFF,#F7F9F6);position:relative;overflow:hidden}
-.clock .now{font-size:46px;font-weight:850;letter-spacing:-2px;color:var(--green-700);line-height:1;font-variant-numeric:tabular-nums}
+.clock{padding:24px 18px 20px;margin-top:18px;text-align:center;background:var(--surface);position:relative;overflow:hidden}
+.clock .now{font-size:44px;font-weight:800;letter-spacing:-1.6px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
 .clock .nowd{font-size:12.5px;font-weight:700;color:var(--ink-faint);margin-top:5px}
 .clock .sched{margin-top:13px;display:inline-flex;align-items:center;gap:7px;background:var(--green-tint);border:1px solid var(--green-tint-2);color:var(--green-700);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:750}
 .clock .sched.off{background:var(--gold-soft);border-color:#EAD9A8;color:var(--gold-ink)}
-.punchbtn{width:100%;border:0;border-radius:16px;padding:17px;font-size:17px;font-weight:850;color:#fff;background:var(--green);box-shadow:0 8px 22px rgba(52,80,58,.28);cursor:pointer;font-family:inherit;margin-top:16px;transition:.15s;display:flex;align-items:center;justify-content:center;gap:9px}
+.punchbtn{width:100%;border:0;border-radius:16px;padding:17px;font-size:17px;font-weight:850;color:#fff;background:var(--green);box-shadow:none;cursor:pointer;font-family:inherit;margin-top:16px;transition:.15s;display:flex;align-items:center;justify-content:center;gap:9px}
 .punchbtn:active{transform:scale(.985);background:var(--green-700)}
-.punchbtn.out{background:var(--gold);box-shadow:0 8px 22px rgba(199,154,62,.3)}
+.punchbtn.out{background:var(--gold);box-shadow:none}
 .punchbtn.out:active{background:#B4862F}
 .punchbtn:disabled{background:var(--green-tint-2);color:var(--ink-faint);box-shadow:none}
 .punchbtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2}
@@ -236,7 +236,7 @@ header{
 .fc-v .l{font-size:10.5px;font-weight:700;color:var(--ink-faint)}
 .kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .kpi .k{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow)}
-.kpi .k .v{font-size:23px;font-weight:850;letter-spacing:-.6px;color:var(--green-700);line-height:1}
+.kpi .k .v{font-size:22px;font-weight:800;letter-spacing:-.6px;color:var(--ink);line-height:1}
 .kpi .k .v.warn{color:var(--gold-ink)} .kpi .k .v.bad{color:var(--danger)}
 .kpi .k .l{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-top:6px;line-height:1.3}
 .mirror-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
@@ -285,14 +285,14 @@ header{
 .sheet-body{padding-top:6px}
 .note{background:var(--bg);border-radius:12px;padding:12px 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-top:12px}
 .note b{color:var(--ink)}
-.banner{display:flex;align-items:flex-start;gap:10px;border-radius:var(--r-sm);padding:12px 14px;font-size:13px;font-weight:700;margin-top:12px;line-height:1.4}
-.banner.ok{background:var(--green-tint);border:1px solid var(--green-tint-2);color:var(--green-700)}
-.banner.warn{background:var(--gold-soft);border:1px solid #EAD9A8;color:var(--gold-ink)}
-.banner.bad{background:var(--danger-soft);border:1px solid #E9C4BE;color:var(--danger)}
-.banner .bi{font-size:15px;line-height:1.2}
+.banner{display:flex;align-items:flex-start;gap:10px;border-radius:var(--r-sm);padding:12px 14px;font-size:13px;font-weight:650;margin-top:12px;line-height:1.45;border-left-width:3px!important}
+.banner.ok{background:var(--green-tint);border:1px solid var(--green-tint-2);border-left-color:var(--green);color:var(--green-700)}
+.banner.warn{background:var(--gold-soft);border:1px solid #EAD9A8;border-left-color:var(--gold);color:var(--gold-ink)}
+.banner.bad{background:var(--danger-soft);border:1px solid #E9C4BE;border-left-color:var(--danger);color:var(--danger)}
+.banner .bi{display:none}
 
 /* ---------- login gate ---------- */
-.authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 70%,var(--green-900) 100%);display:none;align-items:center;justify-content:center;padding:24px}
+.authgate{position:fixed;inset:0;z-index:60;background:var(--green);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
 .auth-card{width:100%;max-width:340px;text-align:center;color:#fff}
 .auth-card .alogo{height:34px;filter:brightness(0) invert(1);margin-bottom:22px}
@@ -300,7 +300,7 @@ header{
 .auth-card p{font-size:14px;opacity:.85;margin:0 0 20px;line-height:1.5}
 .auth-card input{width:100%;border:0;border-radius:13px;padding:15px 16px;font-size:16px;margin-bottom:10px;background:rgba(255,255,255,.95);color:var(--ink)}
 .auth-err{color:#ffd7d0;font-size:13px;font-weight:600;min-height:18px;margin:2px 0 8px}
-.btn-primary{width:100%;border:0;background:#fff;color:var(--green-700);font-size:16.5px;font-weight:800;padding:16px;border-radius:13px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.btn-primary{width:100%;border:0;background:#fff;color:var(--green);font-size:16.5px;font-weight:800;padding:16px;border-radius:13px;cursor:pointer}
 .btn-primary:active{opacity:.9}
 .auth-local{margin-top:14px;background:transparent;border:0;color:#fff;opacity:.85;font-size:13.5px;font-weight:650;text-decoration:underline;cursor:pointer;font-family:inherit}
 
@@ -316,13 +316,13 @@ header{
 .plist{margin-top:6px}
 .prow{display:flex;align-items:center;gap:13px;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 15px;margin-top:9px;cursor:pointer;font-family:inherit;text-align:left;transition:.15s}
 .prow:active{transform:scale(.985);background:var(--bg)}
-.prow .pe{font-size:22px;flex:none;width:28px;text-align:center}
+.prow .pe{flex:none;width:10px;height:10px;border-radius:999px;background:var(--ink-faint)}
 .prow .pb{flex:1;min-width:0}
 .prow .pb b{display:block;font-size:15px;font-weight:800;color:var(--ink)}
 .prow .pb small{display:block;font-size:11.5px;font-weight:650;color:var(--ink-faint);margin-top:2px;line-height:1.35}
 .prow .pc{font-size:18px;color:var(--ink-faint);flex:none}
-.prow.end{border-color:var(--gold);background:var(--gold-soft)}
-.prow.end .pb b{color:var(--gold-ink)}
+.prow.end{border-color:var(--green-tint-2);background:var(--green-tint)}
+.prow.end .pb b{color:var(--green-700)}
 .timepick{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:11px 14px;margin-top:4px}
 .timepick label{font-size:12px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;flex:1}
 .timepick input{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:16px;font-weight:800;font-family:inherit;color:var(--ink);background:var(--surface);width:104px;text-align:center}
@@ -376,10 +376,9 @@ header{
   <div class="section-title">Resumo por pessoa <span class="st-side" id="escSumSide"></span></div>
   <div class="card" id="escSummary"></div>
   <div class="btn-row">
-    <button class="btn-ghost" id="btnTeam">👥 Equipe</button>
-    <button class="btn-ghost" id="btnSettings">⚙︎ Ajustes da escala</button>
+    <button class="btn-ghost" id="btnTeam">Equipe</button>
+    <button class="btn-ghost" id="btnSettings">Ajustes</button>
   </div>
-  <div class="foot">Cada pessoa tem a própria jornada e escala (6x1, 5x2…).<br>A escala respeita folga semanal, 44h, domingo de folga e 11h entre jornadas.</div>
  </div>
 
  <!-- ===================== PONTO ===================== -->
@@ -393,26 +392,20 @@ header{
   <div id="pnSummary"></div>
   <div class="section-title">Equipe hoje</div>
   <div class="card" id="pnTeamToday"></div>
-  <div class="foot">Registro de ponto por aplicativo (REP-P) com comprovante de marcação.<br>Tolerância de 5 min por marcação e 10 min no dia (art. 58, §1º da CLT).</div>
+  <div class="foot">Comprovante de marcação a cada registro · tolerância de 10 min no dia (art. 58, §1º).</div>
  </div>
 
  <!-- ===================== TROCAS ===================== -->
  <div id="viewTrocas" class="hide">
   <div class="card sw-card">
-    <div style="display:flex;align-items:center;gap:11px">
-      <div style="font-size:24px">🔄</div>
-      <div style="flex:1">
-        <div style="font-size:14.5px;font-weight:800">Troca de folga</div>
-        <div style="font-size:12px;color:var(--ink-faint);font-weight:650;margin-top:2px">O app recalcula a escala e mostra como ficam os próximos dias.</div>
-      </div>
-    </div>
+    <div style="font-size:14.5px;font-weight:800">Troca de folga</div>
+    <div style="font-size:12.5px;color:var(--ink-faint);font-weight:650;margin-top:3px;line-height:1.45">A escala é recalculada e você vê como ficam os próximos dias antes de confirmar.</div>
     <button class="btn btn-green" style="margin-top:14px" id="btnNewSwap">Solicitar troca de folga</button>
   </div>
   <div class="section-title">Pedidos pendentes <span class="st-side" id="swPendSide"></span></div>
   <div class="card" id="swPending"></div>
   <div class="section-title">Histórico</div>
   <div class="card" id="swHistory"></div>
-  <div class="foot">Toda troca é validada contra a CLT antes de ser aplicada:<br>folga semanal, máximo de dias seguidos, 44h e domingo de folga.</div>
  </div>
 
  <!-- ===================== FECHAMENTO ===================== -->
@@ -421,11 +414,10 @@ header{
   <div class="section-title">Espelho de ponto por pessoa <span class="st-side">toque para abrir</span></div>
   <div class="card" id="fcList"></div>
   <div class="btn-row">
-    <button class="btn-ghost" id="btnCsvResumo">⬇︎ CSV do resumo</button>
-    <button class="btn-ghost" id="btnCsvEspelho">⬇︎ CSV do espelho</button>
+    <button class="btn-ghost" id="btnCsvResumo">CSV do resumo</button>
+    <button class="btn-ghost" id="btnCsvEspelho">CSV do espelho</button>
   </div>
   <div id="fcAlerts"></div>
-  <div class="foot">Fechamento do mês: horas previstas × trabalhadas, extras, atrasos,<br>faltas e saldo do banco de horas — pronto pra folha.</div>
  </div>
 
 </main>
@@ -1112,7 +1104,7 @@ function validateMonth(key){
     it('info','Semana fora do padrão da escala', det+(offScale.length>3?'…':'')
       +' — folga a mais entra quando o domingo de folga e o limite de '+R.maxConsec+' dias seguidos não cabem juntos na semana.');
   }
-  if(gaps.length) it('warn','Cobertura abaixo do combinado em '+gaps.length+' dia(s)', gaps.slice(0,3).map(g=>dayLabel(g.date)+' · falta '+g.n).join(' · ')+(gaps.length>3?'…':''));
+  if(gaps.length) it('warn','Cobertura abaixo do combinado em '+gaps.length+(gaps.length===1?' dia':' dias'), gaps.slice(0,3).map(g=>dayLabel(g.date)+' · falta '+g.n).join(' · ')+(gaps.length>3?'…':''));
   const pj=emps.filter(e=>!isCLT(e));
   if(pj.length) it('info', pj.map(e=>e.name).join(', ')+(pj.length>1?' são PJ':' é PJ')+' — fora das regras da CLT',
     'A escala e as horas ficam registradas só para controle da operação. Jornada fixa e controle de ponto de PJ podem caracterizar vínculo — vale conferir com a contabilidade.');
@@ -1307,7 +1299,7 @@ const Cloud={
 };
 let toastT=null;
 function toast(html){ const t=$('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
-function offlineToast(){ toast('⚠︎ Sem conexão — salvo neste aparelho'); }
+function offlineToast(){ toast('Sem conexão — salvo neste aparelho'); }
 function saveLocal(){ Store.save(db); }
 
 /* ============================================================
@@ -1338,7 +1330,7 @@ function renderEscToday(){
   let h='<div class="card today-card"><div class="tc-h"><div class="t">Hoje na loja</div>'
     +'<span class="chip '+(work.length>=demandOf(d)?'ok':'warn')+'">'+(work.length?work.length+' na escala':'ninguém escalado')+'</span></div>';
   if(!work.length && !off.length){
-    h+='<div style="padding:14px 0;color:var(--ink-faint);font-size:13.5px">Sem escala para hoje. Toque em <b>⚡ Gerar</b> abaixo.</div>';
+    h+='<div style="padding:14px 0;color:var(--ink-faint);font-size:13.5px">Sem escala para hoje. Toque em <b>Gerar</b> abaixo.</div>';
   }else{
     work.forEach(r=>{
       const e=empById(r.emp); if(!e) return;
@@ -1353,7 +1345,7 @@ function renderEscToday(){
     const folga=off.filter(r=>r.shift==='F').map(r=>empName(r.emp));
     if(folga.length) h+='<div class="tc-line"><span class="sbadge" style="background:#95A096">F</span><div class="nm">De folga<small>'+esc(folga.join(' · '))+'</small></div></div>';
     const fer=off.filter(r=>r.shift==='FE'||r.shift==='AT');
-    h+='<div style="margin-top:10px;font-size:11.5px;font-weight:700;color:var(--ink-faint);line-height:1.5">👥 '+esc(coverageText(d))+'</div>';
+    h+='<div style="margin-top:10px;font-size:11.5px;font-weight:650;color:var(--ink-faint);line-height:1.5">'+esc(coverageText(d))+'</div>';
     if(fer.length) h+='<div class="tc-line"><span class="sbadge" style="background:'+OFF_CODES[fer[0].shift].color+'">'+OFF_CODES[fer[0].shift].short+'</span><div class="nm">'+OFF_CODES[fer[0].shift].label+'<small>'+esc(fer.map(r=>empName(r.emp)).join(' · '))+'</small></div></div>';
   }
   h+='</div>';
@@ -1363,8 +1355,8 @@ function renderEscGrid(){
   const dates=daysOfMonth(viewMonth), emps=activeEmps(), today=todayISO();
   const rows=monthRows(viewMonth).length;
   let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">Escala de '+monthName(viewMonth)+'</div>'
-    +'<div class="gs">'+(rows?emps.length+' pessoas · arraste para o lado para ver o mês':'ainda não gerada')+'</div></div>'
-    +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">⚡ Gerar</button></div>';
+    +'<div class="gs">'+(rows?'arraste para ver o mês':'ainda não gerada')+'</div></div>'
+    +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">Gerar</button></div>';
   if(!emps.length){
     h+='<div class="empty"><div class="em">👥</div><p>Cadastre a equipe para montar a escala.</p></div></div>';
     $('escGrid').innerHTML=h; bindGen(); return;
@@ -1392,11 +1384,8 @@ function renderEscGrid(){
     h+='</tr>';
   });
   h+='</tbody></table></div><div class="legend">';
-  emps.forEach(e=>{ h+='<span class="who-l"><i style="background:'+e.color+'"></i>'+esc(e.name)+' '+empRange(e)+'</span>'; });
-  h+='<span><i style="background:#F5F3EE;border:1px dashed #E7E4DC"></i>Folga</span>'
-   +'<span><i style="background:'+OFF_CODES.FE.color+'"></i>Férias</span>'
-   +'<span><i style="background:'+OFF_CODES.AT.color+'"></i>Atestado</span>'
-   +'<span><i style="background:#fff;box-shadow:0 0 0 2px var(--gold)"></i>Trocado</span></div></div>';
+  emps.forEach(e=>{ h+='<span class="who-l"><i style="background:'+e.color+'"></i>'+esc(e.name)+' '+e.start.slice(0,5)+'–'+e.end.slice(0,5)+'</span>'; });
+  h+='<span><i style="background:#F5F3EE;border:1px solid #EAE7E0"></i>Folga</span></div></div>';
   $('escGrid').innerHTML=h;
   bindGen();
   Array.prototype.forEach.call(document.querySelectorAll('[data-cell]'),b=>b.addEventListener('click',()=>{
@@ -1408,20 +1397,24 @@ function renderEscGrid(){
 function bindGen(){ const b=$('btnGen'); if(b) b.addEventListener('click',openGenSheet); }
 function renderEscClt(){
   const v=validateMonth(viewMonth);
-  const bad=v.bad.length, warn=v.warn.length;
-  const em=bad?'⛔':warn?'⚠️':'✅';
-  const t=bad?'Ajustes necessários':warn?'Quase lá':'Escala dentro da CLT';
-  let h='<div class="card clt-card"><div class="clt-h"><span class="em">'+em+'</span><span class="t">'+t+'</span>'
-    +'<span class="chip '+(bad?'bad':warn?'warn':'ok')+'">'+(bad||warn?((bad+warn)+' ponto(s)'):'tudo certo')+'</span></div>';
-  ['bad','warn','ok','info'].forEach(lv=>{
-    (v[lv]||[]).forEach(i=>{
-      const ic=lv==='ok'?'<span class="clt-ic ok">✓</span>':lv==='warn'?'<span class="clt-ic warn">!</span>'
-        :lv==='bad'?'<span class="clt-ic bad">✕</span>':'<span class="clt-ic" style="background:var(--violet)">i</span>';
-      h+='<div class="clt-item">'+ic+'<span class="clt-tx">'+esc(i.text)+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</span></div>';
-    });
-  });
+  const probs=v.bad.concat(v.warn), info=v.info||[], oks=v.ok||[];
+  const lvl=v.bad.length?'bad':v.warn.length?'warn':'ok';
+  let h='<div class="card clt-card"><div class="clt-h"><span class="t">Conformidade CLT</span>'
+    +'<span class="chip '+lvl+'">'+(probs.length? probs.length+(probs.length===1?' ponto':' pontos') : 'tudo certo')+'</span></div>';
+  v.bad.forEach(i=>{ h+='<div class="clt-item"><span class="clt-ic bad">✕</span><span class="clt-tx">'+esc(i.text)+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</span></div>'; });
+  v.warn.forEach(i=>{ h+='<div class="clt-item"><span class="clt-ic warn">!</span><span class="clt-tx">'+esc(i.text)+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</span></div>'; });
+  info.forEach(i=>{ h+='<div class="clt-item"><span class="clt-ic" style="background:var(--violet)">i</span><span class="clt-tx">'+esc(i.text)+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</span></div>'; });
+  if(oks.length){
+    h+='<div class="clt-item" style="cursor:pointer" id="cltMore"><span class="clt-ic ok">✓</span>'
+      +'<span class="clt-tx">'+oks.length+' regras em dia<small>toque para ver quais</small></span></div>'
+      +'<div id="cltOks" class="hide">'
+      +oks.map(i=>'<div class="clt-item"><span class="clt-ic ok">✓</span><span class="clt-tx">'+esc(i.text)+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</span></div>').join('')
+      +'</div>';
+  }
   h+='</div>';
   $('escClt').innerHTML=h;
+  const more=$('cltMore');
+  if(more) more.addEventListener('click',()=>{ $('cltOks').classList.toggle('hide'); more.classList.add('hide'); });
 }
 function renderEscSummary(){
   const emps=activeEmps();
@@ -1435,7 +1428,7 @@ function renderEscSummary(){
     const semana=semanas? Math.round(s.prev/semanas) : 0;
     h+='<div class="pp-row">'+avatar(e)
       +'<div class="pp-b"><div class="n">'+esc(e.name)+(isCLT(e)?'':'<span class="tag-pj">PJ</span>')+'</div>'
-      +'<div class="s">'+e.scale+' · '+empRange(e)+' · '+s.diasPrev+' dias · '+s.folgas+' folgas · '+s.domFolga+' dom. de folga</div>'
+      +'<div class="s">'+e.scale+' · '+e.start.slice(0,5)+'–'+e.end.slice(0,5)+' · '+s.diasPrev+'d · '+s.folgas+' folgas · '+s.domFolga+' dom</div>'
       +'<div class="bar"><i class="'+(semana>RULES().weekly*60?'over':'')+'" style="width:'+Math.min(100,pct)+'%"></i></div></div>'
       +'<div class="pp-v"><div class="v">'+hm(s.prev)+'</div><div class="l">'+(semana?hm(semana)+'/sem':'no mês')+'</div></div></div>';
   });
@@ -1451,8 +1444,8 @@ let pendingGen=null;
 function openGenSheet(){
   const h=''
    +'<div class="fld"><label>Como montar a escala</label><div class="opt" id="genMode">'
-   +'<button data-m="balanced" class="sel"><span class="ot">⚖️ Equilibrada</span><span class="os">divide folgas, fins de semana e domingos por igual</span></button>'
-   +'<button data-m="random"><span class="ot">🎲 Randômica</span><span class="os">sorteia respeitando as mesmas regras</span></button>'
+   +'<button data-m="balanced" class="sel"><span class="ot">Equilibrada</span><span class="os">divide folgas, fins de semana e domingos por igual</span></button>'
+   +'<button data-m="random"><span class="ot">Randômica</span><span class="os">sorteia respeitando as mesmas regras</span></button>'
    +'</div></div>'
    +'<div class="fld"><label>A partir de quando</label><div class="opt" id="genFrom">'
    +'<button data-f="month" class="sel"><span class="ot">Mês inteiro</span><span class="os">'+monthName(viewMonth)+'</span></button>'
@@ -1461,9 +1454,8 @@ function openGenSheet(){
    +'<div class="switch" style="margin-top:14px"><div class="sl">Manter ajustes manuais<small>férias, atestados, trocas e dias travados não mudam</small></div><button class="sw on" id="genKeep"></button></div>'
    +'<div id="genPreview"></div>'
    +'<button class="btn btn-green" id="genRun" style="margin-top:16px">Gerar escala</button>'
-   +'<div class="note">Cada pessoa entra com a <b>própria jornada e escala</b>: '
-   + activeEmps().map(e=>esc(e.name)+' '+e.scale+' '+empRange(e)).join(' · ')
-   +'. O gerador só escolhe <b>quais dias</b> são de folga, respeitando folga semanal, '+RULES().maxConsec+' dias seguidos no máximo, '+RULES().weekly+'h/semana e domingo de folga a cada '+RULES().sundayEvery+' semanas.</div>';
+   +'<div class="note">O app escolhe <b>quais dias são de folga</b> — a jornada já é a de cada um: '
+   + activeEmps().map(e=>esc(e.name)+' '+e.scale+' '+empRange(e)).join(' · ')+'.</div>';
   openSheet('Gerar escala', h, ()=>{
     let mode='balanced', from='month', keep=true;
     Array.prototype.forEach.call(document.querySelectorAll('#genMode button'),b=>b.addEventListener('click',()=>{
@@ -1486,15 +1478,15 @@ function openGenSheet(){
         if(c==='F') folgas++; else if(isWork(c)) horas+=empMin(empById(k.split('|')[1]));
       });
       const gaps=(g.ctx.alerts||[]).filter(a=>a.t==='cobertura');
-      let p='<div class="banner ok"><span class="bi">✅</span><span>Escala montada: <b>'+Object.keys(days).length+' dias</b>, '+hm(horas)+' de trabalho e <b>'+folgas+' folgas</b>.</span></div>';
-      if(gaps.length) p+='<div class="banner warn"><span class="bi">⚠️</span><span><b>'+gaps.length+' dia(s)</b> com menos gente que o combinado (a folga da CLT vem antes): '+gaps.slice(0,3).map(a=>dayLabel(a.date)).join(' · ')+(gaps.length>3?'…':'')+'. Ajuste o mínimo por dia em ⚙︎ Ajustes.</span></div>';
-      p+='<div class="btn-row"><button class="btn-ghost" id="genAgain">🎲 Sortear de novo</button><button class="btn-ghost" id="genApply" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Aplicar escala</button></div>';
+      let p='<div class="banner ok"><span>Escala montada: <b>'+Object.keys(days).length+' dias</b>, '+hm(horas)+' de trabalho e <b>'+folgas+' folgas</b>.</span></div>';
+      if(gaps.length) p+='<div class="banner warn"><span><b>'+gaps.length+' dia(s)</b> com menos gente que o combinado (a folga da CLT vem antes): '+gaps.slice(0,3).map(a=>dayLabel(a.date)).join(' · ')+(gaps.length>3?'…':'')+'. Ajuste o mínimo por dia em ⚙︎ Ajustes.</span></div>';
+      p+='<div class="btn-row"><button class="btn-ghost" id="genAgain">Sortear de novo</button><button class="btn-ghost" id="genApply" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Aplicar escala</button></div>';
       $('genPreview').innerHTML=p;
       $('genRun').classList.add('hide');
       $('genAgain').addEventListener('click',()=>{ $('genRun').classList.remove('hide'); $('genRun').click(); });
       $('genApply').addEventListener('click',()=>{
         commitPlan(pendingGen.plan,'auto'); pendingGen=null; closeSheet(); render();
-        toast('✅ Escala de '+monthName(viewMonth)+' gerada');
+        toast('Escala de '+monthName(viewMonth)+' gerada');
       });
     });
   });
@@ -1651,7 +1643,7 @@ function openSettingsSheet(){
    +'<div class="fld"><label>Horas entre jornadas</label><input type="number" inputmode="numeric" id="rInter" value="'+R.interJornada+'"></div></div>'
    +'<div class="fld"><label>Tolerância do ponto (min/dia)</label><input type="number" inputmode="numeric" id="rTol" value="'+R.tolerance+'"></div>'
    +'<div class="hint" style="margin-top:8px">Padrão do comércio: 44h, no máximo 6 dias seguidos, domingo de folga a cada 3 semanas (Lei 10.101/2000), 11h entre jornadas (art. 66) e 10 min de tolerância no dia (art. 58, §1º).</div></div>'
-   +'<div class="note">A jornada e a escala de cada pessoa (6x1, 5x2, horário e intervalo) ficam em <b>👥 Equipe</b>.</div>'
+   +'<div class="note">A jornada e a escala de cada pessoa (6x1, 5x2, horário e intervalo) ficam em <b>Equipe</b>.</div>'
    +'<button class="btn btn-green" id="cfgSave" style="margin-top:16px">Salvar ajustes</button>';
   openSheet('Ajustes da escala', h, ()=>{
     $('cfgSave').addEventListener('click',()=>{
@@ -1678,17 +1670,17 @@ function renderPonto(){
   if(!empById(pnWho)) pnWho=emps[0].id;
   const e=empById(pnWho), c=dayCalc(d,pnWho), now=new Date(), p=c.p;
   let sched;
-  if(isWork(c.code)) sched='<span class="sched">🕒 Sua escala hoje: '+empRange(e)+' · '+hm(empMin(e))+'</span>';
-  else if(c.code==='F') sched='<span class="sched off">🌴 Hoje é sua folga</span>';
+  if(isWork(c.code)) sched='<span class="sched">Sua escala hoje · '+empRange(e)+' · '+hm(empMin(e))+'</span>';
+  else if(c.code==='F') sched='<span class="sched off">Hoje é sua folga</span>';
   else if(c.code) sched='<span class="sched off">'+codeLabel(c.code,e)+'</span>';
   else sched='<span class="sched off">Sem escala cadastrada para hoje</span>';
   let pill='';
-  if(c.state==='trabalhando') pill='<div><span class="pill-state work">🟢 Trabalhando desde '+c.open+' · '+hm(c.worked)+'</span></div>';
+  if(c.state==='trabalhando') pill='<div><span class="pill-state work">Trabalhando desde '+c.open+' · '+hm(c.worked)+'</span></div>';
   else if(c.state==='pausa'){
     const last=p.marks[p.marks.length-1];
-    pill='<div><span class="pill-state pause">'+pauseDef(last.kind).emoji+' '+pauseDef(last.kind).label+' desde '+last.t+'</span></div>';
+    pill='<div><span class="pill-state pause">'+pauseDef(last.kind).label+' desde '+last.t+'</span></div>';
   }
-  else if(c.state==='encerrado') pill='<div><span class="pill-state done">🏁 Expediente encerrado · '+hm(c.worked)+'</span></div>';
+  else if(c.state==='encerrado') pill='<div><span class="pill-state done">Expediente encerrado · '+hm(c.worked)+'</span></div>';
   $('pnClock').innerHTML='<div class="card clock"><div class="now">'+fmtClock(now)+'</div>'
     +'<div class="nowd">'+cap(now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}))+'</div>'+sched+pill+'</div>';
   $('pnWho').innerHTML=emps.map(x=>'<button data-who="'+x.id+'" class="'+(x.id===pnWho?'sel':'')+'" style="--pc:'+x.color+'">'+avatar(x)+'<span class="nm">'+esc(x.name)+'</span></button>').join('');
@@ -1714,13 +1706,13 @@ function renderPonto(){
     let tl='';
     marks.forEach((m,i)=>{
       tl+='<div class="tl-row"><span class="tl-dot '+(isOutMark(m)?'out':'')+'"></span>'
-        +'<div class="tl-b"><div class="k">'+markEmoji(m)+' '+markLabel(m)+'</div>'
-        +'<div class="s">NSR '+pad(m.nsr||0)+(m.geo?' · 📍 registrado':'')+(m.adj?' · ajustado':'')
+        +'<div class="tl-b"><div class="k">'+markLabel(m)+'</div>'
+        +'<div class="s">NSR '+pad(m.nsr||0)+(m.geo?' · com localização':'')+(m.adj?' · ajustado':'')
         +(isOutMark(m)&&pauseDef(m.kind).paid?' · conta na jornada':'')+'</div></div>'
         +'<div class="tl-t">'+m.t+'</div></div>';
       const nx=marks[i+1];
       if(isOutMark(m) && nx && !isOutMark(nx)){
-        tl+='<div class="tl-gap"><i></i>'+pauseDef(m.kind).emoji+' '+hm(diffMin(m.t,nx.t))+' de '+pauseDef(m.kind).label.toLowerCase()+(pauseDef(m.kind).paid?' (contado)':' (descontado)')+'</div>';
+        tl+='<div class="tl-gap"><i></i>'+hm(diffMin(m.t,nx.t))+' de '+pauseDef(m.kind).label.toLowerCase()+(pauseDef(m.kind).paid?' (contado)':' (descontado)')+'</div>';
       }
     });
     tl+='<div class="tl-sum"><div><div class="v">'+hm(c.worked)+'</div><div class="l">trabalhado</div></div>'
@@ -1754,7 +1746,7 @@ function askPause(empId){
    +'<div class="plist">';
   ['intervalo','lanche','pessoal','saida'].forEach(k=>{
     const t=PAUSES[k];
-    h+='<button class="prow'+(k==='saida'?' end':'')+'" data-pz="'+k+'"><span class="pe">'+t.emoji+'</span>'
+    h+='<button class="prow'+(k==='saida'?' end':'')+'" data-pz="'+k+'"><span class="pe" style="background:'+(k==='saida'?'var(--green)':k==='lanche'?'var(--gold)':'var(--ink-faint)')+'"></span>'
       +'<span class="pb"><b>'+t.label+'</b><small>'+t.hint+'</small></span><span class="pc">›</span></button>';
   });
   h+='</div><div class="note">A pausa rápida conta como tempo trabalhado; intervalo e saída pessoal são descontados da jornada do dia.</div>';
@@ -1799,7 +1791,7 @@ function registerPunch(empId,kind,time){
 function showReceipt(empId,mark){
   const e=empById(empId), d=new Date(mark.iso);
   const hash=(String(mark.nsr)+mark.t+empId).split('').reduce((a,ch)=>((a*31+ch.charCodeAt(0))>>>0),7).toString(16).toUpperCase().slice(0,8);
-  const h='<div class="banner ok"><span class="bi">✅</span><span>Registrado: <b>'+markLabel(mark)+' às '+mark.t+'</b></span></div>'
+  const h='<div class="banner ok"><span>Registrado: <b>'+markLabel(mark)+' às '+mark.t+'</b></span></div>'
    +'<div class="receipt"><div class="rt">COMPROVANTE DE REGISTRO DE PONTO</div>'
    +'<div class="rr"><span>Empregador</span><b>'+COMPANY.name+' · '+COMPANY.unit+'</b></div>'
    +'<div class="rr"><span>Funcionário</span><b>'+esc(e.name)+'</b></div>'
@@ -1884,12 +1876,12 @@ function openSwapSheet(){
       const sim=simulateSwap(id,from,to);
       if(!sim){ toast('Não foi possível simular'); return; }
       const blocked=sim.blockers && sim.blockers.length;
-      let p='<div class="banner '+(blocked?'bad':sim.gaps.length?'warn':'ok')+'"><span class="bi">'+(blocked?'⛔':sim.gaps.length?'⚠️':'✅')+'</span><span>'
+      let p='<div class="banner '+(blocked?'bad':sim.gaps.length?'warn':'ok')+'"><span>'
         +esc(empName(id))+' folga em <b>'+dayLabel(to)+'</b> e trabalha em <b>'+dayLabel(from)+'</b>.'
         +(sim.cover?' <b>'+esc(empName(sim.cover))+'</b> cobre o dia.':'')+'</span></div>';
-      (sim.blockers||[]).forEach(w=>{ p+='<div class="banner bad"><span class="bi">⛔</span><span>'+esc(w)+'</span></div>'; });
-      sim.warns.forEach(w=>{ p+='<div class="banner warn"><span class="bi">⚠️</span><span>'+esc(w)+'</span></div>'; });
-      sim.gaps.forEach(g=>{ p+='<div class="banner warn"><span class="bi">⚠️</span><span>'+dayLabel(g.date)+' fica com '+g.n+' pessoa a menos que o combinado.</span></div>'; });
+      (sim.blockers||[]).forEach(w=>{ p+='<div class="banner bad"><span>'+esc(w)+'</span></div>'; });
+      sim.warns.forEach(w=>{ p+='<div class="banner warn"><span>'+esc(w)+'</span></div>'; });
+      sim.gaps.forEach(g=>{ p+='<div class="banner warn"><span>'+dayLabel(g.date)+' fica com '+g.n+' pessoa a menos que o combinado.</span></div>'; });
       p+=diffHtml(sim.changes);
       p+= blocked
         ? '<div class="btn-row"><button class="btn-ghost" id="swBack" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Escolher outro dia</button></div>'
@@ -1901,11 +1893,11 @@ function openSwapSheet(){
       const rec={id:uid('sw'), at:new Date().toISOString(), emp:id, from, to, cover:sim.cover,
         status:'pendente', reason:$('swWhy').value.trim(), changes:sim.changes, warns:sim.warns, synced:false};
       $('swSend').addEventListener('click',()=>{
-        db.swaps.unshift(rec); saveLocal(); Cloud.pushSwap(rec); closeSheet(); render(); toast('📩 Pedido enviado para aprovação');
+        db.swaps.unshift(rec); saveLocal(); Cloud.pushSwap(rec); closeSheet(); render(); toast('Pedido enviado para aprovação');
       });
       $('swApply').addEventListener('click',()=>{
         rec.status='aprovada'; rec.resolvedAt=new Date().toISOString();
-        db.swaps.unshift(rec); applySwap(rec,sim); closeSheet(); render(); toast('🔄 Troca aplicada e escala recalculada');
+        db.swaps.unshift(rec); applySwap(rec,sim); closeSheet(); render(); toast('Troca aplicada e escala recalculada');
       });
     });
   });
@@ -1924,10 +1916,10 @@ function approveSwap(id){
   const s=db.swaps.find(x=>x.id===id); if(!s) return;
   const sim=simulateSwap(s.emp,s.from,s.to);
   if(!sim){ toast('Não foi possível recalcular'); return; }
-  if(sim.blockers && sim.blockers.length){ toast('⛔ '+sim.blockers[0]); return; }
+  if(sim.blockers && sim.blockers.length){ toast(sim.blockers[0]); return; }
   s.changes=sim.changes; s.warns=sim.warns; s.cover=sim.cover;
   s.status='aprovada'; s.resolvedAt=new Date().toISOString();
-  applySwap(s,sim); render(); toast('🔄 Troca aprovada — escala recalculada');
+  applySwap(s,sim); render(); toast('Troca aprovada — escala recalculada');
 }
 
 /* ============================================================
@@ -1959,8 +1951,8 @@ function renderFechar(){
     });
   });
   $('fcAlerts').innerHTML = pend.length
-    ? '<div class="banner warn" style="margin-top:14px"><span class="bi">⚠️</span><span><b>Marcações incompletas:</b> '+esc(pend.slice(0,4).join(' · '))+(pend.length>4?'…':'')+'. Corrija no espelho antes de fechar a folha.</span></div>'
-    : '<div class="banner ok" style="margin-top:14px"><span class="bi">✅</span><span>Nenhuma marcação em aberto — o mês pode ser fechado.</span></div>';
+    ? '<div class="banner warn" style="margin-top:14px"><span><b>Marcações incompletas:</b> '+esc(pend.slice(0,4).join(' · '))+(pend.length>4?'…':'')+'. Corrija no espelho antes de fechar a folha.</span></div>'
+    : '<div class="banner ok" style="margin-top:14px"><span>Nenhuma marcação em aberto — o mês pode ser fechado.</span></div>';
 }
 function openMirror(empId){
   const e=empById(empId), s=monthStats(viewMonth,empId);
@@ -1981,7 +1973,7 @@ function openMirror(empId){
       +'<span class="mt '+cls+'">'+(c.status==='falta'?'falta':(c.worked?hm(c.worked):'—'))+'</span></div>';
   });
   h+='</div><div class="note">Toque num dia para corrigir marcações (fica registrado como <b>ajuste</b>).</div>'
-   +'<button class="btn btn-green" id="mvCsv" style="margin-top:14px">⬇︎ Baixar espelho em CSV</button>';
+   +'<button class="btn btn-green" id="mvCsv" style="margin-top:14px">Baixar espelho em CSV</button>';
   openSheet('Espelho de ponto', h, ()=>{
     $('mvCsv').addEventListener('click',()=>csvEspelho(viewMonth));
     Array.prototype.forEach.call(document.querySelectorAll('[data-edit]'),b=>b.addEventListener('click',()=>openPunchEdit(b.getAttribute('data-edit'),empId)));
@@ -2021,10 +2013,11 @@ function openPunchEdit(date,empId){
    ============================================================ */
 function renderHeader(){
   const now=new Date();
-  $('todayBig').textContent=cap(now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}));
+  $('todayBig').textContent=now.toLocaleDateString('pt-BR',{day:'numeric',month:'long'});
   $('monthLabel').textContent=monthName(viewMonth).replace(' de ',' ');
   const work=workingOn(todayISO()).length;
-  $('todaySub').textContent = work? (work+' na escala hoje · '+activeEmps().length+' na equipe') : 'escala da equipe e controle de ponto';
+  const wdName=now.toLocaleDateString('pt-BR',{weekday:'long'});
+  $('todaySub').textContent = wdName+(work? ' · '+work+' na escala' : ' · sem escala hoje');
 }
 function render(){
   renderHeader();
