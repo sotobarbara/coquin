@@ -13,9 +13,13 @@ create table if not exists public.shift_employees (
   color       text default '#446349',
   face        jsonb,                        -- traços do avatar (opcional)
   active      boolean not null default true,
-  shift_pref  text default '',              -- turno preferido: M | T | I
-  scale       text default '6x1',
-  weekly      numeric default 44,           -- horas contratadas por semana
+  scale       text default '6x1',          -- 6x1 | 5x2 | 4x3
+  start_t     text default '10:00',         -- hora de entrada da pessoa
+  end_t       text default '19:00',         -- hora de saída
+  lunch       integer default 60,           -- intervalo em minutos (art. 71)
+  contract    text default 'clt',           -- 'clt' | 'pj' (PJ fica fora das regras da CLT)
+  shift_pref  text default '',              -- (legado v1)
+  weekly      numeric default 44,           -- (legado v1)
   pref_off    jsonb default '[]'::jsonb,    -- dias da semana de folga preferida [0..6]
   pin         text default '',              -- senha do ponto (4 dígitos)
   admission   date,
@@ -26,7 +30,7 @@ create table if not exists public.shift_employees (
 create table if not exists public.shift_schedule (
   date       date not null,
   emp        text not null,
-  shift      text not null,                 -- M | T | I (turnos) · F | FE | AT | FA
+  shift      text not null,                 -- W (trabalha na jornada da pessoa) · F | FE | AT | FA
   locked     boolean not null default false,-- travado: gerador e trocas não mexem
   src        text default 'auto',           -- auto | manual | swap
   note       text default '',
@@ -55,6 +59,7 @@ create table if not exists public.time_punches (
   date       date not null,
   emp        text not null,
   marks      jsonb not null default '[]'::jsonb,  -- [{t:'09:03', iso, nsr, kind, geo, adj}]
+                                                   -- kind: entrada | intervalo | lanche | pessoal | saida | retorno
   note       text default '',                     -- justificativa de ajuste
   updated_at timestamptz not null default now(),
   primary key (date, emp)
@@ -64,10 +69,19 @@ create index if not exists time_punches_emp_idx on public.time_punches (emp, dat
 -- ============ Configuração (linha única) ============
 create table if not exists public.shift_config (
   id      integer primary key default 1 check (id = 1),
-  shifts  jsonb,     -- turnos: horários e intervalo
-  demand  jsonb,     -- quantas pessoas por turno em cada dia da semana
+  shifts  jsonb,     -- (legado v1)
+  demand  jsonb,     -- mínimo de pessoas por dia da semana: {"0":2,"1":2,...}
   rules   jsonb      -- regras da CLT (44h, 6 dias, domingo a cada 3 semanas, 11h…)
 );
+
+-- colunas novas da v2 (para quem já rodou a v1)
+alter table public.shift_employees add column if not exists start_t  text default '10:00';
+alter table public.shift_employees add column if not exists end_t    text default '19:00';
+alter table public.shift_employees add column if not exists lunch    integer default 60;
+alter table public.shift_employees add column if not exists contract text default 'clt';
+alter table public.shift_employees add column if not exists scale    text default '6x1';
+-- a v1 guardava o turno em M/T/I; a v2 usa a jornada da própria pessoa
+update public.shift_schedule set shift='W' where shift in ('M','T','I');
 
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
 alter table public.shift_employees enable row level security;

@@ -9,19 +9,39 @@ Quatro abas: **Escala · Ponto · Trocas · Fechar**.
 
 ---
 
+## Equipe e jornadas
+
+Cada pessoa tem a **própria jornada** (entrada, saída e intervalo) e a **própria escala**
+(6x1, 5x2 ou 4x3), cadastradas em *👥 Equipe*. O cadastro inicial é o da Coquin:
+
+| Pessoa | Escala | Jornada | Vínculo | Dá |
+|---|---|---|---|---|
+| Wagner | 6x1 | 10h–19h (1h de intervalo) | CLT | 8h/dia · **48h/semana** |
+| Paulo | 5x2 | 15h–23h (1h de intervalo) | CLT | 7h/dia · 35h/semana |
+| Ingrid | 6x1 | 15h–23h (1h de intervalo) | PJ | 7h/dia · 42h/semana |
+
+O app calcula isso na hora de cadastrar e avisa quando a conta passa do limite legal —
+a jornada do Wagner fecha **48h por semana**, acima das 44h do art. 58. Ou vira hora extra,
+ou a jornada cai para 7h20 (10h–18h20), ou entra uma folga a mais em algumas semanas.
+Quem é **PJ fica fora das regras da CLT**: a escala e as horas ficam só como controle da
+operação (o app sinaliza isso no cartão de conformidade).
+
 ## Escala (dinâmica, com as regras da CLT)
 
-- **⚡ Gerar**: monta o mês inteiro (ou de hoje em diante) em um toque, em dois modos:
+- **⚡ Gerar**: o app só escolhe **quais dias são de folga** de cada um (a jornada já é a da
+  pessoa). Monta o mês inteiro (ou de hoje em diante) em um toque, em dois modos:
   - **⚖️ Equilibrada** — divide horas, folgas e fins de semana por igual entre a equipe.
   - **🎲 Randômica** — sorteia a escala respeitando exatamente as mesmas regras (dá pra
     **sortear de novo** até gostar do resultado; só grava quando você toca em *Aplicar*).
-- **Grade do mês**: pessoas × dias, com o turno de cada um (**M** manhã, **T** tarde,
-  **I** integral) e as folgas. Toque numa célula para trocar o turno, marcar **férias**,
+- **Grade do mês**: pessoas × dias, com a hora de entrada de cada um no dia (10, 15…) e as
+  folgas. Toque numa célula para trocar o turno, marcar **férias**,
   **atestado** ou **falta**, e **travar o dia** (o gerador e as trocas não mexem mais nele).
 - **Conformidade CLT**: cartão que confere o mês inteiro e diz o que está ok e o que precisa
   de ajuste, com o artigo de lei de cada regra.
 - **Resumo por pessoa**: horas do mês, folgas e **domingos de folga**.
-- **Hoje na loja**: quem trabalha, em que turno, quem já bateu o ponto e quem está de folga.
+- **Hoje na loja**: quem trabalha, em que horário, quem já bateu o ponto, quem está de folga
+  e a **cobertura por faixa de horário** (com jornadas diferentes, 10h–15h pode ter 1 pessoa e
+  15h–19h ter 3).
 
 ### Regras aplicadas (e onde elas estão na lei)
 
@@ -57,10 +77,16 @@ O funcionário pede: *"quero trocar a folga de X por Y"*. O app:
 O pedido pode ser **enviado para aprovação** (fica pendente, com selo na aba) ou **aprovado na
 hora**. Na aprovação o recálculo é refeito com a escala mais atual.
 
-## Ponto
+## Ponto (com os tipos de pausa)
 
-- **Bater ponto** em um toque: entrada → saída para intervalo → volta → saída. A cada toque
-  sai um **comprovante** com **NSR**, data/hora e identificador (Portaria MTP 671/2021).
+- **Entrada** em um toque. Depois o botão vira **Registrar saída**: um toque abre a lista e a
+  pessoa escolhe **o tipo da saída** — 🍽️ intervalo/almoço, ☕ pausa rápida/lanche, 🚶 saída
+  pessoal ou 🏁 fim do expediente — com o **horário já preenchido** (dá para corrigir antes de
+  confirmar). Quando volta, o botão vira **Voltar do intervalo**.
+- **O tipo muda a conta**: intervalo e saída pessoal são descontados da jornada; a pausa rápida
+  conta como tempo trabalhado. A linha do tempo mostra quanto durou cada pausa e se contou.
+- A cada marcação sai um **comprovante** com **NSR**, data/hora e identificador
+  (Portaria MTP 671/2021).
 - Mostra a **escala do dia** de quem está batendo, o total trabalhado **ao vivo** e o **saldo
   do dia** (com a tolerância legal de 10 min).
 - **Senha do ponto** por pessoa (opcional) e **localização** da marcação (quando o celular
@@ -104,9 +130,10 @@ No celular, use *"Adicionar à Tela de Início"* para virar um app.
 
 ## Personalização (no código)
 
-- **Equipe inicial**: constante `SEED_TEAM` (mesma do checklist; depois edite em *👥 Equipe*).
-- **Turnos**: `DEFAULT_SHIFTS` (código, nome, entrada, saída, intervalo, cor).
-- **Cobertura por dia da semana**: `DEFAULT_DEMAND`.
+- **Equipe inicial**: constante `SEED_TEAM` (nome, escala, jornada, intervalo, vínculo).
+- **Escalas**: `SCALES` (6x1, 5x2, 4x3 — quantos dias de trabalho por semana).
+- **Tipos de pausa do ponto**: `PAUSES` (o que conta e o que não conta na jornada).
+- **Mínimo de gente por dia da semana**: `DEFAULT_DEMAND`.
 - **Regras**: `DEFAULT_RULES` (44h, 6 dias seguidos, domingo a cada 3 semanas, 11h, tolerância).
 - **Supabase**: `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>`.
 - **Cores da marca**: variáveis CSS no início do `<style>` (`--green`, `--gold`, etc.).
