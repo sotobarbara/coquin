@@ -320,13 +320,15 @@ header{
 .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
 .calhead span{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--ink-faint);text-align:center;text-transform:uppercase}
 .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.calcell{min-height:62px;border:1px solid var(--line);border-radius:9px;padding:4px 2px 5px;background:var(--surface);cursor:pointer;overflow:hidden}
+.calcell{min-height:74px;border:1px solid var(--line);border-radius:9px;padding:4px 2px 5px;background:var(--surface);cursor:pointer;overflow:hidden}
 .calcell:active{background:var(--bg)}
 .calcell.out{background:transparent;border-color:transparent;cursor:default}
 .calcell.today{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
 .calcell .cd{font-size:10.5px;font-weight:800;color:var(--ink-soft);padding-left:2px}
 .calcell.sun .cd{color:var(--gold-ink)}
 .calcell.today .cd{color:var(--green)}
+/* quem folga aparece apagado, só para enxergar o rodízio */
+.calpill.off{background:transparent!important;color:var(--ink-faint);font-weight:700;opacity:.75}
 .calpill{display:block;font-size:8.5px;font-weight:800;color:#fff;border-radius:4px;padding:2px 1px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:clip;line-height:1.3;text-align:center;letter-spacing:-.2px}
 
 /* ---------- pausas do ponto (escolha do tipo de saída) ---------- */
@@ -652,7 +654,7 @@ db.version=2;
 
 let viewMonth=ym(new Date());
 let currentView='escala';
-let escView='grid';                                  /* grade × calendário de folgas */
+let escView='cal';                                   /* calendário do mês × grade */
 let pnWho=(db.emps[0]||{}).id||'';
 
 /* ---------- pessoas e jornadas ---------- */
@@ -1424,12 +1426,12 @@ function renderEscToday(){
 function renderEscGrid(){
   const dates=daysOfMonth(viewMonth), emps=activeEmps(), today=todayISO();
   const rows=monthRows(viewMonth).length;
-  let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">'+(escView==='cal'?'Folgas de ':'Escala de ')+monthName(viewMonth)+'</div>'
-    +'<div class="gs">'+(rows?(escView==='cal'?'toque num dia para editar':'arraste para ver o mês'):'ainda não gerada')+'</div></div>'
+  let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">Escala de '+monthName(viewMonth)+'</div>'
+    +'<div class="gs">'+(rows?(escView==='cal'?'quem está na loja em cada dia':'arraste para ver o mês'):'ainda não gerada')+'</div></div>'
     +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">Gerar</button></div>'
     +'<div style="padding:10px 14px 0"><div class="viewtog" id="escTog" style="display:inline-flex">'
-    +'<button data-ev="grid" class="'+(escView==='grid'?'sel':'')+'">Grade</button>'
-    +'<button data-ev="cal" class="'+(escView==='cal'?'sel':'')+'">Folgas</button></div></div>';
+    +'<button data-ev="cal" class="'+(escView==='cal'?'sel':'')+'">Calendário</button>'
+    +'<button data-ev="grid" class="'+(escView==='grid'?'sel':'')+'">Grade</button></div></div>';
   if(!emps.length){
     h+='<div class="empty"><p>Cadastre a equipe para montar a escala.</p></div></div>';
     $('escGrid').innerHTML=h; bindGen(); return;
@@ -1479,9 +1481,10 @@ function bindEscTog(){
     escView=b.getAttribute('data-ev'); renderEscGrid();
   }));
 }
-/* calendário do mês com as folgas de cada um — é o quadro que vai pro grupo */
+/* calendário do mês: quem está na loja em cada dia (e quem folga, apagado) */
 function calendarHTML(){
   const dates=daysOfMonth(viewMonth), today=todayISO(), first=dates[0];
+  const emps=activeEmps().slice().sort((a,b)=>t2m(a.start)-t2m(b.start));
   const lead=wdOf(first), total=lead+dates.length, cells=Math.ceil(total/7)*7;
   let h='<div class="calwrap"><div class="calhead">'+WD.map(w=>'<span>'+w+'</span>').join('')+'</div><div class="calgrid">';
   for(let i=0;i<cells;i++){
@@ -1489,15 +1492,19 @@ function calendarHTML(){
     if(idx<0||idx>=dates.length){ h+='<div class="calcell out"></div>'; continue; }
     const d=dates[idx];
     const cls='calcell'+(wdOf(d)===0?' sun':'')+(d===today?' today':'');
-    let pills='';
-    activeEmps().forEach(e=>{
+    let on='', off='';
+    emps.forEach(e=>{
       const c=codeOf(d,e.id);
-      if(c==='F') pills+='<span class="calpill" style="background:'+e.color+'">'+esc(e.name)+'</span>';
-      else if(c==='FE'||c==='AT') pills+='<span class="calpill" style="background:'+OFF_CODES[c].color+'">'+esc(e.name)+'</span>';
+      if(isWork(c)) on+='<span class="calpill" style="background:'+e.color+'">'+esc(e.name)+'</span>';
+      else if(c==='F') off+='<span class="calpill off">'+esc(e.name)+'</span>';
+      else if(c) off+='<span class="calpill off" style="color:'+OFF_CODES[c].color+'">'+esc(e.name)+' '+OFF_CODES[c].short+'</span>';
     });
-    h+='<div class="'+cls+'" data-calday="'+d+'"><div class="cd">'+dOf(d).getDate()+'</div>'+pills+'</div>';
+    h+='<div class="'+cls+'" data-calday="'+d+'"><div class="cd">'+dOf(d).getDate()+'</div>'+on+off+'</div>';
   }
-  return h+'</div></div>';
+  h+='</div></div><div class="legend">';
+  emps.forEach(e=>{ h+='<span class="who-l"><i style="background:'+e.color+'"></i>'+esc(e.name)+' '+e.start.slice(0,5)+'–'+e.end.slice(0,5)+'</span>'; });
+  h+='<span class="who-l" style="color:var(--ink-faint)">nome apagado = folga</span></div>';
+  return h;
 }
 function renderEscClt(){
   const v=validateMonth(viewMonth);
