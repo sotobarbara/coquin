@@ -320,15 +320,18 @@ header{
 .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
 .calhead span{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--ink-faint);text-align:center;text-transform:uppercase}
 .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.calcell{min-height:74px;border:1px solid var(--line);border-radius:9px;padding:4px 2px 5px;background:var(--surface);cursor:pointer;overflow:hidden}
+.calcell{min-height:46px;border:1px solid var(--line);border-radius:9px;padding:4px 2px 6px;background:var(--surface);cursor:pointer;overflow:hidden}
 .calcell:active{background:var(--bg)}
 .calcell.out{background:transparent;border-color:transparent;cursor:default}
 .calcell.today{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
 .calcell .cd{font-size:10.5px;font-weight:800;color:var(--ink-soft);padding-left:2px}
 .calcell.sun .cd{color:var(--gold-ink)}
 .calcell.today .cd{color:var(--green)}
-/* quem folga aparece apagado, só para enxergar o rodízio */
-.calpill.off{background:transparent!important;color:var(--ink-faint);font-weight:700;opacity:.75}
+.calrow{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;margin-top:4px;min-height:15px}
+.av.cal{width:13px;height:13px;box-shadow:0 0 0 1.5px var(--pc)}
+.av.cal .avi{font-size:7px}
+.calcell .calnone{display:block;text-align:center;font-size:9px;font-weight:750;color:var(--ink-faint);margin-top:5px}
+.calcell .calmark{display:block;text-align:center;font-size:8.5px;font-weight:800;color:var(--violet);margin-top:3px;letter-spacing:.2px}
 .calpill{display:block;font-size:8.5px;font-weight:800;color:#fff;border-radius:4px;padding:2px 1px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:clip;line-height:1.3;text-align:center;letter-spacing:-.2px}
 
 /* ---------- pausas do ponto (escolha do tipo de saída) ---------- */
@@ -1512,7 +1515,7 @@ function bindEscTog(){
     escView=b.getAttribute('data-ev'); renderEscGrid();
   }));
 }
-/* calendário do mês: quem está na loja em cada dia (e quem folga, apagado) */
+/* calendário do mês: as carinhas de quem está na loja em cada dia */
 function calendarHTML(){
   const dates=daysOfMonth(viewMonth), today=todayISO(), first=dates[0];
   const emps=activeEmps().slice().sort((a,b)=>t2m(a.start)-t2m(b.start));
@@ -1523,18 +1526,20 @@ function calendarHTML(){
     if(idx<0||idx>=dates.length){ h+='<div class="calcell out"></div>'; continue; }
     const d=dates[idx];
     const cls='calcell'+(wdOf(d)===0?' sun':'')+(d===today?' today':'');
-    let on='', off='';
+    let on='', fora=[];
     emps.forEach(e=>{
       const c=codeOf(d,e.id);
-      if(isWork(c)) on+='<span class="calpill" style="background:'+e.color+'">'+esc(e.name)+'</span>';
-      else if(c==='F') off+='<span class="calpill off">'+esc(e.name)+'</span>';
-      else if(c) off+='<span class="calpill off" style="color:'+OFF_CODES[c].color+'">'+esc(e.name)+' '+OFF_CODES[c].short+'</span>';
+      if(isWork(c)) on+=avatar(e,'cal');
+      else if(c==='FE'||c==='AT') fora.push(OFF_CODES[c].short);
     });
-    h+='<div class="'+cls+'" data-calday="'+d+'"><div class="cd">'+dOf(d).getDate()+'</div>'+on+off+'</div>';
+    const body = on? '<div class="calrow">'+on+'</div>'
+               : (codeOf(d,emps[0]&&emps[0].id)? '<span class="calnone">—</span>' : '');
+    h+='<div class="'+cls+'" data-calday="'+d+'"><div class="cd">'+dOf(d).getDate()+'</div>'+body
+      +(fora.length?'<span class="calmark">'+fora.join(' ')+'</span>':'')+'</div>';
   }
   h+='</div></div><div class="legend">';
-  emps.forEach(e=>{ h+='<span class="who-l"><i style="background:'+e.color+'"></i>'+esc(e.name)+' '+e.start.slice(0,5)+'–'+e.end.slice(0,5)+'</span>'; });
-  h+='<span class="who-l" style="color:var(--ink-faint)">nome apagado = folga</span></div>';
+  emps.forEach(e=>{ h+='<span class="who-l">'+avatar(e,'sm')+esc(e.name)+' '+e.start.slice(0,5)+'–'+e.end.slice(0,5)+'</span>'; });
+  h+='<span class="who-l" style="color:var(--ink-faint)">quem não aparece no dia está de folga</span></div>';
   return h;
 }
 function renderEscClt(){
