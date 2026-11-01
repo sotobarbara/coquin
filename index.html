@@ -3,11 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="theme-color" content="#446349">
+<meta name="theme-color" content="#FFF8F3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Coquin">
 <title>Coquin · Controle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    COQUIN — Controle de operação (fechamento diário)
@@ -15,37 +18,41 @@
    Fase 1: fechamento do dia + conciliação Stone (dados locais)
    ============================================================ */
 :root{
-  --green:#446349;
-  --green-700:#35503A;
-  --green-900:#26381F;
-  --green-tint:#E9EFE9;
-  --green-tint-2:#DDE7DD;
-  --gold:#C79A3E;
-  --gold-soft:#F3E9CF;
+  /* Paleta Sunset — nomes --green* mantidos p/ compatibilidade, cores agora coral/âmbar */
+  --green:#F26B3A;        /* coral primário */
+  --green-700:#DD5526;    /* coral ativo/press */
+  --green-900:#BC441C;    /* coral profundo */
+  --green-tint:#FFF0E8;   /* tinte claro */
+  --green-tint-2:#FBDDCD;
+  --gold:#F59E0B;         /* âmbar (acento 2) */
+  --gold-soft:#FDEBCF;
+  --grad:linear-gradient(135deg,#FB6B4B,#F59E0B);
+  --hero:linear-gradient(135deg,#FF6B6B,#FF9F43 55%,#FFC048);
 
-  --pix:#1baf7a;      /* aqua  (categórico validado — CVD-safe) */
-  --dinheiro:#eda100; /* dourado: cash = ouro */
+  --pix:#F26B3A;      /* coral */
+  --dinheiro:#F59E0B; /* âmbar */
   --debito:#2a78d6;   /* azul */
-  --credito:#eb6834;  /* laranja */
-  --ink-money:#35503A;/* texto de valores (nunca a cor da série) */
+  --credito:#EC4899;  /* rosa */
+  --ink-money:#C14A28;/* texto de valores coral */
 
-  --bg:#F5F3EE;
+  --bg:#FFF8F3;
   --surface:#FFFFFF;
-  --ink:#26302A;
-  --ink-soft:#5E6B60;
-  --ink-faint:#95A096;
-  --line:#E7E4DC;
+  --ink:#2A1C20;
+  --ink-soft:#7A6660;
+  --ink-faint:#B9A69F;
+  --line:#F3E7DD;
   --danger:#C0483F;
 
-  --shadow:0 1px 2px rgba(38,48,42,.05), 0 8px 24px rgba(38,48,42,.06);
-  --shadow-lg:0 8px 40px rgba(38,48,42,.16);
-  --r:20px;
-  --r-sm:14px;
+  --shadow:0 1px 2px rgba(190,90,60,.05), 0 10px 26px -8px rgba(190,90,60,.12);
+  --shadow-lg:0 14px 40px -10px rgba(190,90,60,.22);
+  --r:22px;
+  --r-sm:16px;
 }
+body{background-image:radial-gradient(760px 440px at 100% -8%,rgba(245,158,11,.10),transparent 60%),radial-gradient(640px 420px at -10% 2%,rgba(236,72,153,.06),transparent 60%);background-attachment:fixed}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.45;
   padding-bottom:calc(120px + env(safe-area-inset-bottom));
 }
@@ -54,15 +61,15 @@ body{
 /* ---------- Header ---------- */
 header{
   position:sticky;top:0;z-index:20;
-  background:linear-gradient(160deg,var(--green) 0%,var(--green-700) 78%,var(--green-900) 100%);
-  box-shadow:0 4px 18px rgba(52,80,58,.22);padding-top:env(safe-area-inset-top);
+  background:rgba(255,248,243,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top);
 }
-.head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 15px;max-width:520px;margin:0 auto}
-.brand img{height:30px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}
-.month-nav{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.20);border-radius:999px;padding:3px}
-.month-nav button{border:0;background:transparent;width:34px;height:32px;border-radius:999px;font-size:18px;color:#fff;cursor:pointer;display:grid;place-items:center;opacity:.9}
-.month-nav button:active{background:rgba(255,255,255,.18)}
-.month-nav .label{font-size:13px;font-weight:700;color:#fff;min-width:104px;text-align:center;text-transform:capitalize;letter-spacing:.2px}
+.head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px 13px;max-width:520px;margin:0 auto}
+.brand img{height:26px;display:block}
+.month-nav{display:flex;align-items:center;gap:2px;background:var(--green-tint);border:1px solid var(--green-tint-2);border-radius:999px;padding:3px}
+.month-nav button{border:0;background:transparent;width:32px;height:30px;border-radius:999px;font-size:17px;color:var(--green);cursor:pointer;display:grid;place-items:center}
+.month-nav button:active{background:var(--green-tint-2)}
+.month-nav .label{font-size:12.5px;font-weight:800;color:var(--ink);min-width:100px;text-align:center;text-transform:capitalize;letter-spacing:.1px}
 
 /* ---------- Sections ---------- */
 main{padding-top:18px}
@@ -72,7 +79,7 @@ main{padding-top:18px}
 
 /* ---------- Meta (hero) ---------- */
 .meta{padding:20px;color:#fff;border:0;overflow:hidden;position:relative;
-  background:linear-gradient(150deg,var(--green) 0%,var(--green-700) 62%,var(--green-900) 100%);box-shadow:0 10px 30px rgba(52,80,58,.30);}
+  background:var(--hero);box-shadow:0 14px 34px -10px rgba(241,90,50,.45);}
 .meta::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
 .meta-top,.meta-nums,.meta-sub,.bar,.meta-foot,.meta-proj{position:relative;z-index:1}
 .meta-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:relative}
@@ -85,7 +92,7 @@ main{padding-top:18px}
 .meta-nums .of{font-size:16px;opacity:.82;font-weight:600}
 .meta-sub{font-size:13.5px;opacity:.9;position:relative}
 .bar{height:11px;border-radius:999px;background:rgba(255,255,255,.20);margin:16px 0 12px;overflow:hidden;position:relative}
-.bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#EAD9A6,#C79A3E);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.bar > i{display:block;height:100%;border-radius:999px;background:#fff;transition:width .6s cubic-bezier(.2,.8,.2,1)}
 .bar .pace-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:rgba(255,255,255,.75);border-radius:2px}
 .meta-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;position:relative}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:999px}
@@ -439,14 +446,32 @@ main{padding-top:18px}
 .acct button:active{background:var(--green-tint)}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(96px + env(safe-area-inset-bottom));z-index:50;background:var(--green-900);color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:88%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast b{color:#EAD9A6}
+.toast b{color:#FFD9A6}
+
+/* ---------- Vendas por loja (home, compacto) ---------- */
+.loja-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:9px}
+.loja-row .rk{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;flex:0 0 auto}
+.loja-row .m{flex:1;min-width:0}
+.loja-row .nm{font-weight:800;font-size:14.5px;color:var(--ink)}
+.loja-row .tg{font-size:10.5px;color:var(--ink-faint);font-weight:700;margin-top:1px}
+.loja-row .lbar{height:6px;border-radius:99px;background:var(--green-tint);margin-top:7px;overflow:hidden}
+.loja-row .lbar>i{display:block;height:100%;border-radius:99px;background:var(--grad)}
+.loja-row .rv{font-weight:800;font-size:15px;letter-spacing:-.3px;color:var(--ink);text-align:right;flex:0 0 auto}
+.store-total{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#FFF1E9,#FFE9DD);border:1.5px solid #F8D9C6;border-radius:var(--r-sm);padding:14px 16px;box-shadow:var(--shadow);margin-top:2px}
+.store-total .tl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#C8623C;font-weight:900}
+.store-total .td{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:3px}
+.store-total .tv{font-size:21px;font-weight:900;letter-spacing:-.5px;color:#D1562E}
+.store-unassigned{background:var(--surface);border:1.5px dashed var(--danger);border-radius:var(--r-sm);padding:12px 15px;margin-top:9px}
+.store-unassigned .uh{display:flex;justify-content:space-between;font-weight:800;font-size:13.5px;color:var(--ink)}
+.store-unassigned .us{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:4px}
+.store-empty{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:16px;color:var(--ink-faint);font-size:13px;text-align:center;font-weight:600}
 </style>
 </head>
 <body>
 
 <header>
   <div class="head-inner">
-    <div class="brand"><img src="logo-coquin-white.png" alt="Coquin"></div>
+    <div class="brand"><img src="logo-coquin-coral.png" alt="Coquin"></div>
     <div class="month-nav">
       <button id="prevMonth" aria-label="Mês anterior">‹</button>
       <span class="label" id="monthLabel">—</span>
@@ -499,13 +524,14 @@ main{padding-top:18px}
       <div class="n" id="salesCount">Nenhum dia fechado</div>
     </div>
     <div class="coin">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#446349" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F26B3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     </div>
   </div>
 
-  <!-- FORMAS DE PAGAMENTO -->
-  <div class="section-title">Por forma de pagamento</div>
-  <div class="pay-grid" id="payGrid"></div>
+  <!-- VENDAS POR LOJA -->
+  <div class="section-title">Vendas por loja <span class="st-side">cartão/Pix</span></div>
+  <div id="storeSalesHome"></div>
+  <div class="pay-grid" id="payGrid" style="display:none"></div>
 
   <!-- MÉTRICAS -->
   <div class="section-title">No mês</div>
@@ -976,7 +1002,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v5.2 · dias por loja';
+const APP_VERSION='v6.0 · visual Sunset';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1454,6 +1480,31 @@ function renderStoreSales(list){
   host.innerHTML=html;
   const b=document.getElementById('unassignedToLojas'); if(b) b.addEventListener('click',()=>{ closeSheets(); openLojaSheet(); });
 }
+/* versão compacta p/ a home: ranking + TOTAL GERAL somando as lojas */
+function renderStoreSalesHome(list){
+  const host=document.getElementById('storeSalesHome'); if(!host) return;
+  const {by,un,anyData}=storeAggregate(list);
+  if(!anyData){ host.innerHTML='<div class="store-empty">Importe o CSV da Stone (coluna <b>N DE SERIE</b>) para ver as vendas por loja.</div>'; return; }
+  const stores=(db.settings.stores||[]).map(s=>({...s,g:by[s.id]})).filter(s=>s.g&&(s.g.tx>0||s.g.rev>0));
+  stores.sort((a,b)=>b.g.rev-a.g.rev);
+  const maxRev=Math.max(1,...stores.map(s=>s.g.rev));
+  let html='';
+  stores.forEach((s,i)=>{ const g=s.g, nd=g.days.size;
+    html+='<div class="loja-row"><div class="rk">'+(i+1)+'</div>'
+      +'<div class="m"><div class="nm">'+s.name+'</div>'
+      +'<div class="tg">'+NUM.format(g.tx)+' vendas · '+nd+' dia'+(nd!==1?'s':'')+'</div>'
+      +'<div class="lbar"><i style="width:'+Math.round(g.rev/maxRev*100)+'%"></i></div></div>'
+      +'<div class="rv">'+money(g.rev)+'</div></div>';
+  });
+  const totRev=stores.reduce((s,x)=>s+x.g.rev,0), totTx=stores.reduce((s,x)=>s+x.g.tx,0);
+  html+='<div class="store-total"><div><div class="tl">Total geral · '+stores.length+' loja'+(stores.length!==1?'s':'')+'</div>'
+    +'<div class="td">'+NUM.format(totTx)+' vendas no mês</div></div><div class="tv">'+money(totRev)+'</div></div>';
+  if(un.rev>0||un.serials.size){ html+='<div class="store-unassigned"><div class="uh"><span>⚠︎ Sem loja definida</span><span>'+money(un.rev)+'</span></div>'
+    +'<div class="us">'+un.tx+' vendas em maquininha(s) não atribuída(s) · '+[...un.serials].join(', ')+'</div>'
+    +'<button type="button" class="btn-ghost" id="homeUnassigned" style="margin-top:9px">Atribuir às lojas</button></div>'; }
+  host.innerHTML=html;
+  const b=document.getElementById('homeUnassigned'); if(b) b.addEventListener('click',()=>{ closeSheets(); openLojaSheet(); });
+}
 function renderDados(){
   const key=viewMonth, list=closingsOf(key).slice().sort((a,b)=>a.date.localeCompare(b.date)), goal=goalFor(key);
   let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
@@ -1691,7 +1742,10 @@ function render(){
   document.getElementById('revTotal').textContent=money(rev);
   document.getElementById('salesCount').textContent=list.length?(list.length+(list.length>1?' dias fechados':' dia fechado')):'Nenhum dia fechado';
 
-  /* pagamento */
+  /* vendas por loja (home) */
+  renderStoreSalesHome(list);
+
+  /* pagamento (oculto na home, mantido p/ compat) */
   document.getElementById('payGrid').innerHTML=METHOD_ORDER.map(m=>{
     const v=byM[m], p=rev>0?(v/rev*100):0, M=METHODS[m];
     return `<div class="card pay"><div class="dot" style="background:${M.color}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${M.icon}</svg></div>
@@ -2470,11 +2524,11 @@ function reportData(key){
 function loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
 function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 async function buildReport(){
-  const key=viewMonth, d=reportData(key), logo=await loadImg('logo-coquin-white.png');
+  const key=viewMonth, d=reportData(key), logo=await loadImg('logo-coquin-coral.png');
   const W=1080, H=1560, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const x=cv.getContext('2d'); const M=64, CW=W-M*2;
-  const C={green:'#446349',g700:'#35503A',gold:'#C79A3E',ink:'#26302A',soft:'#5E6B60',faint:'#95A096',line:'#E7E4DC',bg:'#F5F3EE',
-    pix:'#1baf7a',din:'#eda100',deb:'#2a78d6',cred:'#eb6834',ok:'#1E6B34'};
+  const C={green:'#F26B3A',g700:'#DD5526',gold:'#F59E0B',ink:'#2A1C20',soft:'#7A6660',faint:'#B9A69F',line:'#F3E7DD',bg:'#FFF8F3',
+    pix:'#F26B3A',din:'#F59E0B',deb:'#2a78d6',cred:'#EC4899',ok:'#1E6B34'};
   x.fillStyle=C.bg; x.fillRect(0,0,W,H);
   // header verde
   const grd=x.createLinearGradient(0,0,W,360); grd.addColorStop(0,C.green); grd.addColorStop(1,C.g700);
