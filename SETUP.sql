@@ -77,6 +77,7 @@ alter table public.app_settings add column if not exists wk_goals jsonb;
 alter table public.app_settings add column if not exists price2 numeric default 30;   -- preço 2 bolas
 
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
+-- logins individuais de funcionário (…@ponto.coquin.app, criados no app Escala & Ponto) ficam de fora
 alter table public.closings     enable row level security;
 alter table public.stock        enable row level security;
 alter table public.cashflow     enable row level security;
@@ -85,10 +86,10 @@ drop policy if exists "equipe closings" on public.closings;
 drop policy if exists "equipe stock"    on public.stock;
 drop policy if exists "equipe cashflow" on public.cashflow;
 drop policy if exists "equipe settings" on public.app_settings;
-create policy "equipe closings" on public.closings     for all to authenticated using (true) with check (true);
-create policy "equipe stock"    on public.stock        for all to authenticated using (true) with check (true);
-create policy "equipe cashflow" on public.cashflow     for all to authenticated using (true) with check (true);
-create policy "equipe settings" on public.app_settings for all to authenticated using (true) with check (true);
+create policy "equipe closings" on public.closings     for all to authenticated using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app') with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+create policy "equipe stock"    on public.stock        for all to authenticated using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app') with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+create policy "equipe cashflow" on public.cashflow     for all to authenticated using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app') with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+create policy "equipe settings" on public.app_settings for all to authenticated using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app') with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 
 -- ============ Tempo real (sincronia entre celulares) ============
 do $$ begin alter publication supabase_realtime add table public.closings;     exception when duplicate_object then null; end $$;

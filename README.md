@@ -87,8 +87,9 @@ O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL E
 
 - [`checklist/`](checklist/) — **Checklist operacional** (rotina de entrada e saída + análise).
 - [`escala/`](escala/) — **Escala & Ponto**: escala dinâmica (equilibrada ou randômica) dentro
-  das regras da CLT, troca de folga com recálculo automático, ponto com comprovante e
-  fechamento do mês em CSV.
+  das regras da CLT, troca de folga com recálculo automático, ponto com comprovante,
+  fechamento do mês em CSV e **folha de pagamento** (faltas, extras, INSS, VT, adiantamento do
+  dia 15 e saldo do 5º dia útil — CLT e PJ).
 
 Cada um é um projeto separado na Vercel (Root Directory = a pasta) e usa o mesmo login da equipe.
 

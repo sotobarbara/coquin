@@ -5,7 +5,8 @@ e o **controle de ponto** da Coquin. Página única (`index.html`, sem build), p
 **celular**. Funciona com **login da equipe** e sincroniza entre os aparelhos via Supabase;
 sem login, funciona local no aparelho.
 
-Quatro abas: **Escala · Ponto · Trocas · Fechar**.
+Cinco abas: **Escala · Ponto · Pedidos · Fechar · Folha** (o funcionário vê só Escala, Ponto e Pedidos —
+o **Portal do colaborador**).
 
 ---
 
@@ -120,13 +121,102 @@ hora**. Na aprovação o recálculo é refeito com a escala mais atual.
 - **Exportação em CSV**: resumo do mês e espelho de ponto completo (abre no Excel/Sheets e vai
   direto pra folha).
 
+## Portal do colaborador (login individual)
+
+Cada funcionário tem **usuário e senha próprios** e bate o ponto **no próprio celular**:
+
+- **Gerente cria o acesso**: *Equipe* → pessoa → **Acesso ao app** → usuário (ex.: `wagner`) e senha →
+  *Criar acesso*. O app mostra o link, o usuário e a senha para mandar pra pessoa.
+- **O funcionário entra** com `wagner` + senha e cai no **Portal do colaborador**: bate o **próprio ponto**,
+  vê **Meu mês** (horas, extras, saldo), a **escala**, pede **troca de folga** e **envia atestado**
+  (foto ou PDF). Troca a própria senha em *Minha conta*.
+- **Não dá pra burlar o ponto**: a hora vem do **relógio do servidor** e o banco recusa marcação de
+  outra pessoa, de outro dia, com horário diferente do servidor (± 3 min) ou que altere/apague
+  marcação antiga (trava `guard_punch` no `SETUP.sql`). A localização vai junto quando o celular permite.
+- **Salário e folha ficam só com o gerente**: o funcionário não vê Fechar, Folha, salários nem o ponto
+  dos colegas — isso é garantido no banco (RLS), não só na tela. Logins de funcionário também
+  **não acessam** vendas/estoque/caixa do app principal.
+- **Foto**: cada um coloca a **própria foto** em *Minha conta* (ou o gerente em *Equipe → pessoa → Foto*).
+  A foto é recortada e reduzida no celular (~20 KB). Quem não tem foto ganha um **bonequinho** próprio.
+- **Atestado**: o funcionário anexa a foto/PDF com o período; o gerente vê em **Pedidos**, abre o anexo,
+  e ao **aprovar** os dias viram *Atestado* na escala (sem desconto, sem VT). Arquivos num bucket
+  privado do Supabase (`atestados`), visíveis só pra pessoa e pro gerente.
+
+**Quem é gerente?** Ao rodar o `SETUP.sql`, todo login que já existe no projeto (ex.: o login da equipe)
+vira gerente. Novo gerente depois: `insert into public.app_admins(email) values ('email@dominio.com');`
+
+**No Supabase (uma vez):** *Authentication → Sign In / Providers → Email* → desligue **Confirm email**
+(os logins dos funcionários são internos, `usuario@ponto.coquin.app`, e não recebem e-mail). Esqueceu a
+senha? Redefina em *Authentication → Users*.
+
+## Folha (pagamento da equipe — CLT e PJ)
+
+Você registra o que aconteceu e o app **já mostra o saldo final** de cada pessoa.
+
+- **Registrar falta**: escolhe a pessoa e o dia → a falta entra na escala (código *Falta*, dia travado)
+  e o app mostra na hora **quanto muda o saldo** antes de confirmar. *Atestado* fica registrado
+  mas não desconta o salário.
+- **+ Lançamento**: hora extra (50% ou 100%), atraso/horas a menos, bônus/comissão, vale
+  (dinheiro que a pessoa já pegou) e outros descontos.
+- **Horas do ponto**: extras e horas a menos dos dias fechados no ponto entram sozinhas
+  (dá pra desligar em *Ajustes da folha*).
+- **Holerite** (toque na pessoa): proventos, descontos, líquido, adiantamento, benefícios e o
+  **valor a depositar no 5º dia útil**. Marque *adiantamento pago* / *saldo pago*.
+- **CSV da folha** para mandar pra contabilidade.
+
+### A conta (exemplo: Wagner, CLT — R$ 2.000, alimentação R$ 400, VT R$ 10,80/dia)
+
+| | |
+|---|---|
+| Salário base | R$ 2.000,00 |
+| INSS 2026 (progressivo) | − R$ 155,69 |
+| VT 6% do salário (limitado ao VT do mês) | − R$ 120,00 |
+| **Líquido do mês** | R$ 1.724,31 |
+| Adiantamento dia 15 (50%) | − R$ 1.000,00 |
+| Saldo do salário | R$ 724,31 |
+| + Alimentação + VT de dezembro (26 dias úteis × R$ 10,80) | R$ 680,80 |
+| **Depositar no 5º dia útil** | **R$ 1.405,11** |
+
+Com **1 falta**: sai R$ 66,67 (salário ÷ 30) e o VT do dia (R$ 10,80); o INSS cai R$ 6,00 →
+saldo de **R$ 1.333,65**.
+
+**VT antecipado e dias úteis:** o depósito do 5º dia útil leva o **VT do mês seguinte** — os **dias úteis**
+de lá (segunda a sábado, **sem feriados**) menos as **faltas, dias de atestado e férias** deste mês, que já
+tinham sido pagos e não foram usados. Ex.: folha de novembro/2026 → VT de dezembro (26 dias úteis, tira
+25/12). Atestado e falta têm o campo **quantos dias** (atestado de 3 dias = 3 dias fora do VT seguinte). Feriados nacionais já vêm no app
+(inclusive Sexta-feira Santa); os **estaduais/municipais** você coloca em *Ajustes da folha*. Dá pra
+trocar para seg–sex ou para os dias da escala.
+
+### Regras usadas
+
+| Regra | Base |
+|---|---|
+| Dia = salário ÷ 30 · hora = salário ÷ 220 (44h) | CLT, art. 64 |
+| Hora extra 50% (100% em domingo/feriado/folga) + DSR sobre extras | CLT, art. 59 · Súmula 172 TST |
+| INSS progressivo 2026 (7,5% · 9% · 12% · 14%, teto R$ 8.475,55) | Portaria Interministerial MPS/MF nº 13/2026 |
+| IRRF 2026 — zera até R$ 5.000, redução até R$ 7.350 | Lei 15.270/2025 |
+| Desconto do VT até 6% do salário-base | Lei 7.418/1985 · Decreto 10.854/2021 |
+| Saldo até o 5º dia útil (seg. a sáb., fora feriados nacionais) | CLT, art. 459, §1º |
+| Falta pode tirar o DSR da semana (**desligado** por padrão) | Lei 605/1949, art. 6º |
+| FGTS 8% — custo da empresa, não sai do salário | Lei 8.036/1990 |
+
+**PJ**: sem INSS, IRRF, desconto de VT, DSR e FGTS — falta desconta o dia (valor ÷ 30) e hora
+extra é paga pelo valor da hora (adicional configurável). Tudo isso muda em **Ajustes da folha**
+(dia e % do adiantamento, divisor, adicionais, tabela do INSS, alimentação descontar na falta,
+benefícios no depósito…). Salário, alimentação, VT/dia, % de adiantamento e dependentes ficam
+no cadastro da pessoa (*Equipe* ou *Salário e benefícios* no holerite).
+
+> É uma conta de controle da casa — confira com a contabilidade antes da folha oficial
+> (convenção coletiva, pensão, insalubridade etc. não entram).
+
 ## Backend (Supabase)
 
-Tabelas próprias: `shift_employees`, `shift_schedule`, `shift_swaps`, `time_punches` e
-`shift_config` — **não toca** em vendas, estoque, caixa ou checklist. Por padrão aponta para o
+Tabelas próprias: `shift_employees`, `shift_schedule`, `shift_swaps`, `time_punches`,
+`payroll_entries`, `payroll_people` (salários), `absence_docs` (atestados), `app_admins` e `shift_config`,
+mais o bucket privado `atestados` — **não toca** em vendas, estoque, caixa ou checklist. Por padrão aponta para o
 **mesmo projeto Supabase** da equipe (mesmo login).
 
-- Rode o [`SETUP.sql`](SETUP.sql) **uma vez** no **SQL Editor** do Supabase (cria as tabelas,
+- Rode o [`SETUP.sql`](SETUP.sql) **uma vez** (e de novo depois desta versão, para criar a folha) no **SQL Editor** do Supabase (cria as tabelas,
   liga RLS e o realtime). É idempotente.
 - Backend 100% separado? Crie outro projeto no Supabase, rode o `SETUP.sql` nele e troque
   `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>` do `index.html`.

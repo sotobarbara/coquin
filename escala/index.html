@@ -72,8 +72,16 @@ header{
 .empty p{margin:0;font-size:14px;line-height:1.5}
 .foot{margin:22px 4px 8px;text-align:center;color:var(--ink-faint);font-size:11.5px;line-height:1.5}
 .hide{display:none!important}
+body.emp-mode .admin-only{display:none!important}
+.sheet-body > .hint{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.4}
+.sw-acts button{white-space:nowrap}
 .av{width:36px;height:36px;border-radius:999px;overflow:hidden;background:var(--pc);flex:none}
 .av svg{width:100%;height:100%;display:block}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-ed{display:flex;align-items:center;gap:14px;margin-top:8px}
+.photo-ed .av{width:72px;height:72px}
+.photo-ed .pb{display:flex;flex-direction:column;gap:8px;flex:1}
+.fld .photo-ed label.btn-ghost,.photo-ed label.btn-ghost{display:block;text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:750;color:var(--ink-soft);margin:0;padding:11px 14px}
 .avi{display:grid;place-items:center;width:100%;height:100%;color:#fff;font-weight:800;font-size:15px}
 .av.sm{width:22px;height:22px}
 .av.sm .avi{font-size:10px}
@@ -247,6 +255,61 @@ header{
 .mirror-row .mt.neg{color:var(--danger)} .mirror-row .mt.pos{color:var(--green-700)}
 .mirror-row.sun{background:rgba(199,154,62,.07)}
 
+/* ---------- folha ---------- */
+.pay-hero{padding:18px 16px 16px;margin-top:18px;background:var(--green);color:#fff;border:0;border-radius:var(--r)}
+.pay-hero .ph-l{font-size:11.5px;font-weight:750;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+.pay-hero .ph-v{font-size:32px;font-weight:850;letter-spacing:-1px;margin-top:4px;line-height:1.1;font-variant-numeric:tabular-nums}
+.pay-hero .ph-s{font-size:12px;font-weight:650;opacity:.82;margin-top:4px}
+.pay-hero .ph-list{margin-top:14px;padding-top:4px;border-top:1px solid rgba(255,255,255,.2)}
+.pay-hero .ph-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.pay-hero .ph-row:last-child{border-bottom:0}
+.pay-hero .ph-row span{font-size:13px;font-weight:700;opacity:.9}
+.pay-hero .ph-row span small{display:block;font-size:10.5px;font-weight:650;opacity:.75;margin-top:1px}
+.pay-hero .ph-row b{font-size:15px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pay-hero .ph-row.adv b{opacity:.85}
+.pay-hero .ph-out{margin:12px -16px -16px;padding:14px 16px 16px;background:rgba(0,0,0,.16);border-radius:0 0 var(--r) var(--r)}
+.pay-hero .ph-out .ph-l{opacity:.9}
+.pay-hero .ph-out .ph-v{font-size:30px}
+.pay-hero .ph-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+.pay-hero .ph-grid b{display:block;font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
+.pay-hero .ph-grid span{display:block;font-size:10.5px;font-weight:650;opacity:.8;margin-top:1px;line-height:1.3}
+.slip{padding:2px 14px;box-shadow:none}
+.sl-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sl-row:last-child{border-bottom:0}
+.sl-k{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:var(--ink)}
+.sl-k small{display:block;font-size:11px;font-weight:650;color:var(--ink-faint);margin-top:1px;line-height:1.35}
+.sl-k small .chip{padding:1px 7px;font-size:10px}
+.sl-v{font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+.sl-v .neg,.sl-v.neg{color:var(--danger)}
+.sl-row.tot .sl-k{font-size:14.5px;font-weight:850}
+.sl-row.tot .sl-v{font-size:16px;color:var(--green-700)}
+.sl-del{border:0;background:var(--bg);color:var(--ink-faint);width:24px;height:24px;border-radius:999px;font-size:11px;cursor:pointer;flex:none}
+/* ---------- holerite ---------- */
+.hol{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.hol-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--green-tint);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink)}
+.hol-top small{display:block;font-size:11px;font-weight:650;color:var(--ink-soft);margin-top:1px}
+.hol-emp{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.hol-emp b{font-size:14.5px;font-weight:800}
+.hol-emp small{display:block;font-size:11px;font-weight:650;color:var(--ink-faint)}
+.hol-t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.hol-t th{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-faint);padding:8px 6px;border-bottom:1px solid var(--line);background:var(--bg)}
+.hol-t td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink);font-weight:650}
+.hol-t .hd{text-align:left;padding-left:14px;line-height:1.3}
+.hol-t .hd small{display:block;font-size:10.5px;font-weight:650;color:var(--ink-faint);margin-top:1px}
+.hol-t .hv{text-align:right;white-space:nowrap;width:82px}
+.hol-t td.hv{font-weight:800}
+.hol-t .hv:last-child{padding-right:14px}
+.hol-t td.neg{color:var(--danger)}
+.hol-t tfoot td{font-weight:850;background:var(--bg);border-bottom:0;font-size:12.5px}
+.hol-liq{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;background:var(--green);color:#fff}
+.hol-liq span{display:block;font-size:12px;font-weight:800;line-height:1.3}
+.hol-liq small{display:block;font-size:10.5px;font-weight:650;opacity:.8;margin-top:2px}
+.hol-liq b{font-size:22px;font-weight:850;letter-spacing:-.6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hol-foot{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.hol-foot div{padding:8px 6px;text-align:center;border-right:1px solid var(--line)}
+.hol-foot div:last-child{border-right:0}
+.hol-foot span{display:block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-faint)}
+.hol-foot b{display:block;font-size:11.5px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
 /* ---------- formulários / sheets ---------- */
 .fld{margin-top:13px}
 .fld label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
@@ -365,7 +428,7 @@ header{
   <div class="htop">
     <div class="brand">
       <img src="logo-coquin.png" alt="Coquin">
-      <span class="tag">Escala &amp; Ponto</span>
+      <span class="tag" id="brandTag">Escala &amp; Ponto</span>
     </div>
     <button class="acct off" id="acct"><span class="dot"></span><span id="acctLbl">Local</span></button>
   </div>
@@ -383,8 +446,9 @@ header{
   <div class="viewseg" id="viewSeg">
     <button data-view="escala" class="sel">Escala</button>
     <button data-view="ponto">Ponto</button>
-    <button data-view="trocas">Trocas<span class="badge hide" id="swBadge">0</span></button>
-    <button data-view="fechar">Fechar</button>
+    <button data-view="trocas">Pedidos<span class="badge hide" id="swBadge">0</span></button>
+    <button data-view="fechar" class="admin-only">Fechar</button>
+    <button data-view="folha" class="admin-only">Folha</button>
   </div>
 </header>
 
@@ -397,7 +461,7 @@ header{
   <div id="escClt"></div>
   <div class="section-title">Resumo por pessoa <span class="st-side" id="escSumSide"></span></div>
   <div class="card" id="escSummary"></div>
-  <div class="btn-row">
+  <div class="btn-row admin-only">
     <button class="btn-ghost" id="btnTeam">Equipe</button>
     <button class="btn-ghost" id="btnSettings">Ajustes</button>
   </div>
@@ -406,20 +470,27 @@ header{
  <!-- ===================== PONTO ===================== -->
  <div id="viewPonto" class="hide">
   <div id="pnClock"></div>
-  <div class="whotitle" style="margin-top:18px">Quem está batendo o ponto?</div>
-  <div class="who" id="pnWho"></div>
+  <div class="whotitle admin-only" style="margin-top:18px">Quem está batendo o ponto?</div>
+  <div class="who admin-only" id="pnWho"></div>
   <div id="pnAction"></div>
   <div class="section-title">Marcações de hoje</div>
   <div class="card tl" id="pnTimeline"></div>
   <div id="pnSummary"></div>
-  <div class="section-title">Equipe hoje</div>
-  <div class="card" id="pnTeamToday"></div>
+  <div class="section-title admin-only">Equipe hoje</div>
+  <div class="card admin-only" id="pnTeamToday"></div>
   <div class="foot">Comprovante de marcação a cada registro · tolerância de 10 min no dia (art. 58, §1º).</div>
  </div>
 
  <!-- ===================== TROCAS ===================== -->
  <div id="viewTrocas" class="hide">
   <div class="card sw-card">
+    <div style="font-size:14.5px;font-weight:800">Atestado médico</div>
+    <div style="font-size:12.5px;color:var(--ink-faint);font-weight:650;margin-top:3px;line-height:1.45">Tire uma foto (ou mande o PDF) do atestado. O gerente confere e o dia entra como atestado — sem desconto.</div>
+    <button class="btn btn-green" style="margin-top:14px" id="btnNewDoc">Enviar atestado</button>
+  </div>
+  <div class="section-title">Atestados <span class="st-side" id="docSide"></span></div>
+  <div class="card" id="docList"></div>
+  <div class="card sw-card" style="margin-top:22px">
     <div style="font-size:14.5px;font-weight:800">Troca de folga</div>
     <div style="font-size:12.5px;color:var(--ink-faint);font-weight:650;margin-top:3px;line-height:1.45">A escala é recalculada e você vê como ficam os próximos dias antes de confirmar.</div>
     <button class="btn btn-green" style="margin-top:14px" id="btnNewSwap">Solicitar troca de folga</button>
@@ -442,6 +513,19 @@ header{
   <div id="fcAlerts"></div>
  </div>
 
+ <!-- ===================== FOLHA ===================== -->
+ <div id="viewFolha" class="hide">
+  <div id="fpKpi"></div>
+  <div id="fpAlerts"></div>
+  <div class="section-title">Por pessoa <span class="st-side">toque para ver o holerite</span></div>
+  <div class="card" id="fpList"></div>
+  <div class="btn-row">
+    <button class="btn-ghost" id="btnPayCfg">Ajustes da folha</button>
+    <button class="btn-ghost" id="btnCsvFolha">CSV da folha</button>
+  </div>
+  <div class="foot">INSS 2026 progressivo · IRRF com isenção até R$ 5.000 · VT até 6% do salário · PJ sem descontos de lei.<br>Confira com a contabilidade antes de fechar a folha oficial.</div>
+ </div>
+
 </main>
 
 <!-- SHEET GENÉRICO -->
@@ -460,8 +544,8 @@ header{
   <div class="auth-card">
     <img class="alogo" src="logo-coquin-white.png" alt="Coquin">
     <h1>Escala &amp; Ponto</h1>
-    <p>Entre com o login da equipe para a escala e o ponto sincronizarem entre os celulares.</p>
-    <input id="authEmail" type="email" inputmode="email" autocapitalize="none" autocomplete="username" placeholder="e-mail">
+    <p>Entre com o seu usuário para bater o ponto — ou com o login do gerente para a escala, o ponto e a folha.</p>
+    <input id="authEmail" type="text" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" placeholder="usuário ou e-mail">
     <input id="authPass" type="password" autocomplete="current-password" placeholder="senha">
     <div class="auth-err" id="authErr"></div>
     <button class="btn-primary" id="authBtn">Entrar</button>
@@ -498,12 +582,14 @@ header{
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_escala_v1';
-const APP_VERSION='v2.0 · jornada por pessoa + pausas';
+const EMP_DOMAIN='ponto.coquin.app';                 /* login do funcionário: usuario@ponto.coquin.app */
+const APP_VERSION='v4.0 · portal do colaborador';
 const COMPANY={name:'Coquin', unit:'Imprensa'};
 
 /* ---- equipe (edite em 👥 Equipe; isto é só o cadastro inicial) ---- */
 const SEED_TEAM=[
   {name:'Wagner', role:'Atendimento', color:'#C79A3E', scale:'6x1', start:'10:00', end:'19:00', lunch:60, contract:'clt', prefOff:[3], fixedOff:true,
+   salary:2000, food:400, vtDay:10.80,
    face:{bg:'#F3EAD8', skin:'#E8C39E', hair:'#2E2622', style:'short', beard:true}},
   {name:'Paulo',  role:'Atendimento', color:'#446349', scale:'5x2', start:'15:00', end:'23:00', lunch:60, contract:'clt', prefOff:[1,3], fixedOff:true,
    face:{bg:'#E9E3F1', skin:'#F4D6BA', hair:'#2A2320', style:'short', cap:true, capCol:'#446349'}},
@@ -527,6 +613,28 @@ const SCALES={
 /* mínimo de gente na loja em cada dia da semana (0=dom) */
 const DEFAULT_DEMAND={0:2, 1:2, 2:2, 3:1, 4:3, 5:3, 6:3};   /* dom seg ter qua qui sex sáb */
 const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60, minStaff:1};
+/* ---- folha de pagamento (Ajustes da folha) ---- */
+const DEFAULT_PAY={
+  inss:[[1621.00,7.5],[2902.84,9],[4354.27,12],[8475.55,14]],   /* 2026: até R$ x → alíquota % */
+  irrf:true, vtPct:6, advDay:15, advPct:50, divisor:220,
+  extraPct:50, extraOffPct:100, pjExtraPct:0,
+  dsrExtras:true, dsrFalta:false, foodFalta:false,
+  faltaPonto:false, horasPonto:true, fgts:8, payBenefits:true,
+  vtBase:'uteis',          /* 'uteis' = dias úteis do mês sem feriados · 'escala' = dias de trabalho na escala */
+  vtNext:true,             /* VT antecipado: a folha do mês paga o VT do PRÓXIMO mês, descontando as ausências deste */
+  satUtil:true,            /* sábado conta como dia útil (comércio) */
+  localHolidays:[]         /* feriados estaduais/municipais: ['01-20','01-25'] (repetem todo ano) ou '2026-06-04' */
+};
+/* IRRF mensal (desde maio/2025): até R$ x → alíquota %, parcela a deduzir */
+const IRRF_TABLE=[[2428.80,0,0],[2826.65,7.5,182.16],[3751.05,15,394.16],[4664.68,22.5,675.49],[Infinity,27.5,908.73]];
+const IRRF_DEP=189.59, IRRF_SIMPL=607.20;
+const PAY_KINDS={
+  extra:{k:'extra', label:'Hora extra',         sign:+1, unit:'h', hint:'soma no salário (com o adicional)'},
+  menos:{k:'menos', label:'Atraso / horas a menos', sign:-1, unit:'h', hint:'desconta pelo valor da hora'},
+  bonus:{k:'bonus', label:'Bônus / comissão',   sign:+1, unit:'R$', hint:'soma no salário (entra no INSS)'},
+  vale: {k:'vale',  label:'Vale / adiantamento extra', sign:-1, unit:'R$', hint:'dinheiro que a pessoa já pegou'},
+  desc: {k:'desc',  label:'Outro desconto',     sign:-1, unit:'R$', hint:'consumo, quebra de caixa, etc.'}
+};
 const WD=['dom','seg','ter','qua','qui','sex','sáb'];
 const WDL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
@@ -608,8 +716,19 @@ function avatarSVG(a){
   return '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
     +'<circle cx="50" cy="50" r="50" fill="'+bg+'"/>'+back+ears+face+beard+top+cap2+brows+blush+eyes+mouth+glasses+earrings+'</svg>';
 }
+/* quem ainda não tem foto ganha um bonequinho próprio (sempre o mesmo para o mesmo nome) */
+function autoFace(seed){
+  let h=0; String(seed||'?').split('').forEach(c=>{ h=(h*31+c.charCodeAt(0))|0; });
+  const r=mulberry32(h), pick=a=>a[Math.floor(r()*a.length)];
+  const style=pick(['short','short','curly','bob','longwave','bun']);
+  const fem=style==='bob'||style==='longwave'||style==='bun';
+  return {bg:pick(['#F3EAD8','#E9E3F1','#DEEAF4','#E3EFE4','#F6E3DF','#EFE9DA']), skin:pick(['#F4D6BA','#E8C39E','#D9A47A','#B97E55','#8D5A3B','#F3D4B6']),
+    hair:pick(['#2E2622','#231A16','#4A3326','#6B4A2F','#1C1C1C','#8A5A33']), style, beard:!fem && r()<.35, glasses:r()<.2, earrings:fem && r()<.5};
+}
+function photoOK(src){ return typeof src==='string' && /^data:image\/(jpeg|png|webp);base64,/.test(src); }
 function avatar(emp,cls){
-  const inner=(emp&&emp.face)?avatarSVG(emp.face):'<span class="avi">'+initials(emp&&emp.name)+'</span>';
+  const inner=(emp&&photoOK(emp.photo))? '<img src="'+emp.photo+'" alt="">'
+    : avatarSVG((emp&&emp.face)||autoFace(emp&&(emp.id||emp.name)));
   return '<span class="av '+(cls||'')+'" style="--pc:'+((emp&&emp.color)||'#95A096')+'">'+inner+'</span>';
 }
 function avatarInline(e){ return '<span style="display:inline-flex;vertical-align:-5px;margin-right:7px">'+avatar(e,'sm')+'</span>'; }
@@ -623,10 +742,11 @@ function freshDB(){
   return {version:2, emps:SEED_TEAM.map(t=>({
       id:slug(t.name), name:t.name, role:t.role, color:t.color, face:t.face, active:true,
       scale:t.scale, start:t.start, end:t.end, lunch:t.lunch, contract:t.contract,
-      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:''
+      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:'',
+      salary:t.salary||0, food:t.food||0, vtDay:t.vtDay||0, advPct:null, deps:0
     })),
-    sched:[], swaps:[], punch:[],
-    cfg:{demand:Object.assign({},DEFAULT_DEMAND), rules:Object.assign({},DEFAULT_RULES)}};
+    sched:[], swaps:[], punch:[], pay:[], docs:[],
+    cfg:{demand:Object.assign({},DEFAULT_DEMAND), rules:Object.assign({},DEFAULT_RULES), payroll:JSON.parse(JSON.stringify(DEFAULT_PAY))}};
 }
 function normCode(c){ return (c==='M'||c==='T'||c==='I')?WORK:c; }        /* compatibilidade com a v1 */
 function migrateEmp(e){
@@ -635,15 +755,18 @@ function migrateEmp(e){
   if(e.lunch==null) e.lunch=60;
   if(!e.scale) e.scale='6x1';
   if(!e.contract) e.contract='clt';
+  if(e.salary==null){ const seed=SEED_TEAM.find(t=>slug(t.name)===e.id); e.salary=(seed&&seed.salary)||0; e.food=(seed&&seed.food)||0; e.vtDay=(seed&&seed.vtDay)||0; }
+  if(e.food==null) e.food=0; if(e.vtDay==null) e.vtDay=0; if(e.deps==null) e.deps=0; if(e.advPct===undefined) e.advPct=null;
   return e;
 }
 let db=Store.load();
 if(!db || !db.version){ db=freshDB(); Store.save(db); }
-db.emps=(db.emps||[]).map(migrateEmp); db.sched=db.sched||[]; db.swaps=db.swaps||[]; db.punch=db.punch||[];
+db.emps=(db.emps||[]).map(migrateEmp); db.sched=db.sched||[]; db.swaps=db.swaps||[]; db.punch=db.punch||[]; db.pay=db.pay||[]; db.docs=db.docs||[];
 db.sched.forEach(r=>{ r.shift=normCode(r.shift); });
 db.cfg=db.cfg||{};
 if(!db.cfg.demand || typeof db.cfg.demand[0]==='object') db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
 db.cfg.rules=Object.assign({},DEFAULT_RULES,db.cfg.rules||{});
+db.cfg.payroll=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PAY)),db.cfg.payroll||{});
 if((db.cfg.v||0)<3){                                   /* v3: semana civil + folga fixa do modelo da Coquin */
   db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
   db.emps.forEach(e=>{
@@ -663,6 +786,11 @@ let pnWho=(db.emps[0]||{}).id||'';
 
 /* ---------- pessoas e jornadas ---------- */
 function RULES(){ return db.cfg.rules; }
+/* papel de quem está logado: gerente (tudo) ou funcionário (só o próprio ponto) */
+function isAdmin(){ return !Cloud.on || !Cloud.role || Cloud.role.admin!==false; }
+function myEmp(){ return (Cloud.on && Cloud.role && !Cloud.role.admin) ? Cloud.role.emp : null; }
+function loginOf(u){ u=String(u||'').trim().toLowerCase(); return !u? '' : (u.indexOf('@')>=0? u : slug(u)+'@'+EMP_DOMAIN); }
+function userOf(email){ email=String(email||''); return email.endsWith('@'+EMP_DOMAIN)? email.slice(0,-EMP_DOMAIN.length-1) : email; }
 function activeEmps(){ return db.emps.filter(e=>e.active!==false); }
 function empById(id){ return db.emps.find(e=>e.id===id)||null; }
 function empName(id){ const e=empById(id); return e?e.name:id; }
@@ -1296,12 +1424,167 @@ function monthStats(key,emp){
     else if(isOff(c.code)){ s.folgas++; if(wdOf(d)===0) s.domFolga++; }
     if(c.p && c.p.marks.length) s.dias++;
     s.worked+=c.worked; s.extra+=c.extra; s.late+=c.late; s.pausa+=c.pausa;
-    if(c.status==='falta') s.faltas++;
+    if(c.status==='falta' || c.code==='FA') s.faltas++;
     if(d<=todayISO()) s.saldo+=c.saldo;
   });
   return s;
 }
 function monthAll(key){ return activeEmps().map(e=>({emp:e, s:monthStats(key,e.id)})); }
+/* ============================================================
+   FOLHA DE PAGAMENTO (CLT e PJ)
+   · salário/30 por dia de falta · hora = salário ÷ divisor (220 p/ 44h)
+   · INSS progressivo 2026 (Portaria Interministerial MPS/MF nº 13/2026)
+   · IRRF 2026 com a redução da Lei 15.270/2025 (isento até R$ 5.000)
+   · VT: desconto de até 6% do salário-base (Lei 7.418/1985, art. 4º)
+   · adiantamento no dia 15 · saldo no 5º dia útil (CLT, art. 459, §1º)
+   · PJ: sem INSS, IRRF, desconto de VT, DSR e FGTS
+   ============================================================ */
+function payCfg(){ return db.cfg.payroll; }
+function r2(n){ return Math.round((+n||0)*100)/100; }
+function brl(n){ return (+n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function brlS(n){ return (n<0?'− ':'')+brl(Math.abs(n)); }
+function parseMoney(s){ s=String(s==null?'':s).replace(/[R$\s]/g,''); if(!s) return 0; if(s.indexOf(',')>=0) s=s.replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?0:n; }
+function moneyIn(n){ return n? String(r2(n).toFixed(2)).replace('.',',') : ''; }
+function parseHours(s){                       /* "1:30" · "1,5" · "90min" → minutos */
+  s=String(s||'').trim().toLowerCase(); if(!s) return 0;
+  if(/min/.test(s)) return Math.round(parseFloat(s)||0);
+  if(s.indexOf(':')>=0){ const p=s.split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+  if(s.indexOf('h')>=0){ const p=s.split('h'); return (+p[0].replace(',','.')||0)*60+(+p[1]||0); }
+  return Math.round((parseFloat(s.replace(',','.'))||0)*60);
+}
+function fmtDM(iso){ const d=dOf(iso); return pad(d.getDate())+'/'+pad(d.getMonth()+1); }
+
+/* ---------- feriados nacionais e dias úteis ---------- */
+function easter(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+  h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  return new Date(y,mo-1,da); }
+const _hol={};
+function holidays(y){
+  if(_hol[y]) return _hol[y];
+  const s=new Set(['01-01','04-21','05-01','09-07','10-12','11-02','11-15','11-20','12-25'].map(x=>y+'-'+x));
+  const sf=easter(y); sf.setDate(sf.getDate()-2); s.add(isoOf(sf));          /* Sexta-feira Santa */
+  return (_hol[y]=s);
+}
+function isHoliday(iso){
+  if(holidays(+iso.slice(0,4)).has(iso)) return true;
+  const loc=(db.cfg.payroll&&db.cfg.payroll.localHolidays)||[];
+  return loc.indexOf(iso)>=0 || loc.indexOf(iso.slice(5))>=0;
+}
+const HOL_NAMES={'01-01':'Confraternização','04-21':'Tiradentes','05-01':'Dia do Trabalho','09-07':'Independência','10-12':'N. Sra. Aparecida',
+  '11-02':'Finados','11-15':'Proclamação da República','11-20':'Consciência Negra','12-25':'Natal'};
+function holName(iso){ if(HOL_NAMES[iso.slice(5)]) return HOL_NAMES[iso.slice(5)]; const sf=easter(+iso.slice(0,4)); sf.setDate(sf.getDate()-2); return isoOf(sf)===iso?'Sexta-feira Santa':'feriado local'; }
+function holidaysIn(key){ return daysOfMonth(key).filter(isHoliday); }
+/* dias úteis do mês para VT e DSR: seg–sáb (ou seg–sex), sem feriados */
+function isWorkday(iso){ const w=wdOf(iso); return w!==0 && !(w===6 && payCfg().satUtil===false) && !isHoliday(iso); }
+function workdaysIn(key){ return daysOfMonth(key).filter(isWorkday); }
+/* dia útil p/ pagamento: segunda a sábado, fora domingo e feriado (IN SRT/MTE 1/1989) */
+function isBizDay(iso){ return wdOf(iso)!==0 && !isHoliday(iso); }
+function nthBizDay(key,n){ let c=0; for(const d of daysOfMonth(key)){ if(isBizDay(d) && ++c===n) return d; } return key+'-05'; }
+function payDayOf(key){ return nthBizDay(nextMonthKey(key),5); }                       /* 5º dia útil do mês seguinte */
+function advDayOf(key){ let d=key+'-'+pad(payCfg().advDay||15); while(!isBizDay(d)) d=addDays(d,-1); return d; }   /* cai no domingo/feriado → antecipa */
+
+/* ---------- impostos ---------- */
+function inssCalc(base){
+  let t=0, prev=0;
+  for(const f of payCfg().inss){ if(base<=prev) break; t+=(Math.min(base,f[0])-prev)*f[1]/100; prev=f[0]; }
+  return r2(t);
+}
+function irrfTax(base){ if(base<=0) return 0; for(const f of IRRF_TABLE){ if(base<=f[0]) return Math.max(0,base*f[1]/100-f[2]); } return 0; }
+function irrfCalc(gross,inss,deps){
+  const legal=irrfTax(gross-inss-(deps||0)*IRRF_DEP), simpl=irrfTax(gross-IRRF_SIMPL);
+  let tax=Math.min(legal,simpl);
+  /* Lei 15.270/2025: redução que zera o IR até R$ 5.000 e some aos poucos até R$ 7.350 */
+  let red=0;
+  if(gross<=5000) red=tax; else if(gross<=7350) red=Math.max(0,978.62-0.133145*gross);
+  return r2(Math.max(0,tax-red));
+}
+
+/* ---------- a conta do mês de uma pessoa ---------- */
+function payEntries(key,empId){ return db.pay.filter(x=>x.ym===key && x.emp===empId); }
+function payroll(key,empId){
+  const e=empById(empId), P=payCfg(), clt=isCLT(e);
+  const sal=+e.salary||0, dia=sal/30, hora=sal/(+P.divisor||220);
+  const days=daysOfMonth(key), today=todayISO();
+  const faltas=[], atest=[], ferias=[]; let work=0; const unknown=[];
+  days.forEach(d=>{ const c=codeOf(d,empId);
+    if(!c) unknown.push(d);
+    else if(c==='FA') faltas.push(d); else if(c==='AT') atest.push(d); else if(c==='FE') ferias.push(d); else if(isWork(c)) work++; });
+  if(unknown.length){                         /* dias sem escala montada: estima pela folga fixa / escala da pessoa */
+    const off=(e.prefOff||[]);
+    work += (e.fixedOff && off.length) ? unknown.filter(d=>off.indexOf(wdOf(d))<0).length : Math.round(unknown.length*scaleDays(e)/7);
+  }
+  const hasSched=!unknown.length;
+  /* horas do ponto (só dias fechados) */
+  const xmin={}; let menos=0, xPonto=0;
+  const addX=(pct,m)=>{ xmin[pct]=(xmin[pct]||0)+m; };
+  const xPct=clt?+P.extraPct:+P.pjExtraPct, offPct=clt?+P.extraOffPct:+P.pjExtraPct;
+  days.filter(d=>d<=today).forEach(d=>{
+    const c=dayCalc(d,empId);
+    if(P.horasPonto && c.p && c.p.marks.length && c.state==='encerrado'){
+      if(c.saldo>0){ addX(isWork(c.code)?xPct:offPct, c.saldo); xPonto+=c.saldo; }
+      else if(c.saldo<0 && isWork(c.code)) menos+=-c.saldo;
+    }
+    if(P.faltaPonto && c.status==='falta' && d<today){ faltas.push(d); work--; }
+  });
+  const menosPonto=menos;
+  /* lançamentos manuais */
+  const ents=payEntries(key,empId);
+  let bonus=0, vales=0, desc=0, adiantOv=null; const paid={};
+  ents.forEach(x=>{
+    if(x.kind==='extra') addX(x.pct==null?xPct:+x.pct, +x.qty||0);
+    else if(x.kind==='menos') menos+=+x.qty||0;
+    else if(x.kind==='bonus') bonus+=+x.amount||0;
+    else if(x.kind==='vale') vales+=+x.amount||0;
+    else if(x.kind==='desc') desc+=+x.amount||0;
+    else if(x.kind==='adiant') adiantOv=+x.amount||0;
+    else if(x.kind==='pago') paid[x.note||'saldo']=x;
+  });
+  /* proventos */
+  let valExtras=0; const extras=[];
+  Object.keys(xmin).forEach(p=>{ const m=xmin[p]; if(!m) return; const v=r2(m/60*hora*(1+(+p)/100)); valExtras+=v; extras.push({pct:+p, min:m, v}); });
+  let uteis=0, repousos=0; days.forEach(d=>{ if(isBizDay(d)) uteis++; else repousos++; });   /* DSR: seg–sáb úteis × domingos+feriados */
+  const dsrEx = (clt && P.dsrExtras && valExtras && uteis) ? r2(valExtras/uteis*repousos) : 0;
+  const valFaltas=r2(faltas.length*dia);
+  const semanas=new Set(faltas.map(weekKey)).size;
+  const dsrLost=(clt && P.dsrFalta) ? r2(semanas*dia) : 0;
+  const valMenos=r2(menos/60*hora);
+  const bruto=r2(sal+valExtras+dsrEx+bonus);
+  const base=r2(Math.max(0, bruto-valFaltas-dsrLost-valMenos));
+  const inss=clt?inssCalc(base):0;
+  const irrf=(clt && P.irrf)?irrfCalc(base,inss,+e.deps||0):0;
+  /* benefícios */
+  /* VT: dias úteis do mês (sem feriados) menos faltas, atestados e férias que caem neles */
+  /* VT antecipado (padrão): o depósito do 5º dia útil leva o VT do mês seguinte — dias úteis de lá
+     menos as faltas/atestados/férias deste mês (que já tinham sido pagos e não foram usados) */
+  const vtKey=(P.vtNext!==false && P.vtBase!=='escala')? nextMonthKey(key) : key;
+  const uteisMes=workdaysIn(vtKey);
+  const ausUteis=faltas.concat(atest,ferias).filter(isWorkday).length;
+  const vtDays=P.vtBase==='escala'? Math.max(0,work) : Math.max(0, uteisMes.length-ausUteis);
+  const vtTotal=r2((+e.vtDay||0)*vtDays);
+  const vtDesc=clt?r2(Math.min(sal*(+P.vtPct||0)/100, vtTotal)):0;
+  const food=+e.food||0;
+  const foodDesc=(P.foodFalta && faltas.length && (work+faltas.length)) ? r2(food/(work+faltas.length)*faltas.length) : 0;
+  const benef=r2(food-foodDesc+vtTotal);
+  const advPct=(e.advPct==null||e.advPct==='')?+P.advPct:+e.advPct;
+  const adiant=adiantOv!=null?r2(adiantOv):r2(sal*advPct/100);
+  const liquido=r2(base-inss-irrf-vtDesc-vales-desc);
+  const saldo=r2(liquido-adiant);
+  const depositar=r2(saldo+(P.payBenefits?benef:0));
+  const fgts=clt?r2(base*(+P.fgts||0)/100):0;
+  return {e, clt, sal, dia, hora, hasSched, work, vtDays, faltas, atest, ferias, semanas, extras, valExtras:r2(valExtras), xPonto, menos, menosPonto,
+    dsrEx, valFaltas, dsrLost, valMenos, bonus, bruto, base, inss, irrf, vtTotal, vtDesc, food, foodDesc, benef,
+    adiant, adiantOv:adiantOv!=null, advPct, vales, desc, liquido, saldo, depositar, fgts, custo:r2(base+benef+fgts),
+    paid, ents, payDay:payDayOf(key), advDay:advDayOf(key), uteis, repousos, uteisMes:uteisMes.length, ausUteis, vtKey, nAtest:atest.length};
+}
+function payrollAll(key){ return activeEmps().map(e=>payroll(key,e.id)); }
+function csvFolha(key){
+  const L=[['Funcionario','Vinculo','Salario base','Faltas (dias)','Desconto faltas','DSR perdido','Horas extras','DSR s/ extras','Bonus','Atrasos','Base','INSS','IRRF','Desc. VT 6%','Vales','Outros desc.','Liquido do mes','Adiantamento (dia '+(payCfg().advDay||15)+')','Saldo salario','VA (alimentacao)','VT','A depositar ('+fmtDM(payDayOf(key))+')','FGTS (empresa)']];
+  const n=v=>String(r2(v).toFixed(2)).replace('.',',');
+  payrollAll(key).forEach(p=>L.push([p.e.name, p.clt?'CLT':'PJ', n(p.sal), p.faltas.length, n(p.valFaltas), n(p.dsrLost), n(p.valExtras), n(p.dsrEx), n(p.bonus), n(p.valMenos),
+    n(p.base), n(p.inss), n(p.irrf), n(p.vtDesc), n(p.vales), n(p.desc), n(p.liquido), n(p.adiant), n(p.saldo), n(p.food-p.foodDesc), n(p.vtTotal), n(p.depositar), n(p.fgts)]));
+  dl('coquin-folha-'+key+'.csv', L.map(r=>r.join(';')).join('\n'));
+}
+
 
 /* ---------- CSV ---------- */
 function dl(name,text){
@@ -1335,7 +1618,14 @@ function csvEspelho(key){
    NUVEM (Supabase)
    ============================================================ */
 const Cloud={
-  client:null, on:false, email:null,
+  client:null, on:false, email:null, role:null,
+  async loadRole(){
+    try{
+      const r=await this.client.rpc('my_role');
+      if(r.error){ this.role={admin:true, emp:null, legacy:true}; return; }     /* SETUP v4 ainda não rodou */
+      this.role={admin:!!(r.data&&r.data.admin), emp:(r.data&&r.data.emp)||null};
+    }catch(e){ this.role={admin:true, emp:null, legacy:true}; }
+  },
   ready(){ return typeof supabase!=='undefined' && !!SUPABASE_URL && !!SUPABASE_ANON; },
   init(){ if(this.client||!this.ready()) return this.client; this.client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}); return this.client; },
   async pull(){
@@ -1351,9 +1641,14 @@ const Cloud={
     if(err && err.error) throw err.error;
     const emps=r[0].data||[], sched=r[1].data||[], swaps=r[2].data||[], punch=r[3].data||[], cfg=r[4].data;
     if(emps.length){
+      const prevE={}; db.emps.forEach(x=>prevE[x.id]=x);
+      const pv=(row,col,id,key,def)=>(row[col]!=null)?+row[col]:(prevE[id]&&prevE[id][key]!=null?prevE[id][key]:def);
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
         active:e.active!==false, scale:e.scale||'6x1', start:e.start_t||'', end:e.end_t||'', lunch:(e.lunch==null?60:+e.lunch),
-        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||''}));
+        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'', login:e.login_email||'',
+        photo:(e.photo!==undefined? (e.photo||null) : (prevE[e.id]?prevE[e.id].photo:null)),
+        salary:pv(e,'salary',e.id,'salary',undefined), food:pv(e,'food',e.id,'food',0), vtDay:pv(e,'vt_day',e.id,'vtDay',0),
+        advPct:(e.adv_pct!=null?+e.adv_pct:(prevE[e.id]?prevE[e.id].advPct:null)), deps:pv(e,'deps',e.id,'deps',0)}));
     }else if(db.emps.length){ for(const e of db.emps) await this.pushEmp(e); }
     db.sched=sched.map(s=>({date:s.date, emp:s.emp, shift:normCode(s.shift), locked:!!s.locked, src:s.src||'auto', note:s.note||'', synced:true}));
     db.swaps=swaps.map(s=>({id:s.id, at:s.created_at, emp:s.emp, from:s.from_date, to:s.to_date, cover:s.cover||null,
@@ -1362,16 +1657,75 @@ const Cloud={
     if(cfg){
       if(cfg.demand && typeof cfg.demand[0]!=='object') db.cfg.demand=cfg.demand;
       if(cfg.rules) db.cfg.rules=Object.assign({},DEFAULT_RULES,cfg.rules);
+      if(cfg.payroll) db.cfg.payroll=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PAY)),cfg.payroll);
     }
+    try{                                               /* atestados enviados pelo portal */
+      const rd=await c.from('absence_docs').select('*').order('created_at',{ascending:false});
+      if(!rd.error){
+        const local=db.docs.filter(x=>!x.synced);
+        db.docs=(rd.data||[]).map(x=>({id:x.id, at:x.created_at, emp:x.emp, from:x.date_from, to:x.date_to||x.date_from, kind:x.kind||'atestado',
+          status:x.status||'pendente', note:x.note||'', path:x.file_path||'', name:x.file_name||'', resolvedAt:x.resolved_at||'', synced:true}));
+        local.forEach(x=>{ if(!db.docs.find(y=>y.id===x.id)) db.docs.unshift(x); });
+      }
+    }catch(e){}
+    if(!isAdmin()){                                    /* funcionário: nada de salário/folha no aparelho */
+      db.pay=[]; db.emps.forEach(e=>{ e.salary=0; e.food=0; e.vtDay=0; e.advPct=null; e.deps=0; e.pin=''; });
+      Store.save(db); return;
+    }
+    try{                                               /* salários (v4: tabela só de gerente) */
+      const rs=await c.from('payroll_people').select('*');
+      if(!rs.error){ this.peopleOK=true;
+        (rs.data||[]).forEach(x=>{ const e=db.emps.find(y=>y.id===x.emp); if(!e) return;
+          if(x.salary!=null) e.salary=+x.salary; if(x.food!=null) e.food=+x.food; if(x.vt_day!=null) e.vtDay=+x.vt_day;
+          e.advPct=x.adv_pct==null?null:+x.adv_pct; if(x.deps!=null) e.deps=+x.deps; });
+      }else this.peopleOK=false;
+    }catch(e){ this.peopleOK=false; }
+    /* folha: tabela própria; se ainda não rodaram o SETUP.sql novo, segue local */
+    try{
+      const rp=await c.from('payroll_entries').select('*');
+      if(rp.error){ this.payMissing=true; }
+      else{
+        this.payMissing=false;
+        const local=db.pay.filter(x=>!x.synced);
+        db.pay=(rp.data||[]).map(x=>({id:x.id, ym:x.ym, emp:x.emp, kind:x.kind, date:x.date||'', qty:x.qty==null?null:+x.qty, pct:x.pct==null?null:+x.pct,
+          amount:x.amount==null?null:+x.amount, note:x.note||'', synced:true}));
+        local.forEach(x=>{ if(!db.pay.find(y=>y.id===x.id)) db.pay.push(x); });
+      }
+    }catch(e){ this.payMissing=true; }
     Store.save(db);
   },
-  async pushEmp(e){ if(!this.on) return;
-    try{ await this.client.from('shift_employees').upsert({id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
+  async pushEmp(e){ if(!this.on || !isAdmin()) return;
+    const row={id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
       active:e.active!==false, scale:e.scale||'6x1', start_t:e.start, end_t:e.end, lunch:e.lunch||0, contract:e.contract||'clt',
-      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null},{onConflict:'id'}); }
-    catch(err){ offlineToast(); } },
+      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null, login_email:e.login||null, photo:photoOK(e.photo)?e.photo:null};
+    const pay={salary:+e.salary||0, food:+e.food||0, vt_day:+e.vtDay||0, adv_pct:e.advPct==null?null:+e.advPct, deps:+e.deps||0};
+    try{
+      let r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'});
+      if(r.error && /column|schema/i.test(r.error.message||'')){            /* SETUP.sql v4 ainda não rodou */
+        delete row.login_email; delete row.photo; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast();
+      }
+      if(r.error) throw r.error;
+      /* salário: tabela só de gerente (v4); sem ela, cai nas colunas antigas */
+      let q=await this.client.from('payroll_people').upsert(Object.assign({emp:e.id},pay),{onConflict:'emp'});
+      if(q.error){ q=await this.client.from('shift_employees').update(pay).eq('id',e.id); if(q.error) setupToast(); }
+    }catch(err){ offlineToast(); } },
+  async pushPay(x){ if(!this.on || !isAdmin()) return;
+    try{ const {error}=await this.client.from('payroll_entries').upsert({id:x.id, ym:x.ym, emp:x.emp, kind:x.kind, date:x.date||null,
+        qty:x.qty==null?null:x.qty, pct:x.pct==null?null:x.pct, amount:x.amount==null?null:x.amount, note:x.note||''},{onConflict:'id'});
+      if(error){ if(/relation|schema|table/i.test(error.message||'')) setupToast(); else throw error; return; }
+      x.synced=true; Store.save(db); }
+    catch(e){ offlineToast(); } },
+  async pushDoc(x){ if(!this.on) return;
+    const row={id:x.id, emp:x.emp, date_from:x.from, date_to:x.to, kind:x.kind||'atestado', status:x.status, note:x.note||'',
+      file_path:x.path||null, file_name:x.name||null, resolved_at:x.resolvedAt||null};
+    try{
+      const r= isAdmin()? await this.client.from('absence_docs').upsert(row,{onConflict:'id'}) : await this.client.from('absence_docs').insert(row);
+      if(r.error){ if(/relation|schema|table/i.test(r.error.message||'')) setupToast(); else throw r.error; return; }
+      x.synced=true; Store.save(db);
+    }catch(e){ offlineToast(); } },
+  async delPay(id){ if(!this.on) return; try{ await this.client.from('payroll_entries').delete().eq('id',id); }catch(e){} },
   async delEmp(id){ if(!this.on) return; try{ await this.client.from('shift_employees').delete().eq('id',id); }catch(e){} },
-  async pushSchedule(){ if(!this.on) return;
+  async pushSchedule(){ if(!this.on || !isAdmin()) return;
     const dirty=db.sched.filter(r=>!r.synced);
     if(!dirty.length) return;
     try{
@@ -1383,22 +1737,33 @@ const Cloud={
       dirty.forEach(r=>r.synced=true); Store.save(db);
     }catch(e){ offlineToast(); } },
   async pushSwap(s){ if(!this.on) return;
+    if(!isAdmin()){                                    /* funcionário só cria o pedido */
+      try{ const {error}=await this.client.from('shift_swaps').insert({id:s.id, emp:s.emp, from_date:s.from, to_date:s.to, cover:s.cover,
+        status:'pendente', reason:s.reason||'', changes:s.changes||[], warns:s.warns||[]});
+        if(error && !/duplicate/i.test(error.message||'')) throw error; s.synced=true; }catch(e){ offlineToast(); }
+      return;
+    }
     try{ await this.client.from('shift_swaps').upsert({id:s.id, emp:s.emp, from_date:s.from, to_date:s.to, cover:s.cover,
       status:s.status, reason:s.reason||'', changes:s.changes||[], warns:s.warns||[], resolved_at:s.resolvedAt||null},{onConflict:'id'}); s.synced=true; }
     catch(e){ offlineToast(); } },
-  async pushPunch(p){ if(!this.on) return;
+  async pushPunch(p){ if(!this.on || !isAdmin()) return;
     try{ const {error}=await this.client.from('time_punches').upsert({date:p.date, emp:p.emp, marks:p.marks||[], note:p.note||''},{onConflict:'date,emp'});
       if(error) throw error; p.synced=true; Store.save(db); }
     catch(e){ offlineToast(); } },
-  async pushCfg(){ if(!this.on) return;
-    try{ await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules},{onConflict:'id'}); }
-    catch(e){ offlineToast(); } },
+  async pushCfg(){ if(!this.on || !isAdmin()) return;
+    try{
+      let r=await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules, payroll:db.cfg.payroll},{onConflict:'id'});
+      if(r.error && /column|schema/i.test(r.error.message||'')){ r=await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules},{onConflict:'id'}); setupToast(); }
+      if(r.error) throw r.error;
+    }catch(e){ offlineToast(); } },
   subscribe(){
     try{ this.client.channel('coquin-escala-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_schedule'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'time_punches'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_swaps'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_employees'},()=>this.softPull())
+      .on('postgres_changes',{event:'*',schema:'public',table:'payroll_entries'},()=>this.softPull())
+      .on('postgres_changes',{event:'*',schema:'public',table:'absence_docs'},()=>this.softPull())
       .subscribe(); }catch(e){}
   },
   softPull(){ this.pull().then(render).catch(()=>{}); }
@@ -1406,6 +1771,7 @@ const Cloud={
 let toastT=null;
 function toast(html){ const t=$('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
 function offlineToast(){ toast('Sem conexão — salvo neste aparelho'); }
+function setupToast(){ toast('Folha salva só neste aparelho — rode o SETUP.sql novo no Supabase'); }
 function saveLocal(){ Store.save(db); }
 
 /* ============================================================
@@ -1462,7 +1828,7 @@ function renderEscGrid(){
   const rows=monthRows(viewMonth).length;
   let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">Escala de '+monthName(viewMonth)+'</div>'
     +'<div class="gs">'+(rows?(escView==='cal'?'quem está na loja em cada dia':'arraste para ver o mês'):'ainda não gerada')+'</div></div>'
-    +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">Gerar</button></div>'
+    +'<button class="btn-ghost admin-only" id="btnGen" style="white-space:nowrap">Gerar</button></div>'
     +'<div style="padding:10px 14px 0"><div class="viewtog" id="escTog" style="display:inline-flex">'
     +'<button data-ev="cal" class="'+(escView==='cal'?'sel':'')+'">Calendário</button>'
     +'<button data-ev="grid" class="'+(escView==='grid'?'sel':'')+'">Grade</button></div></div>';
@@ -1640,6 +2006,7 @@ function openGenSheet(){
 }
 function openCellSheet(date,empId){
   const e=empById(empId); if(!e) return;
+  if(!isAdmin()){ toast('Só o gerente altera a escala — peça uma troca na aba Trocas'); return; }
   const cur=codeOf(date,empId), r=schedOf(date,empId);
   let h='<div style="display:flex;align-items:center;gap:11px;margin-bottom:6px">'+avatar(e)
     +'<div><div style="font-size:15px;font-weight:800">'+esc(e.name)+'</div>'
@@ -1708,10 +2075,11 @@ function openTeamSheet(){
     $('teamAdd').addEventListener('click',()=>openEmpSheet(null));
   });
 }
-function openEmpSheet(id){
-  const e=id?empById(id):{id:'',name:'',role:'Atendimento',color:'#446349',active:true,scale:'6x1',start:'15:00',end:'23:00',lunch:60,contract:'clt',prefOff:[],pin:'',admission:''};
+function openEmpSheet(id,payFocus){
+  const e=id?empById(id):{id:'',name:'',role:'Atendimento',color:'#446349',active:true,scale:'6x1',start:'15:00',end:'23:00',lunch:60,contract:'clt',prefOff:[],pin:'',admission:'',salary:0,food:0,vtDay:0,advPct:null,deps:0};
   if(!e) return;
-  let h='<div class="fld"><label>Nome</label><input id="epName" value="'+esc(e.name)+'" placeholder="ex.: Wagner"></div>'
+  let h='<div class="fld"><label>Foto</label><div id="epPhotoBox">'+photoEditor(e,'ep')+'</div><div class="hint">Foto real da pessoa (ela também pode colocar pelo portal). Sem foto, fica um bonequinho.</div></div>'
+   +'<div class="fld"><label>Nome</label><input id="epName" value="'+esc(e.name)+'" placeholder="ex.: Wagner"></div>'
    +'<div class="fld"><label>Cargo</label><input id="epRole" value="'+esc(e.role||'')+'" placeholder="Atendimento"></div>'
    +'<div class="fld"><label>Vínculo</label><div class="opt" id="epContract">'
    +'<button data-v="clt" class="'+(isCLT(e)?'sel':'')+'"><span class="ot">CLT</span><span class="os">entra nas regras da CLT</span></button>'
@@ -1728,6 +2096,22 @@ function openEmpSheet(id){
    +WD.map((w,i)=>'<button data-w="'+i+'" class="'+((e.prefOff||[]).indexOf(i)>=0?'sel':'')+'">'+w+'</button>').join('')
    +'</div><div class="hint" id="epOffHint">—</div></div>'
    +'<div class="switch"><div class="sl">Folga fixa toda semana<small>sempre nos mesmos dias; o domingo de folga entra no lugar de um deles quando é a vez</small></div><button class="sw '+(e.fixedOff?'on':'')+'" id="epFixed"></button></div>'
+   +'<div class="section-title" style="margin:20px 2px 2px">Acesso ao app (ponto pelo próprio celular)</div>'
+   +(!id? '<div class="hint">Salve a pessoa primeiro; depois volte aqui para criar o acesso.</div>'
+     : e.login? '<div class="note" style="margin-top:8px">Usuário: <b>'+esc(userOf(e.login))+'</b><br>A pessoa entra com esse usuário e a senha, bate o próprio ponto e troca a senha em <b>Minha conta</b>. Esqueceu a senha? Redefina no Supabase (Authentication → Users).</div>'
+       +'<div class="btn-row"><button class="btn-ghost" id="epUnlink">Desligar este acesso</button></div>'
+     : !Cloud.on? '<div class="hint">Entre com o login do gerente (sincronizado) para criar o acesso.</div>'
+     : '<div class="fld2"><div class="fld"><label>Usuário</label><input id="epUser" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(slug(e.name))+'"></div>'
+       +'<div class="fld"><label>Senha</label><input id="epUPass" autocapitalize="none" autocorrect="off" placeholder="mín. 6 caracteres"></div></div>'
+       +'<button class="btn-ghost" id="epMkLogin" style="width:100%;margin-top:10px">Criar acesso de '+esc(e.name)+'</button>'
+       +'<div class="hint">Passe o usuário e a senha para a pessoa. Ela só vê o próprio ponto, a escala e as trocas — salário e folha, não.</div>')
+   +'<div class="section-title" id="epPayT" style="margin:20px 2px 2px">Salário e benefícios</div>'
+   +'<div class="fld2"><div class="fld"><label>Salário (R$)</label><input id="epSal" inputmode="decimal" value="'+moneyIn(e.salary)+'" placeholder="2.000,00"></div>'
+   +'<div class="fld"><label>Alimentação/mês</label><input id="epFood" inputmode="decimal" value="'+moneyIn(e.food)+'" placeholder="400,00"></div></div>'
+   +'<div class="fld2"><div class="fld"><label>VT por dia (R$)</label><input id="epVt" inputmode="decimal" value="'+moneyIn(e.vtDay)+'" placeholder="10,80"></div>'
+   +'<div class="fld"><label>Adiantamento (%)</label><input id="epAdv" inputmode="decimal" value="'+(e.advPct==null?'':String(e.advPct).replace('.',','))+'" placeholder="'+payCfg().advPct+' (padrão)"></div></div>'
+   +'<div class="fld" id="epDepsBox"><label>Dependentes no IR</label><input id="epDeps" type="number" inputmode="numeric" min="0" value="'+(e.deps||0)+'"></div>'
+   +'<div class="hint" id="epPayHint"></div>'
    +'<div class="fld2"><div class="fld"><label>Cor</label><input id="epColor" type="color" value="'+(e.color||'#446349')+'" style="padding:6px;height:48px"></div>'
    +'<div class="fld"><label>Senha do ponto</label><input id="epPin" inputmode="numeric" maxlength="6" value="'+esc(e.pin||'')+'" placeholder="4 dígitos"></div></div>'
    +'<div class="switch"><div class="sl">Ativo na escala<small>desligue em vez de excluir quem saiu</small></div><button class="sw '+(e.active!==false?'on':'')+'" id="epActive"></button></div>'
@@ -1735,6 +2119,15 @@ function openEmpSheet(id){
   if(id) h+='<div class="btn-row"><button class="btn-ghost btn-danger" id="epDel">Excluir da equipe</button></div>';
   openSheet(id?'Editar pessoa':'Nova pessoa', h, ()=>{
     let active=e.active!==false, prefOff=(e.prefOff||[]).slice(), scale=e.scale, contract=e.contract||'clt', fixedOff=!!e.fixedOff;
+    let photo=photoOK(e.photo)?e.photo:null;
+    function bindPhoto(){
+      $('epFile').addEventListener('change', async ev=>{
+        try{ photo=await readPhoto(ev.target.files[0]); $('epPhotoBox').innerHTML=photoEditor(Object.assign({},e,{photo, name:$('epName').value||e.name}),'ep'); bindPhoto(); }
+        catch(err){ toast(esc(err.message)); }
+      });
+      if($('epDel')) $('epDel').addEventListener('click',()=>{ photo=null; $('epPhotoBox').innerHTML=photoEditor(Object.assign({},e,{photo:null}),'ep'); bindPhoto(); });
+    }
+    bindPhoto();
     function offHint(){
       const q=7-(SCALES[scale]?SCALES[scale].days:6);
       const el=$('epOffHint'); if(!el) return;
@@ -1768,6 +2161,38 @@ function openEmpSheet(id){
       b.classList.toggle('sel',prefOff.indexOf(w)>=0); offHint();
     }));
     $('epFixed').addEventListener('click',()=>{ fixedOff=!fixedOff; $('epFixed').classList.toggle('on',fixedOff); offHint(); });
+    function payHint(){
+      const sal=parseMoney($('epSal').value), clt=contract!=='pj';
+      $('epDepsBox').classList.toggle('hide',!clt);
+      if(!sal){ $('epPayHint').textContent='O salário entra na aba Folha (faltas, extras, adiantamento e saldo).'; return; }
+      const inss=clt?inssCalc(sal):0, ir=clt&&payCfg().irrf?irrfCalc(sal,inss,+$('epDeps').value||0):0;
+      $('epPayHint').textContent= clt
+        ? 'INSS de '+brl(inss)+(ir?' · IRRF '+brl(ir):' · sem IR')+' · desconto de VT até '+brl(sal*payCfg().vtPct/100)+' · dia vale '+brl(sal/30)
+        : 'PJ: sem INSS, IR ou desconto de VT · dia vale '+brl(sal/30);
+    }
+    ['epSal','epDeps'].forEach(k=>$(k).addEventListener('input',payHint));
+    Array.prototype.forEach.call(document.querySelectorAll('#epContract button'),b=>b.addEventListener('click',payHint));
+    payHint();
+    if($('epMkLogin')) $('epMkLogin').addEventListener('click', async()=>{
+      const b=$('epMkLogin'); b.disabled=true; b.textContent='Criando…';
+      const user=$('epUser').value, pass=$('epUPass').value;
+      const r=await createEmpLogin(e,user,pass);
+      b.disabled=false; b.textContent='Criar acesso de '+e.name;
+      if(r.error){ toast(esc(r.error)); return; }
+      openSheet('Acesso criado','<div class="receipt"><div class="rt">ACESSO DE '+esc(e.name.toUpperCase())+'</div>'
+        +'<div class="rr"><span>Link</span><b>'+esc(location.origin+location.pathname)+'</b></div>'
+        +'<div class="rr"><span>Usuário</span><b>'+esc(userOf(r.email))+'</b></div>'
+        +(r.existed?'<div class="rr"><span>Senha</span><b>a que já existia</b></div>':'<div class="rr"><span>Senha</span><b>'+esc(pass)+'</b></div>')+'</div>'
+        +(r.confirm?'<div class="banner warn"><span>O Supabase está pedindo confirmação de e-mail. Desligue em <b>Authentication → Sign In / Providers → Email → Confirm email</b> para o login funcionar.</span></div>':'')
+        +(r.existed?'<div class="note">Esse usuário já existia — foi só ligado a '+esc(e.name)+'.</div>':'')
+        +'<div class="note">Mande para a pessoa. No primeiro acesso ela pode trocar a senha em <b>Minha conta</b>.</div>'
+        +'<button class="btn btn-green" id="akOk" style="margin-top:14px">Pronto</button>',()=>{ $('akOk').addEventListener('click',()=>{ closeSheet(); render(); }); });
+    });
+    if($('epUnlink')) $('epUnlink').addEventListener('click', async()=>{
+      if(!confirm('Desligar o acesso de '+e.name+'? O login para de funcionar neste app.')) return;
+      e.login=''; saveLocal(); await Cloud.pushEmp(e); closeSheet(); render(); toast('Acesso desligado');
+    });
+    if(payFocus) setTimeout(()=>{ const t=$('epPayT'); if(t) t.scrollIntoView({block:'start'}); $('epSal').focus(); },320);
     calc(); offHint();
     $('epSave').addEventListener('click',()=>{
       const name=$('epName').value.trim();
@@ -1776,9 +2201,12 @@ function openEmpSheet(id){
       rec.name=name; rec.role=$('epRole').value.trim();
       rec.start=$('epStart').value||'10:00'; rec.end=$('epEnd').value||'19:00'; rec.lunch=+$('epLunch').value||0;
       rec.scale=scale; rec.contract=contract; rec.color=$('epColor').value; rec.pin=$('epPin').value.trim();
-      rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active;
+      rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active; rec.photo=photo;
+      rec.salary=parseMoney($('epSal').value); rec.food=parseMoney($('epFood').value); rec.vtDay=parseMoney($('epVt').value);
+      rec.advPct=$('epAdv').value.trim()===''?null:parseMoney($('epAdv').value); rec.deps=Math.max(0,+$('epDeps').value||0);
       if(!id) db.emps.push(rec);
       saveLocal(); Cloud.pushEmp(rec); closeSheet(); render(); toast('Equipe atualizada');
+      if(payFocus && id) openPayslip(id);
     });
     if(id) $('epDel').addEventListener('click',()=>{
       if(!confirm('Excluir '+e.name+' da equipe? A escala e o ponto já registrados continuam guardados.')) return;
@@ -1829,6 +2257,7 @@ function renderPonto(){
     $('pnClock').innerHTML='<div class="card empty" style="margin-top:18px"><div class="em">👥</div><p>Cadastre a equipe na aba Escala para bater ponto.</p></div>';
     ['pnWho','pnAction','pnTimeline','pnSummary','pnTeamToday'].forEach(k=>$(k).innerHTML=''); return;
   }
+  if(myEmp()) pnWho=myEmp();
   if(!empById(pnWho)) pnWho=emps[0].id;
   const e=empById(pnWho), c=dayCalc(d,pnWho), now=new Date(), p=c.p;
   let sched;
@@ -1845,7 +2274,7 @@ function renderPonto(){
   else if(c.state==='encerrado') pill='<div><span class="pill-state done">Expediente encerrado · '+hm(c.worked)+'</span></div>';
   $('pnClock').innerHTML='<div class="card clock"><div class="now">'+fmtClock(now)+'</div>'
     +'<div class="nowd">'+cap(now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}))+'</div>'+sched+pill+'</div>';
-  $('pnWho').innerHTML=emps.map(x=>'<button data-who="'+x.id+'" class="'+(x.id===pnWho?'sel':'')+'" style="--pc:'+x.color+'">'+avatar(x)+'<span class="nm">'+esc(x.name)+'</span></button>').join('');
+  $('pnWho').innerHTML=(myEmp()?[e]:emps).map(x=>'<button data-who="'+x.id+'" class="'+(x.id===pnWho?'sel':'')+'" style="--pc:'+x.color+'">'+avatar(x)+'<span class="nm">'+esc(x.name)+'</span></button>').join('');
   Array.prototype.forEach.call(document.querySelectorAll('[data-who]'),b=>b.addEventListener('click',()=>{ pnWho=b.getAttribute('data-who'); renderPonto(); }));
 
   const inIcon='<svg viewBox="0 0 24 24"><path d="M16 17l5-5-5-5M21 12H9M13 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1904,7 +2333,8 @@ function renderPonto(){
 /* escolher o tipo de saída — um toque registra */
 function askPause(empId){
   const now=fmtClock(new Date());
-  let h='<div class="timepick"><label>Horário da saída</label><input type="time" id="pzTime" value="'+now+'"></div>'
+  let h=myEmp()? '<div class="note" style="margin-top:4px">O horário é o do relógio do sistema, na hora do toque.</div>'
+    : '<div class="timepick"><label>Horário da saída</label><input type="time" id="pzTime" value="'+now+'"></div>'
    +'<div class="plist">';
   ['intervalo','lanche','pessoal','saida'].forEach(k=>{
     const t=PAUSES[k];
@@ -1914,13 +2344,14 @@ function askPause(empId){
   h+='</div><div class="note">A pausa rápida conta como tempo trabalhado; intervalo e saída pessoal são descontados da jornada do dia.</div>';
   openSheet('Registrar saída', h, ()=>{
     Array.prototype.forEach.call(document.querySelectorAll('[data-pz]'),b=>b.addEventListener('click',()=>{
-      const kind=b.getAttribute('data-pz'), t=$('pzTime').value||fmtClock(new Date());
+      const kind=b.getAttribute('data-pz'), t=myEmp()?null:($('pzTime').value||fmtClock(new Date()));
       closeSheet(); doPunch(empId,kind,t);
     }));
   });
 }
 function doPunch(empId,kind,time){
   const e=empById(empId); if(!e) return;
+  if(myEmp()){ empPunch(empId,kind); return; }       /* login individual: já é a própria pessoa */
   if(e.pin){
     openSheet('Confirmar identidade','<div class="fld"><label>Senha do ponto de '+esc(e.name)+'</label>'
       +'<input id="pinIn" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></div>'
@@ -1949,6 +2380,30 @@ function registerPunch(empId,kind,time){
       p.synced=false; saveLocal(); Cloud.pushPunch(p);
     },()=>{},{timeout:6000, maximumAge:60000}); }catch(err){}
   }
+}
+/* ponto do funcionário: hora do servidor, localização junto e conferência no banco (trava guard_punch) */
+let punching=false;
+async function empPunch(empId,kind){
+  if(punching) return;
+  if(!Cloud.on){ toast('Sem internet — o ponto precisa de conexão'); return; }
+  punching=true; toast('Registrando…');
+  try{
+    let now=new Date();
+    try{ const r=await Cloud.client.rpc('server_now'); if(!r.error && r.data) now=new Date(r.data); }catch(e){}
+    const geo=await new Promise(res=>{
+      if(!navigator.geolocation) return res(null);
+      try{ navigator.geolocation.getCurrentPosition(pos=>res({lat:+pos.coords.latitude.toFixed(5), lng:+pos.coords.longitude.toFixed(5)}),()=>res(null),{timeout:5000, maximumAge:60000}); }catch(e){ res(null); }
+    });
+    const d=isoOf(now), p=ensurePunch(d,empId);
+    const mark={t:fmtClock(now), iso:now.toISOString(), nsr:nextNSR(), kind:kind||'entrada'};
+    if(geo) mark.geo=geo;
+    const marks=p.marks.concat([mark]);
+    const {error}=await Cloud.client.from('time_punches').upsert({date:d, emp:empId, marks, note:p.note||''},{onConflict:'date,emp'});
+    if(error){ toast(esc(error.message||'Não foi possível registrar')); await Cloud.pull().catch(()=>{}); render(); return; }
+    p.marks=marks; p.synced=true; saveLocal();
+    renderPonto(); showReceipt(empId,mark);
+  }catch(e){ toast('Sem conexão — tente de novo'); }
+  finally{ punching=false; }
 }
 function showReceipt(empId,mark){
   const e=empById(empId), d=new Date(mark.iso);
@@ -1991,13 +2446,94 @@ function diffHtml(changes){
   });
   return h+'</div>';
 }
+/* ---------- atestados (portal do colaborador) ---------- */
+function docDays(x){ const out=[]; let d=x.from; while(d<=x.to && out.length<62){ out.push(d); d=addDays(d,1); } return out; }
+function docRange(x){ const n=docDays(x).length; return (x.from===x.to? cap(dayLabel(x.from)) : cap(dayLabel(x.from))+' a '+dayLabel(x.to))+' · <b>'+n+' dia'+(n===1?'':'s')+' de atestado</b>'; }
+function renderDocs(){
+  const mine=isAdmin()? db.docs : db.docs.filter(x=>x.emp===myEmp());
+  const list=mine.slice().sort((a,b)=>(a.status==='pendente'?0:1)-(b.status==='pendente'?0:1) || String(b.at).localeCompare(String(a.at))).slice(0,15);
+  const pend=mine.filter(x=>x.status==='pendente').length;
+  $('docSide').textContent=pend?pend+' para conferir':'';
+  $('docList').innerHTML = list.length? list.map(x=>{
+    const e=empById(x.emp)||{name:x.emp,color:'#95A096'};
+    const chip=x.status==='aprovado'?'<span class="chip ok">aprovado</span>':x.status==='recusado'?'<span class="chip bad">recusado</span>':'<span class="chip warn">'+(isAdmin()?'conferir':'aguardando o gerente')+'</span>';
+    return '<div class="sw-row">'+avatar(e)+'<div class="sw-b"><div class="t">'+esc(e.name)+' · atestado</div>'
+      +'<div class="d">'+docRange(x)+' · '+docDays(x).filter(isWorkday).length+' útil(eis) fora do VT de '+monthName(nextMonthKey(ymOf(x.from))).split(' de ')[0]+'</div>'+(x.note?'<div class="m">'+esc(x.note)+'</div>':'')
+      +'<div class="sw-acts">'+(x.path||x.fileData?'<button class="sw-no" data-docv="'+x.id+'">Ver anexo</button>':'')
+      +(isAdmin()&&x.status==='pendente'?'<button class="sw-ok" data-doca="'+x.id+'">Aprovar</button><button class="sw-no" data-docr="'+x.id+'">Recusar</button>':'')+'</div></div>'
+      +chip+'</div>';
+  }).join('') : '<div class="empty" style="padding:24px"><p>Nenhum atestado enviado.</p></div>';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-docv]'),b=>b.addEventListener('click',()=>viewDoc(b.getAttribute('data-docv'))));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-doca]'),b=>b.addEventListener('click',()=>resolveDoc(b.getAttribute('data-doca'),'aprovado')));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-docr]'),b=>b.addEventListener('click',()=>resolveDoc(b.getAttribute('data-docr'),'recusado')));
+}
+async function viewDoc(id){
+  const x=db.docs.find(y=>y.id===id); if(!x) return;
+  if(x.fileData){ const w=window.open(); if(w) w.document.write('<title>Atestado</title><img src="'+x.fileData+'" style="max-width:100%">'); return; }
+  if(!Cloud.on){ toast('Entre sincronizado para ver o anexo'); return; }
+  const w=window.open('','_blank');
+  const {data,error}=await Cloud.client.storage.from('atestados').createSignedUrl(x.path,600);
+  if(error||!data){ if(w) w.close(); toast('Não foi possível abrir o anexo'); return; }
+  if(w) w.location=data.signedUrl; else location.href=data.signedUrl;
+}
+function resolveDoc(id,status){
+  const x=db.docs.find(y=>y.id===id); if(!x) return;
+  if(status==='aprovado'){
+    docDays(x).forEach(d=>setSched(d,x.emp,'AT',{locked:true, src:'manual', note:'atestado enviado pelo app'}));
+    saveLocal(); Cloud.pushSchedule();
+  }
+  x.status=status; x.resolvedAt=new Date().toISOString(); x.synced=false; saveLocal(); Cloud.pushDoc(x);
+  render(); toast(status==='aprovado'?'Atestado aprovado · '+docDays(x).length+' dia(s) como atestado na escala':'Atestado recusado');
+}
+function openDocSheet(){
+  let who=myEmp()||'';
+  const h=(myEmp()?'':'<div class="fld"><label>De quem é o atestado</label>'+whoPicker('dcWho',who)+'</div>')
+   +'<div class="fld2"><div class="fld"><label>A partir do dia</label><input type="date" id="dcFrom" value="'+todayISO()+'"></div>'
+   +'<div class="fld"><label>Quantos dias de atestado</label><input type="number" inputmode="numeric" min="1" max="60" id="dcDays" value="1"></div></div>'
+   +'<div class="fld"><label>Até o dia</label><input type="date" id="dcTo" value="'+todayISO()+'"><div class="hint" id="dcHint"></div></div>'
+   +'<div class="fld"><label>Foto ou PDF do atestado</label><input type="file" id="dcFile" accept="image/*,application/pdf" style="padding:11px"></div>'
+   +'<div class="fld"><label>Observação</label><input id="dcNote" placeholder="opcional (ex.: CID, horário da consulta)"></div>'
+   +'<button class="btn btn-green" id="dcSave" style="margin-top:14px">Enviar atestado</button>'
+   +'<div class="hint" style="margin-top:8px">O arquivo fica guardado só para você e o gerente.</div>';
+  openSheet('Enviar atestado', h, ()=>{
+    if(!myEmp()) bindWho('dcWho',w=>{ who=w; });
+    function fromDays(){ const n=Math.min(60,Math.max(1,parseInt($('dcDays').value,10)||1)); if($('dcFrom').value) $('dcTo').value=addDays($('dcFrom').value,n-1); hint(); }
+    function fromTo(){ const a=$('dcFrom').value, b=$('dcTo').value; if(a&&b&&b>=a){ $('dcDays').value=docDays({from:a,to:b}).length; } else if(a){ $('dcTo').value=a; $('dcDays').value=1; } hint(); }
+    function hint(){ const a=$('dcFrom').value, b=$('dcTo').value; if(!a||!b) return; const ds=docDays({from:a,to:b});
+      $('dcHint').textContent=ds.length+' dia'+(ds.length===1?'':'s')+' de atestado · '+ds.filter(isWorkday).length+' útil(eis) — saem do VT do mês seguinte'; }
+    $('dcFrom').addEventListener('change',fromDays); $('dcDays').addEventListener('input',fromDays); $('dcTo').addEventListener('change',fromTo); hint();
+    $('dcSave').addEventListener('click', async()=>{
+      const f=$('dcFile').files[0], from=$('dcFrom').value, to=$('dcTo').value||from;
+      if(!who){ toast('Escolha a pessoa'); return; }
+      if(!from||to<from){ toast('Confira as datas'); return; }
+      if(!f){ toast('Anexe a foto ou o PDF'); return; }
+      if(f.size>10*1024*1024){ toast('Arquivo muito grande (máx. 10 MB)'); return; }
+      const b=$('dcSave'); b.disabled=true; b.textContent='Enviando…';
+      const x={id:uid('at'), at:new Date().toISOString(), emp:who, from, to, kind:'atestado', status:'pendente', note:$('dcNote').value.trim(), name:f.name, synced:false};
+      try{
+        if(Cloud.on){
+          const ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+          x.path=who+'/'+x.id+'.'+ext;
+          const up=await Cloud.client.storage.from('atestados').upload(x.path,f,{contentType:f.type||undefined, upsert:false});
+          if(up.error) throw up.error;
+        }else{
+          if(f.size>1.5*1024*1024){ toast('Sem login, só arquivos de até 1,5 MB'); b.disabled=false; b.textContent='Enviar atestado'; return; }
+          x.fileData=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
+        }
+        db.docs.unshift(x); saveLocal(); await Cloud.pushDoc(x);
+        closeSheet(); render(); toast('Atestado enviado ✓');
+      }catch(e){ toast('Não foi possível enviar: '+esc((e&&e.message)||'sem conexão')); b.disabled=false; b.textContent='Enviar atestado'; }
+    });
+  });
+}
 function renderTrocas(){
+  renderDocs();
   const pend=db.swaps.filter(s=>s.status==='pendente');
   $('swPendSide').textContent=pend.length?pend.length+' aguardando':'';
   $('swPending').innerHTML= pend.length? pend.map(s=>'<div class="sw-row">'+swapLine(s)
-      +'</div><div style="padding:0 16px 14px"><div class="sw-acts">'
+      +'</div>'+(isAdmin()?'<div style="padding:0 16px 14px"><div class="sw-acts">'
       +'<button class="sw-ok" data-ap="'+s.id+'">Aprovar e recalcular</button>'
-      +'<button class="sw-no" data-rj="'+s.id+'">Recusar</button></div></div>').join('')
+      +'<button class="sw-no" data-rj="'+s.id+'">Recusar</button></div></div>':'<div style="padding:0 16px 12px"><span class="chip warn">aguardando o gerente</span></div>')).join('')
     : '<div class="empty"><div class="em">✅</div><p>Nenhum pedido esperando resposta.</p></div>';
   const hist=db.swaps.filter(s=>s.status!=='pendente').slice(0,12);
   $('swHistory').innerHTML= hist.length? hist.map(s=>'<div class="sw-row">'+swapLine(s)
@@ -2011,7 +2547,7 @@ function renderTrocas(){
 }
 function nextMonthKey(key){ const p=key.split('-').map(Number); return ym(new Date(p[0],p[1],1)); }
 function openSwapSheet(){
-  const emps=activeEmps();
+  const emps=myEmp()? activeEmps().filter(e=>e.id===myEmp()) : activeEmps();
   if(!emps.length){ toast('Cadastre a equipe primeiro'); return; }
   const start=todayISO()>daysOfMonth(viewMonth)[0]?todayISO():daysOfMonth(viewMonth)[0];
   let h='<div class="fld"><label>Quem está pedindo</label><select id="swEmp">'
@@ -2048,7 +2584,7 @@ function openSwapSheet(){
       p+= blocked
         ? '<div class="btn-row"><button class="btn-ghost" id="swBack" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Escolher outro dia</button></div>'
         : '<div class="btn-row"><button class="btn-ghost" id="swSend">Enviar pedido</button>'
-          +'<button class="btn-ghost" id="swApply" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Aprovar agora</button></div>';
+          +(isAdmin()?'<button class="btn-ghost" id="swApply" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Aprovar agora</button>':'')+'</div>';
       $('swPreview').innerHTML=p;
       $('swSim').classList.add('hide');
       if(blocked){ $('swBack').addEventListener('click',()=>{ $('swPreview').innerHTML=''; $('swSim').classList.remove('hide'); }); return; }
@@ -2057,7 +2593,7 @@ function openSwapSheet(){
       $('swSend').addEventListener('click',()=>{
         db.swaps.unshift(rec); saveLocal(); Cloud.pushSwap(rec); closeSheet(); render(); toast('Pedido enviado para aprovação');
       });
-      $('swApply').addEventListener('click',()=>{
+      if($('swApply')) $('swApply').addEventListener('click',()=>{
         rec.status='aprovada'; rec.resolvedAt=new Date().toISOString();
         db.swaps.unshift(rec); applySwap(rec,sim); closeSheet(); render(); toast('Troca aplicada e escala recalculada');
       });
@@ -2171,6 +2707,344 @@ function openPunchEdit(date,empId){
 }
 
 /* ============================================================
+   RENDER — FOLHA (salário, faltas, extras, adiantamento e saldo)
+   ============================================================ */
+function payPaidChip(p,which){
+  const x=p.paid[which];
+  return x? '<span class="chip ok">pago '+fmtDM(x.date)+'</span>' : '';
+}
+function renderFolha(){
+  const rows=payrollAll(viewMonth), P=payCfg();
+  const noSal=rows.filter(p=>!p.sal);
+  const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length,
+    saldo:a.saldo+p.saldo, liq:a.liq+p.liquido, va:a.va+(p.food-p.foodDesc), vt:a.vt+p.vtTotal}),{dep:0,adv:0,custo:0,faltas:0,saldo:0,liq:0,va:0,vt:0});
+  const payDay=payDayOf(viewMonth), advDay=advDayOf(viewMonth);
+  const hol=holidaysIn(viewMonth), ut=workdaysIn(viewMonth).length, nk=nextMonthKey(viewMonth), utN=workdaysIn(nk).length;
+  const mN=k=>monthName(k).split(' de ')[0];
+  const calLine='<div class="note" style="margin-top:12px"><b>'+cap(monthName(viewMonth).split(' de ')[0])+': '+ut+' dias úteis</b> ('+(P.satUtil===false?'seg–sex':'seg–sáb')+', sem feriados)'
+    +(hol.length?' · feriados: '+hol.map(d=>fmtDM(d)+' '+holName(d)).join(', '):' · sem feriado no mês')
+    +'.<br>'+(P.vtBase==='escala'?'O VT conta os dias da escala.'
+      : P.vtNext!==false? '<b>VT antecipado:</b> o depósito de '+fmtDM(payDayOf(viewMonth))+' leva o VT de '+mN(nk)+' ('+utN+' dias úteis), menos as faltas, atestados e férias de '+mN(viewMonth)+'.'
+      : 'O VT conta esses dias, menos faltas, atestados e férias.')+'</div>';
+  $('fpKpi').innerHTML='<div class="card pay-hero">'
+    +payHero({title:'A equipe ganha no mês', total:tot.liq+tot.va+tot.vt, liquido:tot.liq, va:tot.va, vt:tot.vt, adiant:tot.adv, advDay, payDay, dep:tot.dep})
+    +'</div>'
+    +'<div class="kpi" style="margin-top:10px"><div class="k"><div class="v '+(tot.faltas?'bad':'')+'">'+tot.faltas+'</div><div class="l">falta'+(tot.faltas===1?'':'s')+' no mês</div></div>'
+    +'<div class="k"><div class="v">'+brl(tot.custo)+'</div><div class="l">custo total da empresa (com FGTS)</div></div></div>'
+    +calLine
+    +'<div class="btn-row" style="margin-top:12px"><button class="btn btn-green" id="fpFalta" style="flex:1;font-size:14.5px">Registrar falta</button>'
+    +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>';
+  $('fpList').innerHTML = rows.length ? rows.map(p=>{
+      const bits=[];
+      if(p.faltas.length) bits.push('<b style="color:var(--danger)">'+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+'</b>');
+      if(p.atest.length) bits.push(p.atest.length+' dia'+(p.atest.length===1?'':'s')+' de atestado');
+      const xm=p.extras.reduce((a,x)=>a+x.min,0); if(xm) bits.push(hm(xm)+' extra');
+      if(p.menos) bits.push(hm(p.menos)+' a menos');
+      if(p.vales) bits.push('vale '+brl(p.vales));
+      if(!bits.length) bits.push(p.clt?'sem ocorrências':'PJ · sem descontos de lei');
+      return '<div class="fc-row" data-pay="'+p.e.id+'">'+avatar(p.e)
+        +'<div class="fc-b"><div class="n">'+esc(p.e.name)+(p.clt?'':'<span class="tag-pj">PJ</span>')+'</div>'
+        +'<div class="s">'+(p.sal?'salário '+brl(p.sal)+' · ':'<b style="color:var(--gold-ink)">sem salário cadastrado</b> · ')+bits.join(' · ')+'</div>'
+        +'<div class="s">ganha <b style="color:var(--ink-soft)">'+brl(p.liquido+p.food-p.foodDesc+p.vtTotal)+'</b> no mês</div></div>'
+        +'<div class="fc-v"><div class="v">'+brl(p.depositar)+'</div><div class="l">'+(p.paid.saldo?'✓ transferido':'transferir '+fmtDM(p.payDay))+'</div></div></div>';
+    }).join('') : '<div class="empty"><p>Sem equipe cadastrada.</p></div>';
+  $('fpAlerts').innerHTML = noSal.length
+    ? '<div class="banner warn"><span><b>Falta cadastrar o salário</b> de '+esc(noSal.map(p=>p.e.name).join(', '))+'. Toque na pessoa → <b>Salário e benefícios</b>.</span></div>' : '';
+  $('fpFalta').addEventListener('click',()=>openFaltaSheet(null));
+  $('fpLanc').addEventListener('click',()=>openPayEntrySheet(null,null));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pay]'),b=>b.addEventListener('click',()=>openPayslip(b.getAttribute('data-pay'))));
+}
+/* card: quanto ganha no mês (total) e quanto transferir no 5º dia útil */
+function payHero(o){
+  const P=payCfg(), sub=o.sub||{}, apart=P.payBenefits?'':' · pago à parte';
+  const r=(l,v,s,cls)=>'<div class="ph-row'+(cls?' '+cls:'')+'"><span>'+l+(s?'<small>'+s+'</small>':'')+'</span><b>'+v+'</b></div>';
+  return '<div class="ph-l">'+o.title+'</div>'
+    +'<div class="ph-v">'+brl(o.total)+'</div>'
+    +'<div class="ph-s">salário líquido + VA + VT de '+monthName(viewMonth)+'</div>'
+    +'<div class="ph-list">'
+    +r('Salário líquido', brl(o.liquido), sub.liq)
+    +r('Vale-alimentação (VA)', brl(o.va), (sub.va||'')+apart)
+    +r('Vale-transporte (VT)', brl(o.vt), (sub.vt||'')+apart)
+    +r('Adiantamento · '+cap(dayLabel(o.advDay)), '− '+brl(o.adiant), sub.adv||'já sai no dia '+(P.advDay||15), 'adv')
+    +'</div>'
+    +'<div class="ph-out"><div class="ph-l">Transferir no 5º dia útil · '+cap(dayLabel(o.payDay))+'</div>'
+    +'<div class="ph-v">'+brl(o.dep)+'</div>'+(o.after||'')+'</div>';
+}
+function slipLine(label,val,sub,cls){
+  return '<div class="sl-row'+(cls?' '+cls:'')+'"><div class="sl-k">'+label+(sub?'<small>'+sub+'</small>':'')+'</div><div class="sl-v">'+val+'</div></div>';
+}
+function openPayslip(empId){
+  const p=payroll(viewMonth,empId), e=p.e, P=payCfg();
+  const num=v=>r2(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const V=[], D=[];                                   /* [descrição, referência, valor] */
+  V.push(['Salário base', '30 dias', p.sal]);
+  p.extras.forEach(x=>V.push(['Horas extras '+x.pct+'%', hm(x.min), x.v]));
+  if(p.dsrEx) V.push(['DSR s/ horas extras', p.repousos+'/'+p.uteis, p.dsrEx]);
+  if(p.bonus) V.push(['Bônus / comissão', '', p.bonus]);
+  if(P.payBenefits){
+    if(p.food) V.push(['Vale-alimentação (VA)', 'mês', p.food]);
+    if(p.vtTotal) V.push([P.vtBase==='escala'?'Vale-transporte (VT)':'Vale-transporte (VT) de '+monthName(p.vtKey).split(' de ')[0],
+      p.vtDays+' dias × '+num(+e.vtDay||0)+(P.vtBase!=='escala'?' · '+p.uteisMes+' dias úteis'+(p.ausUteis?' − '+p.ausUteis+' ausência'+(p.ausUteis===1?'':'s')+' de '+monthName(viewMonth).split(' de ')[0]+(p.nAtest?' ('+p.nAtest+' de atestado)':''):''):''), p.vtTotal]);
+  }
+  if(p.faltas.length) D.push(['Faltas · '+p.faltas.map(fmtDM).join(', '), p.faltas.length+(p.faltas.length===1?' dia':' dias'), p.valFaltas]);
+  if(p.dsrLost) D.push(['DSR perdido (faltas)', p.semanas+' sem.', p.dsrLost]);
+  if(p.valMenos) D.push(['Atrasos / horas a menos', hm(p.menos), p.valMenos]);
+  if(p.inss) D.push(['INSS', (p.inss/p.base*100).toFixed(2).replace('.',',')+'%', p.inss]);
+  if(p.irrf) D.push(['IRRF', '', p.irrf]);
+  if(p.vtDesc) D.push(['Desconto VT', P.vtPct+'%', p.vtDesc]);
+  if(P.payBenefits && p.foodDesc) D.push(['Desconto VA (faltas)', p.faltas.length+'d', p.foodDesc]);
+  D.push(['Adiantamento salarial', fmtDM(p.advDay), p.adiant]);
+  if(p.vales) D.push(['Vales', '', p.vales]);
+  if(p.desc) D.push(['Outros descontos', '', p.desc]);
+  const totV=r2(V.reduce((a,x)=>a+x[2],0)), totD=r2(D.reduce((a,x)=>a+x[2],0));
+  const row=(x,col)=>'<tr><td class="hd">'+esc(x[0])+(x[1]?'<small>'+esc(x[1])+'</small>':'')+'</td><td class="hv">'+(col===0?num(x[2]):'')+'</td><td class="hv neg">'+(col===1?num(x[2]):'')+'</td></tr>';
+
+  let h='<div class="hol">'
+    +'<div class="hol-top"><div><b>'+esc(COMPANY.name)+'</b> · '+esc(COMPANY.unit)+'<small>Recibo de pagamento · '+cap(monthName(viewMonth))+'</small></div>'
+    +'<span class="'+(p.clt?'chip neutral':'tag-pj')+'">'+(p.clt?'CLT':'PJ')+'</span></div>'
+    +'<div class="hol-emp">'+avatar(e)+'<div><b>'+esc(e.name)+'</b><small>'+esc(e.role||'—')+' · '+e.scale+' · '+(p.hasSched?p.work+' dias na escala':'~'+p.work+' dias (estimado)')+'</small></div></div>'
+    +'<table class="hol-t"><thead><tr><th class="hd">Descrição · ref.</th><th class="hv">Vencimentos</th><th class="hv">Descontos</th></tr></thead><tbody>'
+    +V.map(x=>row(x,0)).join('')+D.map(x=>row(x,1)).join('')
+    +'</tbody><tfoot><tr><td class="hd">Totais</td><td class="hv">'+num(totV)+'</td><td class="hv neg">'+num(totD)+'</td></tr></tfoot></table>'
+    +'<div class="hol-liq"><div><span>Valor líquido · depositar no 5º dia útil</span><small>'+cap(dayLabel(p.payDay))+' · '+num(totV)+' − '+num(totD)+'</small></div><b>'+brl(p.depositar)+'</b></div>'
+    +'<div class="hol-foot">'
+    +'<div><span>Salário base</span><b>'+num(p.sal)+'</b></div>'
+    +'<div><span>Base INSS</span><b>'+(p.clt?num(p.base):'—')+'</b></div>'
+    +'<div><span>FGTS do mês</span><b>'+(p.clt?num(p.fgts):'—')+'</b></div>'
+    +'<div><span>Base IRRF</span><b>'+(p.clt?num(Math.max(0,p.base-p.inss)):'—')+'</b></div></div>'
+    +'</div>';
+  if(!P.payBenefits && (p.food||p.vtTotal)) h+='<div class="note">Pagos à parte (fora do depósito): <b>VA '+brl(p.food-p.foodDesc)+'</b> · <b>VT '+brl(p.vtTotal)+'</b>.</div>';
+  if(p.clt && !p.irrf) h+='<div class="note" style="margin-top:8px">IRRF isento (até R$ 5.000 · Lei 15.270/2025). Adiantamento '+(p.adiantOv?'com valor ajustado':'de '+p.advPct+'% do salário')+(p.paid.adiant?' · <b>já pago</b>':'')+'.</div>';
+  if(p.paid.saldo) h+='<div style="margin-top:10px">'+payPaidChip(p,'saldo')+'</div>';
+  if(!p.sal) h+='<div class="banner warn"><span>Cadastre o salário para a conta sair certa.</span></div>';
+  if(p.clt) h+='<div class="note"><b>Custo para a empresa:</b> '+brl(p.custo)+' (salário, VA, VT e FGTS de '+P.fgts+'%, que não sai do salário).</div>';
+
+  h+='<div class="section-title" style="margin:18px 4px 8px">Lançamentos do mês</div><div class="card slip">';
+  const evs=[];
+  p.faltas.forEach(d=>evs.push({t:'Falta', s:dayLabel(d), v:'− '+brl(p.dia), cls:'neg', del:'fa|'+d}));
+  p.atest.forEach(d=>evs.push({t:'Atestado (não desconta)', s:dayLabel(d), v:'—', del:'fa|'+d}));
+  if(p.xPonto) evs.push({t:'Extras pelo ponto', s:'dias fechados no ponto', v:hm(p.xPonto)});
+  if(p.menosPonto) evs.push({t:'Horas a menos pelo ponto', s:'dias fechados no ponto', v:hm(p.menosPonto), cls:'neg'});
+  p.ents.filter(x=>PAY_KINDS[x.kind]||x.kind==='adiant').forEach(x=>{
+    const K=PAY_KINDS[x.kind];
+    const v= x.kind==='extra'? hm(x.qty)+' · '+(x.pct==null?P.extraPct:x.pct)+'%' : x.kind==='menos'? hm(x.qty) : brl(x.amount);
+    evs.push({t:K?K.label:'Adiantamento ajustado', s:(x.date?dayLabel(x.date):'')+(x.note?' · '+esc(x.note):''), v, cls:(K&&K.sign<0)?'neg':'', del:'en|'+x.id});
+  });
+  h+= evs.length? evs.map(x=>'<div class="sl-row"><div class="sl-k">'+x.t+'<small>'+x.s+'</small></div><div class="sl-v '+(x.cls||'')+'">'+x.v
+      +(x.del?' <button class="sl-del" data-del="'+x.del+'" aria-label="Remover">✕</button>':'')+'</div></div>').join('')
+    : '<div class="sl-row"><div class="sl-k">Nada lançado<small>faltas vêm da escala; extras, do ponto ou de um lançamento</small></div></div>';
+  h+='</div>';
+
+  h+='<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psAdv">'+(p.paid.adiant?'Desfazer adiant. pago':'Adiant. pago ✓')+'</button>'
+    +'<button class="btn-ghost" id="psPaid">'+(p.paid.saldo?'Desfazer saldo pago':'Saldo pago ✓')+'</button></div>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psSal">Salário e benefícios</button><button class="btn-ghost" id="psAdvEdit">Ajustar adiantamento</button></div>';
+  openSheet('Holerite do mês', h, ()=>{
+    $('psFalta').addEventListener('click',()=>openFaltaSheet(empId));
+    $('psLanc').addEventListener('click',()=>openPayEntrySheet(empId,null));
+    $('psSal').addEventListener('click',()=>openEmpSheet(empId,true));
+    $('psAdvEdit').addEventListener('click',()=>openAdvSheet(empId));
+    $('psAdv').addEventListener('click',()=>togglePaid(empId,'adiant',p.adiant,p.advDay));
+    $('psPaid').addEventListener('click',()=>togglePaid(empId,'saldo',p.depositar,p.payDay));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-del]'),b=>b.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      const k=b.getAttribute('data-del').split('|');
+      if(k[0]==='fa'){
+        if(!confirm('Tirar a falta/atestado de '+dayLabel(k[1])+'? O dia volta a ser de trabalho.')) return;
+        setSched(k[1],empId,WORK,{locked:false, src:'manual', note:''}); saveLocal(); Cloud.pushSchedule();
+      }else{ removePayEntry(k[1]); }
+      render(); openPayslip(empId);
+    }));
+  });
+}
+function addPayEntry(x){ x.id=x.id||uid('pg'); x.ym=x.ym||ymOf(x.date||todayISO()); x.synced=false; db.pay.push(x); saveLocal(); Cloud.pushPay(x); return x; }
+function removePayEntry(id){ db.pay=db.pay.filter(x=>x.id!==id); saveLocal(); Cloud.delPay(id); }
+function togglePaid(empId,which,amount,date){
+  const cur=payEntries(viewMonth,empId).find(x=>x.kind==='pago' && (x.note||'saldo')===which);
+  if(cur) removePayEntry(cur.id);
+  else addPayEntry({ym:viewMonth, emp:empId, kind:'pago', note:which, amount, date:todayISO()<date?todayISO():date});
+  render(); openPayslip(empId); toast(cur?'Desfeito':'Marcado como pago');
+}
+function whoPicker(id,sel){
+  return '<div class="who" id="'+id+'" style="margin-top:8px">'+activeEmps().map(e=>'<button data-w="'+e.id+'" style="--pc:'+(e.color||'#446349')+'" class="'+(e.id===sel?'sel':'')+'">'+avatar(e)+'<span class="nm">'+esc(e.name)+'</span></button>').join('')+'</div>';
+}
+function bindWho(id,cb){
+  Array.prototype.forEach.call(document.querySelectorAll('#'+id+' button'),b=>b.addEventListener('click',()=>{
+    Array.prototype.forEach.call(document.querySelectorAll('#'+id+' button'),x=>x.classList.toggle('sel',x===b)); cb(b.getAttribute('data-w'));
+  }));
+}
+function defaultDateIn(key){ const t=todayISO(); return ymOf(t)===key? t : key+'-01'; }
+function openFaltaSheet(empId){
+  let who=empId||'', kind='FA';
+  const h='<div class="fld"><label>Quem faltou</label>'+whoPicker('flWho',who)+'</div>'
+   +'<div class="fld2"><div class="fld"><label>A partir do dia</label><input type="date" id="flDate" value="'+defaultDateIn(viewMonth)+'"></div>'
+   +'<div class="fld"><label>Quantos dias</label><input type="number" inputmode="numeric" min="1" max="60" id="flDays" value="1"></div></div>'
+   +'<div class="hint" id="flRange"></div>'
+   +'<div class="fld"><label>Tipo</label><div class="opt" id="flKind">'
+   +'<button data-k="FA" class="sel"><span class="ot">Falta</span><span class="os">desconta o dia e o VT</span></button>'
+   +'<button data-k="AT"><span class="ot">Atestado</span><span class="os">justificada, não desconta o salário</span></button></div></div>'
+   +'<div class="fld"><label>Observação</label><input id="flNote" placeholder="opcional"></div>'
+   +'<div class="note" id="flPrev">Escolha a pessoa para ver o saldo.</div>'
+   +'<button class="btn btn-green" id="flSave" style="margin-top:14px">Registrar</button>';
+  openSheet('Registrar falta', h, ()=>{
+    function range(){ const d=$('flDate').value, n=Math.min(60,Math.max(1,parseInt($('flDays').value,10)||1)); const out=[]; for(let i=0;i<n && d;i++) out.push(addDays(d,i)); return out; }
+    function preview(){
+      const ds=range(); const d=ds[0];
+      $('flRange').textContent= ds.length>1? 'De '+dayLabel(ds[0])+' a '+dayLabel(ds[ds.length-1])+' · '+ds.length+' dias ('+ds.filter(isWorkday).length+' úteis)' : '';
+      if(!who||!d){ $('flPrev').innerHTML='Escolha a pessoa para ver o saldo.'; return; }
+      const key=ymOf(d), before=payroll(key,who);
+      const snaps=ds.map(x=>{ const o=schedOf(x,who); return [x, o?Object.assign({},o):null]; });
+      ds.forEach(x=>setSched(x,who,kind,{src:'manual'}));
+      const after=payroll(key,who);
+      snaps.forEach(([x,sn])=>{ const i=db.sched.findIndex(y=>y.date===x&&y.emp===who); if(sn) db.sched[i]=sn; else if(i>=0) db.sched.splice(i,1); });
+      const diff=r2(after.depositar-before.depositar);
+      const offs=snaps.filter(([x,sn])=>sn&&!isWork(sn.shift)&&sn.shift!==kind);
+      $('flPrev').innerHTML='Saldo de <b>'+esc(empName(who))+'</b> em '+fmtDM(after.payDay)+': <b>'+brl(after.depositar)+'</b>'
+        +(diff?' <span style="color:var(--danger);font-weight:800">('+brlS(diff)+')</span>':' (sem mudança)')
+        +(kind==='AT'?'<br>Atestado não desconta o salário; os dias úteis saem do <b>VT de '+monthName(after.vtKey).split(' de ')[0]+'</b>.':'')
+        +(ds.some(x=>ymOf(x)!==key)?'<br>Parte dos dias cai no mês seguinte e entra na folha de lá.':'')
+        +(offs.length?'<br>Atenção: '+offs.map(([x,sn])=>dayLabel(x)+' estava como <b>'+codeLabel(sn.shift)+'</b>').join(', ')+'.':'');
+    }
+    bindWho('flWho',w=>{ who=w; preview(); });
+    $('flDate').addEventListener('change',preview);
+    $('flDays').addEventListener('input',preview);
+    Array.prototype.forEach.call(document.querySelectorAll('#flKind button'),b=>b.addEventListener('click',()=>{
+      kind=b.getAttribute('data-k'); Array.prototype.forEach.call(document.querySelectorAll('#flKind button'),x=>x.classList.toggle('sel',x===b)); preview();
+    }));
+    preview();
+    $('flSave').addEventListener('click',()=>{
+      const ds=range(), d=ds[0];
+      if(!who){ toast('Escolha quem faltou'); return; }
+      if(!d){ toast('Escolha o dia'); return; }
+      ds.forEach(x=>setSched(x,who,kind,{locked:true, src:'manual', note:$('flNote').value.trim()}));
+      saveLocal(); Cloud.pushSchedule();
+      viewMonth=ymOf(d);
+      const p=payroll(viewMonth,who);
+      render(); openPayslip(who);
+      toast((kind==='FA'?'Falta':'Atestado')+(ds.length>1?' de '+ds.length+' dias':'')+' registrado · saldo '+brl(p.depositar));
+    });
+  });
+}
+function openPayEntrySheet(empId,kind){
+  let who=empId||'', k=kind||'extra', pct=+payCfg().extraPct;
+  const P=payCfg();
+  const h='<div class="fld"><label>Quem</label>'+whoPicker('peWho',who)+'</div>'
+   +'<div class="fld"><label>O que é</label><select id="peKind">'+Object.keys(PAY_KINDS).map(x=>'<option value="'+x+'"'+(x===k?' selected':'')+'>'+PAY_KINDS[x].label+'</option>').join('')+'</select>'
+   +'<div class="hint" id="peHint"></div></div>'
+   +'<div class="fld" id="pePctBox"><label>Adicional</label><div class="opt" id="pePct">'
+   +'<button data-p="'+P.extraPct+'" class="sel"><span class="ot">'+P.extraPct+'%</span><span class="os">dia normal</span></button>'
+   +'<button data-p="'+P.extraOffPct+'"><span class="ot">'+P.extraOffPct+'%</span><span class="os">domingo, feriado ou folga</span></button></div></div>'
+   +'<div class="fld2"><div class="fld"><label id="peQtyL">Horas</label><input id="peQty" inputmode="decimal" placeholder="ex.: 2 ou 1:30"></div>'
+   +'<div class="fld"><label>Dia</label><input type="date" id="peDate" value="'+defaultDateIn(viewMonth)+'"></div></div>'
+   +'<div class="fld"><label>Observação</label><input id="peNote" placeholder="opcional"></div>'
+   +'<div class="note" id="pePrev">—</div>'
+   +'<button class="btn btn-green" id="peSave" style="margin-top:14px">Lançar</button>';
+  openSheet('Novo lançamento', h, ()=>{
+    function rec(){
+      const K=PAY_KINDS[k], d=$('peDate').value||todayISO();
+      const x={ym:ymOf(d), emp:who, kind:k, date:d, note:$('peNote').value.trim()};
+      if(K.unit==='h'){ x.qty=parseHours($('peQty').value); if(k==='extra') x.pct=pct; } else x.amount=parseMoney($('peQty').value);
+      return x;
+    }
+    function sync(){
+      const K=PAY_KINDS[k];
+      $('peHint').textContent=K.hint;
+      $('pePctBox').classList.toggle('hide',k!=='extra');
+      $('peQtyL').textContent=K.unit==='h'?'Horas':'Valor (R$)';
+      $('peQty').placeholder=K.unit==='h'?'ex.: 2 ou 1:30':'ex.: 50,00';
+      if(!who){ $('pePrev').innerHTML='Escolha a pessoa para ver o saldo.'; return; }
+      const x=rec(), before=payroll(x.ym,who);
+      x.id='__tmp'; db.pay.push(x); const after=payroll(x.ym,who); db.pay=db.pay.filter(y=>y.id!=='__tmp');
+      const diff=r2(after.depositar-before.depositar);
+      $('pePrev').innerHTML='Saldo de <b>'+esc(empName(who))+'</b> em '+fmtDM(after.payDay)+': <b>'+brl(after.depositar)+'</b>'
+        +(diff?' <span style="font-weight:800;color:'+(diff<0?'var(--danger)':'var(--green-700)')+'">('+(diff>0?'+ ':'')+brlS(diff)+')</span>':'');
+    }
+    bindWho('peWho',w=>{ who=w; sync(); });
+    $('peKind').addEventListener('change',()=>{ k=$('peKind').value; sync(); });
+    ['peQty','peDate'].forEach(id=>$(id).addEventListener('input',sync));
+    Array.prototype.forEach.call(document.querySelectorAll('#pePct button'),b=>b.addEventListener('click',()=>{
+      pct=+b.getAttribute('data-p'); Array.prototype.forEach.call(document.querySelectorAll('#pePct button'),x=>x.classList.toggle('sel',x===b)); sync();
+    }));
+    sync();
+    $('peSave').addEventListener('click',()=>{
+      if(!who){ toast('Escolha a pessoa'); return; }
+      const x=rec();
+      if(!(x.qty>0) && !(x.amount>0)){ toast('Coloque '+(PAY_KINDS[k].unit==='h'?'as horas':'o valor')); return; }
+      addPayEntry(x); viewMonth=x.ym; render(); openPayslip(who); toast('Lançado');
+    });
+  });
+}
+function openAdvSheet(empId){
+  const p=payroll(viewMonth,empId), ov=payEntries(viewMonth,empId).find(x=>x.kind==='adiant');
+  const h='<div class="note" style="margin-top:4px">Padrão: <b>'+p.advPct+'% do salário</b> = '+brl(r2(p.sal*p.advPct/100))+', pago em '+cap(dayLabel(p.advDay))+'.</div>'
+   +'<div class="fld"><label>Valor do adiantamento deste mês (R$)</label><input id="avVal" inputmode="decimal" value="'+moneyIn(p.adiant)+'"></div>'
+   +'<div class="hint">Use quando a pessoa pegou um valor diferente no dia '+(payCfg().advDay||15)+'. Zero = não teve adiantamento.</div>'
+   +'<button class="btn btn-green" id="avSave" style="margin-top:14px">Salvar</button>'
+   +(ov?'<div class="btn-row"><button class="btn-ghost" id="avReset">Voltar ao padrão ('+p.advPct+'%)</button></div>':'');
+  openSheet('Adiantamento · '+empName(empId), h, ()=>{
+    $('avSave').addEventListener('click',()=>{
+      if(ov) removePayEntry(ov.id);
+      addPayEntry({ym:viewMonth, emp:empId, kind:'adiant', amount:parseMoney($('avVal').value), date:p.advDay});
+      render(); openPayslip(empId); toast('Adiantamento ajustado');
+    });
+    if(ov) $('avReset').addEventListener('click',()=>{ removePayEntry(ov.id); render(); openPayslip(empId); });
+  });
+}
+function openPaySettingsSheet(){
+  const P=payCfg();
+  const sw=(id,on,t,s)=>'<div class="switch"><div class="sl">'+t+'<small>'+s+'</small></div><button class="sw '+(on?'on':'')+'" id="'+id+'"></button></div>';
+  let h='<div class="section-title" style="margin:6px 4px 8px">Datas</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld2"><div class="fld"><label>Dia do adiantamento</label><input type="number" inputmode="numeric" id="psDay" value="'+P.advDay+'"></div>'
+   +'<div class="fld"><label>Adiantamento (% salário)</label><input type="number" inputmode="decimal" id="psAdvP" value="'+P.advPct+'"></div></div>'
+   +'<div class="hint">O saldo é pago no 5º dia útil do mês seguinte (segunda a sábado, fora feriados nacionais — CLT, art. 459).</div></div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Horas</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld2"><div class="fld"><label>Divisor da hora</label><input type="number" inputmode="numeric" id="psDiv" value="'+P.divisor+'"></div>'
+   +'<div class="fld"><label>Extra PJ (%)</label><input type="number" inputmode="numeric" id="psPj" value="'+P.pjExtraPct+'"></div></div>'
+   +'<div class="fld2"><div class="fld"><label>Extra dia normal (%)</label><input type="number" inputmode="numeric" id="psX" value="'+P.extraPct+'"></div>'
+   +'<div class="fld"><label>Extra domingo/folga (%)</label><input type="number" inputmode="numeric" id="psXo" value="'+P.extraOffPct+'"></div></div>'
+   +'<div class="hint">220 = jornada de 44h semanais. A hora vale salário ÷ divisor.</div>'
+   +sw('psHp',P.horasPonto,'Usar as horas do ponto','extras e horas a menos dos dias fechados no ponto')
+   +sw('psFp',P.faltaPonto,'Falta automática pelo ponto','dia de escala sem nenhuma marcação vira falta (só ligue se todos batem ponto)')
+   +sw('psDsrX',P.dsrExtras,'DSR sobre horas extras','reflexo das extras no descanso semanal (CLT)')
+   +sw('psDsrF',P.dsrFalta,'Falta tira o DSR da semana','falta injustificada perde o descanso remunerado (Lei 605/1949, art. 6º)')
+   +'</div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Descontos e benefícios</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld2"><div class="fld"><label>Desconto do VT (%)</label><input type="number" inputmode="decimal" id="psVt" value="'+P.vtPct+'"></div>'
+   +'<div class="fld"><label>FGTS (%)</label><input type="number" inputmode="decimal" id="psFg" value="'+P.fgts+'"></div></div>'
+   +sw('psIr',P.irrf,'Descontar IRRF','tabela 2026 com isenção até R$ 5.000 (Lei 15.270/2025)')
+   +sw('psFood',P.foodFalta,'Falta desconta a alimentação','proporcional aos dias de trabalho')
+   +sw('psVtU',P.vtBase!=='escala','VT pelos dias úteis do mês','seg–sáb sem feriados, menos ausências (desligado: usa os dias da escala)')
+   +sw('psVtN',P.vtNext!==false,'VT antecipado (próximo mês)','a folha paga o VT do mês seguinte e desconta as ausências deste mês')
+   +sw('psSat',P.satUtil!==false,'Sábado é dia útil','padrão do comércio; desligue para contar só seg–sex')
+   +'<div class="fld"><label>Feriados locais (estado/cidade)</label><input id="psHol" placeholder="ex.: 20/01, 25/01, 04/06/2026" value="'+esc((P.localHolidays||[]).map(x=>x.length===5?x.slice(3)+'/'+x.slice(0,2):x.slice(8)+'/'+x.slice(5,7)+'/'+x.slice(0,4)).join(', '))+'">'
+   +'<div class="hint">dd/mm repete todo ano; dd/mm/aaaa só naquele ano. Os nacionais já estão incluídos.</div></div>'
+   +sw('psBen',P.payBenefits,'VA e VT vão no depósito','somados no valor do 5º dia útil')
+   +'</div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Tabela do INSS (empregado)</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +P.inss.map((f,i)=>'<div class="fld2"><div class="fld"><label>Faixa '+(i+1)+' até (R$)</label><input inputmode="decimal" data-il="'+i+'" value="'+moneyIn(f[0])+'"></div>'
+     +'<div class="fld"><label>Alíquota (%)</label><input inputmode="decimal" data-ir="'+i+'" value="'+String(f[1]).replace('.',',')+'"></div></div>').join('')
+   +'<div class="hint">2026: Portaria Interministerial MPS/MF nº 13/2026 (teto R$ 8.475,55). Atualize quando sair a tabela do ano.</div></div>'
+   +'<button class="btn btn-green" id="psSave" style="margin-top:16px">Salvar ajustes da folha</button>';
+  openSheet('Ajustes da folha', h, ()=>{
+    const flags={psHp:'horasPonto',psFp:'faltaPonto',psDsrX:'dsrExtras',psDsrF:'dsrFalta',psIr:'irrf',psFood:'foodFalta',psBen:'payBenefits',psSat:'satUtil',psVtU:'_vtU',psVtN:'vtNext'};
+    P._vtU=P.vtBase!=='escala'; if(P.vtNext==null) P.vtNext=true;
+    const st={}; Object.keys(flags).forEach(id=>{ st[id]=!!P[flags[id]]; $(id).addEventListener('click',()=>{ st[id]=!st[id]; $(id).classList.toggle('on',st[id]); }); });
+    $('psSave').addEventListener('click',()=>{
+      const num=(id,def)=>{ const v=parseMoney($(id).value); return isNaN(v)?def:v; };
+      P.advDay=Math.min(28,Math.max(1,Math.round(num('psDay',15))||15)); P.advPct=num('psAdvP',50);
+      P.divisor=num('psDiv',220)||220; P.pjExtraPct=num('psPj',0); P.extraPct=num('psX',50); P.extraOffPct=num('psXo',100);
+      P.vtPct=num('psVt',6); P.fgts=num('psFg',8);
+      Object.keys(flags).forEach(id=>P[flags[id]]=st[id]);
+      P.vtBase=P._vtU?'uteis':'escala'; delete P._vtU;
+      P.localHolidays=$('psHol').value.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean).map(x=>{ const q=x.split('/').map(n=>pad(+n));
+        return q.length===3? (String(q[2]).length===2?'20'+q[2]:q[2])+'-'+q[1]+'-'+q[0] : q[1]+'-'+q[0]; }).filter(x=>/^(\d{4}-)?\d{2}-\d{2}$/.test(x));
+      P.inss=P.inss.map((f,i)=>[parseMoney(document.querySelector('[data-il="'+i+'"]').value)||f[0], parseMoney(document.querySelector('[data-ir="'+i+'"]').value)||f[1]]);
+      saveLocal(); Cloud.pushCfg(); closeSheet(); render(); toast('Ajustes da folha salvos');
+    });
+  });
+}
+
+/* ============================================================
    RENDER geral + navegação
    ============================================================ */
 function renderHeader(){
@@ -2182,17 +3056,22 @@ function renderHeader(){
   $('todaySub').textContent = wdName+(work? ' · '+work+' na escala' : ' · sem escala hoje');
 }
 function render(){
+  document.body.classList.toggle('emp-mode', !isAdmin());
+  if(!isAdmin() && (currentView==='fechar'||currentView==='folha')){ currentView='ponto'; return setView('ponto'); }
   renderHeader();
   if(currentView==='escala') renderEscala();
   else if(currentView==='ponto') renderPonto();
   else if(currentView==='trocas') renderTrocas();
   else if(currentView==='fechar') renderFechar();
+  else if(currentView==='folha') renderFolha();
   const pend=db.swaps.filter(s=>s.status==='pendente').length;
-  const bd=$('swBadge'); bd.textContent=pend; bd.classList.toggle('hide',!pend);
+  const pendDocs=db.docs.filter(x=>x.status==='pendente' && (isAdmin()||x.emp===myEmp())).length;
+  const bd=$('swBadge'); bd.textContent=pend+pendDocs; bd.classList.toggle('hide',!(pend+pendDocs));
+  $('brandTag').textContent=isAdmin()?'Escala & Ponto':'Portal do colaborador';
 }
 function setView(v){
   currentView=v;
-  ['escala','ponto','trocas','fechar'].forEach(k=>{ $('view'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('hide',k!==v); });
+  ['escala','ponto','trocas','fechar','folha'].forEach(k=>{ $('view'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('hide',k!==v); });
   Array.prototype.forEach.call(document.querySelectorAll('#viewSeg button'),b=>b.classList.toggle('sel',b.getAttribute('data-view')===v));
   window.scrollTo({top:0,behavior:'smooth'});
   render();
@@ -2203,41 +3082,114 @@ $('nextM').addEventListener('click',()=>{ const p=viewMonth.split('-').map(Numbe
 $('btnTeam').addEventListener('click',openTeamSheet);
 $('btnSettings').addEventListener('click',openSettingsSheet);
 $('btnNewSwap').addEventListener('click',openSwapSheet);
+$('btnNewDoc').addEventListener('click',openDocSheet);
 $('btnCsvResumo').addEventListener('click',()=>csvResumo(viewMonth));
 $('btnCsvEspelho').addEventListener('click',()=>csvEspelho(viewMonth));
+$('btnCsvFolha').addEventListener('click',()=>csvFolha(viewMonth));
+$('btnPayCfg').addEventListener('click',openPaySettingsSheet);
 setInterval(()=>{ if(currentView==='ponto' && !$('sheet').classList.contains('on')) renderPonto(); }, 30000);
 
 /* ---------- conta / login ---------- */
 function showGate(v){ $('authGate').classList.toggle('on',v); }
 function updateAcct(){
   const a=$('acct');
-  if(Cloud.on){ a.classList.remove('off'); $('acctLbl').textContent='Sincronizado'; }
+  if(Cloud.on){ a.classList.remove('off'); $('acctLbl').textContent= myEmp()? empName(myEmp()) : 'Gerente'; }
   else { a.classList.add('off'); $('acctLbl').textContent='Local'; }
 }
-$('acct').addEventListener('click', async()=>{
-  if(Cloud.on){ if(confirm('Sair da conta? A escala e o ponto continuam salvos neste aparelho.')){ try{ await Cloud.client.auth.signOut(); }catch(e){} } }
-  else { showGate(true); }
-});
+$('acct').addEventListener('click', ()=>{ if(Cloud.on) openAccountSheet(); else showGate(true); });
+function openAccountSheet(){
+  const me=empById(myEmp());
+  const h='<div class="note" style="margin-top:4px">Conectado como <b>'+esc(myEmp()?empName(myEmp()):'gerente')+'</b>'
+     +'<br><span style="color:var(--ink-faint)">'+esc(userOf(Cloud.email||''))+'</span></div>'
+     +(me?'<div class="fld"><label>Minha foto</label>'+photoEditor(me,'ac')+'<div class="hint">Aparece na escala e no ponto para a equipe.</div></div>':'')
+     +'<div class="fld"><label>Nova senha</label><input id="acPass" type="password" autocomplete="new-password" placeholder="mínimo 6 caracteres"></div>'
+     +'<button class="btn btn-green" id="acSave" style="margin-top:12px">Trocar minha senha</button>'
+     +'<div class="btn-row"><button class="btn-ghost btn-danger" id="acOut">Sair</button></div>';
+  openSheet('Minha conta', h, ()=>{
+    if(me){
+      $('acFile').addEventListener('change', async ev=>{
+        try{ const ph=await readPhoto(ev.target.files[0]); if(await saveMyPhoto(ph)){ toast('Foto salva ✓'); openAccountSheet(); } }
+        catch(err){ toast(esc(err.message)); }
+      });
+      if($('acDel')) $('acDel').addEventListener('click', async()=>{ if(await saveMyPhoto(null)){ toast('Foto removida'); openAccountSheet(); } });
+    }
+    $('acSave').addEventListener('click', async()=>{
+      const pw=$('acPass').value; if(pw.length<6){ toast('A senha precisa de 6 caracteres ou mais'); return; }
+      const {error}=await Cloud.client.auth.updateUser({password:pw});
+      if(error){ toast('Não foi possível trocar a senha'); return; }
+      closeSheet(); toast('Senha trocada ✓');
+    });
+    $('acOut').addEventListener('click', async()=>{ closeSheet(); try{ await Cloud.client.auth.signOut(); }catch(e){} });
+  });
+}
+/* foto real: recorta quadrada, reduz para 256px e vira JPEG leve (~20 KB) */
+function readPhoto(file){
+  return new Promise((res,rej)=>{
+    if(!file) return rej(new Error('sem arquivo'));
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const S=256, c=document.createElement('canvas'); c.width=S; c.height=S;
+      const m=Math.min(img.naturalWidth,img.naturalHeight), sx=(img.naturalWidth-m)/2, sy=(img.naturalHeight-m)/2;
+      const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,S,S); g.drawImage(img,sx,sy,m,m,0,0,S,S);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg',0.82));
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('Não consegui ler essa imagem — tente outra foto')); };
+    img.src=url;
+  });
+}
+function photoEditor(e,prefix){
+  return '<div class="photo-ed">'+avatar(e)+'<div class="pb">'
+    +'<label class="btn-ghost" style="text-align:center;cursor:pointer">'+(photoOK(e.photo)?'Trocar foto':'Colocar foto')
+    +'<input type="file" accept="image/*" id="'+prefix+'File" style="display:none"></label>'
+    +(photoOK(e.photo)?'<button class="btn-ghost" id="'+prefix+'Del">Tirar foto</button>':'')+'</div></div>';
+}
+async function saveMyPhoto(photo){
+  const me=empById(myEmp()); if(!me) return;
+  const {error}=await Cloud.client.rpc('set_my_photo',{p:photo});
+  if(error){ toast(/function|schema/i.test(error.message||'')?'Peça ao gerente para rodar o SETUP.sql novo':'Não foi possível salvar a foto'); return false; }
+  me.photo=photo; saveLocal(); render(); return true;
+}
+/* gerente cria o login do funcionário (cliente separado, para não derrubar a sessão do gerente) */
+async function createEmpLogin(emp,user,pass){
+  const email=loginOf(user);
+  if(!email || email.indexOf('@')<0){ return {error:'Coloque um usuário'}; }
+  if(String(pass||'').length<6) return {error:'A senha precisa de 6 caracteres ou mais'};
+  const tmp=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false, storageKey:'coquin-signup'}});
+  const {data,error}=await tmp.auth.signUp({email,password:pass});
+  if(error && !/already|registered|exists/i.test(error.message||'')) return {error:error.message};
+  const confirm = !error && data && data.user && !data.session;
+  emp.login=email; saveLocal(); await Cloud.pushEmp(emp);
+  return {email, existed:!!error, confirm};
+}
 async function onLoggedIn(sess){
   Cloud.on=true; Cloud.email=sess.user.email; showGate(false);
+  await Cloud.loadRole();
+  if(!Cloud.role.admin && !Cloud.role.emp){
+    toast('Este login ainda não está ligado a ninguém da equipe — fale com o gerente');
+    try{ await Cloud.client.auth.signOut(); }catch(e){}
+    return;
+  }
+  if(!isAdmin()){ db.pay=[]; db.emps.forEach(e=>{ e.salary=0; e.food=0; e.vtDay=0; e.pin=''; }); saveLocal(); pnWho=myEmp(); currentView='ponto'; setView('ponto'); }
   try{
     await Cloud.pull();
     await Cloud.pushSchedule();
     for(const p of db.punch.filter(x=>!x.synced)) await Cloud.pushPunch(p);
     for(const s of db.swaps.filter(x=>!x.synced)) await Cloud.pushSwap(s);
+    for(const x of db.docs.filter(y=>!y.synced && !y.fileData)) await Cloud.pushDoc(x);
+    if(!Cloud.payMissing) for(const x of db.pay.filter(y=>!y.synced)) await Cloud.pushPay(x);
   }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
   render(); updateAcct(); Cloud.subscribe();
 }
 async function doLogin(){
-  const email=$('authEmail').value.trim(), pass=$('authPass').value;
+  const email=loginOf($('authEmail').value), pass=$('authPass').value;
   const err=$('authErr'); err.textContent='';
-  if(!email||!pass){ err.textContent='Preencha e-mail e senha.'; return; }
+  if(!email||!pass){ err.textContent='Preencha usuário e senha.'; return; }
   const btn=$('authBtn'); btn.disabled=true; btn.textContent='Entrando…';
   try{
     const {data,error}=await Cloud.client.auth.signInWithPassword({email,password:pass});
     if(error) throw error;
     await onLoggedIn(data.session); toast('Conectado ✓');
-  }catch(e){ err.textContent=(e&&e.message&&/invalid|credential/i.test(e.message))?'E-mail ou senha incorretos.':'Não foi possível entrar. Tente de novo.'; }
+  }catch(e){ err.textContent=(e&&e.message&&/invalid|credential/i.test(e.message))?'Usuário ou senha incorretos.':'Não foi possível entrar. Tente de novo.'; }
   finally{ btn.disabled=false; btn.textContent='Entrar'; }
 }
 $('authBtn').addEventListener('click', doLogin);
@@ -2255,7 +3207,7 @@ async function boot(){
   try{ const {data}=await Cloud.client.auth.getSession(); sess=data.session; }catch(e){}
   if(sess){ await onLoggedIn(sess); }
   else if(!demo){ showGate(true); }
-  try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; updateAcct(); showGate(true); } }); }catch(e){}
+  try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; Cloud.role=null; updateAcct(); render(); showGate(true); } }); }catch(e){}
 }
 
 /* ---------- dados de exemplo (?demo=1) — só local, nunca sobe pra nuvem ---------- */
@@ -2281,6 +3233,10 @@ function seedDemo(){
       p.marks=marks.map(m=>({t:m.t, kind:m.kind, iso:dOf(d).toISOString(), nsr:nsr++}));
     });
   });
+  db.emps.forEach(e=>{ if(e.id==='paulo'){ e.salary=1800; e.food=400; e.vtDay=10.80; } if(e.id==='ingrid'){ e.salary=2200; e.food=400; e.vtDay=0; } });
+  const wg=empById('wagner');
+  if(wg){ const fd=daysOfMonth(viewMonth).find(d=>d<today && isWork(codeOf(d,wg.id)));
+    if(fd){ setSched(fd,wg.id,'FA',{locked:true,src:'manual'}); const pp=punchOf(fd,wg.id); if(pp) pp.marks=[]; } }
   const me=activeEmps()[0];
   const folgas=daysOfMonth(viewMonth).filter(d=>d>today && codeOf(d,me.id)==='F').slice(0,5);
   const trabs=daysOfMonth(viewMonth).filter(d=>d>today && isWork(codeOf(d,me.id))).slice(0,6);
