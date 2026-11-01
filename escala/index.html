@@ -258,6 +258,10 @@ header{
 .pay-hero .ph-row span{font-size:13px;font-weight:700;opacity:.9}
 .pay-hero .ph-row span small{display:block;font-size:10.5px;font-weight:650;opacity:.75;margin-top:1px}
 .pay-hero .ph-row b{font-size:15px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pay-hero .ph-row.adv b{opacity:.85}
+.pay-hero .ph-out{margin:12px -16px -16px;padding:14px 16px 16px;background:rgba(0,0,0,.16);border-radius:0 0 var(--r) var(--r)}
+.pay-hero .ph-out .ph-l{opacity:.9}
+.pay-hero .ph-out .ph-v{font-size:30px}
 .pay-hero .ph-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
 .pay-hero .ph-grid b{display:block;font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
 .pay-hero .ph-grid span{display:block;font-size:10.5px;font-weight:650;opacity:.8;margin-top:1px;line-height:1.3}
@@ -2441,16 +2445,13 @@ function renderFolha(){
   const rows=payrollAll(viewMonth), P=payCfg();
   const noSal=rows.filter(p=>!p.sal);
   const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length,
-    saldo:a.saldo+p.saldo, va:a.va+(p.food-p.foodDesc), vt:a.vt+p.vtTotal}),{dep:0,adv:0,custo:0,faltas:0,saldo:0,va:0,vt:0});
+    saldo:a.saldo+p.saldo, liq:a.liq+p.liquido, va:a.va+(p.food-p.foodDesc), vt:a.vt+p.vtTotal}),{dep:0,adv:0,custo:0,faltas:0,saldo:0,liq:0,va:0,vt:0});
   const payDay=payDayOf(viewMonth), advDay=advDayOf(viewMonth);
   $('fpKpi').innerHTML='<div class="card pay-hero">'
-    +'<div class="ph-l">A depositar no 5º dia útil · '+cap(dayLabel(payDay))+'</div>'
-    +'<div class="ph-v">'+brl(tot.dep)+'</div>'
-    +'<div class="ph-s">folha de '+monthName(viewMonth)+' (já tirando o adiantamento)</div>'
-    +heroRows(tot.saldo,tot.va,tot.vt)
-    +'<div class="ph-grid"><div><b>'+brl(tot.adv)+'</b><span>adiantamento · '+fmtDM(advDay)+'</span></div>'
-    +'<div><b>'+tot.faltas+'</b><span>falta'+(tot.faltas===1?'':'s')+' no mês</span></div>'
-    +'<div><b>'+brl(tot.custo)+'</b><span>custo total</span></div></div></div>'
+    +payHero({title:'A equipe ganha no mês', total:tot.liq+tot.va+tot.vt, liquido:tot.liq, va:tot.va, vt:tot.vt, adiant:tot.adv, advDay, payDay, dep:tot.dep})
+    +'</div>'
+    +'<div class="kpi" style="margin-top:10px"><div class="k"><div class="v '+(tot.faltas?'bad':'')+'">'+tot.faltas+'</div><div class="l">falta'+(tot.faltas===1?'':'s')+' no mês</div></div>'
+    +'<div class="k"><div class="v">'+brl(tot.custo)+'</div><div class="l">custo total da empresa (com FGTS)</div></div></div>'
     +'<div class="btn-row" style="margin-top:12px"><button class="btn btn-green" id="fpFalta" style="flex:1;font-size:14.5px">Registrar falta</button>'
     +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>';
   $('fpList').innerHTML = rows.length ? rows.map(p=>{
@@ -2462,8 +2463,9 @@ function renderFolha(){
       if(!bits.length) bits.push(p.clt?'sem ocorrências':'PJ · sem descontos de lei');
       return '<div class="fc-row" data-pay="'+p.e.id+'">'+avatar(p.e)
         +'<div class="fc-b"><div class="n">'+esc(p.e.name)+(p.clt?'':'<span class="tag-pj">PJ</span>')+'</div>'
-        +'<div class="s">'+(p.sal?'salário '+brl(p.sal)+' · ':'<b style="color:var(--gold-ink)">sem salário cadastrado</b> · ')+bits.join(' · ')+'</div></div>'
-        +'<div class="fc-v"><div class="v">'+brl(p.depositar)+'</div><div class="l">'+(p.paid.saldo?'✓ pago':'a depositar')+'</div></div></div>';
+        +'<div class="s">'+(p.sal?'salário '+brl(p.sal)+' · ':'<b style="color:var(--gold-ink)">sem salário cadastrado</b> · ')+bits.join(' · ')+'</div>'
+        +'<div class="s">ganha <b style="color:var(--ink-soft)">'+brl(p.liquido+p.food-p.foodDesc+p.vtTotal)+'</b> no mês</div></div>'
+        +'<div class="fc-v"><div class="v">'+brl(p.depositar)+'</div><div class="l">'+(p.paid.saldo?'✓ transferido':'transferir '+fmtDM(p.payDay))+'</div></div></div>';
     }).join('') : '<div class="empty"><p>Sem equipe cadastrada.</p></div>';
   $('fpAlerts').innerHTML = noSal.length
     ? '<div class="banner warn"><span><b>Falta cadastrar o salário</b> de '+esc(noSal.map(p=>p.e.name).join(', '))+'. Toque na pessoa → <b>Salário e benefícios</b>.</span></div>' : '';
@@ -2471,11 +2473,21 @@ function renderFolha(){
   $('fpLanc').addEventListener('click',()=>openPayEntrySheet(null,null));
   Array.prototype.forEach.call(document.querySelectorAll('[data-pay]'),b=>b.addEventListener('click',()=>openPayslip(b.getAttribute('data-pay'))));
 }
-function heroRows(saldo,va,vt,sub){
-  const P=payCfg(), r=(l,v,s)=>'<div class="ph-row"><span>'+l+(s?'<small>'+s+'</small>':'')+'</span><b>'+brl(v)+'</b></div>';
-  return '<div class="ph-list">'+r('Saldo do salário',saldo,sub&&sub.saldo)
-    +r('Vale-alimentação (VA)',va,(sub&&sub.va)||(P.payBenefits?'':'pago à parte'))
-    +r('Vale-transporte (VT)',vt,(sub&&sub.vt)||(P.payBenefits?'':'pago à parte'))+'</div>';
+/* card: quanto ganha no mês (total) e quanto transferir no 5º dia útil */
+function payHero(o){
+  const P=payCfg(), sub=o.sub||{}, apart=P.payBenefits?'':' · pago à parte';
+  const r=(l,v,s,cls)=>'<div class="ph-row'+(cls?' '+cls:'')+'"><span>'+l+(s?'<small>'+s+'</small>':'')+'</span><b>'+v+'</b></div>';
+  return '<div class="ph-l">'+o.title+'</div>'
+    +'<div class="ph-v">'+brl(o.total)+'</div>'
+    +'<div class="ph-s">salário líquido + VA + VT de '+monthName(viewMonth)+'</div>'
+    +'<div class="ph-list">'
+    +r('Salário líquido', brl(o.liquido), sub.liq)
+    +r('Vale-alimentação (VA)', brl(o.va), (sub.va||'')+apart)
+    +r('Vale-transporte (VT)', brl(o.vt), (sub.vt||'')+apart)
+    +r('Adiantamento · '+cap(dayLabel(o.advDay)), '− '+brl(o.adiant), sub.adv||'já sai no dia '+(P.advDay||15), 'adv')
+    +'</div>'
+    +'<div class="ph-out"><div class="ph-l">Transferir no 5º dia útil · '+cap(dayLabel(o.payDay))+'</div>'
+    +'<div class="ph-v">'+brl(o.dep)+'</div>'+(o.after||'')+'</div>';
 }
 function slipLine(label,val,sub,cls){
   return '<div class="sl-row'+(cls?' '+cls:'')+'"><div class="sl-k">'+label+(sub?'<small>'+sub+'</small>':'')+'</div><div class="sl-v">'+val+'</div></div>';
@@ -2485,11 +2497,14 @@ function openPayslip(empId){
   let h='<div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">'+avatar(e)
     +'<div style="flex:1"><div style="font-size:15px;font-weight:800">'+esc(e.name)+(p.clt?' <span class="chip neutral" style="padding:2px 7px;font-size:10px">CLT</span>':'<span class="tag-pj">PJ</span>')+'</div>'
     +'<div style="font-size:12.5px;color:var(--ink-faint);font-weight:650">'+cap(monthName(viewMonth))+' · '+(p.hasSched?p.work+' dias de trabalho na escala':'~'+p.work+' dias (estimado pela escala '+e.scale+')')+'</div></div></div>';
-  h+='<div class="pay-hero" style="margin-top:0"><div class="ph-l">Depositar no 5º dia útil · '+cap(dayLabel(p.payDay))+'</div>'
-    +'<div class="ph-v">'+brl(p.depositar)+'</div>'
-    +heroRows(p.saldo, p.food-p.foodDesc, p.vtTotal, {saldo:'líquido '+brl(p.liquido)+' − adiantamento '+brl(p.adiant),
-        va:p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'', vt:p.vtDays+' dias × '+brl(+e.vtDay||0)})
-    +'<div style="margin-top:10px">'+payPaidChip(p,'saldo')+'</div></div>';
+  h+='<div class="pay-hero" style="margin-top:0">'
+    +payHero({title:esc(e.name)+' ganha no mês', total:p.liquido+p.food-p.foodDesc+p.vtTotal, liquido:p.liquido, va:p.food-p.foodDesc, vt:p.vtTotal,
+      adiant:p.adiant, advDay:p.advDay, payDay:p.payDay, dep:p.depositar,
+      sub:{liq:brl(p.sal)+' de salário'+(p.clt?' − descontos':'')+(p.valFaltas?' (com '+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+')':''),
+           va:p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'', vt:p.vtDays+' dias × '+brl(+e.vtDay||0),
+           adv:(p.adiantOv?'valor ajustado':p.advPct+'% do salário')+(p.paid.adiant?' · pago':'')},
+      after:p.paid.saldo?'<div style="margin-top:8px">'+payPaidChip(p,'saldo')+'</div>':''})
+    +'</div>';
   if(!p.sal) h+='<div class="banner warn"><span>Cadastre o salário para a conta sair certa.</span></div>';
 
   h+='<div class="section-title" style="margin:18px 4px 8px">Proventos</div><div class="card slip">';
