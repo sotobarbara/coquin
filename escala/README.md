@@ -136,6 +136,8 @@ Cada funcionário tem **usuário e senha próprios** e bate o ponto **no própri
 - **Salário e folha ficam só com o gerente**: o funcionário não vê Fechar, Folha, salários nem o ponto
   dos colegas — isso é garantido no banco (RLS), não só na tela. Logins de funcionário também
   **não acessam** vendas/estoque/caixa do app principal.
+- **Foto**: cada um coloca a **própria foto** em *Minha conta* (ou o gerente em *Equipe → pessoa → Foto*).
+  A foto é recortada e reduzida no celular (~20 KB). Quem não tem foto ganha um **bonequinho** próprio.
 - **Atestado**: o funcionário anexa a foto/PDF com o período; o gerente vê em **Pedidos**, abre o anexo,
   e ao **aprovar** os dias viram *Atestado* na escala (sem desconto, sem VT). Arquivos num bucket
   privado do Supabase (`atestados`), visíveis só pra pessoa e pro gerente.

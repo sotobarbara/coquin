@@ -126,6 +126,7 @@ insert into public.app_admins(email)
 -- novo gerente depois: insert into public.app_admins(email) values ('email@dominio.com');
 
 alter table public.shift_employees add column if not exists login_email text;   -- login do funcionário
+alter table public.shift_employees add column if not exists photo text;         -- foto (data:image/jpeg;base64, ~20 KB)
 
 -- salário e benefícios saem de shift_employees (que o funcionário enxerga) e vão para uma tabela só de gerente
 create table if not exists public.payroll_people (
@@ -156,6 +157,14 @@ create or replace function public.my_role() returns json
   language sql stable security definer set search_path = public as $$
   select json_build_object('admin', public.is_admin(), 'emp', public.my_emp())
 $$;
+-- o funcionário coloca/troca a própria foto pelo portal (só a dele, só imagem pequena)
+create or replace function public.set_my_photo(p text) returns void
+  language plpgsql security definer set search_path = public as $$
+begin
+  if public.my_emp() is null then raise exception 'Login sem cadastro na equipe'; end if;
+  if p is not null and (length(p) > 400000 or p !~ '^data:image/(jpeg|png|webp);base64,') then raise exception 'Foto inválida'; end if;
+  update public.shift_employees set photo = p, updated_at = now() where id = public.my_emp();
+end $$;
 create or replace function public.server_now() returns timestamptz language sql stable as $$ select now() $$;
 
 -- trava do ponto do funcionário: só a própria pessoa, só acrescenta marcação,

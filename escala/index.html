@@ -77,6 +77,11 @@ body.emp-mode .admin-only{display:none!important}
 .sw-acts button{white-space:nowrap}
 .av{width:36px;height:36px;border-radius:999px;overflow:hidden;background:var(--pc);flex:none}
 .av svg{width:100%;height:100%;display:block}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-ed{display:flex;align-items:center;gap:14px;margin-top:8px}
+.photo-ed .av{width:72px;height:72px}
+.photo-ed .pb{display:flex;flex-direction:column;gap:8px;flex:1}
+.fld .photo-ed label.btn-ghost,.photo-ed label.btn-ghost{display:block;text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:750;color:var(--ink-soft);margin:0;padding:11px 14px}
 .avi{display:grid;place-items:center;width:100%;height:100%;color:#fff;font-weight:800;font-size:15px}
 .av.sm{width:22px;height:22px}
 .av.sm .avi{font-size:10px}
@@ -711,8 +716,19 @@ function avatarSVG(a){
   return '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
     +'<circle cx="50" cy="50" r="50" fill="'+bg+'"/>'+back+ears+face+beard+top+cap2+brows+blush+eyes+mouth+glasses+earrings+'</svg>';
 }
+/* quem ainda não tem foto ganha um bonequinho próprio (sempre o mesmo para o mesmo nome) */
+function autoFace(seed){
+  let h=0; String(seed||'?').split('').forEach(c=>{ h=(h*31+c.charCodeAt(0))|0; });
+  const r=mulberry32(h), pick=a=>a[Math.floor(r()*a.length)];
+  const style=pick(['short','short','curly','bob','longwave','bun']);
+  const fem=style==='bob'||style==='longwave'||style==='bun';
+  return {bg:pick(['#F3EAD8','#E9E3F1','#DEEAF4','#E3EFE4','#F6E3DF','#EFE9DA']), skin:pick(['#F4D6BA','#E8C39E','#D9A47A','#B97E55','#8D5A3B','#F3D4B6']),
+    hair:pick(['#2E2622','#231A16','#4A3326','#6B4A2F','#1C1C1C','#8A5A33']), style, beard:!fem && r()<.35, glasses:r()<.2, earrings:fem && r()<.5};
+}
+function photoOK(src){ return typeof src==='string' && /^data:image\/(jpeg|png|webp);base64,/.test(src); }
 function avatar(emp,cls){
-  const inner=(emp&&emp.face)?avatarSVG(emp.face):'<span class="avi">'+initials(emp&&emp.name)+'</span>';
+  const inner=(emp&&photoOK(emp.photo))? '<img src="'+emp.photo+'" alt="">'
+    : avatarSVG((emp&&emp.face)||autoFace(emp&&(emp.id||emp.name)));
   return '<span class="av '+(cls||'')+'" style="--pc:'+((emp&&emp.color)||'#95A096')+'">'+inner+'</span>';
 }
 function avatarInline(e){ return '<span style="display:inline-flex;vertical-align:-5px;margin-right:7px">'+avatar(e,'sm')+'</span>'; }
@@ -1630,6 +1646,7 @@ const Cloud={
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
         active:e.active!==false, scale:e.scale||'6x1', start:e.start_t||'', end:e.end_t||'', lunch:(e.lunch==null?60:+e.lunch),
         contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'', login:e.login_email||'',
+        photo:(e.photo!==undefined? (e.photo||null) : (prevE[e.id]?prevE[e.id].photo:null)),
         salary:pv(e,'salary',e.id,'salary',undefined), food:pv(e,'food',e.id,'food',0), vtDay:pv(e,'vt_day',e.id,'vtDay',0),
         advPct:(e.adv_pct!=null?+e.adv_pct:(prevE[e.id]?prevE[e.id].advPct:null)), deps:pv(e,'deps',e.id,'deps',0)}));
     }else if(db.emps.length){ for(const e of db.emps) await this.pushEmp(e); }
@@ -1680,12 +1697,12 @@ const Cloud={
   async pushEmp(e){ if(!this.on || !isAdmin()) return;
     const row={id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
       active:e.active!==false, scale:e.scale||'6x1', start_t:e.start, end_t:e.end, lunch:e.lunch||0, contract:e.contract||'clt',
-      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null, login_email:e.login||null};
+      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null, login_email:e.login||null, photo:photoOK(e.photo)?e.photo:null};
     const pay={salary:+e.salary||0, food:+e.food||0, vt_day:+e.vtDay||0, adv_pct:e.advPct==null?null:+e.advPct, deps:+e.deps||0};
     try{
       let r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'});
       if(r.error && /column|schema/i.test(r.error.message||'')){            /* SETUP.sql v4 ainda não rodou */
-        delete row.login_email; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast();
+        delete row.login_email; delete row.photo; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast();
       }
       if(r.error) throw r.error;
       /* salário: tabela só de gerente (v4); sem ela, cai nas colunas antigas */
@@ -2061,7 +2078,8 @@ function openTeamSheet(){
 function openEmpSheet(id,payFocus){
   const e=id?empById(id):{id:'',name:'',role:'Atendimento',color:'#446349',active:true,scale:'6x1',start:'15:00',end:'23:00',lunch:60,contract:'clt',prefOff:[],pin:'',admission:'',salary:0,food:0,vtDay:0,advPct:null,deps:0};
   if(!e) return;
-  let h='<div class="fld"><label>Nome</label><input id="epName" value="'+esc(e.name)+'" placeholder="ex.: Wagner"></div>'
+  let h='<div class="fld"><label>Foto</label><div id="epPhotoBox">'+photoEditor(e,'ep')+'</div><div class="hint">Foto real da pessoa (ela também pode colocar pelo portal). Sem foto, fica um bonequinho.</div></div>'
+   +'<div class="fld"><label>Nome</label><input id="epName" value="'+esc(e.name)+'" placeholder="ex.: Wagner"></div>'
    +'<div class="fld"><label>Cargo</label><input id="epRole" value="'+esc(e.role||'')+'" placeholder="Atendimento"></div>'
    +'<div class="fld"><label>Vínculo</label><div class="opt" id="epContract">'
    +'<button data-v="clt" class="'+(isCLT(e)?'sel':'')+'"><span class="ot">CLT</span><span class="os">entra nas regras da CLT</span></button>'
@@ -2101,6 +2119,15 @@ function openEmpSheet(id,payFocus){
   if(id) h+='<div class="btn-row"><button class="btn-ghost btn-danger" id="epDel">Excluir da equipe</button></div>';
   openSheet(id?'Editar pessoa':'Nova pessoa', h, ()=>{
     let active=e.active!==false, prefOff=(e.prefOff||[]).slice(), scale=e.scale, contract=e.contract||'clt', fixedOff=!!e.fixedOff;
+    let photo=photoOK(e.photo)?e.photo:null;
+    function bindPhoto(){
+      $('epFile').addEventListener('change', async ev=>{
+        try{ photo=await readPhoto(ev.target.files[0]); $('epPhotoBox').innerHTML=photoEditor(Object.assign({},e,{photo, name:$('epName').value||e.name}),'ep'); bindPhoto(); }
+        catch(err){ toast(esc(err.message)); }
+      });
+      if($('epDel')) $('epDel').addEventListener('click',()=>{ photo=null; $('epPhotoBox').innerHTML=photoEditor(Object.assign({},e,{photo:null}),'ep'); bindPhoto(); });
+    }
+    bindPhoto();
     function offHint(){
       const q=7-(SCALES[scale]?SCALES[scale].days:6);
       const el=$('epOffHint'); if(!el) return;
@@ -2174,7 +2201,7 @@ function openEmpSheet(id,payFocus){
       rec.name=name; rec.role=$('epRole').value.trim();
       rec.start=$('epStart').value||'10:00'; rec.end=$('epEnd').value||'19:00'; rec.lunch=+$('epLunch').value||0;
       rec.scale=scale; rec.contract=contract; rec.color=$('epColor').value; rec.pin=$('epPin').value.trim();
-      rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active;
+      rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active; rec.photo=photo;
       rec.salary=parseMoney($('epSal').value); rec.food=parseMoney($('epFood').value); rec.vtDay=parseMoney($('epVt').value);
       rec.advPct=$('epAdv').value.trim()===''?null:parseMoney($('epAdv').value); rec.deps=Math.max(0,+$('epDeps').value||0);
       if(!id) db.emps.push(rec);
@@ -3071,12 +3098,21 @@ function updateAcct(){
 }
 $('acct').addEventListener('click', ()=>{ if(Cloud.on) openAccountSheet(); else showGate(true); });
 function openAccountSheet(){
+  const me=empById(myEmp());
   const h='<div class="note" style="margin-top:4px">Conectado como <b>'+esc(myEmp()?empName(myEmp()):'gerente')+'</b>'
      +'<br><span style="color:var(--ink-faint)">'+esc(userOf(Cloud.email||''))+'</span></div>'
+     +(me?'<div class="fld"><label>Minha foto</label>'+photoEditor(me,'ac')+'<div class="hint">Aparece na escala e no ponto para a equipe.</div></div>':'')
      +'<div class="fld"><label>Nova senha</label><input id="acPass" type="password" autocomplete="new-password" placeholder="mínimo 6 caracteres"></div>'
      +'<button class="btn btn-green" id="acSave" style="margin-top:12px">Trocar minha senha</button>'
      +'<div class="btn-row"><button class="btn-ghost btn-danger" id="acOut">Sair</button></div>';
   openSheet('Minha conta', h, ()=>{
+    if(me){
+      $('acFile').addEventListener('change', async ev=>{
+        try{ const ph=await readPhoto(ev.target.files[0]); if(await saveMyPhoto(ph)){ toast('Foto salva ✓'); openAccountSheet(); } }
+        catch(err){ toast(esc(err.message)); }
+      });
+      if($('acDel')) $('acDel').addEventListener('click', async()=>{ if(await saveMyPhoto(null)){ toast('Foto removida'); openAccountSheet(); } });
+    }
     $('acSave').addEventListener('click', async()=>{
       const pw=$('acPass').value; if(pw.length<6){ toast('A senha precisa de 6 caracteres ou mais'); return; }
       const {error}=await Cloud.client.auth.updateUser({password:pw});
@@ -3085,6 +3121,33 @@ function openAccountSheet(){
     });
     $('acOut').addEventListener('click', async()=>{ closeSheet(); try{ await Cloud.client.auth.signOut(); }catch(e){} });
   });
+}
+/* foto real: recorta quadrada, reduz para 256px e vira JPEG leve (~20 KB) */
+function readPhoto(file){
+  return new Promise((res,rej)=>{
+    if(!file) return rej(new Error('sem arquivo'));
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const S=256, c=document.createElement('canvas'); c.width=S; c.height=S;
+      const m=Math.min(img.naturalWidth,img.naturalHeight), sx=(img.naturalWidth-m)/2, sy=(img.naturalHeight-m)/2;
+      const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,S,S); g.drawImage(img,sx,sy,m,m,0,0,S,S);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg',0.82));
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('Não consegui ler essa imagem — tente outra foto')); };
+    img.src=url;
+  });
+}
+function photoEditor(e,prefix){
+  return '<div class="photo-ed">'+avatar(e)+'<div class="pb">'
+    +'<label class="btn-ghost" style="text-align:center;cursor:pointer">'+(photoOK(e.photo)?'Trocar foto':'Colocar foto')
+    +'<input type="file" accept="image/*" id="'+prefix+'File" style="display:none"></label>'
+    +(photoOK(e.photo)?'<button class="btn-ghost" id="'+prefix+'Del">Tirar foto</button>':'')+'</div></div>';
+}
+async function saveMyPhoto(photo){
+  const me=empById(myEmp()); if(!me) return;
+  const {error}=await Cloud.client.rpc('set_my_photo',{p:photo});
+  if(error){ toast(/function|schema/i.test(error.message||'')?'Peça ao gerente para rodar o SETUP.sql novo':'Não foi possível salvar a foto'); return false; }
+  me.photo=photo; saveLocal(); render(); return true;
 }
 /* gerente cria o login do funcionário (cliente separado, para não derrubar a sessão do gerente) */
 async function createEmpLogin(emp,user,pass){
