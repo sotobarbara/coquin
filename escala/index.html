@@ -276,6 +276,32 @@ header{
 .sl-row.tot .sl-k{font-size:14.5px;font-weight:850}
 .sl-row.tot .sl-v{font-size:16px;color:var(--green-700)}
 .sl-del{border:0;background:var(--bg);color:var(--ink-faint);width:24px;height:24px;border-radius:999px;font-size:11px;cursor:pointer;flex:none}
+/* ---------- holerite ---------- */
+.hol{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.hol-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--green-tint);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink)}
+.hol-top small{display:block;font-size:11px;font-weight:650;color:var(--ink-soft);margin-top:1px}
+.hol-emp{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.hol-emp b{font-size:14.5px;font-weight:800}
+.hol-emp small{display:block;font-size:11px;font-weight:650;color:var(--ink-faint)}
+.hol-t{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.hol-t th{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-faint);padding:8px 6px;border-bottom:1px solid var(--line);background:var(--bg)}
+.hol-t td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink);font-weight:650}
+.hol-t .hd{text-align:left;padding-left:14px;line-height:1.3}
+.hol-t .hd small{display:block;font-size:10.5px;font-weight:650;color:var(--ink-faint);margin-top:1px}
+.hol-t .hv{text-align:right;white-space:nowrap;width:82px}
+.hol-t td.hv{font-weight:800}
+.hol-t .hv:last-child{padding-right:14px}
+.hol-t td.neg{color:var(--danger)}
+.hol-t tfoot td{font-weight:850;background:var(--bg);border-bottom:0;font-size:12.5px}
+.hol-liq{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;background:var(--green);color:#fff}
+.hol-liq span{display:block;font-size:12px;font-weight:800;line-height:1.3}
+.hol-liq small{display:block;font-size:10.5px;font-weight:650;opacity:.8;margin-top:2px}
+.hol-liq b{font-size:22px;font-weight:850;letter-spacing:-.6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hol-foot{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.hol-foot div{padding:8px 6px;text-align:center;border-right:1px solid var(--line)}
+.hol-foot div:last-child{border-right:0}
+.hol-foot span{display:block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-faint)}
+.hol-foot b{display:block;font-size:11.5px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
 /* ---------- formulários / sheets ---------- */
 .fld{margin-top:13px}
 .fld label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
@@ -2494,50 +2520,48 @@ function slipLine(label,val,sub,cls){
 }
 function openPayslip(empId){
   const p=payroll(viewMonth,empId), e=p.e, P=payCfg();
-  let h='<div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">'+avatar(e)
-    +'<div style="flex:1"><div style="font-size:15px;font-weight:800">'+esc(e.name)+(p.clt?' <span class="chip neutral" style="padding:2px 7px;font-size:10px">CLT</span>':'<span class="tag-pj">PJ</span>')+'</div>'
-    +'<div style="font-size:12.5px;color:var(--ink-faint);font-weight:650">'+cap(monthName(viewMonth))+' · '+(p.hasSched?p.work+' dias de trabalho na escala':'~'+p.work+' dias (estimado pela escala '+e.scale+')')+'</div></div></div>';
-  h+='<div class="pay-hero" style="margin-top:0">'
-    +payHero({title:esc(e.name)+' ganha no mês', total:p.liquido+p.food-p.foodDesc+p.vtTotal, liquido:p.liquido, va:p.food-p.foodDesc, vt:p.vtTotal,
-      adiant:p.adiant, advDay:p.advDay, payDay:p.payDay, dep:p.depositar,
-      sub:{liq:brl(p.sal)+' de salário'+(p.clt?' − descontos':'')+(p.valFaltas?' (com '+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+')':''),
-           va:p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'', vt:p.vtDays+' dias × '+brl(+e.vtDay||0),
-           adv:(p.adiantOv?'valor ajustado':p.advPct+'% do salário')+(p.paid.adiant?' · pago':'')},
-      after:p.paid.saldo?'<div style="margin-top:8px">'+payPaidChip(p,'saldo')+'</div>':''})
+  const num=v=>r2(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const V=[], D=[];                                   /* [descrição, referência, valor] */
+  V.push(['Salário base', '30 dias', p.sal]);
+  p.extras.forEach(x=>V.push(['Horas extras '+x.pct+'%', hm(x.min), x.v]));
+  if(p.dsrEx) V.push(['DSR s/ horas extras', p.repousos+'/'+p.uteis, p.dsrEx]);
+  if(p.bonus) V.push(['Bônus / comissão', '', p.bonus]);
+  if(P.payBenefits){
+    if(p.food) V.push(['Vale-alimentação (VA)', 'mês', p.food]);
+    if(p.vtTotal) V.push(['Vale-transporte (VT)', p.vtDays+'d × '+num(+e.vtDay||0), p.vtTotal]);
+  }
+  if(p.faltas.length) D.push(['Faltas · '+p.faltas.map(fmtDM).join(', '), p.faltas.length+(p.faltas.length===1?' dia':' dias'), p.valFaltas]);
+  if(p.dsrLost) D.push(['DSR perdido (faltas)', p.semanas+' sem.', p.dsrLost]);
+  if(p.valMenos) D.push(['Atrasos / horas a menos', hm(p.menos), p.valMenos]);
+  if(p.inss) D.push(['INSS', (p.inss/p.base*100).toFixed(2).replace('.',',')+'%', p.inss]);
+  if(p.irrf) D.push(['IRRF', '', p.irrf]);
+  if(p.vtDesc) D.push(['Desconto VT', P.vtPct+'%', p.vtDesc]);
+  if(P.payBenefits && p.foodDesc) D.push(['Desconto VA (faltas)', p.faltas.length+'d', p.foodDesc]);
+  D.push(['Adiantamento salarial', fmtDM(p.advDay), p.adiant]);
+  if(p.vales) D.push(['Vales', '', p.vales]);
+  if(p.desc) D.push(['Outros descontos', '', p.desc]);
+  const totV=r2(V.reduce((a,x)=>a+x[2],0)), totD=r2(D.reduce((a,x)=>a+x[2],0));
+  const row=(x,col)=>'<tr><td class="hd">'+esc(x[0])+(x[1]?'<small>'+esc(x[1])+'</small>':'')+'</td><td class="hv">'+(col===0?num(x[2]):'')+'</td><td class="hv neg">'+(col===1?num(x[2]):'')+'</td></tr>';
+
+  let h='<div class="hol">'
+    +'<div class="hol-top"><div><b>'+esc(COMPANY.name)+'</b> · '+esc(COMPANY.unit)+'<small>Recibo de pagamento · '+cap(monthName(viewMonth))+'</small></div>'
+    +'<span class="'+(p.clt?'chip neutral':'tag-pj')+'">'+(p.clt?'CLT':'PJ')+'</span></div>'
+    +'<div class="hol-emp">'+avatar(e)+'<div><b>'+esc(e.name)+'</b><small>'+esc(e.role||'—')+' · '+e.scale+' · '+(p.hasSched?p.work+' dias na escala':'~'+p.work+' dias (estimado)')+'</small></div></div>'
+    +'<table class="hol-t"><thead><tr><th class="hd">Descrição · ref.</th><th class="hv">Vencimentos</th><th class="hv">Descontos</th></tr></thead><tbody>'
+    +V.map(x=>row(x,0)).join('')+D.map(x=>row(x,1)).join('')
+    +'</tbody><tfoot><tr><td class="hd">Totais</td><td class="hv">'+num(totV)+'</td><td class="hv neg">'+num(totD)+'</td></tr></tfoot></table>'
+    +'<div class="hol-liq"><div><span>Valor líquido · depositar no 5º dia útil</span><small>'+cap(dayLabel(p.payDay))+' · '+num(totV)+' − '+num(totD)+'</small></div><b>'+brl(p.depositar)+'</b></div>'
+    +'<div class="hol-foot">'
+    +'<div><span>Salário base</span><b>'+num(p.sal)+'</b></div>'
+    +'<div><span>Base INSS</span><b>'+(p.clt?num(p.base):'—')+'</b></div>'
+    +'<div><span>FGTS do mês</span><b>'+(p.clt?num(p.fgts):'—')+'</b></div>'
+    +'<div><span>Base IRRF</span><b>'+(p.clt?num(Math.max(0,p.base-p.inss)):'—')+'</b></div></div>'
     +'</div>';
+  if(!P.payBenefits && (p.food||p.vtTotal)) h+='<div class="note">Pagos à parte (fora do depósito): <b>VA '+brl(p.food-p.foodDesc)+'</b> · <b>VT '+brl(p.vtTotal)+'</b>.</div>';
+  if(p.clt && !p.irrf) h+='<div class="note" style="margin-top:8px">IRRF isento (até R$ 5.000 · Lei 15.270/2025). Adiantamento '+(p.adiantOv?'com valor ajustado':'de '+p.advPct+'% do salário')+(p.paid.adiant?' · <b>já pago</b>':'')+'.</div>';
+  if(p.paid.saldo) h+='<div style="margin-top:10px">'+payPaidChip(p,'saldo')+'</div>';
   if(!p.sal) h+='<div class="banner warn"><span>Cadastre o salário para a conta sair certa.</span></div>';
-
-  h+='<div class="section-title" style="margin:18px 4px 8px">Proventos</div><div class="card slip">';
-  h+=slipLine('Salário base', brl(p.sal), 'dia '+brl(p.dia)+' · hora '+brl(p.hora));
-  p.extras.forEach(x=>{ h+=slipLine('Horas extras '+x.pct+'%', brl(x.v), hm(x.min)+(x.pct===+P.extraOffPct&&p.clt?' · domingo/folga':'')); });
-  if(p.dsrEx) h+=slipLine('DSR sobre horas extras', brl(p.dsrEx), p.repousos+' domingos/feriados ÷ '+p.uteis+' dias úteis');
-  if(p.bonus) h+=slipLine('Bônus / comissão', brl(p.bonus));
-  h+='</div>';
-
-  h+='<div class="section-title" style="margin:18px 4px 8px">Descontos</div><div class="card slip">';
-  let anyD=false; const D=(l,v,s)=>{ anyD=true; h+=slipLine(l,'<span class="neg">− '+brl(v)+'</span>',s); };
-  if(p.faltas.length) D('Faltas ('+p.faltas.length+' dia'+(p.faltas.length===1?'':'s')+')', p.valFaltas, p.faltas.map(fmtDM).join(', ')+' · '+brl(p.dia)+'/dia');
-  if(p.dsrLost) D('DSR perdido', p.dsrLost, p.semanas+' semana(s) com falta (Lei 605/1949)');
-  if(p.valMenos) D('Atrasos / horas a menos', p.valMenos, hm(p.menos));
-  if(p.inss) D('INSS', p.inss, 'progressivo sobre '+brl(p.base)+' ('+(p.base?(p.inss/p.base*100).toFixed(2).replace('.',','):'0')+'% efetivo)');
-  if(p.irrf) D('IRRF', p.irrf);
-  if(p.vtDesc) D('Vale-transporte '+P.vtPct+'%', p.vtDesc, 'limite: o VT do mês ('+brl(p.vtTotal)+')');
-  if(p.vales) D('Vales', p.vales);
-  if(p.desc) D('Outros descontos', p.desc);
-  if(!anyD) h+=slipLine('Nenhum desconto', '—', p.clt?'':'PJ não tem INSS, IR nem desconto de VT');
-  h+='</div>';
-
-  h+='<div class="card slip" style="margin-top:10px">'
-    +slipLine('Líquido do mês', '<b>'+brl(p.liquido)+'</b>', p.clt&&!p.irrf?'IR: isento (até R$ 5.000 · Lei 15.270/2025)':'')
-    +slipLine('Adiantamento · '+fmtDM(p.advDay), '<span class="neg">− '+brl(p.adiant)+'</span>', (p.adiantOv?'valor ajustado':p.advPct+'% do salário')+' '+payPaidChip(p,'adiant'))
-    +slipLine('Saldo do salário', '<b>'+brl(p.saldo)+'</b>','','tot')
-    +'</div>';
-
-  h+='<div class="section-title" style="margin:18px 4px 8px">Benefícios</div><div class="card slip">'
-    +slipLine('Vale-alimentação (VA)', brl(p.food-p.foodDesc), p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'valor do mês')
-    +slipLine('Vale-transporte (VT)', brl(p.vtTotal), p.vtDays+' dias × '+brl(+e.vtDay||0)+(p.faltas.length?' (sem os dias de falta)':''))
-    +'</div>';
-  if(p.clt) h+='<div class="note"><b>Custo para a empresa:</b> '+brl(p.custo)+' (inclui FGTS de '+P.fgts+'% = '+brl(p.fgts)+', que não sai do salário).</div>';
+  if(p.clt) h+='<div class="note"><b>Custo para a empresa:</b> '+brl(p.custo)+' (salário, VA, VT e FGTS de '+P.fgts+'%, que não sai do salário).</div>';
 
   h+='<div class="section-title" style="margin:18px 4px 8px">Lançamentos do mês</div><div class="card slip">';
   const evs=[];
@@ -2556,7 +2580,7 @@ function openPayslip(empId){
   h+='</div>';
 
   h+='<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
-    +'<div class="btn-row"><button class="btn-ghost" id="psAdv">'+(p.paid.adiant?'Desfazer adiant. pago':'Adiantamento pago ✓')+'</button>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psAdv">'+(p.paid.adiant?'Desfazer adiant. pago':'Adiant. pago ✓')+'</button>'
     +'<button class="btn-ghost" id="psPaid">'+(p.paid.saldo?'Desfazer saldo pago':'Saldo pago ✓')+'</button></div>'
     +'<div class="btn-row"><button class="btn-ghost" id="psSal">Salário e benefícios</button><button class="btn-ghost" id="psAdvEdit">Ajustar adiantamento</button></div>';
   openSheet('Holerite do mês', h, ()=>{
