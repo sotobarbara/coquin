@@ -8,7 +8,7 @@
 create table if not exists public.checklists (
   date       date not null,
   kind       text not null,               -- 'entrada' | 'saida'
-  person     text default '',             -- responsável do dia (Ionnara / Ingrid / Paulo)
+  person     text default '',             -- responsável do dia (Ingrid / Paulo)
   items      jsonb default '{}'::jsonb,    -- { chave_da_tarefa: true, ... }  (tarefas ✓)
   readings   jsonb default '{}'::jsonb,    -- { chave: numero, ... }  (temperatura, desperdício, sobra)
   done_at    timestamptz,                  -- quando ficou 100% concluído
