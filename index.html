@@ -598,6 +598,9 @@ main{padding-top:18px}
 
   <div class="card" id="custoCard" style="margin-top:12px;padding:14px 16px"></div>
 
+  <div class="section-title">Vendas por loja <span class="st-side">cartão/Pix da Stone</span></div>
+  <div id="storeSales"></div>
+
   <button type="button" class="import-btn" id="bankBtn" style="margin-top:12px">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     Importar extrato do banco (saídas)
@@ -785,9 +788,31 @@ main{padding-top:18px}
     <div class="money"><span class="cur">R$</span><input id="goalCost" type="text" inputmode="decimal" placeholder="1,50"></div>
   </div>
   <button class="btn-primary" id="saveGoal">Salvar</button>
+  <button type="button" class="btn-ghost" id="openLojas" style="margin-top:10px">🏪 Lojas e maquininhas</button>
   <div class="acct" id="acctRow"></div>
   <button type="button" class="btn-ghost" id="openReset" style="margin-top:14px;color:var(--danger);border-color:#E7C3BE">🧹 Zerar tudo e recomeçar</button>
   <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--ink-faint);font-weight:700" id="verStamp"></div>
+</div>
+
+<!-- SHEET: lojas e maquininhas -->
+<div class="sheet" id="lojaSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Lojas e maquininhas</h2>
+  <p class="h2sub">Cada venda da Stone vem com o nº de série da maquininha. Diga de qual loja é cada uma — uma loja pode ter várias.</p>
+  <div class="field">
+    <label>Lojas</label>
+    <div id="lojaStores"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="lojaNew" class="txt-input" type="text" placeholder="Nova loja (ex.: Praia do Futuro)" autocomplete="off" style="flex:1">
+      <button type="button" class="btn-ghost" id="lojaAdd" style="width:auto;padding:12px 16px;margin:0">+ Add</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>Maquininhas (N de série) → loja</label>
+    <div id="lojaSerials"></div>
+  </div>
+  <button class="btn-primary" id="saveLojas">Salvar</button>
+  <button type="button" class="btn-ghost" id="cancelLojas" style="margin-top:10px">Fechar</button>
 </div>
 
 <!-- SHEET: zerar tudo e recomeçar -->
@@ -951,8 +976,14 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v4.9 · importar vários dias';
+const APP_VERSION='v5.0 · vendas por loja';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
+/* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja. */
+const DEFAULT_STORES=[{id:'beiramar',name:'Beira Mar'},{id:'imprensa',name:'Imprensa'},{id:'praia',name:'Praia do Futuro'},{id:'eventos',name:'Eventos'}];
+const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':'beiramar','4AH78SS4W':'imprensa','XC03020753916':'eventos'};
+function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap={...DEFAULT_SERIALMAP}; }
+function storeName(id){ const s=(db.settings.stores||[]).find(x=>x.id===id); return s?s.name:null; }
+function serialStore(ser){ return (db.settings.serialMap||{})[ser]||null; }
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
 const QUENGAS_POR_COCO=2;   // 1 coco = 2 quengas
@@ -1002,14 +1033,16 @@ const Cloud={
         const hoursRev=(Array.isArray(r.hours_rev)?r.hours_rev:(loc&&Array.isArray(loc.hoursRev)?loc.hoursRev:null));
         const taxa=(+r.taxa||0)||(loc&&loc.taxa)||0;
         const gel30=(r.gel30!=null?+r.gel30:(loc&&loc.gel30))||0, gel35=(r.gel35!=null?+r.gel35:(loc&&loc.gel35))||0;
-        return {id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa,stoneTx:r.stone_tx||0,gel30,gel35,hours,hoursRev,note:r.note||'',synced:true};
+        const bySerial=(r.by_serial&&typeof r.by_serial==='object')?r.by_serial:((loc&&loc.bySerial)||null);
+        return {id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa,stoneTx:r.stone_tx||0,gel30,gel35,hours,hoursRev,bySerial,note:r.note||'',synced:true};
       });
       const dates=new Set(rows.map(r=>r.date));
       const pending=(db.closings||[]).filter(x=>x&&!dates.has(x.date)&&!x.synced);
       db.closings=rows.concat(pending);
       pending.forEach(x=>this.pushClosing(x));
     }
-    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{}; }
+    if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1041,7 +1074,7 @@ const Cloud={
     return error;
   },
   async pushClosing(c){ if(!this.on)return;
-    const full={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,gel30:c.gel30||0,gel35:c.gel35||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),note:c.note||''};
+    const full={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,gel30:c.gel30||0,gel35:c.gel35||0,hours:(c.hours||null),hours_rev:(c.hoursRev||null),by_serial:(c.bySerial||null),note:c.note||''};
     const mid ={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,taxa:c.taxa||0,stone_tx:c.stoneTx||0,hours:(c.hours||null),note:c.note||''};   // sem hours_rev/gel30/gel35
     const core={date:c.date,gelatos:c.gelatos,revenue:c.revenue,pix:c.pix,debito:c.debito,credito:c.credito,stone_tx:c.stoneTx||0,note:c.note||''};
     try{ const err=await this._upsert('closings',[full,mid,core],'date'); if(err) throw err; c.synced=true; Store.save(db); }
@@ -1063,7 +1096,8 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2}); if(error) await this.client.from('app_settings').upsert(base); }catch(e){} },
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null};
+    try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'closings'},()=>this.pull().then(render).catch(()=>{}))
@@ -1100,6 +1134,7 @@ let db=Store.load();
 if(!db||db.version!==2){ db=migrateV1(); Store.save(db); }
 if(!db.settings) db.settings={unit:DEFAULT_UNIT,price:DEFAULT_PRICE};
 if(db.settings.custoPlan==null) db.settings.custoPlan=DEFAULT_COST;
+ensureStores();
 if(!db.goals) db.goals={};
 if(!db.closings) db.closings=[];
 if(!db.stock) db.stock=[];
@@ -1363,6 +1398,52 @@ function initChartTips(){
     c.addEventListener('pointerup', ()=>setTimeout(hide,1400));
   });
 }
+/* agrega vendas por loja a partir do bySerial dos fechamentos (cartão/Pix da Stone) */
+function blankStoreAgg(){ return {rev:0,tx:0,g30:0,g35:0,pix:0,debito:0,credito:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),serials:new Set()}; }
+function storeAggregate(list){
+  const by={}, un=blankStoreAgg(); let anyData=false;
+  (db.settings.stores||[]).forEach(s=>{ by[s.id]=blankStoreAgg(); });
+  list.forEach(c=>{ const bs=c.bySerial; if(!bs||typeof bs!=='object') return;
+    Object.keys(bs).forEach(ser=>{ const s=bs[ser]||{}; anyData=true;
+      const sid=serialStore(ser); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser);
+      g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=s.g30||0; g.g35+=s.g35||0;
+      g.pix+=s.pix||0; g.debito+=s.debito||0; g.credito+=s.credito||0;
+      if(Array.isArray(s.hours)) s.hours.forEach((n,h)=>g.hours[h]+=(n||0));
+      if(Array.isArray(s.hoursRev)) s.hoursRev.forEach((v,h)=>g.hoursRev[h]+=(+v||0));
+    });
+  });
+  return {by, un, anyData};
+}
+function storePeakHour(g){ const pr=price()>0?price():DEFAULT_PRICE; const per=new Array(24).fill(0); let has=false;
+  for(let h=0;h<24;h++){ const v=g.hoursRev[h]>0? g.hoursRev[h]/pr : g.hours[h]; per[h]=v; if(v>0)has=true; }
+  if(!has) return null; let p=0; for(let h=1;h<24;h++) if(per[h]>per[p]) p=h; return p; }
+function renderStoreSales(list){
+  const host=document.getElementById('storeSales'); if(!host) return;
+  const {by,un,anyData}=storeAggregate(list);
+  if(!anyData){ host.innerHTML='<div class="card" style="padding:16px;color:var(--ink-faint);font-size:13px;text-align:center">Importe o CSV da Stone (com a coluna <b>N DE SERIE</b>) para ver as vendas separadas por loja.</div>'; return; }
+  const stores=(db.settings.stores||[]).map(s=>({...s,g:by[s.id]})).filter(s=>s.g&&(s.g.tx>0||s.g.rev>0));
+  stores.sort((a,b)=>b.g.rev-a.g.rev);
+  const totRev=stores.reduce((s,x)=>s+x.g.rev,0)+un.rev;
+  let html='';
+  stores.forEach(s=>{ const g=s.g, gel=Math.round(g.g30+g.g35), pk=storePeakHour(g), pct=totRev>0?Math.round(g.rev/totRev*100):0;
+    html+='<div class="card" style="padding:14px 16px;margin-bottom:10px">'
+      +'<div class="chk-head"><span>🏪 '+s.name+' <small style="opacity:.6;font-weight:700">'+pct+'% do total</small></span><b>'+money(g.rev)+'</b></div>'
+      +'<div class="chk-row"><span>Vendas (cartão/Pix)</span><span><b>'+NUM.format(g.tx)+'</b></span></div>'
+      +'<div class="chk-row"><span>Gelatos</span><span>'+NUM.format(gel)+' <small style="opacity:.6">('+NUM.format(Math.round(g.g35))+'× 3 bolas · '+NUM.format(Math.round(g.g30))+'× 2 bolas)</small></span></div>'
+      +'<div class="chk-row"><span>Ticket médio</span><span>'+(gel>0?money(g.rev/gel):'—')+'</span></div>'
+      +(pk!=null?'<div class="chk-row"><span>Hora de pico</span><span>'+pk+'h–'+((pk+1)%24)+'h</span></div>':'')
+      +'<div class="chk-row" style="opacity:.6"><span>Maquininha(s)</span><span style="font-size:11px">'+[...g.serials].join(', ')+'</span></div>'
+      +'</div>';
+  });
+  if(un.rev>0||un.serials.size){ html+='<div class="card" style="padding:13px 16px;margin-bottom:10px;border:1.5px dashed var(--danger)">'
+      +'<div class="chk-head"><span>⚠︎ Sem loja definida</span><b>'+money(un.rev)+'</b></div>'
+      +'<div class="chk-row"><span>'+un.tx+' vendas em maquininha(s) não atribuída(s)</span></div>'
+      +'<div class="chk-row" style="font-size:11px;opacity:.75"><span>'+[...un.serials].join(', ')+'</span></div>'
+      +'<button type="button" class="btn-ghost" id="unassignedToLojas" style="margin-top:8px">Atribuir maquininhas às lojas</button>'
+      +'</div>'; }
+  host.innerHTML=html;
+  const b=document.getElementById('unassignedToLojas'); if(b) b.addEventListener('click',()=>{ closeSheets(); openLojaSheet(); });
+}
 function renderDados(){
   const key=viewMonth, list=closingsOf(key).slice().sort((a,b)=>a.date.localeCompare(b.date)), goal=goalFor(key);
   let rev=0,gel=0; const byM={pix:0,dinheiro:0,debito:0,credito:0};
@@ -1481,6 +1562,7 @@ function renderDados(){
   const depNow=Math.round(currentStock('deposito')), lojaNow=Math.round(currentStock('loja')), sorvNow=Math.round(currentStock('sorvete'));
   if(db.stock.length) rows.push(irow('📦','Estoque: <b>'+NUM.format(depNow)+' cocos</b> (depósito) · <b>'+NUM.format(lojaNow)+' quengas</b> (loja) · <b>'+NUM.format(sorvNow)+' caixas</b>'));
   ins.innerHTML = rows.length? rows.join('') : '<div class="irow"><div class="it">Feche alguns dias e importe a Stone para ver os destaques.</div></div>';
+  renderStoreSales(list);
 }
 
 /* ---------- Caixa (entrada e saída) ---------- */
@@ -1649,9 +1731,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet].forEach(s=>s.classList.remove('on')); }
 function openPassSheet(){ closeSheets(); document.getElementById('passNew').value=''; document.getElementById('passNew2').value=''; document.getElementById('passErr').textContent=''; openSheet(passSheet); }
 document.getElementById('cancelPass').addEventListener('click', closeSheets);
 document.getElementById('savePass').addEventListener('click', async ()=>{
@@ -1730,7 +1812,7 @@ function parseStoneCSV(text){
   if(lines.length<2) return [];
   const delim=(lines[0].split(';').length>=lines[0].split(',').length)?';':',';
   const hdr=lines[0].split(delim).map(h=>h.trim().toUpperCase());
-  const iDate=hdr.indexOf('DATA DA VENDA'), iProd=hdr.indexOf('PRODUTO'), iVal=hdr.indexOf('VALOR BRUTO'), iLiq=hdr.indexOf('VALOR LIQUIDO'), iSt=hdr.indexOf('ULTIMO STATUS');
+  const iDate=hdr.indexOf('DATA DA VENDA'), iProd=hdr.indexOf('PRODUTO'), iVal=hdr.indexOf('VALOR BRUTO'), iLiq=hdr.indexOf('VALOR LIQUIDO'), iSt=hdr.indexOf('ULTIMO STATUS'), iSer=hdr.indexOf('N DE SERIE');
   if(iDate<0||iProd<0||iVal<0) return null;   // não é o relatório da Stone
   const days={};
   for(let n=1;n<lines.length;n++){
@@ -1742,15 +1824,22 @@ function parseStoneCSV(text){
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
     const liq=iLiq>=0?parseMoney(r[iLiq]):val;   // valor líquido (após taxa Stone)
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
-    if(prod.indexOf('pix')>=0) d.pix+=val;
-    else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0) d.debito+=val;
-    else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0) d.credito+=val;
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),bySerial:{}});
+    let kind=null;
+    if(prod.indexOf('pix')>=0){ d.pix+=val; kind='pix'; }
+    else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0){ d.debito+=val; kind='debito'; }
+    else if(prod.indexOf('credito')>=0||prod.indexOf('crédito')>=0){ d.credito+=val; kind='credito'; }
     else continue;
-    d.taxa += Math.max(0, val-liq);   // taxa da Stone desse dia
-    d.tx++;
+    const tx=Math.max(0, val-liq);   // taxa da Stone dessa venda
+    d.taxa += tx; d.tx++;
     const cb=classifyBolas(val); d.g30+=cb.g30; d.g35+=cb.g35;   // 2 bolas (30) x 3 bolas (35)
-    const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; if(hh>=0&&hh<24){ d.hours[hh]++; d.hoursRev[hh]+=val; }   // receita bruta por hora
+    const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; const okH=(hh>=0&&hh<24);
+    if(okH){ d.hours[hh]++; d.hoursRev[hh]+=val; }   // receita bruta por hora
+    // por maquininha (N DE SERIE) → permite separar por loja depois
+    const ser=(iSer>=0 && r[iSer]!=null ? String(r[iSer]).trim() : '')||'—';
+    const s=d.bySerial[ser]||(d.bySerial[ser]={pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
+    s[kind]+=val; s.taxa+=tx; s.tx++; s.g30+=cb.g30; s.g35+=cb.g35;
+    if(okH){ s.hours[hh]++; s.hoursRev[hh]+=val; }
   }
   return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
 }
@@ -1793,9 +1882,9 @@ function bulkImportStone(){
       const cashDay=Math.max(0,(c.revenue||0)-((c.pix||0)+(c.debito||0)+(c.credito||0)));
       c.pix=d.pix; c.debito=d.debito; c.credito=d.credito; c.stoneTx=d.tx; c.taxa=d.taxa||0; c.gel30=g30; c.gel35=g35;
       c.revenue=tot+cashDay; c.gelatos=cardGel+(cashDay>0.5&&price()>0?Math.round(cashDay/price()):0);
-      if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; updated++; Cloud.pushClosing(c);
+      if(d.hours) c.hours=d.hours; if(d.hoursRev) c.hoursRev=d.hoursRev; if(d.bySerial) c.bySerial=d.bySerial; updated++; Cloud.pushClosing(c);
     } else {
-      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:cardGel, revenue:tot, pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, gel30:g30, gel35:g35, hours:d.hours||null, hoursRev:d.hoursRev||null, note:'', createdAt:new Date().toISOString() };
+      c={ id:'c'+(seed+i)+'-'+d.date.replace(/-/g,''), date:d.date, gelatos:cardGel, revenue:tot, pix:d.pix, debito:d.debito, credito:d.credito, taxa:d.taxa||0, stoneTx:d.tx, gel30:g30, gel35:g35, hours:d.hours||null, hoursRev:d.hoursRev||null, bySerial:d.bySerial||null, note:'', createdAt:new Date().toISOString() };
       db.closings.push(c); created++; Cloud.pushClosing(c);
     }
   });
@@ -1858,7 +1947,7 @@ $('saveClose').addEventListener('click', ()=>{
   if(target){ Object.assign(target, d); saved=target; }
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
   // fluxo por hora + taxa Stone vindos do CSV importado (se houver para esta data)
-  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; saved.taxa=sp.taxa||0; saved.gel30=Math.round(sp.g30||0); saved.gel35=Math.round(sp.g35||0); }
+  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; if(sp.bySerial) saved.bySerial=sp.bySerial; saved.taxa=sp.taxa||0; saved.gel30=Math.round(sp.g30||0); saved.gel35=Math.round(sp.g35||0); }
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
   // nuvem: se a data mudou na edição, remove a antiga
@@ -2018,6 +2107,38 @@ $('saveTransfer').addEventListener('click', ()=>{
 /* ---- zerar tudo e recomeçar ---- */
 $('openReset').addEventListener('click', ()=>{ closeSheets(); openSheet(resetSheet); });
 $('cancelReset').addEventListener('click', closeSheets);
+
+/* ---- Lojas e maquininhas (de-para N DE SERIE → loja) ---- */
+let _lojaStores=[], _lojaMap={};
+function allSerials(){ const set=new Set(); (db.closings||[]).forEach(c=>{ if(c.bySerial&&typeof c.bySerial==='object') Object.keys(c.bySerial).forEach(s=>set.add(s)); }); Object.keys(_lojaMap).forEach(s=>set.add(s)); set.delete('—'); return [...set].sort(); }
+function openLojaSheet(){ closeSheets(); _lojaStores=(db.settings.stores||[]).map(s=>({...s})); _lojaMap={...(db.settings.serialMap||{})}; renderLojaSheet(); openSheet(lojaSheet); }
+function renderLojaSheet(){
+  const host=$('lojaStores'); host.innerHTML='';
+  _lojaStores.forEach((s,i)=>{
+    const row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:6px';
+    const inp=document.createElement('input'); inp.type='text'; inp.className='txt-input'; inp.value=s.name||''; inp.style.flex='1';
+    inp.addEventListener('input',()=>{ _lojaStores[i].name=inp.value; });
+    const del=document.createElement('button'); del.type='button'; del.className='btn-ghost'; del.textContent='✕'; del.style.cssText='width:auto;padding:12px 14px;margin:0;color:var(--danger);border-color:#E7C3BE';
+    del.addEventListener('click',()=>{ const id=_lojaStores[i].id; _lojaStores.splice(i,1); Object.keys(_lojaMap).forEach(k=>{ if(_lojaMap[k]===id) delete _lojaMap[k]; }); renderLojaSheet(); });
+    row.appendChild(inp); row.appendChild(del); host.appendChild(row);
+  });
+  const sh=$('lojaSerials'); sh.innerHTML='';
+  const sers=allSerials();
+  if(!sers.length){ sh.innerHTML='<div style="font-size:12px;color:var(--ink-faint)">Nenhuma maquininha ainda. Importe o CSV da Stone e elas aparecem aqui.</div>'; return; }
+  sers.forEach(ser=>{
+    const row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:6px';
+    const lab=document.createElement('span'); lab.textContent=ser; lab.style.cssText='flex:1;font-size:12px;font-weight:800;font-family:ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    const sel=document.createElement('select'); sel.className='txt-input'; sel.style.cssText='flex:1;width:auto;padding:10px';
+    const o0=document.createElement('option'); o0.value=''; o0.textContent='(sem loja)'; sel.appendChild(o0);
+    _lojaStores.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.name||s.id; if(_lojaMap[ser]===s.id) o.selected=true; sel.appendChild(o); });
+    sel.addEventListener('change',()=>{ if(sel.value) _lojaMap[ser]=sel.value; else delete _lojaMap[ser]; });
+    row.appendChild(lab); row.appendChild(sel); sh.appendChild(row);
+  });
+}
+$('openLojas').addEventListener('click', openLojaSheet);
+$('lojaAdd').addEventListener('click', ()=>{ const v=$('lojaNew').value.trim(); if(!v) return; _lojaStores.push({id:'loja'+Date.now().toString(36),name:v}); $('lojaNew').value=''; renderLojaSheet(); });
+$('cancelLojas').addEventListener('click', closeSheets);
+$('saveLojas').addEventListener('click', ()=>{ const clean=_lojaStores.filter(s=>s.name&&s.name.trim()); db.settings.stores=clean.map(s=>({id:s.id,name:s.name.trim()})); db.settings.serialMap=_lojaMap; ensureStores(); Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Lojas atualizadas 🏪'); });
 $('doReset').addEventListener('click', async ()=>{
   $('doReset').disabled=true;
   const cocos=parseInt2($('resetCocos').value), quengas=parseInt2($('resetQuengas').value), today=todayISO();
