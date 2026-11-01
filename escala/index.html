@@ -252,6 +252,12 @@ header{
 .pay-hero .ph-l{font-size:11.5px;font-weight:750;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
 .pay-hero .ph-v{font-size:32px;font-weight:850;letter-spacing:-1px;margin-top:4px;line-height:1.1;font-variant-numeric:tabular-nums}
 .pay-hero .ph-s{font-size:12px;font-weight:650;opacity:.82;margin-top:4px}
+.pay-hero .ph-list{margin-top:14px;padding-top:4px;border-top:1px solid rgba(255,255,255,.2)}
+.pay-hero .ph-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.pay-hero .ph-row:last-child{border-bottom:0}
+.pay-hero .ph-row span{font-size:13px;font-weight:700;opacity:.9}
+.pay-hero .ph-row span small{display:block;font-size:10.5px;font-weight:650;opacity:.75;margin-top:1px}
+.pay-hero .ph-row b{font-size:15px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pay-hero .ph-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
 .pay-hero .ph-grid b{display:block;font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
 .pay-hero .ph-grid span{display:block;font-size:10.5px;font-weight:650;opacity:.8;margin-top:1px;line-height:1.3}
@@ -1489,7 +1495,7 @@ function payroll(key,empId){
 }
 function payrollAll(key){ return activeEmps().map(e=>payroll(key,e.id)); }
 function csvFolha(key){
-  const L=[['Funcionario','Vinculo','Salario base','Faltas (dias)','Desconto faltas','DSR perdido','Horas extras','DSR s/ extras','Bonus','Atrasos','Base','INSS','IRRF','Desc. VT 6%','Vales','Outros desc.','Liquido do mes','Adiantamento (dia '+(payCfg().advDay||15)+')','Saldo salario','Alimentacao','VT','A depositar ('+fmtDM(payDayOf(key))+')','FGTS (empresa)']];
+  const L=[['Funcionario','Vinculo','Salario base','Faltas (dias)','Desconto faltas','DSR perdido','Horas extras','DSR s/ extras','Bonus','Atrasos','Base','INSS','IRRF','Desc. VT 6%','Vales','Outros desc.','Liquido do mes','Adiantamento (dia '+(payCfg().advDay||15)+')','Saldo salario','VA (alimentacao)','VT','A depositar ('+fmtDM(payDayOf(key))+')','FGTS (empresa)']];
   const n=v=>String(r2(v).toFixed(2)).replace('.',',');
   payrollAll(key).forEach(p=>L.push([p.e.name, p.clt?'CLT':'PJ', n(p.sal), p.faltas.length, n(p.valFaltas), n(p.dsrLost), n(p.valExtras), n(p.dsrEx), n(p.bonus), n(p.valMenos),
     n(p.base), n(p.inss), n(p.irrf), n(p.vtDesc), n(p.vales), n(p.desc), n(p.liquido), n(p.adiant), n(p.saldo), n(p.food-p.foodDesc), n(p.vtTotal), n(p.depositar), n(p.fgts)]));
@@ -2434,12 +2440,14 @@ function payPaidChip(p,which){
 function renderFolha(){
   const rows=payrollAll(viewMonth), P=payCfg();
   const noSal=rows.filter(p=>!p.sal);
-  const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length}),{dep:0,adv:0,custo:0,faltas:0});
+  const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length,
+    saldo:a.saldo+p.saldo, va:a.va+(p.food-p.foodDesc), vt:a.vt+p.vtTotal}),{dep:0,adv:0,custo:0,faltas:0,saldo:0,va:0,vt:0});
   const payDay=payDayOf(viewMonth), advDay=advDayOf(viewMonth);
   $('fpKpi').innerHTML='<div class="card pay-hero">'
     +'<div class="ph-l">A depositar no 5º dia útil · '+cap(dayLabel(payDay))+'</div>'
     +'<div class="ph-v">'+brl(tot.dep)+'</div>'
-    +'<div class="ph-s">saldo da folha de '+monthName(viewMonth)+' (já tirando o adiantamento)</div>'
+    +'<div class="ph-s">folha de '+monthName(viewMonth)+' (já tirando o adiantamento)</div>'
+    +heroRows(tot.saldo,tot.va,tot.vt)
     +'<div class="ph-grid"><div><b>'+brl(tot.adv)+'</b><span>adiantamento · '+fmtDM(advDay)+'</span></div>'
     +'<div><b>'+tot.faltas+'</b><span>falta'+(tot.faltas===1?'':'s')+' no mês</span></div>'
     +'<div><b>'+brl(tot.custo)+'</b><span>custo total</span></div></div></div>'
@@ -2463,6 +2471,12 @@ function renderFolha(){
   $('fpLanc').addEventListener('click',()=>openPayEntrySheet(null,null));
   Array.prototype.forEach.call(document.querySelectorAll('[data-pay]'),b=>b.addEventListener('click',()=>openPayslip(b.getAttribute('data-pay'))));
 }
+function heroRows(saldo,va,vt,sub){
+  const P=payCfg(), r=(l,v,s)=>'<div class="ph-row"><span>'+l+(s?'<small>'+s+'</small>':'')+'</span><b>'+brl(v)+'</b></div>';
+  return '<div class="ph-list">'+r('Saldo do salário',saldo,sub&&sub.saldo)
+    +r('Vale-alimentação (VA)',va,(sub&&sub.va)||(P.payBenefits?'':'pago à parte'))
+    +r('Vale-transporte (VT)',vt,(sub&&sub.vt)||(P.payBenefits?'':'pago à parte'))+'</div>';
+}
 function slipLine(label,val,sub,cls){
   return '<div class="sl-row'+(cls?' '+cls:'')+'"><div class="sl-k">'+label+(sub?'<small>'+sub+'</small>':'')+'</div><div class="sl-v">'+val+'</div></div>';
 }
@@ -2473,7 +2487,8 @@ function openPayslip(empId){
     +'<div style="font-size:12.5px;color:var(--ink-faint);font-weight:650">'+cap(monthName(viewMonth))+' · '+(p.hasSched?p.work+' dias de trabalho na escala':'~'+p.work+' dias (estimado pela escala '+e.scale+')')+'</div></div></div>';
   h+='<div class="pay-hero" style="margin-top:0"><div class="ph-l">Depositar no 5º dia útil · '+cap(dayLabel(p.payDay))+'</div>'
     +'<div class="ph-v">'+brl(p.depositar)+'</div>'
-    +'<div class="ph-s">'+(P.payBenefits?'saldo do salário '+brl(p.saldo)+' + alimentação e VT '+brl(p.benef):'saldo do salário (benefícios pagos à parte)')+'</div>'
+    +heroRows(p.saldo, p.food-p.foodDesc, p.vtTotal, {saldo:'líquido '+brl(p.liquido)+' − adiantamento '+brl(p.adiant),
+        va:p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'', vt:p.vtDays+' dias × '+brl(+e.vtDay||0)})
     +'<div style="margin-top:10px">'+payPaidChip(p,'saldo')+'</div></div>';
   if(!p.sal) h+='<div class="banner warn"><span>Cadastre o salário para a conta sair certa.</span></div>';
 
@@ -2504,8 +2519,8 @@ function openPayslip(empId){
     +'</div>';
 
   h+='<div class="section-title" style="margin:18px 4px 8px">Benefícios</div><div class="card slip">'
-    +slipLine('Alimentação', brl(p.food-p.foodDesc), p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'valor do mês')
-    +slipLine('Vale-transporte', brl(p.vtTotal), p.vtDays+' dias × '+brl(+e.vtDay||0)+(p.faltas.length?' (sem os dias de falta)':''))
+    +slipLine('Vale-alimentação (VA)', brl(p.food-p.foodDesc), p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'valor do mês')
+    +slipLine('Vale-transporte (VT)', brl(p.vtTotal), p.vtDays+' dias × '+brl(+e.vtDay||0)+(p.faltas.length?' (sem os dias de falta)':''))
     +'</div>';
   if(p.clt) h+='<div class="note"><b>Custo para a empresa:</b> '+brl(p.custo)+' (inclui FGTS de '+P.fgts+'% = '+brl(p.fgts)+', que não sai do salário).</div>';
 
@@ -2696,7 +2711,7 @@ function openPaySettingsSheet(){
    +'<div class="fld"><label>FGTS (%)</label><input type="number" inputmode="decimal" id="psFg" value="'+P.fgts+'"></div></div>'
    +sw('psIr',P.irrf,'Descontar IRRF','tabela 2026 com isenção até R$ 5.000 (Lei 15.270/2025)')
    +sw('psFood',P.foodFalta,'Falta desconta a alimentação','proporcional aos dias de trabalho')
-   +sw('psBen',P.payBenefits,'Alimentação e VT vão no depósito','somados no valor do 5º dia útil')
+   +sw('psBen',P.payBenefits,'VA e VT vão no depósito','somados no valor do 5º dia útil')
    +'</div>'
    +'<div class="section-title" style="margin:16px 4px 8px">Tabela do INSS (empregado)</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
    +P.inss.map((f,i)=>'<div class="fld2"><div class="fld"><label>Faixa '+(i+1)+' até (R$)</label><input inputmode="decimal" data-il="'+i+'" value="'+moneyIn(f[0])+'"></div>'
