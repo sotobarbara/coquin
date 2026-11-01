@@ -976,14 +976,22 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v5.0 · vendas por loja';
+const APP_VERSION='v5.1 · loja por período';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
-/* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja. */
+/* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
+   Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
 const DEFAULT_STORES=[{id:'beiramar',name:'Beira Mar'},{id:'imprensa',name:'Imprensa'},{id:'praia',name:'Praia do Futuro'},{id:'eventos',name:'Eventos'}];
-const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':'beiramar','4AH78SS4W':'imprensa','XC03020753916':'eventos'};
-function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap={...DEFAULT_SERIALMAP}; }
+const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':{store:'beiramar',from:'2026-10-23'},'4AH78SS4W':'imprensa','XC03020753916':'eventos'};
+function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap=JSON.parse(JSON.stringify(DEFAULT_SERIALMAP));
+  // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
+  if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'}; }
 function storeName(id){ const s=(db.settings.stores||[]).find(x=>x.id===id); return s?s.name:null; }
-function serialStore(ser){ return (db.settings.serialMap||{})[ser]||null; }
+function serialStore(ser,date){ const v=(db.settings.serialMap||{})[ser]; if(v==null) return null;
+  if(typeof v==='string') return v||null;
+  const test=p=>{ if(!p||!p.store) return null; if(p.from&&date&&date<p.from) return null; if(p.to&&date&&date>p.to) return null; return p.store; };
+  if(Array.isArray(v)){ for(const p of v){ const r=test(p); if(r) return r; } return null; }
+  if(typeof v==='object') return test(v);
+  return null; }
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
 const QUENGAS_POR_COCO=2;   // 1 coco = 2 quengas
@@ -1405,7 +1413,7 @@ function storeAggregate(list){
   (db.settings.stores||[]).forEach(s=>{ by[s.id]=blankStoreAgg(); });
   list.forEach(c=>{ const bs=c.bySerial; if(!bs||typeof bs!=='object') return;
     Object.keys(bs).forEach(ser=>{ const s=bs[ser]||{}; anyData=true;
-      const sid=serialStore(ser); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser);
+      const sid=serialStore(ser,c.date); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser);
       g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=s.g30||0; g.g35+=s.g35||0;
       g.pix+=s.pix||0; g.debito+=s.debito||0; g.credito+=s.credito||0;
       if(Array.isArray(s.hours)) s.hours.forEach((n,h)=>g.hours[h]+=(n||0));
@@ -2109,9 +2117,15 @@ $('openReset').addEventListener('click', ()=>{ closeSheets(); openSheet(resetShe
 $('cancelReset').addEventListener('click', closeSheets);
 
 /* ---- Lojas e maquininhas (de-para N DE SERIE → loja) ---- */
-let _lojaStores=[], _lojaMap={};
+let _lojaStores=[], _lojaMap={}, _lojaFrom={};
 function allSerials(){ const set=new Set(); (db.closings||[]).forEach(c=>{ if(c.bySerial&&typeof c.bySerial==='object') Object.keys(c.bySerial).forEach(s=>set.add(s)); }); Object.keys(_lojaMap).forEach(s=>set.add(s)); set.delete('—'); return [...set].sort(); }
-function openLojaSheet(){ closeSheets(); _lojaStores=(db.settings.stores||[]).map(s=>({...s})); _lojaMap={...(db.settings.serialMap||{})}; renderLojaSheet(); openSheet(lojaSheet); }
+function openLojaSheet(){ closeSheets(); _lojaStores=(db.settings.stores||[]).map(s=>({...s})); _lojaMap={}; _lojaFrom={};
+  const sm=db.settings.serialMap||{};
+  Object.keys(sm).forEach(ser=>{ const v=sm[ser];
+    if(typeof v==='string'){ _lojaMap[ser]=v; }
+    else if(Array.isArray(v)&&v[0]){ _lojaMap[ser]=v[0].store; if(v[0].from) _lojaFrom[ser]=v[0].from; }
+    else if(v&&typeof v==='object'){ _lojaMap[ser]=v.store; if(v.from) _lojaFrom[ser]=v.from; } });
+  renderLojaSheet(); openSheet(lojaSheet); }
 function renderLojaSheet(){
   const host=$('lojaStores'); host.innerHTML='';
   _lojaStores.forEach((s,i)=>{
@@ -2119,26 +2133,35 @@ function renderLojaSheet(){
     const inp=document.createElement('input'); inp.type='text'; inp.className='txt-input'; inp.value=s.name||''; inp.style.flex='1';
     inp.addEventListener('input',()=>{ _lojaStores[i].name=inp.value; });
     const del=document.createElement('button'); del.type='button'; del.className='btn-ghost'; del.textContent='✕'; del.style.cssText='width:auto;padding:12px 14px;margin:0;color:var(--danger);border-color:#E7C3BE';
-    del.addEventListener('click',()=>{ const id=_lojaStores[i].id; _lojaStores.splice(i,1); Object.keys(_lojaMap).forEach(k=>{ if(_lojaMap[k]===id) delete _lojaMap[k]; }); renderLojaSheet(); });
+    del.addEventListener('click',()=>{ const id=_lojaStores[i].id; _lojaStores.splice(i,1); Object.keys(_lojaMap).forEach(k=>{ if(_lojaMap[k]===id){ delete _lojaMap[k]; delete _lojaFrom[k]; } }); renderLojaSheet(); });
     row.appendChild(inp); row.appendChild(del); host.appendChild(row);
   });
   const sh=$('lojaSerials'); sh.innerHTML='';
   const sers=allSerials();
   if(!sers.length){ sh.innerHTML='<div style="font-size:12px;color:var(--ink-faint)">Nenhuma maquininha ainda. Importe o CSV da Stone e elas aparecem aqui.</div>'; return; }
   sers.forEach(ser=>{
-    const row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:6px';
+    const wrap=document.createElement('div'); wrap.style.cssText='margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)';
+    const row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center';
     const lab=document.createElement('span'); lab.textContent=ser; lab.style.cssText='flex:1;font-size:12px;font-weight:800;font-family:ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
     const sel=document.createElement('select'); sel.className='txt-input'; sel.style.cssText='flex:1;width:auto;padding:10px';
     const o0=document.createElement('option'); o0.value=''; o0.textContent='(sem loja)'; sel.appendChild(o0);
     _lojaStores.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.name||s.id; if(_lojaMap[ser]===s.id) o.selected=true; sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ if(sel.value) _lojaMap[ser]=sel.value; else delete _lojaMap[ser]; });
-    row.appendChild(lab); row.appendChild(sel); sh.appendChild(row);
+    const from=document.createElement('div'); from.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px;font-size:11.5px;color:var(--ink-faint)';
+    const flbl=document.createElement('span'); flbl.textContent='só a partir de'; flbl.style.whiteSpace='nowrap';
+    const fin=document.createElement('input'); fin.type='date'; fin.className='txt-input'; fin.style.cssText='flex:1;padding:8px;font-size:12px'; fin.value=_lojaFrom[ser]||'';
+    const updFromVis=()=>{ from.style.display = _lojaMap[ser]? 'flex':'none'; };
+    sel.addEventListener('change',()=>{ if(sel.value) _lojaMap[ser]=sel.value; else { delete _lojaMap[ser]; delete _lojaFrom[ser]; fin.value=''; } updFromVis(); });
+    fin.addEventListener('change',()=>{ if(fin.value) _lojaFrom[ser]=fin.value; else delete _lojaFrom[ser]; });
+    row.appendChild(lab); row.appendChild(sel); from.appendChild(flbl); from.appendChild(fin);
+    wrap.appendChild(row); wrap.appendChild(from); sh.appendChild(wrap); updFromVis();
   });
 }
 $('openLojas').addEventListener('click', openLojaSheet);
 $('lojaAdd').addEventListener('click', ()=>{ const v=$('lojaNew').value.trim(); if(!v) return; _lojaStores.push({id:'loja'+Date.now().toString(36),name:v}); $('lojaNew').value=''; renderLojaSheet(); });
 $('cancelLojas').addEventListener('click', closeSheets);
-$('saveLojas').addEventListener('click', ()=>{ const clean=_lojaStores.filter(s=>s.name&&s.name.trim()); db.settings.stores=clean.map(s=>({id:s.id,name:s.name.trim()})); db.settings.serialMap=_lojaMap; ensureStores(); Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Lojas atualizadas 🏪'); });
+$('saveLojas').addEventListener('click', ()=>{ const clean=_lojaStores.filter(s=>s.name&&s.name.trim()); db.settings.stores=clean.map(s=>({id:s.id,name:s.name.trim()}));
+  const map={}; Object.keys(_lojaMap).forEach(ser=>{ const st=_lojaMap[ser]; if(!st) return; const f=_lojaFrom[ser]; map[ser]= f? {store:st,from:f} : st; });
+  db.settings.serialMap=map; ensureStores(); Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Lojas atualizadas 🏪'); });
 $('doReset').addEventListener('click', async ()=>{
   $('doReset').disabled=true;
   const cocos=parseInt2($('resetCocos').value), quengas=parseInt2($('resetQuengas').value), today=todayISO();
