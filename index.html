@@ -976,7 +976,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v5.1 · loja por período';
+const APP_VERSION='v5.2 · dias por loja';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1407,13 +1407,13 @@ function initChartTips(){
   });
 }
 /* agrega vendas por loja a partir do bySerial dos fechamentos (cartão/Pix da Stone) */
-function blankStoreAgg(){ return {rev:0,tx:0,g30:0,g35:0,pix:0,debito:0,credito:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),serials:new Set()}; }
+function blankStoreAgg(){ return {rev:0,tx:0,g30:0,g35:0,pix:0,debito:0,credito:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),serials:new Set(),days:new Set()}; }
 function storeAggregate(list){
   const by={}, un=blankStoreAgg(); let anyData=false;
   (db.settings.stores||[]).forEach(s=>{ by[s.id]=blankStoreAgg(); });
   list.forEach(c=>{ const bs=c.bySerial; if(!bs||typeof bs!=='object') return;
     Object.keys(bs).forEach(ser=>{ const s=bs[ser]||{}; anyData=true;
-      const sid=serialStore(ser,c.date); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser);
+      const sid=serialStore(ser,c.date); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser); g.days.add(c.date);
       g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=s.g30||0; g.g35+=s.g35||0;
       g.pix+=s.pix||0; g.debito+=s.debito||0; g.credito+=s.credito||0;
       if(Array.isArray(s.hours)) s.hours.forEach((n,h)=>g.hours[h]+=(n||0));
@@ -1433,9 +1433,11 @@ function renderStoreSales(list){
   stores.sort((a,b)=>b.g.rev-a.g.rev);
   const totRev=stores.reduce((s,x)=>s+x.g.rev,0)+un.rev;
   let html='';
-  stores.forEach(s=>{ const g=s.g, gel=Math.round(g.g30+g.g35), pk=storePeakHour(g), pct=totRev>0?Math.round(g.rev/totRev*100):0;
+  stores.forEach(s=>{ const g=s.g, gel=Math.round(g.g30+g.g35), pk=storePeakHour(g), pct=totRev>0?Math.round(g.rev/totRev*100):0, nd=g.days.size;
     html+='<div class="card" style="padding:14px 16px;margin-bottom:10px">'
       +'<div class="chk-head"><span>🏪 '+s.name+' <small style="opacity:.6;font-weight:700">'+pct+'% do total</small></span><b>'+money(g.rev)+'</b></div>'
+      +'<div class="chk-row"><span>Dias de operação</span><span><b>'+nd+'</b> dia'+(nd!==1?'s':'')+'</span></div>'
+      +'<div class="chk-row"><span>Média por dia</span><span>'+(nd>0?money(g.rev/nd)+' · '+NUM.format(Math.round(g.tx/nd))+' vendas':'—')+'</span></div>'
       +'<div class="chk-row"><span>Vendas (cartão/Pix)</span><span><b>'+NUM.format(g.tx)+'</b></span></div>'
       +'<div class="chk-row"><span>Gelatos</span><span>'+NUM.format(gel)+' <small style="opacity:.6">('+NUM.format(Math.round(g.g35))+'× 3 bolas · '+NUM.format(Math.round(g.g30))+'× 2 bolas)</small></span></div>'
       +'<div class="chk-row"><span>Ticket médio</span><span>'+(gel>0?money(g.rev/gel):'—')+'</span></div>'
