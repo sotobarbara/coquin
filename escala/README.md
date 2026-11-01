@@ -5,7 +5,8 @@ e o **controle de ponto** da Coquin. Página única (`index.html`, sem build), p
 **celular**. Funciona com **login da equipe** e sincroniza entre os aparelhos via Supabase;
 sem login, funciona local no aparelho.
 
-Cinco abas: **Escala · Ponto · Trocas · Fechar · Folha**.
+Cinco abas: **Escala · Ponto · Pedidos · Fechar · Folha** (o funcionário vê só Escala, Ponto e Pedidos —
+o **Portal do colaborador**).
 
 ---
 
@@ -120,6 +121,32 @@ hora**. Na aprovação o recálculo é refeito com a escala mais atual.
 - **Exportação em CSV**: resumo do mês e espelho de ponto completo (abre no Excel/Sheets e vai
   direto pra folha).
 
+## Portal do colaborador (login individual)
+
+Cada funcionário tem **usuário e senha próprios** e bate o ponto **no próprio celular**:
+
+- **Gerente cria o acesso**: *Equipe* → pessoa → **Acesso ao app** → usuário (ex.: `wagner`) e senha →
+  *Criar acesso*. O app mostra o link, o usuário e a senha para mandar pra pessoa.
+- **O funcionário entra** com `wagner` + senha e cai no **Portal do colaborador**: bate o **próprio ponto**,
+  vê **Meu mês** (horas, extras, saldo), a **escala**, pede **troca de folga** e **envia atestado**
+  (foto ou PDF). Troca a própria senha em *Minha conta*.
+- **Não dá pra burlar o ponto**: a hora vem do **relógio do servidor** e o banco recusa marcação de
+  outra pessoa, de outro dia, com horário diferente do servidor (± 3 min) ou que altere/apague
+  marcação antiga (trava `guard_punch` no `SETUP.sql`). A localização vai junto quando o celular permite.
+- **Salário e folha ficam só com o gerente**: o funcionário não vê Fechar, Folha, salários nem o ponto
+  dos colegas — isso é garantido no banco (RLS), não só na tela. Logins de funcionário também
+  **não acessam** vendas/estoque/caixa do app principal.
+- **Atestado**: o funcionário anexa a foto/PDF com o período; o gerente vê em **Pedidos**, abre o anexo,
+  e ao **aprovar** os dias viram *Atestado* na escala (sem desconto, sem VT). Arquivos num bucket
+  privado do Supabase (`atestados`), visíveis só pra pessoa e pro gerente.
+
+**Quem é gerente?** Ao rodar o `SETUP.sql`, todo login que já existe no projeto (ex.: o login da equipe)
+vira gerente. Novo gerente depois: `insert into public.app_admins(email) values ('email@dominio.com');`
+
+**No Supabase (uma vez):** *Authentication → Sign In / Providers → Email* → desligue **Confirm email**
+(os logins dos funcionários são internos, `usuario@ponto.coquin.app`, e não recebem e-mail). Esqueceu a
+senha? Redefina em *Authentication → Users*.
+
 ## Folha (pagamento da equipe — CLT e PJ)
 
 Você registra o que aconteceu e o app **já mostra o saldo final** de cada pessoa.
@@ -145,11 +172,16 @@ Você registra o que aconteceu e o app **já mostra o saldo final** de cada pess
 | **Líquido do mês** | R$ 1.724,31 |
 | Adiantamento dia 15 (50%) | − R$ 1.000,00 |
 | Saldo do salário | R$ 724,31 |
-| + Alimentação + VT (25 dias × R$ 10,80) | R$ 670,00 |
-| **Depositar no 5º dia útil** | **R$ 1.394,31** |
+| + Alimentação + VT (23 dias úteis × R$ 10,80) | R$ 648,40 |
+| **Depositar no 5º dia útil** | **R$ 1.372,71** |
 
 Com **1 falta**: sai R$ 66,67 (salário ÷ 30) e o VT do dia (R$ 10,80); o INSS cai R$ 6,00 →
-saldo de **R$ 1.322,85**.
+saldo de **R$ 1.301,25**.
+
+**Dias úteis:** o VT conta os **dias úteis do mês** (segunda a sábado, **sem feriados**) menos faltas,
+atestados e férias. Novembro/2026 tem 23 (tira 02/11 e 20/11). Feriados nacionais já vêm no app
+(inclusive Sexta-feira Santa); os **estaduais/municipais** você coloca em *Ajustes da folha*. Dá pra
+trocar para seg–sex ou para os dias da escala.
 
 ### Regras usadas
 
@@ -176,7 +208,8 @@ no cadastro da pessoa (*Equipe* ou *Salário e benefícios* no holerite).
 ## Backend (Supabase)
 
 Tabelas próprias: `shift_employees`, `shift_schedule`, `shift_swaps`, `time_punches`,
-`payroll_entries` e `shift_config` — **não toca** em vendas, estoque, caixa ou checklist. Por padrão aponta para o
+`payroll_entries`, `payroll_people` (salários), `absence_docs` (atestados), `app_admins` e `shift_config`,
+mais o bucket privado `atestados` — **não toca** em vendas, estoque, caixa ou checklist. Por padrão aponta para o
 **mesmo projeto Supabase** da equipe (mesmo login).
 
 - Rode o [`SETUP.sql`](SETUP.sql) **uma vez** (e de novo depois desta versão, para criar a folha) no **SQL Editor** do Supabase (cria as tabelas,

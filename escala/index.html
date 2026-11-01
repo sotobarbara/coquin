@@ -72,6 +72,9 @@ header{
 .empty p{margin:0;font-size:14px;line-height:1.5}
 .foot{margin:22px 4px 8px;text-align:center;color:var(--ink-faint);font-size:11.5px;line-height:1.5}
 .hide{display:none!important}
+body.emp-mode .admin-only{display:none!important}
+.sheet-body > .hint{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.4}
+.sw-acts button{white-space:nowrap}
 .av{width:36px;height:36px;border-radius:999px;overflow:hidden;background:var(--pc);flex:none}
 .av svg{width:100%;height:100%;display:block}
 .avi{display:grid;place-items:center;width:100%;height:100%;color:#fff;font-weight:800;font-size:15px}
@@ -420,7 +423,7 @@ header{
   <div class="htop">
     <div class="brand">
       <img src="logo-coquin.png" alt="Coquin">
-      <span class="tag">Escala &amp; Ponto</span>
+      <span class="tag" id="brandTag">Escala &amp; Ponto</span>
     </div>
     <button class="acct off" id="acct"><span class="dot"></span><span id="acctLbl">Local</span></button>
   </div>
@@ -438,9 +441,9 @@ header{
   <div class="viewseg" id="viewSeg">
     <button data-view="escala" class="sel">Escala</button>
     <button data-view="ponto">Ponto</button>
-    <button data-view="trocas">Trocas<span class="badge hide" id="swBadge">0</span></button>
-    <button data-view="fechar">Fechar</button>
-    <button data-view="folha">Folha</button>
+    <button data-view="trocas">Pedidos<span class="badge hide" id="swBadge">0</span></button>
+    <button data-view="fechar" class="admin-only">Fechar</button>
+    <button data-view="folha" class="admin-only">Folha</button>
   </div>
 </header>
 
@@ -453,7 +456,7 @@ header{
   <div id="escClt"></div>
   <div class="section-title">Resumo por pessoa <span class="st-side" id="escSumSide"></span></div>
   <div class="card" id="escSummary"></div>
-  <div class="btn-row">
+  <div class="btn-row admin-only">
     <button class="btn-ghost" id="btnTeam">Equipe</button>
     <button class="btn-ghost" id="btnSettings">Ajustes</button>
   </div>
@@ -462,20 +465,27 @@ header{
  <!-- ===================== PONTO ===================== -->
  <div id="viewPonto" class="hide">
   <div id="pnClock"></div>
-  <div class="whotitle" style="margin-top:18px">Quem está batendo o ponto?</div>
-  <div class="who" id="pnWho"></div>
+  <div class="whotitle admin-only" style="margin-top:18px">Quem está batendo o ponto?</div>
+  <div class="who admin-only" id="pnWho"></div>
   <div id="pnAction"></div>
   <div class="section-title">Marcações de hoje</div>
   <div class="card tl" id="pnTimeline"></div>
   <div id="pnSummary"></div>
-  <div class="section-title">Equipe hoje</div>
-  <div class="card" id="pnTeamToday"></div>
+  <div class="section-title admin-only">Equipe hoje</div>
+  <div class="card admin-only" id="pnTeamToday"></div>
   <div class="foot">Comprovante de marcação a cada registro · tolerância de 10 min no dia (art. 58, §1º).</div>
  </div>
 
  <!-- ===================== TROCAS ===================== -->
  <div id="viewTrocas" class="hide">
   <div class="card sw-card">
+    <div style="font-size:14.5px;font-weight:800">Atestado médico</div>
+    <div style="font-size:12.5px;color:var(--ink-faint);font-weight:650;margin-top:3px;line-height:1.45">Tire uma foto (ou mande o PDF) do atestado. O gerente confere e o dia entra como atestado — sem desconto.</div>
+    <button class="btn btn-green" style="margin-top:14px" id="btnNewDoc">Enviar atestado</button>
+  </div>
+  <div class="section-title">Atestados <span class="st-side" id="docSide"></span></div>
+  <div class="card" id="docList"></div>
+  <div class="card sw-card" style="margin-top:22px">
     <div style="font-size:14.5px;font-weight:800">Troca de folga</div>
     <div style="font-size:12.5px;color:var(--ink-faint);font-weight:650;margin-top:3px;line-height:1.45">A escala é recalculada e você vê como ficam os próximos dias antes de confirmar.</div>
     <button class="btn btn-green" style="margin-top:14px" id="btnNewSwap">Solicitar troca de folga</button>
@@ -529,8 +539,8 @@ header{
   <div class="auth-card">
     <img class="alogo" src="logo-coquin-white.png" alt="Coquin">
     <h1>Escala &amp; Ponto</h1>
-    <p>Entre com o login da equipe para a escala e o ponto sincronizarem entre os celulares.</p>
-    <input id="authEmail" type="email" inputmode="email" autocapitalize="none" autocomplete="username" placeholder="e-mail">
+    <p>Entre com o seu usuário para bater o ponto — ou com o login do gerente para a escala, o ponto e a folha.</p>
+    <input id="authEmail" type="text" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" placeholder="usuário ou e-mail">
     <input id="authPass" type="password" autocomplete="current-password" placeholder="senha">
     <div class="auth-err" id="authErr"></div>
     <button class="btn-primary" id="authBtn">Entrar</button>
@@ -567,7 +577,8 @@ header{
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_escala_v1';
-const APP_VERSION='v3.0 · folha de pagamento';
+const EMP_DOMAIN='ponto.coquin.app';                 /* login do funcionário: usuario@ponto.coquin.app */
+const APP_VERSION='v4.0 · portal do colaborador';
 const COMPANY={name:'Coquin', unit:'Imprensa'};
 
 /* ---- equipe (edite em 👥 Equipe; isto é só o cadastro inicial) ---- */
@@ -603,7 +614,10 @@ const DEFAULT_PAY={
   irrf:true, vtPct:6, advDay:15, advPct:50, divisor:220,
   extraPct:50, extraOffPct:100, pjExtraPct:0,
   dsrExtras:true, dsrFalta:false, foodFalta:false,
-  faltaPonto:false, horasPonto:true, fgts:8, payBenefits:true
+  faltaPonto:false, horasPonto:true, fgts:8, payBenefits:true,
+  vtBase:'uteis',          /* 'uteis' = dias úteis do mês sem feriados · 'escala' = dias de trabalho na escala */
+  satUtil:true,            /* sábado conta como dia útil (comércio) */
+  localHolidays:[]         /* feriados estaduais/municipais: ['01-20','01-25'] (repetem todo ano) ou '2026-06-04' */
 };
 /* IRRF mensal (desde maio/2025): até R$ x → alíquota %, parcela a deduzir */
 const IRRF_TABLE=[[2428.80,0,0],[2826.65,7.5,182.16],[3751.05,15,394.16],[4664.68,22.5,675.49],[Infinity,27.5,908.73]];
@@ -714,7 +728,7 @@ function freshDB(){
       prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:'',
       salary:t.salary||0, food:t.food||0, vtDay:t.vtDay||0, advPct:null, deps:0
     })),
-    sched:[], swaps:[], punch:[], pay:[],
+    sched:[], swaps:[], punch:[], pay:[], docs:[],
     cfg:{demand:Object.assign({},DEFAULT_DEMAND), rules:Object.assign({},DEFAULT_RULES), payroll:JSON.parse(JSON.stringify(DEFAULT_PAY))}};
 }
 function normCode(c){ return (c==='M'||c==='T'||c==='I')?WORK:c; }        /* compatibilidade com a v1 */
@@ -730,7 +744,7 @@ function migrateEmp(e){
 }
 let db=Store.load();
 if(!db || !db.version){ db=freshDB(); Store.save(db); }
-db.emps=(db.emps||[]).map(migrateEmp); db.sched=db.sched||[]; db.swaps=db.swaps||[]; db.punch=db.punch||[]; db.pay=db.pay||[];
+db.emps=(db.emps||[]).map(migrateEmp); db.sched=db.sched||[]; db.swaps=db.swaps||[]; db.punch=db.punch||[]; db.pay=db.pay||[]; db.docs=db.docs||[];
 db.sched.forEach(r=>{ r.shift=normCode(r.shift); });
 db.cfg=db.cfg||{};
 if(!db.cfg.demand || typeof db.cfg.demand[0]==='object') db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
@@ -755,6 +769,11 @@ let pnWho=(db.emps[0]||{}).id||'';
 
 /* ---------- pessoas e jornadas ---------- */
 function RULES(){ return db.cfg.rules; }
+/* papel de quem está logado: gerente (tudo) ou funcionário (só o próprio ponto) */
+function isAdmin(){ return !Cloud.on || !Cloud.role || Cloud.role.admin!==false; }
+function myEmp(){ return (Cloud.on && Cloud.role && !Cloud.role.admin) ? Cloud.role.emp : null; }
+function loginOf(u){ u=String(u||'').trim().toLowerCase(); return !u? '' : (u.indexOf('@')>=0? u : slug(u)+'@'+EMP_DOMAIN); }
+function userOf(email){ email=String(email||''); return email.endsWith('@'+EMP_DOMAIN)? email.slice(0,-EMP_DOMAIN.length-1) : email; }
 function activeEmps(){ return db.emps.filter(e=>e.active!==false); }
 function empById(id){ return db.emps.find(e=>e.id===id)||null; }
 function empName(id){ const e=empById(id); return e?e.name:id; }
@@ -1429,7 +1448,18 @@ function holidays(y){
   const sf=easter(y); sf.setDate(sf.getDate()-2); s.add(isoOf(sf));          /* Sexta-feira Santa */
   return (_hol[y]=s);
 }
-function isHoliday(iso){ return holidays(+iso.slice(0,4)).has(iso); }
+function isHoliday(iso){
+  if(holidays(+iso.slice(0,4)).has(iso)) return true;
+  const loc=(db.cfg.payroll&&db.cfg.payroll.localHolidays)||[];
+  return loc.indexOf(iso)>=0 || loc.indexOf(iso.slice(5))>=0;
+}
+const HOL_NAMES={'01-01':'Confraternização','04-21':'Tiradentes','05-01':'Dia do Trabalho','09-07':'Independência','10-12':'N. Sra. Aparecida',
+  '11-02':'Finados','11-15':'Proclamação da República','11-20':'Consciência Negra','12-25':'Natal'};
+function holName(iso){ if(HOL_NAMES[iso.slice(5)]) return HOL_NAMES[iso.slice(5)]; const sf=easter(+iso.slice(0,4)); sf.setDate(sf.getDate()-2); return isoOf(sf)===iso?'Sexta-feira Santa':'feriado local'; }
+function holidaysIn(key){ return daysOfMonth(key).filter(isHoliday); }
+/* dias úteis do mês para VT e DSR: seg–sáb (ou seg–sex), sem feriados */
+function isWorkday(iso){ const w=wdOf(iso); return w!==0 && !(w===6 && payCfg().satUtil===false) && !isHoliday(iso); }
+function workdaysIn(key){ return daysOfMonth(key).filter(isWorkday); }
 /* dia útil p/ pagamento: segunda a sábado, fora domingo e feriado (IN SRT/MTE 1/1989) */
 function isBizDay(iso){ return wdOf(iso)!==0 && !isHoliday(iso); }
 function nthBizDay(key,n){ let c=0; for(const d of daysOfMonth(key)){ if(isBizDay(d) && ++c===n) return d; } return key+'-05'; }
@@ -1495,7 +1525,7 @@ function payroll(key,empId){
   /* proventos */
   let valExtras=0; const extras=[];
   Object.keys(xmin).forEach(p=>{ const m=xmin[p]; if(!m) return; const v=r2(m/60*hora*(1+(+p)/100)); valExtras+=v; extras.push({pct:+p, min:m, v}); });
-  let uteis=0, repousos=0; days.forEach(d=>{ if(isBizDay(d)) uteis++; else repousos++; });
+  let uteis=0, repousos=0; days.forEach(d=>{ if(isBizDay(d)) uteis++; else repousos++; });   /* DSR: seg–sáb úteis × domingos+feriados */
   const dsrEx = (clt && P.dsrExtras && valExtras && uteis) ? r2(valExtras/uteis*repousos) : 0;
   const valFaltas=r2(faltas.length*dia);
   const semanas=new Set(faltas.map(weekKey)).size;
@@ -1506,7 +1536,10 @@ function payroll(key,empId){
   const inss=clt?inssCalc(base):0;
   const irrf=(clt && P.irrf)?irrfCalc(base,inss,+e.deps||0):0;
   /* benefícios */
-  const vtDays=Math.max(0,work);
+  /* VT: dias úteis do mês (sem feriados) menos faltas, atestados e férias que caem neles */
+  const uteisMes=workdaysIn(key);
+  const ausUteis=faltas.concat(atest,ferias).filter(isWorkday).length;
+  const vtDays=P.vtBase==='escala'? Math.max(0,work) : Math.max(0, uteisMes.length-ausUteis);
   const vtTotal=r2((+e.vtDay||0)*vtDays);
   const vtDesc=clt?r2(Math.min(sal*(+P.vtPct||0)/100, vtTotal)):0;
   const food=+e.food||0;
@@ -1521,7 +1554,7 @@ function payroll(key,empId){
   return {e, clt, sal, dia, hora, hasSched, work, vtDays, faltas, atest, ferias, semanas, extras, valExtras:r2(valExtras), xPonto, menos, menosPonto,
     dsrEx, valFaltas, dsrLost, valMenos, bonus, bruto, base, inss, irrf, vtTotal, vtDesc, food, foodDesc, benef,
     adiant, adiantOv:adiantOv!=null, advPct, vales, desc, liquido, saldo, depositar, fgts, custo:r2(base+benef+fgts),
-    paid, ents, payDay:payDayOf(key), advDay:advDayOf(key), uteis, repousos};
+    paid, ents, payDay:payDayOf(key), advDay:advDayOf(key), uteis, repousos, uteisMes:uteisMes.length, ausUteis};
 }
 function payrollAll(key){ return activeEmps().map(e=>payroll(key,e.id)); }
 function csvFolha(key){
@@ -1565,7 +1598,14 @@ function csvEspelho(key){
    NUVEM (Supabase)
    ============================================================ */
 const Cloud={
-  client:null, on:false, email:null,
+  client:null, on:false, email:null, role:null,
+  async loadRole(){
+    try{
+      const r=await this.client.rpc('my_role');
+      if(r.error){ this.role={admin:true, emp:null, legacy:true}; return; }     /* SETUP v4 ainda não rodou */
+      this.role={admin:!!(r.data&&r.data.admin), emp:(r.data&&r.data.emp)||null};
+    }catch(e){ this.role={admin:true, emp:null, legacy:true}; }
+  },
   ready(){ return typeof supabase!=='undefined' && !!SUPABASE_URL && !!SUPABASE_ANON; },
   init(){ if(this.client||!this.ready()) return this.client; this.client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}); return this.client; },
   async pull(){
@@ -1585,7 +1625,7 @@ const Cloud={
       const pv=(row,col,id,key,def)=>(row[col]!=null)?+row[col]:(prevE[id]&&prevE[id][key]!=null?prevE[id][key]:def);
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
         active:e.active!==false, scale:e.scale||'6x1', start:e.start_t||'', end:e.end_t||'', lunch:(e.lunch==null?60:+e.lunch),
-        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'',
+        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'', login:e.login_email||'',
         salary:pv(e,'salary',e.id,'salary',undefined), food:pv(e,'food',e.id,'food',0), vtDay:pv(e,'vt_day',e.id,'vtDay',0),
         advPct:(e.adv_pct!=null?+e.adv_pct:(prevE[e.id]?prevE[e.id].advPct:null)), deps:pv(e,'deps',e.id,'deps',0)}));
     }else if(db.emps.length){ for(const e of db.emps) await this.pushEmp(e); }
@@ -1598,6 +1638,27 @@ const Cloud={
       if(cfg.rules) db.cfg.rules=Object.assign({},DEFAULT_RULES,cfg.rules);
       if(cfg.payroll) db.cfg.payroll=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PAY)),cfg.payroll);
     }
+    try{                                               /* atestados enviados pelo portal */
+      const rd=await c.from('absence_docs').select('*').order('created_at',{ascending:false});
+      if(!rd.error){
+        const local=db.docs.filter(x=>!x.synced);
+        db.docs=(rd.data||[]).map(x=>({id:x.id, at:x.created_at, emp:x.emp, from:x.date_from, to:x.date_to||x.date_from, kind:x.kind||'atestado',
+          status:x.status||'pendente', note:x.note||'', path:x.file_path||'', name:x.file_name||'', resolvedAt:x.resolved_at||'', synced:true}));
+        local.forEach(x=>{ if(!db.docs.find(y=>y.id===x.id)) db.docs.unshift(x); });
+      }
+    }catch(e){}
+    if(!isAdmin()){                                    /* funcionário: nada de salário/folha no aparelho */
+      db.pay=[]; db.emps.forEach(e=>{ e.salary=0; e.food=0; e.vtDay=0; e.advPct=null; e.deps=0; e.pin=''; });
+      Store.save(db); return;
+    }
+    try{                                               /* salários (v4: tabela só de gerente) */
+      const rs=await c.from('payroll_people').select('*');
+      if(!rs.error){ this.peopleOK=true;
+        (rs.data||[]).forEach(x=>{ const e=db.emps.find(y=>y.id===x.emp); if(!e) return;
+          if(x.salary!=null) e.salary=+x.salary; if(x.food!=null) e.food=+x.food; if(x.vt_day!=null) e.vtDay=+x.vt_day;
+          e.advPct=x.adv_pct==null?null:+x.adv_pct; if(x.deps!=null) e.deps=+x.deps; });
+      }else this.peopleOK=false;
+    }catch(e){ this.peopleOK=false; }
     /* folha: tabela própria; se ainda não rodaram o SETUP.sql novo, segue local */
     try{
       const rp=await c.from('payroll_entries').select('*');
@@ -1612,28 +1673,38 @@ const Cloud={
     }catch(e){ this.payMissing=true; }
     Store.save(db);
   },
-  async pushEmp(e){ if(!this.on) return;
+  async pushEmp(e){ if(!this.on || !isAdmin()) return;
     const row={id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
       active:e.active!==false, scale:e.scale||'6x1', start_t:e.start, end_t:e.end, lunch:e.lunch||0, contract:e.contract||'clt',
-      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null};
+      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null, login_email:e.login||null};
     const pay={salary:+e.salary||0, food:+e.food||0, vt_day:+e.vtDay||0, adv_pct:e.advPct==null?null:+e.advPct, deps:+e.deps||0};
     try{
-      let r=await this.client.from('shift_employees').upsert(Object.assign({},row,pay),{onConflict:'id'});
-      if(r.error && /column|schema/i.test(r.error.message||'')){            /* SETUP.sql da folha ainda não rodou */
-        r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'});
-        setupToast();
+      let r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'});
+      if(r.error && /column|schema/i.test(r.error.message||'')){            /* SETUP.sql v4 ainda não rodou */
+        delete row.login_email; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast();
       }
       if(r.error) throw r.error;
+      /* salário: tabela só de gerente (v4); sem ela, cai nas colunas antigas */
+      let q=await this.client.from('payroll_people').upsert(Object.assign({emp:e.id},pay),{onConflict:'emp'});
+      if(q.error){ q=await this.client.from('shift_employees').update(pay).eq('id',e.id); if(q.error) setupToast(); }
     }catch(err){ offlineToast(); } },
-  async pushPay(x){ if(!this.on) return;
+  async pushPay(x){ if(!this.on || !isAdmin()) return;
     try{ const {error}=await this.client.from('payroll_entries').upsert({id:x.id, ym:x.ym, emp:x.emp, kind:x.kind, date:x.date||null,
         qty:x.qty==null?null:x.qty, pct:x.pct==null?null:x.pct, amount:x.amount==null?null:x.amount, note:x.note||''},{onConflict:'id'});
       if(error){ if(/relation|schema|table/i.test(error.message||'')) setupToast(); else throw error; return; }
       x.synced=true; Store.save(db); }
     catch(e){ offlineToast(); } },
+  async pushDoc(x){ if(!this.on) return;
+    const row={id:x.id, emp:x.emp, date_from:x.from, date_to:x.to, kind:x.kind||'atestado', status:x.status, note:x.note||'',
+      file_path:x.path||null, file_name:x.name||null, resolved_at:x.resolvedAt||null};
+    try{
+      const r= isAdmin()? await this.client.from('absence_docs').upsert(row,{onConflict:'id'}) : await this.client.from('absence_docs').insert(row);
+      if(r.error){ if(/relation|schema|table/i.test(r.error.message||'')) setupToast(); else throw r.error; return; }
+      x.synced=true; Store.save(db);
+    }catch(e){ offlineToast(); } },
   async delPay(id){ if(!this.on) return; try{ await this.client.from('payroll_entries').delete().eq('id',id); }catch(e){} },
   async delEmp(id){ if(!this.on) return; try{ await this.client.from('shift_employees').delete().eq('id',id); }catch(e){} },
-  async pushSchedule(){ if(!this.on) return;
+  async pushSchedule(){ if(!this.on || !isAdmin()) return;
     const dirty=db.sched.filter(r=>!r.synced);
     if(!dirty.length) return;
     try{
@@ -1645,14 +1716,20 @@ const Cloud={
       dirty.forEach(r=>r.synced=true); Store.save(db);
     }catch(e){ offlineToast(); } },
   async pushSwap(s){ if(!this.on) return;
+    if(!isAdmin()){                                    /* funcionário só cria o pedido */
+      try{ const {error}=await this.client.from('shift_swaps').insert({id:s.id, emp:s.emp, from_date:s.from, to_date:s.to, cover:s.cover,
+        status:'pendente', reason:s.reason||'', changes:s.changes||[], warns:s.warns||[]});
+        if(error && !/duplicate/i.test(error.message||'')) throw error; s.synced=true; }catch(e){ offlineToast(); }
+      return;
+    }
     try{ await this.client.from('shift_swaps').upsert({id:s.id, emp:s.emp, from_date:s.from, to_date:s.to, cover:s.cover,
       status:s.status, reason:s.reason||'', changes:s.changes||[], warns:s.warns||[], resolved_at:s.resolvedAt||null},{onConflict:'id'}); s.synced=true; }
     catch(e){ offlineToast(); } },
-  async pushPunch(p){ if(!this.on) return;
+  async pushPunch(p){ if(!this.on || !isAdmin()) return;
     try{ const {error}=await this.client.from('time_punches').upsert({date:p.date, emp:p.emp, marks:p.marks||[], note:p.note||''},{onConflict:'date,emp'});
       if(error) throw error; p.synced=true; Store.save(db); }
     catch(e){ offlineToast(); } },
-  async pushCfg(){ if(!this.on) return;
+  async pushCfg(){ if(!this.on || !isAdmin()) return;
     try{
       let r=await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules, payroll:db.cfg.payroll},{onConflict:'id'});
       if(r.error && /column|schema/i.test(r.error.message||'')){ r=await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules},{onConflict:'id'}); setupToast(); }
@@ -1665,6 +1742,7 @@ const Cloud={
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_swaps'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_employees'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'payroll_entries'},()=>this.softPull())
+      .on('postgres_changes',{event:'*',schema:'public',table:'absence_docs'},()=>this.softPull())
       .subscribe(); }catch(e){}
   },
   softPull(){ this.pull().then(render).catch(()=>{}); }
@@ -1729,7 +1807,7 @@ function renderEscGrid(){
   const rows=monthRows(viewMonth).length;
   let h='<div class="card grid-card"><div class="grid-head"><div><div class="gt">Escala de '+monthName(viewMonth)+'</div>'
     +'<div class="gs">'+(rows?(escView==='cal'?'quem está na loja em cada dia':'arraste para ver o mês'):'ainda não gerada')+'</div></div>'
-    +'<button class="btn-ghost" id="btnGen" style="white-space:nowrap">Gerar</button></div>'
+    +'<button class="btn-ghost admin-only" id="btnGen" style="white-space:nowrap">Gerar</button></div>'
     +'<div style="padding:10px 14px 0"><div class="viewtog" id="escTog" style="display:inline-flex">'
     +'<button data-ev="cal" class="'+(escView==='cal'?'sel':'')+'">Calendário</button>'
     +'<button data-ev="grid" class="'+(escView==='grid'?'sel':'')+'">Grade</button></div></div>';
@@ -1907,6 +1985,7 @@ function openGenSheet(){
 }
 function openCellSheet(date,empId){
   const e=empById(empId); if(!e) return;
+  if(!isAdmin()){ toast('Só o gerente altera a escala — peça uma troca na aba Trocas'); return; }
   const cur=codeOf(date,empId), r=schedOf(date,empId);
   let h='<div style="display:flex;align-items:center;gap:11px;margin-bottom:6px">'+avatar(e)
     +'<div><div style="font-size:15px;font-weight:800">'+esc(e.name)+'</div>'
@@ -1995,6 +2074,15 @@ function openEmpSheet(id,payFocus){
    +WD.map((w,i)=>'<button data-w="'+i+'" class="'+((e.prefOff||[]).indexOf(i)>=0?'sel':'')+'">'+w+'</button>').join('')
    +'</div><div class="hint" id="epOffHint">—</div></div>'
    +'<div class="switch"><div class="sl">Folga fixa toda semana<small>sempre nos mesmos dias; o domingo de folga entra no lugar de um deles quando é a vez</small></div><button class="sw '+(e.fixedOff?'on':'')+'" id="epFixed"></button></div>'
+   +'<div class="section-title" style="margin:20px 2px 2px">Acesso ao app (ponto pelo próprio celular)</div>'
+   +(!id? '<div class="hint">Salve a pessoa primeiro; depois volte aqui para criar o acesso.</div>'
+     : e.login? '<div class="note" style="margin-top:8px">Usuário: <b>'+esc(userOf(e.login))+'</b><br>A pessoa entra com esse usuário e a senha, bate o próprio ponto e troca a senha em <b>Minha conta</b>. Esqueceu a senha? Redefina no Supabase (Authentication → Users).</div>'
+       +'<div class="btn-row"><button class="btn-ghost" id="epUnlink">Desligar este acesso</button></div>'
+     : !Cloud.on? '<div class="hint">Entre com o login do gerente (sincronizado) para criar o acesso.</div>'
+     : '<div class="fld2"><div class="fld"><label>Usuário</label><input id="epUser" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(slug(e.name))+'"></div>'
+       +'<div class="fld"><label>Senha</label><input id="epUPass" autocapitalize="none" autocorrect="off" placeholder="mín. 6 caracteres"></div></div>'
+       +'<button class="btn-ghost" id="epMkLogin" style="width:100%;margin-top:10px">Criar acesso de '+esc(e.name)+'</button>'
+       +'<div class="hint">Passe o usuário e a senha para a pessoa. Ela só vê o próprio ponto, a escala e as trocas — salário e folha, não.</div>')
    +'<div class="section-title" id="epPayT" style="margin:20px 2px 2px">Salário e benefícios</div>'
    +'<div class="fld2"><div class="fld"><label>Salário (R$)</label><input id="epSal" inputmode="decimal" value="'+moneyIn(e.salary)+'" placeholder="2.000,00"></div>'
    +'<div class="fld"><label>Alimentação/mês</label><input id="epFood" inputmode="decimal" value="'+moneyIn(e.food)+'" placeholder="400,00"></div></div>'
@@ -2054,6 +2142,25 @@ function openEmpSheet(id,payFocus){
     ['epSal','epDeps'].forEach(k=>$(k).addEventListener('input',payHint));
     Array.prototype.forEach.call(document.querySelectorAll('#epContract button'),b=>b.addEventListener('click',payHint));
     payHint();
+    if($('epMkLogin')) $('epMkLogin').addEventListener('click', async()=>{
+      const b=$('epMkLogin'); b.disabled=true; b.textContent='Criando…';
+      const user=$('epUser').value, pass=$('epUPass').value;
+      const r=await createEmpLogin(e,user,pass);
+      b.disabled=false; b.textContent='Criar acesso de '+e.name;
+      if(r.error){ toast(esc(r.error)); return; }
+      openSheet('Acesso criado','<div class="receipt"><div class="rt">ACESSO DE '+esc(e.name.toUpperCase())+'</div>'
+        +'<div class="rr"><span>Link</span><b>'+esc(location.origin+location.pathname)+'</b></div>'
+        +'<div class="rr"><span>Usuário</span><b>'+esc(userOf(r.email))+'</b></div>'
+        +(r.existed?'<div class="rr"><span>Senha</span><b>a que já existia</b></div>':'<div class="rr"><span>Senha</span><b>'+esc(pass)+'</b></div>')+'</div>'
+        +(r.confirm?'<div class="banner warn"><span>O Supabase está pedindo confirmação de e-mail. Desligue em <b>Authentication → Sign In / Providers → Email → Confirm email</b> para o login funcionar.</span></div>':'')
+        +(r.existed?'<div class="note">Esse usuário já existia — foi só ligado a '+esc(e.name)+'.</div>':'')
+        +'<div class="note">Mande para a pessoa. No primeiro acesso ela pode trocar a senha em <b>Minha conta</b>.</div>'
+        +'<button class="btn btn-green" id="akOk" style="margin-top:14px">Pronto</button>',()=>{ $('akOk').addEventListener('click',()=>{ closeSheet(); render(); }); });
+    });
+    if($('epUnlink')) $('epUnlink').addEventListener('click', async()=>{
+      if(!confirm('Desligar o acesso de '+e.name+'? O login para de funcionar neste app.')) return;
+      e.login=''; saveLocal(); await Cloud.pushEmp(e); closeSheet(); render(); toast('Acesso desligado');
+    });
     if(payFocus) setTimeout(()=>{ const t=$('epPayT'); if(t) t.scrollIntoView({block:'start'}); $('epSal').focus(); },320);
     calc(); offHint();
     $('epSave').addEventListener('click',()=>{
@@ -2119,6 +2226,7 @@ function renderPonto(){
     $('pnClock').innerHTML='<div class="card empty" style="margin-top:18px"><div class="em">👥</div><p>Cadastre a equipe na aba Escala para bater ponto.</p></div>';
     ['pnWho','pnAction','pnTimeline','pnSummary','pnTeamToday'].forEach(k=>$(k).innerHTML=''); return;
   }
+  if(myEmp()) pnWho=myEmp();
   if(!empById(pnWho)) pnWho=emps[0].id;
   const e=empById(pnWho), c=dayCalc(d,pnWho), now=new Date(), p=c.p;
   let sched;
@@ -2135,7 +2243,7 @@ function renderPonto(){
   else if(c.state==='encerrado') pill='<div><span class="pill-state done">Expediente encerrado · '+hm(c.worked)+'</span></div>';
   $('pnClock').innerHTML='<div class="card clock"><div class="now">'+fmtClock(now)+'</div>'
     +'<div class="nowd">'+cap(now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}))+'</div>'+sched+pill+'</div>';
-  $('pnWho').innerHTML=emps.map(x=>'<button data-who="'+x.id+'" class="'+(x.id===pnWho?'sel':'')+'" style="--pc:'+x.color+'">'+avatar(x)+'<span class="nm">'+esc(x.name)+'</span></button>').join('');
+  $('pnWho').innerHTML=(myEmp()?[e]:emps).map(x=>'<button data-who="'+x.id+'" class="'+(x.id===pnWho?'sel':'')+'" style="--pc:'+x.color+'">'+avatar(x)+'<span class="nm">'+esc(x.name)+'</span></button>').join('');
   Array.prototype.forEach.call(document.querySelectorAll('[data-who]'),b=>b.addEventListener('click',()=>{ pnWho=b.getAttribute('data-who'); renderPonto(); }));
 
   const inIcon='<svg viewBox="0 0 24 24"><path d="M16 17l5-5-5-5M21 12H9M13 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -2194,7 +2302,8 @@ function renderPonto(){
 /* escolher o tipo de saída — um toque registra */
 function askPause(empId){
   const now=fmtClock(new Date());
-  let h='<div class="timepick"><label>Horário da saída</label><input type="time" id="pzTime" value="'+now+'"></div>'
+  let h=myEmp()? '<div class="note" style="margin-top:4px">O horário é o do relógio do sistema, na hora do toque.</div>'
+    : '<div class="timepick"><label>Horário da saída</label><input type="time" id="pzTime" value="'+now+'"></div>'
    +'<div class="plist">';
   ['intervalo','lanche','pessoal','saida'].forEach(k=>{
     const t=PAUSES[k];
@@ -2204,13 +2313,14 @@ function askPause(empId){
   h+='</div><div class="note">A pausa rápida conta como tempo trabalhado; intervalo e saída pessoal são descontados da jornada do dia.</div>';
   openSheet('Registrar saída', h, ()=>{
     Array.prototype.forEach.call(document.querySelectorAll('[data-pz]'),b=>b.addEventListener('click',()=>{
-      const kind=b.getAttribute('data-pz'), t=$('pzTime').value||fmtClock(new Date());
+      const kind=b.getAttribute('data-pz'), t=myEmp()?null:($('pzTime').value||fmtClock(new Date()));
       closeSheet(); doPunch(empId,kind,t);
     }));
   });
 }
 function doPunch(empId,kind,time){
   const e=empById(empId); if(!e) return;
+  if(myEmp()){ empPunch(empId,kind); return; }       /* login individual: já é a própria pessoa */
   if(e.pin){
     openSheet('Confirmar identidade','<div class="fld"><label>Senha do ponto de '+esc(e.name)+'</label>'
       +'<input id="pinIn" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></div>'
@@ -2239,6 +2349,30 @@ function registerPunch(empId,kind,time){
       p.synced=false; saveLocal(); Cloud.pushPunch(p);
     },()=>{},{timeout:6000, maximumAge:60000}); }catch(err){}
   }
+}
+/* ponto do funcionário: hora do servidor, localização junto e conferência no banco (trava guard_punch) */
+let punching=false;
+async function empPunch(empId,kind){
+  if(punching) return;
+  if(!Cloud.on){ toast('Sem internet — o ponto precisa de conexão'); return; }
+  punching=true; toast('Registrando…');
+  try{
+    let now=new Date();
+    try{ const r=await Cloud.client.rpc('server_now'); if(!r.error && r.data) now=new Date(r.data); }catch(e){}
+    const geo=await new Promise(res=>{
+      if(!navigator.geolocation) return res(null);
+      try{ navigator.geolocation.getCurrentPosition(pos=>res({lat:+pos.coords.latitude.toFixed(5), lng:+pos.coords.longitude.toFixed(5)}),()=>res(null),{timeout:5000, maximumAge:60000}); }catch(e){ res(null); }
+    });
+    const d=isoOf(now), p=ensurePunch(d,empId);
+    const mark={t:fmtClock(now), iso:now.toISOString(), nsr:nextNSR(), kind:kind||'entrada'};
+    if(geo) mark.geo=geo;
+    const marks=p.marks.concat([mark]);
+    const {error}=await Cloud.client.from('time_punches').upsert({date:d, emp:empId, marks, note:p.note||''},{onConflict:'date,emp'});
+    if(error){ toast(esc(error.message||'Não foi possível registrar')); await Cloud.pull().catch(()=>{}); render(); return; }
+    p.marks=marks; p.synced=true; saveLocal();
+    renderPonto(); showReceipt(empId,mark);
+  }catch(e){ toast('Sem conexão — tente de novo'); }
+  finally{ punching=false; }
 }
 function showReceipt(empId,mark){
   const e=empById(empId), d=new Date(mark.iso);
@@ -2281,13 +2415,89 @@ function diffHtml(changes){
   });
   return h+'</div>';
 }
+/* ---------- atestados (portal do colaborador) ---------- */
+function docDays(x){ const out=[]; let d=x.from; while(d<=x.to && out.length<62){ out.push(d); d=addDays(d,1); } return out; }
+function docRange(x){ return x.from===x.to? cap(dayLabel(x.from)) : cap(dayLabel(x.from))+' a '+dayLabel(x.to)+' ('+docDays(x).length+' dias)'; }
+function renderDocs(){
+  const mine=isAdmin()? db.docs : db.docs.filter(x=>x.emp===myEmp());
+  const list=mine.slice().sort((a,b)=>(a.status==='pendente'?0:1)-(b.status==='pendente'?0:1) || String(b.at).localeCompare(String(a.at))).slice(0,15);
+  const pend=mine.filter(x=>x.status==='pendente').length;
+  $('docSide').textContent=pend?pend+' para conferir':'';
+  $('docList').innerHTML = list.length? list.map(x=>{
+    const e=empById(x.emp)||{name:x.emp,color:'#95A096'};
+    const chip=x.status==='aprovado'?'<span class="chip ok">aprovado</span>':x.status==='recusado'?'<span class="chip bad">recusado</span>':'<span class="chip warn">'+(isAdmin()?'conferir':'aguardando o gerente')+'</span>';
+    return '<div class="sw-row">'+avatar(e)+'<div class="sw-b"><div class="t">'+esc(e.name)+' · atestado</div>'
+      +'<div class="d">'+docRange(x)+'</div>'+(x.note?'<div class="m">'+esc(x.note)+'</div>':'')
+      +'<div class="sw-acts">'+(x.path||x.fileData?'<button class="sw-no" data-docv="'+x.id+'">Ver anexo</button>':'')
+      +(isAdmin()&&x.status==='pendente'?'<button class="sw-ok" data-doca="'+x.id+'">Aprovar</button><button class="sw-no" data-docr="'+x.id+'">Recusar</button>':'')+'</div></div>'
+      +chip+'</div>';
+  }).join('') : '<div class="empty" style="padding:24px"><p>Nenhum atestado enviado.</p></div>';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-docv]'),b=>b.addEventListener('click',()=>viewDoc(b.getAttribute('data-docv'))));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-doca]'),b=>b.addEventListener('click',()=>resolveDoc(b.getAttribute('data-doca'),'aprovado')));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-docr]'),b=>b.addEventListener('click',()=>resolveDoc(b.getAttribute('data-docr'),'recusado')));
+}
+async function viewDoc(id){
+  const x=db.docs.find(y=>y.id===id); if(!x) return;
+  if(x.fileData){ const w=window.open(); if(w) w.document.write('<title>Atestado</title><img src="'+x.fileData+'" style="max-width:100%">'); return; }
+  if(!Cloud.on){ toast('Entre sincronizado para ver o anexo'); return; }
+  const w=window.open('','_blank');
+  const {data,error}=await Cloud.client.storage.from('atestados').createSignedUrl(x.path,600);
+  if(error||!data){ if(w) w.close(); toast('Não foi possível abrir o anexo'); return; }
+  if(w) w.location=data.signedUrl; else location.href=data.signedUrl;
+}
+function resolveDoc(id,status){
+  const x=db.docs.find(y=>y.id===id); if(!x) return;
+  if(status==='aprovado'){
+    docDays(x).forEach(d=>setSched(d,x.emp,'AT',{locked:true, src:'manual', note:'atestado enviado pelo app'}));
+    saveLocal(); Cloud.pushSchedule();
+  }
+  x.status=status; x.resolvedAt=new Date().toISOString(); x.synced=false; saveLocal(); Cloud.pushDoc(x);
+  render(); toast(status==='aprovado'?'Atestado aprovado · '+docDays(x).length+' dia(s) como atestado na escala':'Atestado recusado');
+}
+function openDocSheet(){
+  let who=myEmp()||'';
+  const h=(myEmp()?'':'<div class="fld"><label>De quem é o atestado</label>'+whoPicker('dcWho',who)+'</div>')
+   +'<div class="fld2"><div class="fld"><label>Do dia</label><input type="date" id="dcFrom" value="'+todayISO()+'"></div>'
+   +'<div class="fld"><label>Até o dia</label><input type="date" id="dcTo" value="'+todayISO()+'"></div></div>'
+   +'<div class="fld"><label>Foto ou PDF do atestado</label><input type="file" id="dcFile" accept="image/*,application/pdf" style="padding:11px"></div>'
+   +'<div class="fld"><label>Observação</label><input id="dcNote" placeholder="opcional (ex.: CID, horário da consulta)"></div>'
+   +'<button class="btn btn-green" id="dcSave" style="margin-top:14px">Enviar atestado</button>'
+   +'<div class="hint" style="margin-top:8px">O arquivo fica guardado só para você e o gerente.</div>';
+  openSheet('Enviar atestado', h, ()=>{
+    if(!myEmp()) bindWho('dcWho',w=>{ who=w; });
+    $('dcFrom').addEventListener('change',()=>{ if($('dcTo').value<$('dcFrom').value) $('dcTo').value=$('dcFrom').value; });
+    $('dcSave').addEventListener('click', async()=>{
+      const f=$('dcFile').files[0], from=$('dcFrom').value, to=$('dcTo').value||from;
+      if(!who){ toast('Escolha a pessoa'); return; }
+      if(!from||to<from){ toast('Confira as datas'); return; }
+      if(!f){ toast('Anexe a foto ou o PDF'); return; }
+      if(f.size>10*1024*1024){ toast('Arquivo muito grande (máx. 10 MB)'); return; }
+      const b=$('dcSave'); b.disabled=true; b.textContent='Enviando…';
+      const x={id:uid('at'), at:new Date().toISOString(), emp:who, from, to, kind:'atestado', status:'pendente', note:$('dcNote').value.trim(), name:f.name, synced:false};
+      try{
+        if(Cloud.on){
+          const ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+          x.path=who+'/'+x.id+'.'+ext;
+          const up=await Cloud.client.storage.from('atestados').upload(x.path,f,{contentType:f.type||undefined, upsert:false});
+          if(up.error) throw up.error;
+        }else{
+          if(f.size>1.5*1024*1024){ toast('Sem login, só arquivos de até 1,5 MB'); b.disabled=false; b.textContent='Enviar atestado'; return; }
+          x.fileData=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
+        }
+        db.docs.unshift(x); saveLocal(); await Cloud.pushDoc(x);
+        closeSheet(); render(); toast('Atestado enviado ✓');
+      }catch(e){ toast('Não foi possível enviar: '+esc((e&&e.message)||'sem conexão')); b.disabled=false; b.textContent='Enviar atestado'; }
+    });
+  });
+}
 function renderTrocas(){
+  renderDocs();
   const pend=db.swaps.filter(s=>s.status==='pendente');
   $('swPendSide').textContent=pend.length?pend.length+' aguardando':'';
   $('swPending').innerHTML= pend.length? pend.map(s=>'<div class="sw-row">'+swapLine(s)
-      +'</div><div style="padding:0 16px 14px"><div class="sw-acts">'
+      +'</div>'+(isAdmin()?'<div style="padding:0 16px 14px"><div class="sw-acts">'
       +'<button class="sw-ok" data-ap="'+s.id+'">Aprovar e recalcular</button>'
-      +'<button class="sw-no" data-rj="'+s.id+'">Recusar</button></div></div>').join('')
+      +'<button class="sw-no" data-rj="'+s.id+'">Recusar</button></div></div>':'<div style="padding:0 16px 12px"><span class="chip warn">aguardando o gerente</span></div>')).join('')
     : '<div class="empty"><div class="em">✅</div><p>Nenhum pedido esperando resposta.</p></div>';
   const hist=db.swaps.filter(s=>s.status!=='pendente').slice(0,12);
   $('swHistory').innerHTML= hist.length? hist.map(s=>'<div class="sw-row">'+swapLine(s)
@@ -2301,7 +2511,7 @@ function renderTrocas(){
 }
 function nextMonthKey(key){ const p=key.split('-').map(Number); return ym(new Date(p[0],p[1],1)); }
 function openSwapSheet(){
-  const emps=activeEmps();
+  const emps=myEmp()? activeEmps().filter(e=>e.id===myEmp()) : activeEmps();
   if(!emps.length){ toast('Cadastre a equipe primeiro'); return; }
   const start=todayISO()>daysOfMonth(viewMonth)[0]?todayISO():daysOfMonth(viewMonth)[0];
   let h='<div class="fld"><label>Quem está pedindo</label><select id="swEmp">'
@@ -2338,7 +2548,7 @@ function openSwapSheet(){
       p+= blocked
         ? '<div class="btn-row"><button class="btn-ghost" id="swBack" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Escolher outro dia</button></div>'
         : '<div class="btn-row"><button class="btn-ghost" id="swSend">Enviar pedido</button>'
-          +'<button class="btn-ghost" id="swApply" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Aprovar agora</button></div>';
+          +(isAdmin()?'<button class="btn-ghost" id="swApply" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800">Aprovar agora</button>':'')+'</div>';
       $('swPreview').innerHTML=p;
       $('swSim').classList.add('hide');
       if(blocked){ $('swBack').addEventListener('click',()=>{ $('swPreview').innerHTML=''; $('swSim').classList.remove('hide'); }); return; }
@@ -2347,7 +2557,7 @@ function openSwapSheet(){
       $('swSend').addEventListener('click',()=>{
         db.swaps.unshift(rec); saveLocal(); Cloud.pushSwap(rec); closeSheet(); render(); toast('Pedido enviado para aprovação');
       });
-      $('swApply').addEventListener('click',()=>{
+      if($('swApply')) $('swApply').addEventListener('click',()=>{
         rec.status='aprovada'; rec.resolvedAt=new Date().toISOString();
         db.swaps.unshift(rec); applySwap(rec,sim); closeSheet(); render(); toast('Troca aplicada e escala recalculada');
       });
@@ -2473,11 +2683,16 @@ function renderFolha(){
   const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length,
     saldo:a.saldo+p.saldo, liq:a.liq+p.liquido, va:a.va+(p.food-p.foodDesc), vt:a.vt+p.vtTotal}),{dep:0,adv:0,custo:0,faltas:0,saldo:0,liq:0,va:0,vt:0});
   const payDay=payDayOf(viewMonth), advDay=advDayOf(viewMonth);
+  const hol=holidaysIn(viewMonth), ut=workdaysIn(viewMonth).length;
+  const calLine='<div class="note" style="margin-top:12px"><b>'+cap(monthName(viewMonth).split(' de ')[0])+': '+ut+' dias úteis</b> ('+(P.satUtil===false?'seg–sex':'seg–sáb')+', sem feriados)'
+    +(hol.length?' · feriados: '+hol.map(d=>fmtDM(d)+' '+holName(d)).join(', '):' · sem feriado no mês')
+    +'. O VT conta esses dias, menos faltas, atestados e férias.</div>';
   $('fpKpi').innerHTML='<div class="card pay-hero">'
     +payHero({title:'A equipe ganha no mês', total:tot.liq+tot.va+tot.vt, liquido:tot.liq, va:tot.va, vt:tot.vt, adiant:tot.adv, advDay, payDay, dep:tot.dep})
     +'</div>'
     +'<div class="kpi" style="margin-top:10px"><div class="k"><div class="v '+(tot.faltas?'bad':'')+'">'+tot.faltas+'</div><div class="l">falta'+(tot.faltas===1?'':'s')+' no mês</div></div>'
     +'<div class="k"><div class="v">'+brl(tot.custo)+'</div><div class="l">custo total da empresa (com FGTS)</div></div></div>'
+    +calLine
     +'<div class="btn-row" style="margin-top:12px"><button class="btn btn-green" id="fpFalta" style="flex:1;font-size:14.5px">Registrar falta</button>'
     +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>';
   $('fpList').innerHTML = rows.length ? rows.map(p=>{
@@ -2528,7 +2743,7 @@ function openPayslip(empId){
   if(p.bonus) V.push(['Bônus / comissão', '', p.bonus]);
   if(P.payBenefits){
     if(p.food) V.push(['Vale-alimentação (VA)', 'mês', p.food]);
-    if(p.vtTotal) V.push(['Vale-transporte (VT)', p.vtDays+'d × '+num(+e.vtDay||0), p.vtTotal]);
+    if(p.vtTotal) V.push(['Vale-transporte (VT)', p.vtDays+' dias úteis × '+num(+e.vtDay||0)+(p.ausUteis&&P.vtBase!=='escala'?' ('+p.uteisMes+' − '+p.ausUteis+' ausência'+(p.ausUteis===1?'':'s')+')':''), p.vtTotal]);
   }
   if(p.faltas.length) D.push(['Faltas · '+p.faltas.map(fmtDM).join(', '), p.faltas.length+(p.faltas.length===1?' dia':' dias'), p.valFaltas]);
   if(p.dsrLost) D.push(['DSR perdido (faltas)', p.semanas+' sem.', p.dsrLost]);
@@ -2750,6 +2965,10 @@ function openPaySettingsSheet(){
    +'<div class="fld"><label>FGTS (%)</label><input type="number" inputmode="decimal" id="psFg" value="'+P.fgts+'"></div></div>'
    +sw('psIr',P.irrf,'Descontar IRRF','tabela 2026 com isenção até R$ 5.000 (Lei 15.270/2025)')
    +sw('psFood',P.foodFalta,'Falta desconta a alimentação','proporcional aos dias de trabalho')
+   +sw('psVtU',P.vtBase!=='escala','VT pelos dias úteis do mês','seg–sáb sem feriados, menos ausências (desligado: usa os dias da escala)')
+   +sw('psSat',P.satUtil!==false,'Sábado é dia útil','padrão do comércio; desligue para contar só seg–sex')
+   +'<div class="fld"><label>Feriados locais (estado/cidade)</label><input id="psHol" placeholder="ex.: 20/01, 25/01, 04/06/2026" value="'+esc((P.localHolidays||[]).map(x=>x.length===5?x.slice(3)+'/'+x.slice(0,2):x.slice(8)+'/'+x.slice(5,7)+'/'+x.slice(0,4)).join(', '))+'">'
+   +'<div class="hint">dd/mm repete todo ano; dd/mm/aaaa só naquele ano. Os nacionais já estão incluídos.</div></div>'
    +sw('psBen',P.payBenefits,'VA e VT vão no depósito','somados no valor do 5º dia útil')
    +'</div>'
    +'<div class="section-title" style="margin:16px 4px 8px">Tabela do INSS (empregado)</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
@@ -2758,7 +2977,8 @@ function openPaySettingsSheet(){
    +'<div class="hint">2026: Portaria Interministerial MPS/MF nº 13/2026 (teto R$ 8.475,55). Atualize quando sair a tabela do ano.</div></div>'
    +'<button class="btn btn-green" id="psSave" style="margin-top:16px">Salvar ajustes da folha</button>';
   openSheet('Ajustes da folha', h, ()=>{
-    const flags={psHp:'horasPonto',psFp:'faltaPonto',psDsrX:'dsrExtras',psDsrF:'dsrFalta',psIr:'irrf',psFood:'foodFalta',psBen:'payBenefits'};
+    const flags={psHp:'horasPonto',psFp:'faltaPonto',psDsrX:'dsrExtras',psDsrF:'dsrFalta',psIr:'irrf',psFood:'foodFalta',psBen:'payBenefits',psSat:'satUtil',psVtU:'_vtU'};
+    P._vtU=P.vtBase!=='escala';
     const st={}; Object.keys(flags).forEach(id=>{ st[id]=!!P[flags[id]]; $(id).addEventListener('click',()=>{ st[id]=!st[id]; $(id).classList.toggle('on',st[id]); }); });
     $('psSave').addEventListener('click',()=>{
       const num=(id,def)=>{ const v=parseMoney($(id).value); return isNaN(v)?def:v; };
@@ -2766,6 +2986,9 @@ function openPaySettingsSheet(){
       P.divisor=num('psDiv',220)||220; P.pjExtraPct=num('psPj',0); P.extraPct=num('psX',50); P.extraOffPct=num('psXo',100);
       P.vtPct=num('psVt',6); P.fgts=num('psFg',8);
       Object.keys(flags).forEach(id=>P[flags[id]]=st[id]);
+      P.vtBase=P._vtU?'uteis':'escala'; delete P._vtU;
+      P.localHolidays=$('psHol').value.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean).map(x=>{ const q=x.split('/').map(n=>pad(+n));
+        return q.length===3? (String(q[2]).length===2?'20'+q[2]:q[2])+'-'+q[1]+'-'+q[0] : q[1]+'-'+q[0]; }).filter(x=>/^(\d{4}-)?\d{2}-\d{2}$/.test(x));
       P.inss=P.inss.map((f,i)=>[parseMoney(document.querySelector('[data-il="'+i+'"]').value)||f[0], parseMoney(document.querySelector('[data-ir="'+i+'"]').value)||f[1]]);
       saveLocal(); Cloud.pushCfg(); closeSheet(); render(); toast('Ajustes da folha salvos');
     });
@@ -2784,6 +3007,8 @@ function renderHeader(){
   $('todaySub').textContent = wdName+(work? ' · '+work+' na escala' : ' · sem escala hoje');
 }
 function render(){
+  document.body.classList.toggle('emp-mode', !isAdmin());
+  if(!isAdmin() && (currentView==='fechar'||currentView==='folha')){ currentView='ponto'; return setView('ponto'); }
   renderHeader();
   if(currentView==='escala') renderEscala();
   else if(currentView==='ponto') renderPonto();
@@ -2791,7 +3016,9 @@ function render(){
   else if(currentView==='fechar') renderFechar();
   else if(currentView==='folha') renderFolha();
   const pend=db.swaps.filter(s=>s.status==='pendente').length;
-  const bd=$('swBadge'); bd.textContent=pend; bd.classList.toggle('hide',!pend);
+  const pendDocs=db.docs.filter(x=>x.status==='pendente' && (isAdmin()||x.emp===myEmp())).length;
+  const bd=$('swBadge'); bd.textContent=pend+pendDocs; bd.classList.toggle('hide',!(pend+pendDocs));
+  $('brandTag').textContent=isAdmin()?'Escala & Ponto':'Portal do colaborador';
 }
 function setView(v){
   currentView=v;
@@ -2806,6 +3033,7 @@ $('nextM').addEventListener('click',()=>{ const p=viewMonth.split('-').map(Numbe
 $('btnTeam').addEventListener('click',openTeamSheet);
 $('btnSettings').addEventListener('click',openSettingsSheet);
 $('btnNewSwap').addEventListener('click',openSwapSheet);
+$('btnNewDoc').addEventListener('click',openDocSheet);
 $('btnCsvResumo').addEventListener('click',()=>csvResumo(viewMonth));
 $('btnCsvEspelho').addEventListener('click',()=>csvEspelho(viewMonth));
 $('btnCsvFolha').addEventListener('click',()=>csvFolha(viewMonth));
@@ -2816,34 +3044,67 @@ setInterval(()=>{ if(currentView==='ponto' && !$('sheet').classList.contains('on
 function showGate(v){ $('authGate').classList.toggle('on',v); }
 function updateAcct(){
   const a=$('acct');
-  if(Cloud.on){ a.classList.remove('off'); $('acctLbl').textContent='Sincronizado'; }
+  if(Cloud.on){ a.classList.remove('off'); $('acctLbl').textContent= myEmp()? empName(myEmp()) : 'Gerente'; }
   else { a.classList.add('off'); $('acctLbl').textContent='Local'; }
 }
-$('acct').addEventListener('click', async()=>{
-  if(Cloud.on){ if(confirm('Sair da conta? A escala e o ponto continuam salvos neste aparelho.')){ try{ await Cloud.client.auth.signOut(); }catch(e){} } }
-  else { showGate(true); }
-});
+$('acct').addEventListener('click', ()=>{ if(Cloud.on) openAccountSheet(); else showGate(true); });
+function openAccountSheet(){
+  const h='<div class="note" style="margin-top:4px">Conectado como <b>'+esc(myEmp()?empName(myEmp()):'gerente')+'</b>'
+     +'<br><span style="color:var(--ink-faint)">'+esc(userOf(Cloud.email||''))+'</span></div>'
+     +'<div class="fld"><label>Nova senha</label><input id="acPass" type="password" autocomplete="new-password" placeholder="mínimo 6 caracteres"></div>'
+     +'<button class="btn btn-green" id="acSave" style="margin-top:12px">Trocar minha senha</button>'
+     +'<div class="btn-row"><button class="btn-ghost btn-danger" id="acOut">Sair</button></div>';
+  openSheet('Minha conta', h, ()=>{
+    $('acSave').addEventListener('click', async()=>{
+      const pw=$('acPass').value; if(pw.length<6){ toast('A senha precisa de 6 caracteres ou mais'); return; }
+      const {error}=await Cloud.client.auth.updateUser({password:pw});
+      if(error){ toast('Não foi possível trocar a senha'); return; }
+      closeSheet(); toast('Senha trocada ✓');
+    });
+    $('acOut').addEventListener('click', async()=>{ closeSheet(); try{ await Cloud.client.auth.signOut(); }catch(e){} });
+  });
+}
+/* gerente cria o login do funcionário (cliente separado, para não derrubar a sessão do gerente) */
+async function createEmpLogin(emp,user,pass){
+  const email=loginOf(user);
+  if(!email || email.indexOf('@')<0){ return {error:'Coloque um usuário'}; }
+  if(String(pass||'').length<6) return {error:'A senha precisa de 6 caracteres ou mais'};
+  const tmp=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false, storageKey:'coquin-signup'}});
+  const {data,error}=await tmp.auth.signUp({email,password:pass});
+  if(error && !/already|registered|exists/i.test(error.message||'')) return {error:error.message};
+  const confirm = !error && data && data.user && !data.session;
+  emp.login=email; saveLocal(); await Cloud.pushEmp(emp);
+  return {email, existed:!!error, confirm};
+}
 async function onLoggedIn(sess){
   Cloud.on=true; Cloud.email=sess.user.email; showGate(false);
+  await Cloud.loadRole();
+  if(!Cloud.role.admin && !Cloud.role.emp){
+    toast('Este login ainda não está ligado a ninguém da equipe — fale com o gerente');
+    try{ await Cloud.client.auth.signOut(); }catch(e){}
+    return;
+  }
+  if(!isAdmin()){ db.pay=[]; db.emps.forEach(e=>{ e.salary=0; e.food=0; e.vtDay=0; e.pin=''; }); saveLocal(); pnWho=myEmp(); currentView='ponto'; setView('ponto'); }
   try{
     await Cloud.pull();
     await Cloud.pushSchedule();
     for(const p of db.punch.filter(x=>!x.synced)) await Cloud.pushPunch(p);
     for(const s of db.swaps.filter(x=>!x.synced)) await Cloud.pushSwap(s);
+    for(const x of db.docs.filter(y=>!y.synced && !y.fileData)) await Cloud.pushDoc(x);
     if(!Cloud.payMissing) for(const x of db.pay.filter(y=>!y.synced)) await Cloud.pushPay(x);
   }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
   render(); updateAcct(); Cloud.subscribe();
 }
 async function doLogin(){
-  const email=$('authEmail').value.trim(), pass=$('authPass').value;
+  const email=loginOf($('authEmail').value), pass=$('authPass').value;
   const err=$('authErr'); err.textContent='';
-  if(!email||!pass){ err.textContent='Preencha e-mail e senha.'; return; }
+  if(!email||!pass){ err.textContent='Preencha usuário e senha.'; return; }
   const btn=$('authBtn'); btn.disabled=true; btn.textContent='Entrando…';
   try{
     const {data,error}=await Cloud.client.auth.signInWithPassword({email,password:pass});
     if(error) throw error;
     await onLoggedIn(data.session); toast('Conectado ✓');
-  }catch(e){ err.textContent=(e&&e.message&&/invalid|credential/i.test(e.message))?'E-mail ou senha incorretos.':'Não foi possível entrar. Tente de novo.'; }
+  }catch(e){ err.textContent=(e&&e.message&&/invalid|credential/i.test(e.message))?'Usuário ou senha incorretos.':'Não foi possível entrar. Tente de novo.'; }
   finally{ btn.disabled=false; btn.textContent='Entrar'; }
 }
 $('authBtn').addEventListener('click', doLogin);
@@ -2861,7 +3122,7 @@ async function boot(){
   try{ const {data}=await Cloud.client.auth.getSession(); sess=data.session; }catch(e){}
   if(sess){ await onLoggedIn(sess); }
   else if(!demo){ showGate(true); }
-  try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; updateAcct(); showGate(true); } }); }catch(e){}
+  try{ Cloud.client.auth.onAuthStateChange((ev)=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; Cloud.role=null; updateAcct(); render(); showGate(true); } }); }catch(e){}
 }
 
 /* ---------- dados de exemplo (?demo=1) — só local, nunca sobe pra nuvem ---------- */
