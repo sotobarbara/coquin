@@ -5,7 +5,7 @@ e o **controle de ponto** da Coquin. Página única (`index.html`, sem build), p
 **celular**. Funciona com **login da equipe** e sincroniza entre os aparelhos via Supabase;
 sem login, funciona local no aparelho.
 
-Quatro abas: **Escala · Ponto · Trocas · Fechar**.
+Cinco abas: **Escala · Ponto · Trocas · Fechar · Folha**.
 
 ---
 
@@ -120,13 +120,66 @@ hora**. Na aprovação o recálculo é refeito com a escala mais atual.
 - **Exportação em CSV**: resumo do mês e espelho de ponto completo (abre no Excel/Sheets e vai
   direto pra folha).
 
+## Folha (pagamento da equipe — CLT e PJ)
+
+Você registra o que aconteceu e o app **já mostra o saldo final** de cada pessoa.
+
+- **Registrar falta**: escolhe a pessoa e o dia → a falta entra na escala (código *Falta*, dia travado)
+  e o app mostra na hora **quanto muda o saldo** antes de confirmar. *Atestado* fica registrado
+  mas não desconta o salário.
+- **+ Lançamento**: hora extra (50% ou 100%), atraso/horas a menos, bônus/comissão, vale
+  (dinheiro que a pessoa já pegou) e outros descontos.
+- **Horas do ponto**: extras e horas a menos dos dias fechados no ponto entram sozinhas
+  (dá pra desligar em *Ajustes da folha*).
+- **Holerite** (toque na pessoa): proventos, descontos, líquido, adiantamento, benefícios e o
+  **valor a depositar no 5º dia útil**. Marque *adiantamento pago* / *saldo pago*.
+- **CSV da folha** para mandar pra contabilidade.
+
+### A conta (exemplo: Wagner, CLT — R$ 2.000, alimentação R$ 400, VT R$ 10,80/dia)
+
+| | |
+|---|---|
+| Salário base | R$ 2.000,00 |
+| INSS 2026 (progressivo) | − R$ 155,69 |
+| VT 6% do salário (limitado ao VT do mês) | − R$ 120,00 |
+| **Líquido do mês** | R$ 1.724,31 |
+| Adiantamento dia 15 (50%) | − R$ 1.000,00 |
+| Saldo do salário | R$ 724,31 |
+| + Alimentação + VT (25 dias × R$ 10,80) | R$ 670,00 |
+| **Depositar no 5º dia útil** | **R$ 1.394,31** |
+
+Com **1 falta**: sai R$ 66,67 (salário ÷ 30) e o VT do dia (R$ 10,80); o INSS cai R$ 6,00 →
+saldo de **R$ 1.322,85**.
+
+### Regras usadas
+
+| Regra | Base |
+|---|---|
+| Dia = salário ÷ 30 · hora = salário ÷ 220 (44h) | CLT, art. 64 |
+| Hora extra 50% (100% em domingo/feriado/folga) + DSR sobre extras | CLT, art. 59 · Súmula 172 TST |
+| INSS progressivo 2026 (7,5% · 9% · 12% · 14%, teto R$ 8.475,55) | Portaria Interministerial MPS/MF nº 13/2026 |
+| IRRF 2026 — zera até R$ 5.000, redução até R$ 7.350 | Lei 15.270/2025 |
+| Desconto do VT até 6% do salário-base | Lei 7.418/1985 · Decreto 10.854/2021 |
+| Saldo até o 5º dia útil (seg. a sáb., fora feriados nacionais) | CLT, art. 459, §1º |
+| Falta pode tirar o DSR da semana (**desligado** por padrão) | Lei 605/1949, art. 6º |
+| FGTS 8% — custo da empresa, não sai do salário | Lei 8.036/1990 |
+
+**PJ**: sem INSS, IRRF, desconto de VT, DSR e FGTS — falta desconta o dia (valor ÷ 30) e hora
+extra é paga pelo valor da hora (adicional configurável). Tudo isso muda em **Ajustes da folha**
+(dia e % do adiantamento, divisor, adicionais, tabela do INSS, alimentação descontar na falta,
+benefícios no depósito…). Salário, alimentação, VT/dia, % de adiantamento e dependentes ficam
+no cadastro da pessoa (*Equipe* ou *Salário e benefícios* no holerite).
+
+> É uma conta de controle da casa — confira com a contabilidade antes da folha oficial
+> (convenção coletiva, pensão, insalubridade etc. não entram).
+
 ## Backend (Supabase)
 
-Tabelas próprias: `shift_employees`, `shift_schedule`, `shift_swaps`, `time_punches` e
-`shift_config` — **não toca** em vendas, estoque, caixa ou checklist. Por padrão aponta para o
+Tabelas próprias: `shift_employees`, `shift_schedule`, `shift_swaps`, `time_punches`,
+`payroll_entries` e `shift_config` — **não toca** em vendas, estoque, caixa ou checklist. Por padrão aponta para o
 **mesmo projeto Supabase** da equipe (mesmo login).
 
-- Rode o [`SETUP.sql`](SETUP.sql) **uma vez** no **SQL Editor** do Supabase (cria as tabelas,
+- Rode o [`SETUP.sql`](SETUP.sql) **uma vez** (e de novo depois desta versão, para criar a folha) no **SQL Editor** do Supabase (cria as tabelas,
   liga RLS e o realtime). É idempotente.
 - Backend 100% separado? Crie outro projeto no Supabase, rode o `SETUP.sql` nele e troque
   `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>` do `index.html`.

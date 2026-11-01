@@ -85,22 +85,50 @@ alter table public.shift_employees add column if not exists fixed_off boolean de
 -- a v1 guardava o turno em M/T/I; a v2 usa a jornada da própria pessoa
 update public.shift_schedule set shift='W' where shift in ('M','T','I');
 
+-- ============ Folha de pagamento (v3) ============
+-- salário e benefícios de cada pessoa (ficam null até alguém cadastrar pelo app)
+alter table public.shift_employees add column if not exists salary  numeric;   -- salário base (R$)
+alter table public.shift_employees add column if not exists food    numeric;   -- alimentação por mês (R$)
+alter table public.shift_employees add column if not exists vt_day  numeric;   -- vale-transporte por dia (R$)
+alter table public.shift_employees add column if not exists adv_pct numeric;   -- % do adiantamento (null = padrão da folha)
+alter table public.shift_employees add column if not exists deps    integer;   -- dependentes no IRRF
+alter table public.shift_config    add column if not exists payroll jsonb;     -- ajustes da folha (INSS, VT, adiantamento…)
+
+-- lançamentos da folha: horas extras, atrasos, bônus, vales, descontos, adiantamento ajustado, pagamentos feitos
+-- (as FALTAS ficam na própria escala: shift_schedule.shift = 'FA'; atestado = 'AT')
+create table if not exists public.payroll_entries (
+  id         text primary key,
+  ym         text not null,                 -- mês da folha: '2026-11'
+  emp        text not null,
+  kind       text not null,                 -- extra | menos | bonus | vale | desc | adiant | pago
+  date       date,
+  qty        numeric,                       -- minutos (extra / menos)
+  pct        numeric,                       -- adicional da hora extra (50, 100…)
+  amount     numeric,                       -- R$ (bonus, vale, desc, adiant, pago)
+  note       text default '',               -- em 'pago': 'adiant' | 'saldo'
+  created_at timestamptz not null default now()
+);
+create index if not exists payroll_entries_ym_idx on public.payroll_entries (ym, emp);
+
 -- ============ Segurança (RLS) — só quem loga lê/escreve ============
 alter table public.shift_employees enable row level security;
 alter table public.shift_schedule  enable row level security;
 alter table public.shift_swaps     enable row level security;
 alter table public.time_punches    enable row level security;
 alter table public.shift_config    enable row level security;
+alter table public.payroll_entries enable row level security;
 drop policy if exists "equipe shift_employees" on public.shift_employees;
 drop policy if exists "equipe shift_schedule"  on public.shift_schedule;
 drop policy if exists "equipe shift_swaps"     on public.shift_swaps;
 drop policy if exists "equipe time_punches"    on public.time_punches;
 drop policy if exists "equipe shift_config"    on public.shift_config;
+drop policy if exists "equipe payroll_entries" on public.payroll_entries;
 create policy "equipe shift_employees" on public.shift_employees for all to authenticated using (true) with check (true);
 create policy "equipe shift_schedule"  on public.shift_schedule  for all to authenticated using (true) with check (true);
 create policy "equipe shift_swaps"     on public.shift_swaps     for all to authenticated using (true) with check (true);
 create policy "equipe time_punches"    on public.time_punches    for all to authenticated using (true) with check (true);
 create policy "equipe shift_config"    on public.shift_config    for all to authenticated using (true) with check (true);
+create policy "equipe payroll_entries" on public.payroll_entries for all to authenticated using (true) with check (true);
 
 -- ============ Tempo real (sincronia entre celulares) ============
 do $$ begin alter publication supabase_realtime add table public.shift_employees; exception when duplicate_object then null; end $$;
@@ -108,3 +136,4 @@ do $$ begin alter publication supabase_realtime add table public.shift_schedule;
 do $$ begin alter publication supabase_realtime add table public.shift_swaps;     exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.time_punches;    exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.shift_config;    exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table public.payroll_entries; exception when duplicate_object then null; end $$;

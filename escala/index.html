@@ -247,6 +247,25 @@ header{
 .mirror-row .mt.neg{color:var(--danger)} .mirror-row .mt.pos{color:var(--green-700)}
 .mirror-row.sun{background:rgba(199,154,62,.07)}
 
+/* ---------- folha ---------- */
+.pay-hero{padding:18px 16px 16px;margin-top:18px;background:var(--green);color:#fff;border:0;border-radius:var(--r)}
+.pay-hero .ph-l{font-size:11.5px;font-weight:750;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+.pay-hero .ph-v{font-size:32px;font-weight:850;letter-spacing:-1px;margin-top:4px;line-height:1.1;font-variant-numeric:tabular-nums}
+.pay-hero .ph-s{font-size:12px;font-weight:650;opacity:.82;margin-top:4px}
+.pay-hero .ph-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+.pay-hero .ph-grid b{display:block;font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
+.pay-hero .ph-grid span{display:block;font-size:10.5px;font-weight:650;opacity:.8;margin-top:1px;line-height:1.3}
+.slip{padding:2px 14px;box-shadow:none}
+.sl-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sl-row:last-child{border-bottom:0}
+.sl-k{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:var(--ink)}
+.sl-k small{display:block;font-size:11px;font-weight:650;color:var(--ink-faint);margin-top:1px;line-height:1.35}
+.sl-k small .chip{padding:1px 7px;font-size:10px}
+.sl-v{font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+.sl-v .neg,.sl-v.neg{color:var(--danger)}
+.sl-row.tot .sl-k{font-size:14.5px;font-weight:850}
+.sl-row.tot .sl-v{font-size:16px;color:var(--green-700)}
+.sl-del{border:0;background:var(--bg);color:var(--ink-faint);width:24px;height:24px;border-radius:999px;font-size:11px;cursor:pointer;flex:none}
 /* ---------- formulários / sheets ---------- */
 .fld{margin-top:13px}
 .fld label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
@@ -385,6 +404,7 @@ header{
     <button data-view="ponto">Ponto</button>
     <button data-view="trocas">Trocas<span class="badge hide" id="swBadge">0</span></button>
     <button data-view="fechar">Fechar</button>
+    <button data-view="folha">Folha</button>
   </div>
 </header>
 
@@ -440,6 +460,19 @@ header{
     <button class="btn-ghost" id="btnCsvEspelho">CSV do espelho</button>
   </div>
   <div id="fcAlerts"></div>
+ </div>
+
+ <!-- ===================== FOLHA ===================== -->
+ <div id="viewFolha" class="hide">
+  <div id="fpKpi"></div>
+  <div id="fpAlerts"></div>
+  <div class="section-title">Por pessoa <span class="st-side">toque para ver o holerite</span></div>
+  <div class="card" id="fpList"></div>
+  <div class="btn-row">
+    <button class="btn-ghost" id="btnPayCfg">Ajustes da folha</button>
+    <button class="btn-ghost" id="btnCsvFolha">CSV da folha</button>
+  </div>
+  <div class="foot">INSS 2026 progressivo · IRRF com isenção até R$ 5.000 · VT até 6% do salário · PJ sem descontos de lei.<br>Confira com a contabilidade antes de fechar a folha oficial.</div>
  </div>
 
 </main>
@@ -498,12 +531,13 @@ header{
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_escala_v1';
-const APP_VERSION='v2.0 · jornada por pessoa + pausas';
+const APP_VERSION='v3.0 · folha de pagamento';
 const COMPANY={name:'Coquin', unit:'Imprensa'};
 
 /* ---- equipe (edite em 👥 Equipe; isto é só o cadastro inicial) ---- */
 const SEED_TEAM=[
   {name:'Wagner', role:'Atendimento', color:'#C79A3E', scale:'6x1', start:'10:00', end:'19:00', lunch:60, contract:'clt', prefOff:[3], fixedOff:true,
+   salary:2000, food:400, vtDay:10.80,
    face:{bg:'#F3EAD8', skin:'#E8C39E', hair:'#2E2622', style:'short', beard:true}},
   {name:'Paulo',  role:'Atendimento', color:'#446349', scale:'5x2', start:'15:00', end:'23:00', lunch:60, contract:'clt', prefOff:[1,3], fixedOff:true,
    face:{bg:'#E9E3F1', skin:'#F4D6BA', hair:'#2A2320', style:'short', cap:true, capCol:'#446349'}},
@@ -527,6 +561,24 @@ const SCALES={
 /* mínimo de gente na loja em cada dia da semana (0=dom) */
 const DEFAULT_DEMAND={0:2, 1:2, 2:2, 3:1, 4:3, 5:3, 6:3};   /* dom seg ter qua qui sex sáb */
 const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60, minStaff:1};
+/* ---- folha de pagamento (Ajustes da folha) ---- */
+const DEFAULT_PAY={
+  inss:[[1621.00,7.5],[2902.84,9],[4354.27,12],[8475.55,14]],   /* 2026: até R$ x → alíquota % */
+  irrf:true, vtPct:6, advDay:15, advPct:50, divisor:220,
+  extraPct:50, extraOffPct:100, pjExtraPct:0,
+  dsrExtras:true, dsrFalta:false, foodFalta:false,
+  faltaPonto:false, horasPonto:true, fgts:8, payBenefits:true
+};
+/* IRRF mensal (desde maio/2025): até R$ x → alíquota %, parcela a deduzir */
+const IRRF_TABLE=[[2428.80,0,0],[2826.65,7.5,182.16],[3751.05,15,394.16],[4664.68,22.5,675.49],[Infinity,27.5,908.73]];
+const IRRF_DEP=189.59, IRRF_SIMPL=607.20;
+const PAY_KINDS={
+  extra:{k:'extra', label:'Hora extra',         sign:+1, unit:'h', hint:'soma no salário (com o adicional)'},
+  menos:{k:'menos', label:'Atraso / horas a menos', sign:-1, unit:'h', hint:'desconta pelo valor da hora'},
+  bonus:{k:'bonus', label:'Bônus / comissão',   sign:+1, unit:'R$', hint:'soma no salário (entra no INSS)'},
+  vale: {k:'vale',  label:'Vale / adiantamento extra', sign:-1, unit:'R$', hint:'dinheiro que a pessoa já pegou'},
+  desc: {k:'desc',  label:'Outro desconto',     sign:-1, unit:'R$', hint:'consumo, quebra de caixa, etc.'}
+};
 const WD=['dom','seg','ter','qua','qui','sex','sáb'];
 const WDL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
@@ -623,10 +675,11 @@ function freshDB(){
   return {version:2, emps:SEED_TEAM.map(t=>({
       id:slug(t.name), name:t.name, role:t.role, color:t.color, face:t.face, active:true,
       scale:t.scale, start:t.start, end:t.end, lunch:t.lunch, contract:t.contract,
-      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:''
+      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:'',
+      salary:t.salary||0, food:t.food||0, vtDay:t.vtDay||0, advPct:null, deps:0
     })),
-    sched:[], swaps:[], punch:[],
-    cfg:{demand:Object.assign({},DEFAULT_DEMAND), rules:Object.assign({},DEFAULT_RULES)}};
+    sched:[], swaps:[], punch:[], pay:[],
+    cfg:{demand:Object.assign({},DEFAULT_DEMAND), rules:Object.assign({},DEFAULT_RULES), payroll:JSON.parse(JSON.stringify(DEFAULT_PAY))}};
 }
 function normCode(c){ return (c==='M'||c==='T'||c==='I')?WORK:c; }        /* compatibilidade com a v1 */
 function migrateEmp(e){
@@ -635,15 +688,18 @@ function migrateEmp(e){
   if(e.lunch==null) e.lunch=60;
   if(!e.scale) e.scale='6x1';
   if(!e.contract) e.contract='clt';
+  if(e.salary==null){ const seed=SEED_TEAM.find(t=>slug(t.name)===e.id); e.salary=(seed&&seed.salary)||0; e.food=(seed&&seed.food)||0; e.vtDay=(seed&&seed.vtDay)||0; }
+  if(e.food==null) e.food=0; if(e.vtDay==null) e.vtDay=0; if(e.deps==null) e.deps=0; if(e.advPct===undefined) e.advPct=null;
   return e;
 }
 let db=Store.load();
 if(!db || !db.version){ db=freshDB(); Store.save(db); }
-db.emps=(db.emps||[]).map(migrateEmp); db.sched=db.sched||[]; db.swaps=db.swaps||[]; db.punch=db.punch||[];
+db.emps=(db.emps||[]).map(migrateEmp); db.sched=db.sched||[]; db.swaps=db.swaps||[]; db.punch=db.punch||[]; db.pay=db.pay||[];
 db.sched.forEach(r=>{ r.shift=normCode(r.shift); });
 db.cfg=db.cfg||{};
 if(!db.cfg.demand || typeof db.cfg.demand[0]==='object') db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
 db.cfg.rules=Object.assign({},DEFAULT_RULES,db.cfg.rules||{});
+db.cfg.payroll=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PAY)),db.cfg.payroll||{});
 if((db.cfg.v||0)<3){                                   /* v3: semana civil + folga fixa do modelo da Coquin */
   db.cfg.demand=Object.assign({},DEFAULT_DEMAND);
   db.emps.forEach(e=>{
@@ -1296,12 +1352,150 @@ function monthStats(key,emp){
     else if(isOff(c.code)){ s.folgas++; if(wdOf(d)===0) s.domFolga++; }
     if(c.p && c.p.marks.length) s.dias++;
     s.worked+=c.worked; s.extra+=c.extra; s.late+=c.late; s.pausa+=c.pausa;
-    if(c.status==='falta') s.faltas++;
+    if(c.status==='falta' || c.code==='FA') s.faltas++;
     if(d<=todayISO()) s.saldo+=c.saldo;
   });
   return s;
 }
 function monthAll(key){ return activeEmps().map(e=>({emp:e, s:monthStats(key,e.id)})); }
+/* ============================================================
+   FOLHA DE PAGAMENTO (CLT e PJ)
+   · salário/30 por dia de falta · hora = salário ÷ divisor (220 p/ 44h)
+   · INSS progressivo 2026 (Portaria Interministerial MPS/MF nº 13/2026)
+   · IRRF 2026 com a redução da Lei 15.270/2025 (isento até R$ 5.000)
+   · VT: desconto de até 6% do salário-base (Lei 7.418/1985, art. 4º)
+   · adiantamento no dia 15 · saldo no 5º dia útil (CLT, art. 459, §1º)
+   · PJ: sem INSS, IRRF, desconto de VT, DSR e FGTS
+   ============================================================ */
+function payCfg(){ return db.cfg.payroll; }
+function r2(n){ return Math.round((+n||0)*100)/100; }
+function brl(n){ return (+n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function brlS(n){ return (n<0?'− ':'')+brl(Math.abs(n)); }
+function parseMoney(s){ s=String(s==null?'':s).replace(/[R$\s]/g,''); if(!s) return 0; if(s.indexOf(',')>=0) s=s.replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?0:n; }
+function moneyIn(n){ return n? String(r2(n).toFixed(2)).replace('.',',') : ''; }
+function parseHours(s){                       /* "1:30" · "1,5" · "90min" → minutos */
+  s=String(s||'').trim().toLowerCase(); if(!s) return 0;
+  if(/min/.test(s)) return Math.round(parseFloat(s)||0);
+  if(s.indexOf(':')>=0){ const p=s.split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+  if(s.indexOf('h')>=0){ const p=s.split('h'); return (+p[0].replace(',','.')||0)*60+(+p[1]||0); }
+  return Math.round((parseFloat(s.replace(',','.'))||0)*60);
+}
+function fmtDM(iso){ const d=dOf(iso); return pad(d.getDate())+'/'+pad(d.getMonth()+1); }
+
+/* ---------- feriados nacionais e dias úteis ---------- */
+function easter(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+  h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  return new Date(y,mo-1,da); }
+const _hol={};
+function holidays(y){
+  if(_hol[y]) return _hol[y];
+  const s=new Set(['01-01','04-21','05-01','09-07','10-12','11-02','11-15','11-20','12-25'].map(x=>y+'-'+x));
+  const sf=easter(y); sf.setDate(sf.getDate()-2); s.add(isoOf(sf));          /* Sexta-feira Santa */
+  return (_hol[y]=s);
+}
+function isHoliday(iso){ return holidays(+iso.slice(0,4)).has(iso); }
+/* dia útil p/ pagamento: segunda a sábado, fora domingo e feriado (IN SRT/MTE 1/1989) */
+function isBizDay(iso){ return wdOf(iso)!==0 && !isHoliday(iso); }
+function nthBizDay(key,n){ let c=0; for(const d of daysOfMonth(key)){ if(isBizDay(d) && ++c===n) return d; } return key+'-05'; }
+function payDayOf(key){ return nthBizDay(nextMonthKey(key),5); }                       /* 5º dia útil do mês seguinte */
+function advDayOf(key){ let d=key+'-'+pad(payCfg().advDay||15); while(!isBizDay(d)) d=addDays(d,-1); return d; }   /* cai no domingo/feriado → antecipa */
+
+/* ---------- impostos ---------- */
+function inssCalc(base){
+  let t=0, prev=0;
+  for(const f of payCfg().inss){ if(base<=prev) break; t+=(Math.min(base,f[0])-prev)*f[1]/100; prev=f[0]; }
+  return r2(t);
+}
+function irrfTax(base){ if(base<=0) return 0; for(const f of IRRF_TABLE){ if(base<=f[0]) return Math.max(0,base*f[1]/100-f[2]); } return 0; }
+function irrfCalc(gross,inss,deps){
+  const legal=irrfTax(gross-inss-(deps||0)*IRRF_DEP), simpl=irrfTax(gross-IRRF_SIMPL);
+  let tax=Math.min(legal,simpl);
+  /* Lei 15.270/2025: redução que zera o IR até R$ 5.000 e some aos poucos até R$ 7.350 */
+  let red=0;
+  if(gross<=5000) red=tax; else if(gross<=7350) red=Math.max(0,978.62-0.133145*gross);
+  return r2(Math.max(0,tax-red));
+}
+
+/* ---------- a conta do mês de uma pessoa ---------- */
+function payEntries(key,empId){ return db.pay.filter(x=>x.ym===key && x.emp===empId); }
+function payroll(key,empId){
+  const e=empById(empId), P=payCfg(), clt=isCLT(e);
+  const sal=+e.salary||0, dia=sal/30, hora=sal/(+P.divisor||220);
+  const days=daysOfMonth(key), today=todayISO();
+  const faltas=[], atest=[], ferias=[]; let work=0; const unknown=[];
+  days.forEach(d=>{ const c=codeOf(d,empId);
+    if(!c) unknown.push(d);
+    else if(c==='FA') faltas.push(d); else if(c==='AT') atest.push(d); else if(c==='FE') ferias.push(d); else if(isWork(c)) work++; });
+  if(unknown.length){                         /* dias sem escala montada: estima pela folga fixa / escala da pessoa */
+    const off=(e.prefOff||[]);
+    work += (e.fixedOff && off.length) ? unknown.filter(d=>off.indexOf(wdOf(d))<0).length : Math.round(unknown.length*scaleDays(e)/7);
+  }
+  const hasSched=!unknown.length;
+  /* horas do ponto (só dias fechados) */
+  const xmin={}; let menos=0, xPonto=0;
+  const addX=(pct,m)=>{ xmin[pct]=(xmin[pct]||0)+m; };
+  const xPct=clt?+P.extraPct:+P.pjExtraPct, offPct=clt?+P.extraOffPct:+P.pjExtraPct;
+  days.filter(d=>d<=today).forEach(d=>{
+    const c=dayCalc(d,empId);
+    if(P.horasPonto && c.p && c.p.marks.length && c.state==='encerrado'){
+      if(c.saldo>0){ addX(isWork(c.code)?xPct:offPct, c.saldo); xPonto+=c.saldo; }
+      else if(c.saldo<0 && isWork(c.code)) menos+=-c.saldo;
+    }
+    if(P.faltaPonto && c.status==='falta' && d<today){ faltas.push(d); work--; }
+  });
+  const menosPonto=menos;
+  /* lançamentos manuais */
+  const ents=payEntries(key,empId);
+  let bonus=0, vales=0, desc=0, adiantOv=null; const paid={};
+  ents.forEach(x=>{
+    if(x.kind==='extra') addX(x.pct==null?xPct:+x.pct, +x.qty||0);
+    else if(x.kind==='menos') menos+=+x.qty||0;
+    else if(x.kind==='bonus') bonus+=+x.amount||0;
+    else if(x.kind==='vale') vales+=+x.amount||0;
+    else if(x.kind==='desc') desc+=+x.amount||0;
+    else if(x.kind==='adiant') adiantOv=+x.amount||0;
+    else if(x.kind==='pago') paid[x.note||'saldo']=x;
+  });
+  /* proventos */
+  let valExtras=0; const extras=[];
+  Object.keys(xmin).forEach(p=>{ const m=xmin[p]; if(!m) return; const v=r2(m/60*hora*(1+(+p)/100)); valExtras+=v; extras.push({pct:+p, min:m, v}); });
+  let uteis=0, repousos=0; days.forEach(d=>{ if(isBizDay(d)) uteis++; else repousos++; });
+  const dsrEx = (clt && P.dsrExtras && valExtras && uteis) ? r2(valExtras/uteis*repousos) : 0;
+  const valFaltas=r2(faltas.length*dia);
+  const semanas=new Set(faltas.map(weekKey)).size;
+  const dsrLost=(clt && P.dsrFalta) ? r2(semanas*dia) : 0;
+  const valMenos=r2(menos/60*hora);
+  const bruto=r2(sal+valExtras+dsrEx+bonus);
+  const base=r2(Math.max(0, bruto-valFaltas-dsrLost-valMenos));
+  const inss=clt?inssCalc(base):0;
+  const irrf=(clt && P.irrf)?irrfCalc(base,inss,+e.deps||0):0;
+  /* benefícios */
+  const vtDays=Math.max(0,work);
+  const vtTotal=r2((+e.vtDay||0)*vtDays);
+  const vtDesc=clt?r2(Math.min(sal*(+P.vtPct||0)/100, vtTotal)):0;
+  const food=+e.food||0;
+  const foodDesc=(P.foodFalta && faltas.length && (work+faltas.length)) ? r2(food/(work+faltas.length)*faltas.length) : 0;
+  const benef=r2(food-foodDesc+vtTotal);
+  const advPct=(e.advPct==null||e.advPct==='')?+P.advPct:+e.advPct;
+  const adiant=adiantOv!=null?r2(adiantOv):r2(sal*advPct/100);
+  const liquido=r2(base-inss-irrf-vtDesc-vales-desc);
+  const saldo=r2(liquido-adiant);
+  const depositar=r2(saldo+(P.payBenefits?benef:0));
+  const fgts=clt?r2(base*(+P.fgts||0)/100):0;
+  return {e, clt, sal, dia, hora, hasSched, work, vtDays, faltas, atest, ferias, semanas, extras, valExtras:r2(valExtras), xPonto, menos, menosPonto,
+    dsrEx, valFaltas, dsrLost, valMenos, bonus, bruto, base, inss, irrf, vtTotal, vtDesc, food, foodDesc, benef,
+    adiant, adiantOv:adiantOv!=null, advPct, vales, desc, liquido, saldo, depositar, fgts, custo:r2(base+benef+fgts),
+    paid, ents, payDay:payDayOf(key), advDay:advDayOf(key), uteis, repousos};
+}
+function payrollAll(key){ return activeEmps().map(e=>payroll(key,e.id)); }
+function csvFolha(key){
+  const L=[['Funcionario','Vinculo','Salario base','Faltas (dias)','Desconto faltas','DSR perdido','Horas extras','DSR s/ extras','Bonus','Atrasos','Base','INSS','IRRF','Desc. VT 6%','Vales','Outros desc.','Liquido do mes','Adiantamento (dia '+(payCfg().advDay||15)+')','Saldo salario','Alimentacao','VT','A depositar ('+fmtDM(payDayOf(key))+')','FGTS (empresa)']];
+  const n=v=>String(r2(v).toFixed(2)).replace('.',',');
+  payrollAll(key).forEach(p=>L.push([p.e.name, p.clt?'CLT':'PJ', n(p.sal), p.faltas.length, n(p.valFaltas), n(p.dsrLost), n(p.valExtras), n(p.dsrEx), n(p.bonus), n(p.valMenos),
+    n(p.base), n(p.inss), n(p.irrf), n(p.vtDesc), n(p.vales), n(p.desc), n(p.liquido), n(p.adiant), n(p.saldo), n(p.food-p.foodDesc), n(p.vtTotal), n(p.depositar), n(p.fgts)]));
+  dl('coquin-folha-'+key+'.csv', L.map(r=>r.join(';')).join('\n'));
+}
+
 
 /* ---------- CSV ---------- */
 function dl(name,text){
@@ -1351,9 +1545,13 @@ const Cloud={
     if(err && err.error) throw err.error;
     const emps=r[0].data||[], sched=r[1].data||[], swaps=r[2].data||[], punch=r[3].data||[], cfg=r[4].data;
     if(emps.length){
+      const prevE={}; db.emps.forEach(x=>prevE[x.id]=x);
+      const pv=(row,col,id,key,def)=>(row[col]!=null)?+row[col]:(prevE[id]&&prevE[id][key]!=null?prevE[id][key]:def);
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
         active:e.active!==false, scale:e.scale||'6x1', start:e.start_t||'', end:e.end_t||'', lunch:(e.lunch==null?60:+e.lunch),
-        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||''}));
+        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'',
+        salary:pv(e,'salary',e.id,'salary',undefined), food:pv(e,'food',e.id,'food',0), vtDay:pv(e,'vt_day',e.id,'vtDay',0),
+        advPct:(e.adv_pct!=null?+e.adv_pct:(prevE[e.id]?prevE[e.id].advPct:null)), deps:pv(e,'deps',e.id,'deps',0)}));
     }else if(db.emps.length){ for(const e of db.emps) await this.pushEmp(e); }
     db.sched=sched.map(s=>({date:s.date, emp:s.emp, shift:normCode(s.shift), locked:!!s.locked, src:s.src||'auto', note:s.note||'', synced:true}));
     db.swaps=swaps.map(s=>({id:s.id, at:s.created_at, emp:s.emp, from:s.from_date, to:s.to_date, cover:s.cover||null,
@@ -1362,14 +1560,42 @@ const Cloud={
     if(cfg){
       if(cfg.demand && typeof cfg.demand[0]!=='object') db.cfg.demand=cfg.demand;
       if(cfg.rules) db.cfg.rules=Object.assign({},DEFAULT_RULES,cfg.rules);
+      if(cfg.payroll) db.cfg.payroll=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PAY)),cfg.payroll);
     }
+    /* folha: tabela própria; se ainda não rodaram o SETUP.sql novo, segue local */
+    try{
+      const rp=await c.from('payroll_entries').select('*');
+      if(rp.error){ this.payMissing=true; }
+      else{
+        this.payMissing=false;
+        const local=db.pay.filter(x=>!x.synced);
+        db.pay=(rp.data||[]).map(x=>({id:x.id, ym:x.ym, emp:x.emp, kind:x.kind, date:x.date||'', qty:x.qty==null?null:+x.qty, pct:x.pct==null?null:+x.pct,
+          amount:x.amount==null?null:+x.amount, note:x.note||'', synced:true}));
+        local.forEach(x=>{ if(!db.pay.find(y=>y.id===x.id)) db.pay.push(x); });
+      }
+    }catch(e){ this.payMissing=true; }
     Store.save(db);
   },
   async pushEmp(e){ if(!this.on) return;
-    try{ await this.client.from('shift_employees').upsert({id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
+    const row={id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
       active:e.active!==false, scale:e.scale||'6x1', start_t:e.start, end_t:e.end, lunch:e.lunch||0, contract:e.contract||'clt',
-      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null},{onConflict:'id'}); }
-    catch(err){ offlineToast(); } },
+      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null};
+    const pay={salary:+e.salary||0, food:+e.food||0, vt_day:+e.vtDay||0, adv_pct:e.advPct==null?null:+e.advPct, deps:+e.deps||0};
+    try{
+      let r=await this.client.from('shift_employees').upsert(Object.assign({},row,pay),{onConflict:'id'});
+      if(r.error && /column|schema/i.test(r.error.message||'')){            /* SETUP.sql da folha ainda não rodou */
+        r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'});
+        setupToast();
+      }
+      if(r.error) throw r.error;
+    }catch(err){ offlineToast(); } },
+  async pushPay(x){ if(!this.on) return;
+    try{ const {error}=await this.client.from('payroll_entries').upsert({id:x.id, ym:x.ym, emp:x.emp, kind:x.kind, date:x.date||null,
+        qty:x.qty==null?null:x.qty, pct:x.pct==null?null:x.pct, amount:x.amount==null?null:x.amount, note:x.note||''},{onConflict:'id'});
+      if(error){ if(/relation|schema|table/i.test(error.message||'')) setupToast(); else throw error; return; }
+      x.synced=true; Store.save(db); }
+    catch(e){ offlineToast(); } },
+  async delPay(id){ if(!this.on) return; try{ await this.client.from('payroll_entries').delete().eq('id',id); }catch(e){} },
   async delEmp(id){ if(!this.on) return; try{ await this.client.from('shift_employees').delete().eq('id',id); }catch(e){} },
   async pushSchedule(){ if(!this.on) return;
     const dirty=db.sched.filter(r=>!r.synced);
@@ -1391,14 +1617,18 @@ const Cloud={
       if(error) throw error; p.synced=true; Store.save(db); }
     catch(e){ offlineToast(); } },
   async pushCfg(){ if(!this.on) return;
-    try{ await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules},{onConflict:'id'}); }
-    catch(e){ offlineToast(); } },
+    try{
+      let r=await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules, payroll:db.cfg.payroll},{onConflict:'id'});
+      if(r.error && /column|schema/i.test(r.error.message||'')){ r=await this.client.from('shift_config').upsert({id:1, demand:db.cfg.demand, rules:db.cfg.rules},{onConflict:'id'}); setupToast(); }
+      if(r.error) throw r.error;
+    }catch(e){ offlineToast(); } },
   subscribe(){
     try{ this.client.channel('coquin-escala-rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_schedule'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'time_punches'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_swaps'},()=>this.softPull())
       .on('postgres_changes',{event:'*',schema:'public',table:'shift_employees'},()=>this.softPull())
+      .on('postgres_changes',{event:'*',schema:'public',table:'payroll_entries'},()=>this.softPull())
       .subscribe(); }catch(e){}
   },
   softPull(){ this.pull().then(render).catch(()=>{}); }
@@ -1406,6 +1636,7 @@ const Cloud={
 let toastT=null;
 function toast(html){ const t=$('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
 function offlineToast(){ toast('Sem conexão — salvo neste aparelho'); }
+function setupToast(){ toast('Folha salva só neste aparelho — rode o SETUP.sql novo no Supabase'); }
 function saveLocal(){ Store.save(db); }
 
 /* ============================================================
@@ -1708,8 +1939,8 @@ function openTeamSheet(){
     $('teamAdd').addEventListener('click',()=>openEmpSheet(null));
   });
 }
-function openEmpSheet(id){
-  const e=id?empById(id):{id:'',name:'',role:'Atendimento',color:'#446349',active:true,scale:'6x1',start:'15:00',end:'23:00',lunch:60,contract:'clt',prefOff:[],pin:'',admission:''};
+function openEmpSheet(id,payFocus){
+  const e=id?empById(id):{id:'',name:'',role:'Atendimento',color:'#446349',active:true,scale:'6x1',start:'15:00',end:'23:00',lunch:60,contract:'clt',prefOff:[],pin:'',admission:'',salary:0,food:0,vtDay:0,advPct:null,deps:0};
   if(!e) return;
   let h='<div class="fld"><label>Nome</label><input id="epName" value="'+esc(e.name)+'" placeholder="ex.: Wagner"></div>'
    +'<div class="fld"><label>Cargo</label><input id="epRole" value="'+esc(e.role||'')+'" placeholder="Atendimento"></div>'
@@ -1728,6 +1959,13 @@ function openEmpSheet(id){
    +WD.map((w,i)=>'<button data-w="'+i+'" class="'+((e.prefOff||[]).indexOf(i)>=0?'sel':'')+'">'+w+'</button>').join('')
    +'</div><div class="hint" id="epOffHint">—</div></div>'
    +'<div class="switch"><div class="sl">Folga fixa toda semana<small>sempre nos mesmos dias; o domingo de folga entra no lugar de um deles quando é a vez</small></div><button class="sw '+(e.fixedOff?'on':'')+'" id="epFixed"></button></div>'
+   +'<div class="section-title" id="epPayT" style="margin:20px 2px 2px">Salário e benefícios</div>'
+   +'<div class="fld2"><div class="fld"><label>Salário (R$)</label><input id="epSal" inputmode="decimal" value="'+moneyIn(e.salary)+'" placeholder="2.000,00"></div>'
+   +'<div class="fld"><label>Alimentação/mês</label><input id="epFood" inputmode="decimal" value="'+moneyIn(e.food)+'" placeholder="400,00"></div></div>'
+   +'<div class="fld2"><div class="fld"><label>VT por dia (R$)</label><input id="epVt" inputmode="decimal" value="'+moneyIn(e.vtDay)+'" placeholder="10,80"></div>'
+   +'<div class="fld"><label>Adiantamento (%)</label><input id="epAdv" inputmode="decimal" value="'+(e.advPct==null?'':String(e.advPct).replace('.',','))+'" placeholder="'+payCfg().advPct+' (padrão)"></div></div>'
+   +'<div class="fld" id="epDepsBox"><label>Dependentes no IR</label><input id="epDeps" type="number" inputmode="numeric" min="0" value="'+(e.deps||0)+'"></div>'
+   +'<div class="hint" id="epPayHint"></div>'
    +'<div class="fld2"><div class="fld"><label>Cor</label><input id="epColor" type="color" value="'+(e.color||'#446349')+'" style="padding:6px;height:48px"></div>'
    +'<div class="fld"><label>Senha do ponto</label><input id="epPin" inputmode="numeric" maxlength="6" value="'+esc(e.pin||'')+'" placeholder="4 dígitos"></div></div>'
    +'<div class="switch"><div class="sl">Ativo na escala<small>desligue em vez de excluir quem saiu</small></div><button class="sw '+(e.active!==false?'on':'')+'" id="epActive"></button></div>'
@@ -1768,6 +2006,19 @@ function openEmpSheet(id){
       b.classList.toggle('sel',prefOff.indexOf(w)>=0); offHint();
     }));
     $('epFixed').addEventListener('click',()=>{ fixedOff=!fixedOff; $('epFixed').classList.toggle('on',fixedOff); offHint(); });
+    function payHint(){
+      const sal=parseMoney($('epSal').value), clt=contract!=='pj';
+      $('epDepsBox').classList.toggle('hide',!clt);
+      if(!sal){ $('epPayHint').textContent='O salário entra na aba Folha (faltas, extras, adiantamento e saldo).'; return; }
+      const inss=clt?inssCalc(sal):0, ir=clt&&payCfg().irrf?irrfCalc(sal,inss,+$('epDeps').value||0):0;
+      $('epPayHint').textContent= clt
+        ? 'INSS de '+brl(inss)+(ir?' · IRRF '+brl(ir):' · sem IR')+' · desconto de VT até '+brl(sal*payCfg().vtPct/100)+' · dia vale '+brl(sal/30)
+        : 'PJ: sem INSS, IR ou desconto de VT · dia vale '+brl(sal/30);
+    }
+    ['epSal','epDeps'].forEach(k=>$(k).addEventListener('input',payHint));
+    Array.prototype.forEach.call(document.querySelectorAll('#epContract button'),b=>b.addEventListener('click',payHint));
+    payHint();
+    if(payFocus) setTimeout(()=>{ const t=$('epPayT'); if(t) t.scrollIntoView({block:'start'}); $('epSal').focus(); },320);
     calc(); offHint();
     $('epSave').addEventListener('click',()=>{
       const name=$('epName').value.trim();
@@ -1777,8 +2028,11 @@ function openEmpSheet(id){
       rec.start=$('epStart').value||'10:00'; rec.end=$('epEnd').value||'19:00'; rec.lunch=+$('epLunch').value||0;
       rec.scale=scale; rec.contract=contract; rec.color=$('epColor').value; rec.pin=$('epPin').value.trim();
       rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active;
+      rec.salary=parseMoney($('epSal').value); rec.food=parseMoney($('epFood').value); rec.vtDay=parseMoney($('epVt').value);
+      rec.advPct=$('epAdv').value.trim()===''?null:parseMoney($('epAdv').value); rec.deps=Math.max(0,+$('epDeps').value||0);
       if(!id) db.emps.push(rec);
       saveLocal(); Cloud.pushEmp(rec); closeSheet(); render(); toast('Equipe atualizada');
+      if(payFocus && id) openPayslip(id);
     });
     if(id) $('epDel').addEventListener('click',()=>{
       if(!confirm('Excluir '+e.name+' da equipe? A escala e o ponto já registrados continuam guardados.')) return;
@@ -2171,6 +2425,300 @@ function openPunchEdit(date,empId){
 }
 
 /* ============================================================
+   RENDER — FOLHA (salário, faltas, extras, adiantamento e saldo)
+   ============================================================ */
+function payPaidChip(p,which){
+  const x=p.paid[which];
+  return x? '<span class="chip ok">pago '+fmtDM(x.date)+'</span>' : '';
+}
+function renderFolha(){
+  const rows=payrollAll(viewMonth), P=payCfg();
+  const noSal=rows.filter(p=>!p.sal);
+  const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length}),{dep:0,adv:0,custo:0,faltas:0});
+  const payDay=payDayOf(viewMonth), advDay=advDayOf(viewMonth);
+  $('fpKpi').innerHTML='<div class="card pay-hero">'
+    +'<div class="ph-l">A depositar no 5º dia útil · '+cap(dayLabel(payDay))+'</div>'
+    +'<div class="ph-v">'+brl(tot.dep)+'</div>'
+    +'<div class="ph-s">saldo da folha de '+monthName(viewMonth)+' (já tirando o adiantamento)</div>'
+    +'<div class="ph-grid"><div><b>'+brl(tot.adv)+'</b><span>adiantamento · '+fmtDM(advDay)+'</span></div>'
+    +'<div><b>'+tot.faltas+'</b><span>falta'+(tot.faltas===1?'':'s')+' no mês</span></div>'
+    +'<div><b>'+brl(tot.custo)+'</b><span>custo total</span></div></div></div>'
+    +'<div class="btn-row" style="margin-top:12px"><button class="btn btn-green" id="fpFalta" style="flex:1;font-size:14.5px">Registrar falta</button>'
+    +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>';
+  $('fpList').innerHTML = rows.length ? rows.map(p=>{
+      const bits=[];
+      if(p.faltas.length) bits.push('<b style="color:var(--danger)">'+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+'</b>');
+      const xm=p.extras.reduce((a,x)=>a+x.min,0); if(xm) bits.push(hm(xm)+' extra');
+      if(p.menos) bits.push(hm(p.menos)+' a menos');
+      if(p.vales) bits.push('vale '+brl(p.vales));
+      if(!bits.length) bits.push(p.clt?'sem ocorrências':'PJ · sem descontos de lei');
+      return '<div class="fc-row" data-pay="'+p.e.id+'">'+avatar(p.e)
+        +'<div class="fc-b"><div class="n">'+esc(p.e.name)+(p.clt?'':'<span class="tag-pj">PJ</span>')+'</div>'
+        +'<div class="s">'+(p.sal?'salário '+brl(p.sal)+' · ':'<b style="color:var(--gold-ink)">sem salário cadastrado</b> · ')+bits.join(' · ')+'</div></div>'
+        +'<div class="fc-v"><div class="v">'+brl(p.depositar)+'</div><div class="l">'+(p.paid.saldo?'✓ pago':'a depositar')+'</div></div></div>';
+    }).join('') : '<div class="empty"><p>Sem equipe cadastrada.</p></div>';
+  $('fpAlerts').innerHTML = noSal.length
+    ? '<div class="banner warn"><span><b>Falta cadastrar o salário</b> de '+esc(noSal.map(p=>p.e.name).join(', '))+'. Toque na pessoa → <b>Salário e benefícios</b>.</span></div>' : '';
+  $('fpFalta').addEventListener('click',()=>openFaltaSheet(null));
+  $('fpLanc').addEventListener('click',()=>openPayEntrySheet(null,null));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pay]'),b=>b.addEventListener('click',()=>openPayslip(b.getAttribute('data-pay'))));
+}
+function slipLine(label,val,sub,cls){
+  return '<div class="sl-row'+(cls?' '+cls:'')+'"><div class="sl-k">'+label+(sub?'<small>'+sub+'</small>':'')+'</div><div class="sl-v">'+val+'</div></div>';
+}
+function openPayslip(empId){
+  const p=payroll(viewMonth,empId), e=p.e, P=payCfg();
+  let h='<div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">'+avatar(e)
+    +'<div style="flex:1"><div style="font-size:15px;font-weight:800">'+esc(e.name)+(p.clt?' <span class="chip neutral" style="padding:2px 7px;font-size:10px">CLT</span>':'<span class="tag-pj">PJ</span>')+'</div>'
+    +'<div style="font-size:12.5px;color:var(--ink-faint);font-weight:650">'+cap(monthName(viewMonth))+' · '+(p.hasSched?p.work+' dias de trabalho na escala':'~'+p.work+' dias (estimado pela escala '+e.scale+')')+'</div></div></div>';
+  h+='<div class="pay-hero" style="margin-top:0"><div class="ph-l">Depositar no 5º dia útil · '+cap(dayLabel(p.payDay))+'</div>'
+    +'<div class="ph-v">'+brl(p.depositar)+'</div>'
+    +'<div class="ph-s">'+(P.payBenefits?'saldo do salário '+brl(p.saldo)+' + alimentação e VT '+brl(p.benef):'saldo do salário (benefícios pagos à parte)')+'</div>'
+    +'<div style="margin-top:10px">'+payPaidChip(p,'saldo')+'</div></div>';
+  if(!p.sal) h+='<div class="banner warn"><span>Cadastre o salário para a conta sair certa.</span></div>';
+
+  h+='<div class="section-title" style="margin:18px 4px 8px">Proventos</div><div class="card slip">';
+  h+=slipLine('Salário base', brl(p.sal), 'dia '+brl(p.dia)+' · hora '+brl(p.hora));
+  p.extras.forEach(x=>{ h+=slipLine('Horas extras '+x.pct+'%', brl(x.v), hm(x.min)+(x.pct===+P.extraOffPct&&p.clt?' · domingo/folga':'')); });
+  if(p.dsrEx) h+=slipLine('DSR sobre horas extras', brl(p.dsrEx), p.repousos+' domingos/feriados ÷ '+p.uteis+' dias úteis');
+  if(p.bonus) h+=slipLine('Bônus / comissão', brl(p.bonus));
+  h+='</div>';
+
+  h+='<div class="section-title" style="margin:18px 4px 8px">Descontos</div><div class="card slip">';
+  let anyD=false; const D=(l,v,s)=>{ anyD=true; h+=slipLine(l,'<span class="neg">− '+brl(v)+'</span>',s); };
+  if(p.faltas.length) D('Faltas ('+p.faltas.length+' dia'+(p.faltas.length===1?'':'s')+')', p.valFaltas, p.faltas.map(fmtDM).join(', ')+' · '+brl(p.dia)+'/dia');
+  if(p.dsrLost) D('DSR perdido', p.dsrLost, p.semanas+' semana(s) com falta (Lei 605/1949)');
+  if(p.valMenos) D('Atrasos / horas a menos', p.valMenos, hm(p.menos));
+  if(p.inss) D('INSS', p.inss, 'progressivo sobre '+brl(p.base)+' ('+(p.base?(p.inss/p.base*100).toFixed(2).replace('.',','):'0')+'% efetivo)');
+  if(p.irrf) D('IRRF', p.irrf);
+  if(p.vtDesc) D('Vale-transporte '+P.vtPct+'%', p.vtDesc, 'limite: o VT do mês ('+brl(p.vtTotal)+')');
+  if(p.vales) D('Vales', p.vales);
+  if(p.desc) D('Outros descontos', p.desc);
+  if(!anyD) h+=slipLine('Nenhum desconto', '—', p.clt?'':'PJ não tem INSS, IR nem desconto de VT');
+  h+='</div>';
+
+  h+='<div class="card slip" style="margin-top:10px">'
+    +slipLine('Líquido do mês', '<b>'+brl(p.liquido)+'</b>', p.clt&&!p.irrf?'IR: isento (até R$ 5.000 · Lei 15.270/2025)':'')
+    +slipLine('Adiantamento · '+fmtDM(p.advDay), '<span class="neg">− '+brl(p.adiant)+'</span>', (p.adiantOv?'valor ajustado':p.advPct+'% do salário')+' '+payPaidChip(p,'adiant'))
+    +slipLine('Saldo do salário', '<b>'+brl(p.saldo)+'</b>','','tot')
+    +'</div>';
+
+  h+='<div class="section-title" style="margin:18px 4px 8px">Benefícios</div><div class="card slip">'
+    +slipLine('Alimentação', brl(p.food-p.foodDesc), p.foodDesc?'− '+brl(p.foodDesc)+' pelas faltas':'valor do mês')
+    +slipLine('Vale-transporte', brl(p.vtTotal), p.vtDays+' dias × '+brl(+e.vtDay||0)+(p.faltas.length?' (sem os dias de falta)':''))
+    +'</div>';
+  if(p.clt) h+='<div class="note"><b>Custo para a empresa:</b> '+brl(p.custo)+' (inclui FGTS de '+P.fgts+'% = '+brl(p.fgts)+', que não sai do salário).</div>';
+
+  h+='<div class="section-title" style="margin:18px 4px 8px">Lançamentos do mês</div><div class="card slip">';
+  const evs=[];
+  p.faltas.forEach(d=>evs.push({t:'Falta', s:dayLabel(d), v:'− '+brl(p.dia), cls:'neg', del:'fa|'+d}));
+  p.atest.forEach(d=>evs.push({t:'Atestado (não desconta)', s:dayLabel(d), v:'—', del:'fa|'+d}));
+  if(p.xPonto) evs.push({t:'Extras pelo ponto', s:'dias fechados no ponto', v:hm(p.xPonto)});
+  if(p.menosPonto) evs.push({t:'Horas a menos pelo ponto', s:'dias fechados no ponto', v:hm(p.menosPonto), cls:'neg'});
+  p.ents.filter(x=>PAY_KINDS[x.kind]||x.kind==='adiant').forEach(x=>{
+    const K=PAY_KINDS[x.kind];
+    const v= x.kind==='extra'? hm(x.qty)+' · '+(x.pct==null?P.extraPct:x.pct)+'%' : x.kind==='menos'? hm(x.qty) : brl(x.amount);
+    evs.push({t:K?K.label:'Adiantamento ajustado', s:(x.date?dayLabel(x.date):'')+(x.note?' · '+esc(x.note):''), v, cls:(K&&K.sign<0)?'neg':'', del:'en|'+x.id});
+  });
+  h+= evs.length? evs.map(x=>'<div class="sl-row"><div class="sl-k">'+x.t+'<small>'+x.s+'</small></div><div class="sl-v '+(x.cls||'')+'">'+x.v
+      +(x.del?' <button class="sl-del" data-del="'+x.del+'" aria-label="Remover">✕</button>':'')+'</div></div>').join('')
+    : '<div class="sl-row"><div class="sl-k">Nada lançado<small>faltas vêm da escala; extras, do ponto ou de um lançamento</small></div></div>';
+  h+='</div>';
+
+  h+='<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psAdv">'+(p.paid.adiant?'Desfazer adiant. pago':'Adiantamento pago ✓')+'</button>'
+    +'<button class="btn-ghost" id="psPaid">'+(p.paid.saldo?'Desfazer saldo pago':'Saldo pago ✓')+'</button></div>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psSal">Salário e benefícios</button><button class="btn-ghost" id="psAdvEdit">Ajustar adiantamento</button></div>';
+  openSheet('Holerite do mês', h, ()=>{
+    $('psFalta').addEventListener('click',()=>openFaltaSheet(empId));
+    $('psLanc').addEventListener('click',()=>openPayEntrySheet(empId,null));
+    $('psSal').addEventListener('click',()=>openEmpSheet(empId,true));
+    $('psAdvEdit').addEventListener('click',()=>openAdvSheet(empId));
+    $('psAdv').addEventListener('click',()=>togglePaid(empId,'adiant',p.adiant,p.advDay));
+    $('psPaid').addEventListener('click',()=>togglePaid(empId,'saldo',p.depositar,p.payDay));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-del]'),b=>b.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      const k=b.getAttribute('data-del').split('|');
+      if(k[0]==='fa'){
+        if(!confirm('Tirar a falta/atestado de '+dayLabel(k[1])+'? O dia volta a ser de trabalho.')) return;
+        setSched(k[1],empId,WORK,{locked:false, src:'manual', note:''}); saveLocal(); Cloud.pushSchedule();
+      }else{ removePayEntry(k[1]); }
+      render(); openPayslip(empId);
+    }));
+  });
+}
+function addPayEntry(x){ x.id=x.id||uid('pg'); x.ym=x.ym||ymOf(x.date||todayISO()); x.synced=false; db.pay.push(x); saveLocal(); Cloud.pushPay(x); return x; }
+function removePayEntry(id){ db.pay=db.pay.filter(x=>x.id!==id); saveLocal(); Cloud.delPay(id); }
+function togglePaid(empId,which,amount,date){
+  const cur=payEntries(viewMonth,empId).find(x=>x.kind==='pago' && (x.note||'saldo')===which);
+  if(cur) removePayEntry(cur.id);
+  else addPayEntry({ym:viewMonth, emp:empId, kind:'pago', note:which, amount, date:todayISO()<date?todayISO():date});
+  render(); openPayslip(empId); toast(cur?'Desfeito':'Marcado como pago');
+}
+function whoPicker(id,sel){
+  return '<div class="who" id="'+id+'" style="margin-top:8px">'+activeEmps().map(e=>'<button data-w="'+e.id+'" style="--pc:'+(e.color||'#446349')+'" class="'+(e.id===sel?'sel':'')+'">'+avatar(e)+'<span class="nm">'+esc(e.name)+'</span></button>').join('')+'</div>';
+}
+function bindWho(id,cb){
+  Array.prototype.forEach.call(document.querySelectorAll('#'+id+' button'),b=>b.addEventListener('click',()=>{
+    Array.prototype.forEach.call(document.querySelectorAll('#'+id+' button'),x=>x.classList.toggle('sel',x===b)); cb(b.getAttribute('data-w'));
+  }));
+}
+function defaultDateIn(key){ const t=todayISO(); return ymOf(t)===key? t : key+'-01'; }
+function openFaltaSheet(empId){
+  let who=empId||'', kind='FA';
+  const h='<div class="fld"><label>Quem faltou</label>'+whoPicker('flWho',who)+'</div>'
+   +'<div class="fld"><label>Dia</label><input type="date" id="flDate" value="'+defaultDateIn(viewMonth)+'"></div>'
+   +'<div class="fld"><label>Tipo</label><div class="opt" id="flKind">'
+   +'<button data-k="FA" class="sel"><span class="ot">Falta</span><span class="os">desconta o dia e o VT</span></button>'
+   +'<button data-k="AT"><span class="ot">Atestado</span><span class="os">justificada, não desconta o salário</span></button></div></div>'
+   +'<div class="fld"><label>Observação</label><input id="flNote" placeholder="opcional"></div>'
+   +'<div class="note" id="flPrev">Escolha a pessoa para ver o saldo.</div>'
+   +'<button class="btn btn-green" id="flSave" style="margin-top:14px">Registrar</button>';
+  openSheet('Registrar falta', h, ()=>{
+    function preview(){
+      const d=$('flDate').value; if(!who||!d){ $('flPrev').innerHTML='Escolha a pessoa para ver o saldo.'; return; }
+      const key=ymOf(d), before=payroll(key,who);
+      const old=schedOf(d,who), snap=old?Object.assign({},old):null;
+      setSched(d,who,kind,{src:'manual'});
+      const after=payroll(key,who);
+      const i=db.sched.findIndex(x=>x.date===d&&x.emp===who);
+      if(snap) db.sched[i]=snap; else if(i>=0) db.sched.splice(i,1);
+      const diff=r2(after.depositar-before.depositar);
+      $('flPrev').innerHTML='Saldo de <b>'+esc(empName(who))+'</b> em '+fmtDM(after.payDay)+': <b>'+brl(after.depositar)+'</b>'
+        +(diff?' <span style="color:var(--danger);font-weight:800">('+brlS(diff)+')</span>':' (sem mudança)')
+        +(snap&&snap.shift===kind?'<br>Esse dia já está registrado assim.':'')
+        +(snap&&!isWork(snap.shift)&&snap.shift!==kind?'<br>Atenção: nesse dia a escala estava como <b>'+codeLabel(snap.shift)+'</b>.':'');
+    }
+    bindWho('flWho',w=>{ who=w; preview(); });
+    $('flDate').addEventListener('change',preview);
+    Array.prototype.forEach.call(document.querySelectorAll('#flKind button'),b=>b.addEventListener('click',()=>{
+      kind=b.getAttribute('data-k'); Array.prototype.forEach.call(document.querySelectorAll('#flKind button'),x=>x.classList.toggle('sel',x===b)); preview();
+    }));
+    preview();
+    $('flSave').addEventListener('click',()=>{
+      const d=$('flDate').value;
+      if(!who){ toast('Escolha quem faltou'); return; }
+      if(!d){ toast('Escolha o dia'); return; }
+      setSched(d,who,kind,{locked:true, src:'manual', note:$('flNote').value.trim()});
+      saveLocal(); Cloud.pushSchedule();
+      viewMonth=ymOf(d);
+      const p=payroll(viewMonth,who);
+      render(); openPayslip(who);
+      toast((kind==='FA'?'Falta':'Atestado')+' registrado · saldo '+brl(p.depositar));
+    });
+  });
+}
+function openPayEntrySheet(empId,kind){
+  let who=empId||'', k=kind||'extra', pct=+payCfg().extraPct;
+  const P=payCfg();
+  const h='<div class="fld"><label>Quem</label>'+whoPicker('peWho',who)+'</div>'
+   +'<div class="fld"><label>O que é</label><select id="peKind">'+Object.keys(PAY_KINDS).map(x=>'<option value="'+x+'"'+(x===k?' selected':'')+'>'+PAY_KINDS[x].label+'</option>').join('')+'</select>'
+   +'<div class="hint" id="peHint"></div></div>'
+   +'<div class="fld" id="pePctBox"><label>Adicional</label><div class="opt" id="pePct">'
+   +'<button data-p="'+P.extraPct+'" class="sel"><span class="ot">'+P.extraPct+'%</span><span class="os">dia normal</span></button>'
+   +'<button data-p="'+P.extraOffPct+'"><span class="ot">'+P.extraOffPct+'%</span><span class="os">domingo, feriado ou folga</span></button></div></div>'
+   +'<div class="fld2"><div class="fld"><label id="peQtyL">Horas</label><input id="peQty" inputmode="decimal" placeholder="ex.: 2 ou 1:30"></div>'
+   +'<div class="fld"><label>Dia</label><input type="date" id="peDate" value="'+defaultDateIn(viewMonth)+'"></div></div>'
+   +'<div class="fld"><label>Observação</label><input id="peNote" placeholder="opcional"></div>'
+   +'<div class="note" id="pePrev">—</div>'
+   +'<button class="btn btn-green" id="peSave" style="margin-top:14px">Lançar</button>';
+  openSheet('Novo lançamento', h, ()=>{
+    function rec(){
+      const K=PAY_KINDS[k], d=$('peDate').value||todayISO();
+      const x={ym:ymOf(d), emp:who, kind:k, date:d, note:$('peNote').value.trim()};
+      if(K.unit==='h'){ x.qty=parseHours($('peQty').value); if(k==='extra') x.pct=pct; } else x.amount=parseMoney($('peQty').value);
+      return x;
+    }
+    function sync(){
+      const K=PAY_KINDS[k];
+      $('peHint').textContent=K.hint;
+      $('pePctBox').classList.toggle('hide',k!=='extra');
+      $('peQtyL').textContent=K.unit==='h'?'Horas':'Valor (R$)';
+      $('peQty').placeholder=K.unit==='h'?'ex.: 2 ou 1:30':'ex.: 50,00';
+      if(!who){ $('pePrev').innerHTML='Escolha a pessoa para ver o saldo.'; return; }
+      const x=rec(), before=payroll(x.ym,who);
+      x.id='__tmp'; db.pay.push(x); const after=payroll(x.ym,who); db.pay=db.pay.filter(y=>y.id!=='__tmp');
+      const diff=r2(after.depositar-before.depositar);
+      $('pePrev').innerHTML='Saldo de <b>'+esc(empName(who))+'</b> em '+fmtDM(after.payDay)+': <b>'+brl(after.depositar)+'</b>'
+        +(diff?' <span style="font-weight:800;color:'+(diff<0?'var(--danger)':'var(--green-700)')+'">('+(diff>0?'+ ':'')+brlS(diff)+')</span>':'');
+    }
+    bindWho('peWho',w=>{ who=w; sync(); });
+    $('peKind').addEventListener('change',()=>{ k=$('peKind').value; sync(); });
+    ['peQty','peDate'].forEach(id=>$(id).addEventListener('input',sync));
+    Array.prototype.forEach.call(document.querySelectorAll('#pePct button'),b=>b.addEventListener('click',()=>{
+      pct=+b.getAttribute('data-p'); Array.prototype.forEach.call(document.querySelectorAll('#pePct button'),x=>x.classList.toggle('sel',x===b)); sync();
+    }));
+    sync();
+    $('peSave').addEventListener('click',()=>{
+      if(!who){ toast('Escolha a pessoa'); return; }
+      const x=rec();
+      if(!(x.qty>0) && !(x.amount>0)){ toast('Coloque '+(PAY_KINDS[k].unit==='h'?'as horas':'o valor')); return; }
+      addPayEntry(x); viewMonth=x.ym; render(); openPayslip(who); toast('Lançado');
+    });
+  });
+}
+function openAdvSheet(empId){
+  const p=payroll(viewMonth,empId), ov=payEntries(viewMonth,empId).find(x=>x.kind==='adiant');
+  const h='<div class="note" style="margin-top:4px">Padrão: <b>'+p.advPct+'% do salário</b> = '+brl(r2(p.sal*p.advPct/100))+', pago em '+cap(dayLabel(p.advDay))+'.</div>'
+   +'<div class="fld"><label>Valor do adiantamento deste mês (R$)</label><input id="avVal" inputmode="decimal" value="'+moneyIn(p.adiant)+'"></div>'
+   +'<div class="hint">Use quando a pessoa pegou um valor diferente no dia '+(payCfg().advDay||15)+'. Zero = não teve adiantamento.</div>'
+   +'<button class="btn btn-green" id="avSave" style="margin-top:14px">Salvar</button>'
+   +(ov?'<div class="btn-row"><button class="btn-ghost" id="avReset">Voltar ao padrão ('+p.advPct+'%)</button></div>':'');
+  openSheet('Adiantamento · '+empName(empId), h, ()=>{
+    $('avSave').addEventListener('click',()=>{
+      if(ov) removePayEntry(ov.id);
+      addPayEntry({ym:viewMonth, emp:empId, kind:'adiant', amount:parseMoney($('avVal').value), date:p.advDay});
+      render(); openPayslip(empId); toast('Adiantamento ajustado');
+    });
+    if(ov) $('avReset').addEventListener('click',()=>{ removePayEntry(ov.id); render(); openPayslip(empId); });
+  });
+}
+function openPaySettingsSheet(){
+  const P=payCfg();
+  const sw=(id,on,t,s)=>'<div class="switch"><div class="sl">'+t+'<small>'+s+'</small></div><button class="sw '+(on?'on':'')+'" id="'+id+'"></button></div>';
+  let h='<div class="section-title" style="margin:6px 4px 8px">Datas</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld2"><div class="fld"><label>Dia do adiantamento</label><input type="number" inputmode="numeric" id="psDay" value="'+P.advDay+'"></div>'
+   +'<div class="fld"><label>Adiantamento (% salário)</label><input type="number" inputmode="decimal" id="psAdvP" value="'+P.advPct+'"></div></div>'
+   +'<div class="hint">O saldo é pago no 5º dia útil do mês seguinte (segunda a sábado, fora feriados nacionais — CLT, art. 459).</div></div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Horas</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld2"><div class="fld"><label>Divisor da hora</label><input type="number" inputmode="numeric" id="psDiv" value="'+P.divisor+'"></div>'
+   +'<div class="fld"><label>Extra PJ (%)</label><input type="number" inputmode="numeric" id="psPj" value="'+P.pjExtraPct+'"></div></div>'
+   +'<div class="fld2"><div class="fld"><label>Extra dia normal (%)</label><input type="number" inputmode="numeric" id="psX" value="'+P.extraPct+'"></div>'
+   +'<div class="fld"><label>Extra domingo/folga (%)</label><input type="number" inputmode="numeric" id="psXo" value="'+P.extraOffPct+'"></div></div>'
+   +'<div class="hint">220 = jornada de 44h semanais. A hora vale salário ÷ divisor.</div>'
+   +sw('psHp',P.horasPonto,'Usar as horas do ponto','extras e horas a menos dos dias fechados no ponto')
+   +sw('psFp',P.faltaPonto,'Falta automática pelo ponto','dia de escala sem nenhuma marcação vira falta (só ligue se todos batem ponto)')
+   +sw('psDsrX',P.dsrExtras,'DSR sobre horas extras','reflexo das extras no descanso semanal (CLT)')
+   +sw('psDsrF',P.dsrFalta,'Falta tira o DSR da semana','falta injustificada perde o descanso remunerado (Lei 605/1949, art. 6º)')
+   +'</div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Descontos e benefícios</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +'<div class="fld2"><div class="fld"><label>Desconto do VT (%)</label><input type="number" inputmode="decimal" id="psVt" value="'+P.vtPct+'"></div>'
+   +'<div class="fld"><label>FGTS (%)</label><input type="number" inputmode="decimal" id="psFg" value="'+P.fgts+'"></div></div>'
+   +sw('psIr',P.irrf,'Descontar IRRF','tabela 2026 com isenção até R$ 5.000 (Lei 15.270/2025)')
+   +sw('psFood',P.foodFalta,'Falta desconta a alimentação','proporcional aos dias de trabalho')
+   +sw('psBen',P.payBenefits,'Alimentação e VT vão no depósito','somados no valor do 5º dia útil')
+   +'</div>'
+   +'<div class="section-title" style="margin:16px 4px 8px">Tabela do INSS (empregado)</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
+   +P.inss.map((f,i)=>'<div class="fld2"><div class="fld"><label>Faixa '+(i+1)+' até (R$)</label><input inputmode="decimal" data-il="'+i+'" value="'+moneyIn(f[0])+'"></div>'
+     +'<div class="fld"><label>Alíquota (%)</label><input inputmode="decimal" data-ir="'+i+'" value="'+String(f[1]).replace('.',',')+'"></div></div>').join('')
+   +'<div class="hint">2026: Portaria Interministerial MPS/MF nº 13/2026 (teto R$ 8.475,55). Atualize quando sair a tabela do ano.</div></div>'
+   +'<button class="btn btn-green" id="psSave" style="margin-top:16px">Salvar ajustes da folha</button>';
+  openSheet('Ajustes da folha', h, ()=>{
+    const flags={psHp:'horasPonto',psFp:'faltaPonto',psDsrX:'dsrExtras',psDsrF:'dsrFalta',psIr:'irrf',psFood:'foodFalta',psBen:'payBenefits'};
+    const st={}; Object.keys(flags).forEach(id=>{ st[id]=!!P[flags[id]]; $(id).addEventListener('click',()=>{ st[id]=!st[id]; $(id).classList.toggle('on',st[id]); }); });
+    $('psSave').addEventListener('click',()=>{
+      const num=(id,def)=>{ const v=parseMoney($(id).value); return isNaN(v)?def:v; };
+      P.advDay=Math.min(28,Math.max(1,Math.round(num('psDay',15))||15)); P.advPct=num('psAdvP',50);
+      P.divisor=num('psDiv',220)||220; P.pjExtraPct=num('psPj',0); P.extraPct=num('psX',50); P.extraOffPct=num('psXo',100);
+      P.vtPct=num('psVt',6); P.fgts=num('psFg',8);
+      Object.keys(flags).forEach(id=>P[flags[id]]=st[id]);
+      P.inss=P.inss.map((f,i)=>[parseMoney(document.querySelector('[data-il="'+i+'"]').value)||f[0], parseMoney(document.querySelector('[data-ir="'+i+'"]').value)||f[1]]);
+      saveLocal(); Cloud.pushCfg(); closeSheet(); render(); toast('Ajustes da folha salvos');
+    });
+  });
+}
+
+/* ============================================================
    RENDER geral + navegação
    ============================================================ */
 function renderHeader(){
@@ -2187,12 +2735,13 @@ function render(){
   else if(currentView==='ponto') renderPonto();
   else if(currentView==='trocas') renderTrocas();
   else if(currentView==='fechar') renderFechar();
+  else if(currentView==='folha') renderFolha();
   const pend=db.swaps.filter(s=>s.status==='pendente').length;
   const bd=$('swBadge'); bd.textContent=pend; bd.classList.toggle('hide',!pend);
 }
 function setView(v){
   currentView=v;
-  ['escala','ponto','trocas','fechar'].forEach(k=>{ $('view'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('hide',k!==v); });
+  ['escala','ponto','trocas','fechar','folha'].forEach(k=>{ $('view'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('hide',k!==v); });
   Array.prototype.forEach.call(document.querySelectorAll('#viewSeg button'),b=>b.classList.toggle('sel',b.getAttribute('data-view')===v));
   window.scrollTo({top:0,behavior:'smooth'});
   render();
@@ -2205,6 +2754,8 @@ $('btnSettings').addEventListener('click',openSettingsSheet);
 $('btnNewSwap').addEventListener('click',openSwapSheet);
 $('btnCsvResumo').addEventListener('click',()=>csvResumo(viewMonth));
 $('btnCsvEspelho').addEventListener('click',()=>csvEspelho(viewMonth));
+$('btnCsvFolha').addEventListener('click',()=>csvFolha(viewMonth));
+$('btnPayCfg').addEventListener('click',openPaySettingsSheet);
 setInterval(()=>{ if(currentView==='ponto' && !$('sheet').classList.contains('on')) renderPonto(); }, 30000);
 
 /* ---------- conta / login ---------- */
@@ -2225,6 +2776,7 @@ async function onLoggedIn(sess){
     await Cloud.pushSchedule();
     for(const p of db.punch.filter(x=>!x.synced)) await Cloud.pushPunch(p);
     for(const s of db.swaps.filter(x=>!x.synced)) await Cloud.pushSwap(s);
+    if(!Cloud.payMissing) for(const x of db.pay.filter(y=>!y.synced)) await Cloud.pushPay(x);
   }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
   render(); updateAcct(); Cloud.subscribe();
 }
@@ -2281,6 +2833,10 @@ function seedDemo(){
       p.marks=marks.map(m=>({t:m.t, kind:m.kind, iso:dOf(d).toISOString(), nsr:nsr++}));
     });
   });
+  db.emps.forEach(e=>{ if(e.id==='paulo'){ e.salary=1800; e.food=400; e.vtDay=10.80; } if(e.id==='ingrid'){ e.salary=2200; e.food=400; e.vtDay=0; } });
+  const wg=empById('wagner');
+  if(wg){ const fd=daysOfMonth(viewMonth).find(d=>d<today && isWork(codeOf(d,wg.id)));
+    if(fd){ setSched(fd,wg.id,'FA',{locked:true,src:'manual'}); const pp=punchOf(fd,wg.id); if(pp) pp.marks=[]; } }
   const me=activeEmps()[0];
   const folgas=daysOfMonth(viewMonth).filter(d=>d>today && codeOf(d,me.id)==='F').slice(0,5);
   const trabs=daysOfMonth(viewMonth).filter(d=>d>today && isWork(codeOf(d,me.id))).slice(0,6);
