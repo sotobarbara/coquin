@@ -172,14 +172,16 @@ Você registra o que aconteceu e o app **já mostra o saldo final** de cada pess
 | **Líquido do mês** | R$ 1.724,31 |
 | Adiantamento dia 15 (50%) | − R$ 1.000,00 |
 | Saldo do salário | R$ 724,31 |
-| + Alimentação + VT (23 dias úteis × R$ 10,80) | R$ 648,40 |
-| **Depositar no 5º dia útil** | **R$ 1.372,71** |
+| + Alimentação + VT de dezembro (26 dias úteis × R$ 10,80) | R$ 680,80 |
+| **Depositar no 5º dia útil** | **R$ 1.405,11** |
 
 Com **1 falta**: sai R$ 66,67 (salário ÷ 30) e o VT do dia (R$ 10,80); o INSS cai R$ 6,00 →
-saldo de **R$ 1.301,25**.
+saldo de **R$ 1.333,65**.
 
-**Dias úteis:** o VT conta os **dias úteis do mês** (segunda a sábado, **sem feriados**) menos faltas,
-atestados e férias. Novembro/2026 tem 23 (tira 02/11 e 20/11). Feriados nacionais já vêm no app
+**VT antecipado e dias úteis:** o depósito do 5º dia útil leva o **VT do mês seguinte** — os **dias úteis**
+de lá (segunda a sábado, **sem feriados**) menos as **faltas, dias de atestado e férias** deste mês, que já
+tinham sido pagos e não foram usados. Ex.: folha de novembro/2026 → VT de dezembro (26 dias úteis, tira
+25/12). Atestado e falta têm o campo **quantos dias** (atestado de 3 dias = 3 dias fora do VT seguinte). Feriados nacionais já vêm no app
 (inclusive Sexta-feira Santa); os **estaduais/municipais** você coloca em *Ajustes da folha*. Dá pra
 trocar para seg–sex ou para os dias da escala.
 

@@ -616,6 +616,7 @@ const DEFAULT_PAY={
   dsrExtras:true, dsrFalta:false, foodFalta:false,
   faltaPonto:false, horasPonto:true, fgts:8, payBenefits:true,
   vtBase:'uteis',          /* 'uteis' = dias úteis do mês sem feriados · 'escala' = dias de trabalho na escala */
+  vtNext:true,             /* VT antecipado: a folha do mês paga o VT do PRÓXIMO mês, descontando as ausências deste */
   satUtil:true,            /* sábado conta como dia útil (comércio) */
   localHolidays:[]         /* feriados estaduais/municipais: ['01-20','01-25'] (repetem todo ano) ou '2026-06-04' */
 };
@@ -1537,7 +1538,10 @@ function payroll(key,empId){
   const irrf=(clt && P.irrf)?irrfCalc(base,inss,+e.deps||0):0;
   /* benefícios */
   /* VT: dias úteis do mês (sem feriados) menos faltas, atestados e férias que caem neles */
-  const uteisMes=workdaysIn(key);
+  /* VT antecipado (padrão): o depósito do 5º dia útil leva o VT do mês seguinte — dias úteis de lá
+     menos as faltas/atestados/férias deste mês (que já tinham sido pagos e não foram usados) */
+  const vtKey=(P.vtNext!==false && P.vtBase!=='escala')? nextMonthKey(key) : key;
+  const uteisMes=workdaysIn(vtKey);
   const ausUteis=faltas.concat(atest,ferias).filter(isWorkday).length;
   const vtDays=P.vtBase==='escala'? Math.max(0,work) : Math.max(0, uteisMes.length-ausUteis);
   const vtTotal=r2((+e.vtDay||0)*vtDays);
@@ -1554,7 +1558,7 @@ function payroll(key,empId){
   return {e, clt, sal, dia, hora, hasSched, work, vtDays, faltas, atest, ferias, semanas, extras, valExtras:r2(valExtras), xPonto, menos, menosPonto,
     dsrEx, valFaltas, dsrLost, valMenos, bonus, bruto, base, inss, irrf, vtTotal, vtDesc, food, foodDesc, benef,
     adiant, adiantOv:adiantOv!=null, advPct, vales, desc, liquido, saldo, depositar, fgts, custo:r2(base+benef+fgts),
-    paid, ents, payDay:payDayOf(key), advDay:advDayOf(key), uteis, repousos, uteisMes:uteisMes.length, ausUteis};
+    paid, ents, payDay:payDayOf(key), advDay:advDayOf(key), uteis, repousos, uteisMes:uteisMes.length, ausUteis, vtKey, nAtest:atest.length};
 }
 function payrollAll(key){ return activeEmps().map(e=>payroll(key,e.id)); }
 function csvFolha(key){
@@ -2417,7 +2421,7 @@ function diffHtml(changes){
 }
 /* ---------- atestados (portal do colaborador) ---------- */
 function docDays(x){ const out=[]; let d=x.from; while(d<=x.to && out.length<62){ out.push(d); d=addDays(d,1); } return out; }
-function docRange(x){ return x.from===x.to? cap(dayLabel(x.from)) : cap(dayLabel(x.from))+' a '+dayLabel(x.to)+' ('+docDays(x).length+' dias)'; }
+function docRange(x){ const n=docDays(x).length; return (x.from===x.to? cap(dayLabel(x.from)) : cap(dayLabel(x.from))+' a '+dayLabel(x.to))+' · <b>'+n+' dia'+(n===1?'':'s')+' de atestado</b>'; }
 function renderDocs(){
   const mine=isAdmin()? db.docs : db.docs.filter(x=>x.emp===myEmp());
   const list=mine.slice().sort((a,b)=>(a.status==='pendente'?0:1)-(b.status==='pendente'?0:1) || String(b.at).localeCompare(String(a.at))).slice(0,15);
@@ -2427,7 +2431,7 @@ function renderDocs(){
     const e=empById(x.emp)||{name:x.emp,color:'#95A096'};
     const chip=x.status==='aprovado'?'<span class="chip ok">aprovado</span>':x.status==='recusado'?'<span class="chip bad">recusado</span>':'<span class="chip warn">'+(isAdmin()?'conferir':'aguardando o gerente')+'</span>';
     return '<div class="sw-row">'+avatar(e)+'<div class="sw-b"><div class="t">'+esc(e.name)+' · atestado</div>'
-      +'<div class="d">'+docRange(x)+'</div>'+(x.note?'<div class="m">'+esc(x.note)+'</div>':'')
+      +'<div class="d">'+docRange(x)+' · '+docDays(x).filter(isWorkday).length+' útil(eis) fora do VT de '+monthName(nextMonthKey(ymOf(x.from))).split(' de ')[0]+'</div>'+(x.note?'<div class="m">'+esc(x.note)+'</div>':'')
       +'<div class="sw-acts">'+(x.path||x.fileData?'<button class="sw-no" data-docv="'+x.id+'">Ver anexo</button>':'')
       +(isAdmin()&&x.status==='pendente'?'<button class="sw-ok" data-doca="'+x.id+'">Aprovar</button><button class="sw-no" data-docr="'+x.id+'">Recusar</button>':'')+'</div></div>'
       +chip+'</div>';
@@ -2457,15 +2461,20 @@ function resolveDoc(id,status){
 function openDocSheet(){
   let who=myEmp()||'';
   const h=(myEmp()?'':'<div class="fld"><label>De quem é o atestado</label>'+whoPicker('dcWho',who)+'</div>')
-   +'<div class="fld2"><div class="fld"><label>Do dia</label><input type="date" id="dcFrom" value="'+todayISO()+'"></div>'
-   +'<div class="fld"><label>Até o dia</label><input type="date" id="dcTo" value="'+todayISO()+'"></div></div>'
+   +'<div class="fld2"><div class="fld"><label>A partir do dia</label><input type="date" id="dcFrom" value="'+todayISO()+'"></div>'
+   +'<div class="fld"><label>Quantos dias de atestado</label><input type="number" inputmode="numeric" min="1" max="60" id="dcDays" value="1"></div></div>'
+   +'<div class="fld"><label>Até o dia</label><input type="date" id="dcTo" value="'+todayISO()+'"><div class="hint" id="dcHint"></div></div>'
    +'<div class="fld"><label>Foto ou PDF do atestado</label><input type="file" id="dcFile" accept="image/*,application/pdf" style="padding:11px"></div>'
    +'<div class="fld"><label>Observação</label><input id="dcNote" placeholder="opcional (ex.: CID, horário da consulta)"></div>'
    +'<button class="btn btn-green" id="dcSave" style="margin-top:14px">Enviar atestado</button>'
    +'<div class="hint" style="margin-top:8px">O arquivo fica guardado só para você e o gerente.</div>';
   openSheet('Enviar atestado', h, ()=>{
     if(!myEmp()) bindWho('dcWho',w=>{ who=w; });
-    $('dcFrom').addEventListener('change',()=>{ if($('dcTo').value<$('dcFrom').value) $('dcTo').value=$('dcFrom').value; });
+    function fromDays(){ const n=Math.min(60,Math.max(1,parseInt($('dcDays').value,10)||1)); if($('dcFrom').value) $('dcTo').value=addDays($('dcFrom').value,n-1); hint(); }
+    function fromTo(){ const a=$('dcFrom').value, b=$('dcTo').value; if(a&&b&&b>=a){ $('dcDays').value=docDays({from:a,to:b}).length; } else if(a){ $('dcTo').value=a; $('dcDays').value=1; } hint(); }
+    function hint(){ const a=$('dcFrom').value, b=$('dcTo').value; if(!a||!b) return; const ds=docDays({from:a,to:b});
+      $('dcHint').textContent=ds.length+' dia'+(ds.length===1?'':'s')+' de atestado · '+ds.filter(isWorkday).length+' útil(eis) — saem do VT do mês seguinte'; }
+    $('dcFrom').addEventListener('change',fromDays); $('dcDays').addEventListener('input',fromDays); $('dcTo').addEventListener('change',fromTo); hint();
     $('dcSave').addEventListener('click', async()=>{
       const f=$('dcFile').files[0], from=$('dcFrom').value, to=$('dcTo').value||from;
       if(!who){ toast('Escolha a pessoa'); return; }
@@ -2683,10 +2692,13 @@ function renderFolha(){
   const tot=rows.reduce((a,p)=>({dep:a.dep+p.depositar, adv:a.adv+p.adiant, custo:a.custo+p.custo, faltas:a.faltas+p.faltas.length,
     saldo:a.saldo+p.saldo, liq:a.liq+p.liquido, va:a.va+(p.food-p.foodDesc), vt:a.vt+p.vtTotal}),{dep:0,adv:0,custo:0,faltas:0,saldo:0,liq:0,va:0,vt:0});
   const payDay=payDayOf(viewMonth), advDay=advDayOf(viewMonth);
-  const hol=holidaysIn(viewMonth), ut=workdaysIn(viewMonth).length;
+  const hol=holidaysIn(viewMonth), ut=workdaysIn(viewMonth).length, nk=nextMonthKey(viewMonth), utN=workdaysIn(nk).length;
+  const mN=k=>monthName(k).split(' de ')[0];
   const calLine='<div class="note" style="margin-top:12px"><b>'+cap(monthName(viewMonth).split(' de ')[0])+': '+ut+' dias úteis</b> ('+(P.satUtil===false?'seg–sex':'seg–sáb')+', sem feriados)'
     +(hol.length?' · feriados: '+hol.map(d=>fmtDM(d)+' '+holName(d)).join(', '):' · sem feriado no mês')
-    +'. O VT conta esses dias, menos faltas, atestados e férias.</div>';
+    +'.<br>'+(P.vtBase==='escala'?'O VT conta os dias da escala.'
+      : P.vtNext!==false? '<b>VT antecipado:</b> o depósito de '+fmtDM(payDayOf(viewMonth))+' leva o VT de '+mN(nk)+' ('+utN+' dias úteis), menos as faltas, atestados e férias de '+mN(viewMonth)+'.'
+      : 'O VT conta esses dias, menos faltas, atestados e férias.')+'</div>';
   $('fpKpi').innerHTML='<div class="card pay-hero">'
     +payHero({title:'A equipe ganha no mês', total:tot.liq+tot.va+tot.vt, liquido:tot.liq, va:tot.va, vt:tot.vt, adiant:tot.adv, advDay, payDay, dep:tot.dep})
     +'</div>'
@@ -2698,6 +2710,7 @@ function renderFolha(){
   $('fpList').innerHTML = rows.length ? rows.map(p=>{
       const bits=[];
       if(p.faltas.length) bits.push('<b style="color:var(--danger)">'+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+'</b>');
+      if(p.atest.length) bits.push(p.atest.length+' dia'+(p.atest.length===1?'':'s')+' de atestado');
       const xm=p.extras.reduce((a,x)=>a+x.min,0); if(xm) bits.push(hm(xm)+' extra');
       if(p.menos) bits.push(hm(p.menos)+' a menos');
       if(p.vales) bits.push('vale '+brl(p.vales));
@@ -2743,7 +2756,8 @@ function openPayslip(empId){
   if(p.bonus) V.push(['Bônus / comissão', '', p.bonus]);
   if(P.payBenefits){
     if(p.food) V.push(['Vale-alimentação (VA)', 'mês', p.food]);
-    if(p.vtTotal) V.push(['Vale-transporte (VT)', p.vtDays+' dias úteis × '+num(+e.vtDay||0)+(p.ausUteis&&P.vtBase!=='escala'?' ('+p.uteisMes+' − '+p.ausUteis+' ausência'+(p.ausUteis===1?'':'s')+')':''), p.vtTotal]);
+    if(p.vtTotal) V.push([P.vtBase==='escala'?'Vale-transporte (VT)':'Vale-transporte (VT) de '+monthName(p.vtKey).split(' de ')[0],
+      p.vtDays+' dias × '+num(+e.vtDay||0)+(P.vtBase!=='escala'?' · '+p.uteisMes+' dias úteis'+(p.ausUteis?' − '+p.ausUteis+' ausência'+(p.ausUteis===1?'':'s')+' de '+monthName(viewMonth).split(' de ')[0]+(p.nAtest?' ('+p.nAtest+' de atestado)':''):''):''), p.vtTotal]);
   }
   if(p.faltas.length) D.push(['Faltas · '+p.faltas.map(fmtDM).join(', '), p.faltas.length+(p.faltas.length===1?' dia':' dias'), p.valFaltas]);
   if(p.dsrLost) D.push(['DSR perdido (faltas)', p.semanas+' sem.', p.dsrLost]);
@@ -2836,7 +2850,9 @@ function defaultDateIn(key){ const t=todayISO(); return ymOf(t)===key? t : key+'
 function openFaltaSheet(empId){
   let who=empId||'', kind='FA';
   const h='<div class="fld"><label>Quem faltou</label>'+whoPicker('flWho',who)+'</div>'
-   +'<div class="fld"><label>Dia</label><input type="date" id="flDate" value="'+defaultDateIn(viewMonth)+'"></div>'
+   +'<div class="fld2"><div class="fld"><label>A partir do dia</label><input type="date" id="flDate" value="'+defaultDateIn(viewMonth)+'"></div>'
+   +'<div class="fld"><label>Quantos dias</label><input type="number" inputmode="numeric" min="1" max="60" id="flDays" value="1"></div></div>'
+   +'<div class="hint" id="flRange"></div>'
    +'<div class="fld"><label>Tipo</label><div class="opt" id="flKind">'
    +'<button data-k="FA" class="sel"><span class="ot">Falta</span><span class="os">desconta o dia e o VT</span></button>'
    +'<button data-k="AT"><span class="ot">Atestado</span><span class="os">justificada, não desconta o salário</span></button></div></div>'
@@ -2844,36 +2860,41 @@ function openFaltaSheet(empId){
    +'<div class="note" id="flPrev">Escolha a pessoa para ver o saldo.</div>'
    +'<button class="btn btn-green" id="flSave" style="margin-top:14px">Registrar</button>';
   openSheet('Registrar falta', h, ()=>{
+    function range(){ const d=$('flDate').value, n=Math.min(60,Math.max(1,parseInt($('flDays').value,10)||1)); const out=[]; for(let i=0;i<n && d;i++) out.push(addDays(d,i)); return out; }
     function preview(){
-      const d=$('flDate').value; if(!who||!d){ $('flPrev').innerHTML='Escolha a pessoa para ver o saldo.'; return; }
+      const ds=range(); const d=ds[0];
+      $('flRange').textContent= ds.length>1? 'De '+dayLabel(ds[0])+' a '+dayLabel(ds[ds.length-1])+' · '+ds.length+' dias ('+ds.filter(isWorkday).length+' úteis)' : '';
+      if(!who||!d){ $('flPrev').innerHTML='Escolha a pessoa para ver o saldo.'; return; }
       const key=ymOf(d), before=payroll(key,who);
-      const old=schedOf(d,who), snap=old?Object.assign({},old):null;
-      setSched(d,who,kind,{src:'manual'});
+      const snaps=ds.map(x=>{ const o=schedOf(x,who); return [x, o?Object.assign({},o):null]; });
+      ds.forEach(x=>setSched(x,who,kind,{src:'manual'}));
       const after=payroll(key,who);
-      const i=db.sched.findIndex(x=>x.date===d&&x.emp===who);
-      if(snap) db.sched[i]=snap; else if(i>=0) db.sched.splice(i,1);
+      snaps.forEach(([x,sn])=>{ const i=db.sched.findIndex(y=>y.date===x&&y.emp===who); if(sn) db.sched[i]=sn; else if(i>=0) db.sched.splice(i,1); });
       const diff=r2(after.depositar-before.depositar);
+      const offs=snaps.filter(([x,sn])=>sn&&!isWork(sn.shift)&&sn.shift!==kind);
       $('flPrev').innerHTML='Saldo de <b>'+esc(empName(who))+'</b> em '+fmtDM(after.payDay)+': <b>'+brl(after.depositar)+'</b>'
         +(diff?' <span style="color:var(--danger);font-weight:800">('+brlS(diff)+')</span>':' (sem mudança)')
-        +(snap&&snap.shift===kind?'<br>Esse dia já está registrado assim.':'')
-        +(snap&&!isWork(snap.shift)&&snap.shift!==kind?'<br>Atenção: nesse dia a escala estava como <b>'+codeLabel(snap.shift)+'</b>.':'');
+        +(kind==='AT'?'<br>Atestado não desconta o salário; os dias úteis saem do <b>VT de '+monthName(after.vtKey).split(' de ')[0]+'</b>.':'')
+        +(ds.some(x=>ymOf(x)!==key)?'<br>Parte dos dias cai no mês seguinte e entra na folha de lá.':'')
+        +(offs.length?'<br>Atenção: '+offs.map(([x,sn])=>dayLabel(x)+' estava como <b>'+codeLabel(sn.shift)+'</b>').join(', ')+'.':'');
     }
     bindWho('flWho',w=>{ who=w; preview(); });
     $('flDate').addEventListener('change',preview);
+    $('flDays').addEventListener('input',preview);
     Array.prototype.forEach.call(document.querySelectorAll('#flKind button'),b=>b.addEventListener('click',()=>{
       kind=b.getAttribute('data-k'); Array.prototype.forEach.call(document.querySelectorAll('#flKind button'),x=>x.classList.toggle('sel',x===b)); preview();
     }));
     preview();
     $('flSave').addEventListener('click',()=>{
-      const d=$('flDate').value;
+      const ds=range(), d=ds[0];
       if(!who){ toast('Escolha quem faltou'); return; }
       if(!d){ toast('Escolha o dia'); return; }
-      setSched(d,who,kind,{locked:true, src:'manual', note:$('flNote').value.trim()});
+      ds.forEach(x=>setSched(x,who,kind,{locked:true, src:'manual', note:$('flNote').value.trim()}));
       saveLocal(); Cloud.pushSchedule();
       viewMonth=ymOf(d);
       const p=payroll(viewMonth,who);
       render(); openPayslip(who);
-      toast((kind==='FA'?'Falta':'Atestado')+' registrado · saldo '+brl(p.depositar));
+      toast((kind==='FA'?'Falta':'Atestado')+(ds.length>1?' de '+ds.length+' dias':'')+' registrado · saldo '+brl(p.depositar));
     });
   });
 }
@@ -2966,6 +2987,7 @@ function openPaySettingsSheet(){
    +sw('psIr',P.irrf,'Descontar IRRF','tabela 2026 com isenção até R$ 5.000 (Lei 15.270/2025)')
    +sw('psFood',P.foodFalta,'Falta desconta a alimentação','proporcional aos dias de trabalho')
    +sw('psVtU',P.vtBase!=='escala','VT pelos dias úteis do mês','seg–sáb sem feriados, menos ausências (desligado: usa os dias da escala)')
+   +sw('psVtN',P.vtNext!==false,'VT antecipado (próximo mês)','a folha paga o VT do mês seguinte e desconta as ausências deste mês')
    +sw('psSat',P.satUtil!==false,'Sábado é dia útil','padrão do comércio; desligue para contar só seg–sex')
    +'<div class="fld"><label>Feriados locais (estado/cidade)</label><input id="psHol" placeholder="ex.: 20/01, 25/01, 04/06/2026" value="'+esc((P.localHolidays||[]).map(x=>x.length===5?x.slice(3)+'/'+x.slice(0,2):x.slice(8)+'/'+x.slice(5,7)+'/'+x.slice(0,4)).join(', '))+'">'
    +'<div class="hint">dd/mm repete todo ano; dd/mm/aaaa só naquele ano. Os nacionais já estão incluídos.</div></div>'
@@ -2977,8 +2999,8 @@ function openPaySettingsSheet(){
    +'<div class="hint">2026: Portaria Interministerial MPS/MF nº 13/2026 (teto R$ 8.475,55). Atualize quando sair a tabela do ano.</div></div>'
    +'<button class="btn btn-green" id="psSave" style="margin-top:16px">Salvar ajustes da folha</button>';
   openSheet('Ajustes da folha', h, ()=>{
-    const flags={psHp:'horasPonto',psFp:'faltaPonto',psDsrX:'dsrExtras',psDsrF:'dsrFalta',psIr:'irrf',psFood:'foodFalta',psBen:'payBenefits',psSat:'satUtil',psVtU:'_vtU'};
-    P._vtU=P.vtBase!=='escala';
+    const flags={psHp:'horasPonto',psFp:'faltaPonto',psDsrX:'dsrExtras',psDsrF:'dsrFalta',psIr:'irrf',psFood:'foodFalta',psBen:'payBenefits',psSat:'satUtil',psVtU:'_vtU',psVtN:'vtNext'};
+    P._vtU=P.vtBase!=='escala'; if(P.vtNext==null) P.vtNext=true;
     const st={}; Object.keys(flags).forEach(id=>{ st[id]=!!P[flags[id]]; $(id).addEventListener('click',()=>{ st[id]=!st[id]; $(id).classList.toggle('on',st[id]); }); });
     $('psSave').addEventListener('click',()=>{
       const num=(id,def)=>{ const v=parseMoney($(id).value); return isNaN(v)?def:v; };
