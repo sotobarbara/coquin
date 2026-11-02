@@ -178,6 +178,10 @@ Você registra o que aconteceu e o app **já mostra o saldo final** de cada pess
   (dá pra desligar em *Ajustes da folha*).
 - **Holerite** (toque na pessoa): proventos, descontos, líquido, adiantamento, benefícios e o
   **valor a depositar no 5º dia útil**. Marque *adiantamento pago* / *saldo pago*.
+- **Calculadora de hora extra**: na Folha (botão, ou o atalho "⏱ 1h extra = R$ …" em cada pessoa) e no
+  holerite. Escolhe a pessoa, as horas (atalhos 0h30 a 8h) e o adicional (50%, 100% ou só a hora): mostra
+  o valor na hora e uma tabelinha de 1h a 8h. Depois: **Paguei por fora** (fica só registrado, não mexe
+  no holerite) ou **Lançar na folha** (soma no salário do 5º dia útil, com INSS e DSR).
 - **CSV da folha** para mandar pra contabilidade.
 
 ### A conta (exemplo: Wagner, CLT — R$ 2.000, alimentação R$ 400, VT R$ 10,80/dia)

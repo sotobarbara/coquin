@@ -283,6 +283,17 @@ body.emp-mode .admin-only{display:none!important}
 .sl-v .neg,.sl-v.neg{color:var(--danger)}
 .sl-row.tot .sl-k{font-size:14.5px;font-weight:850}
 .sl-row.tot .sl-v{font-size:16px;color:var(--green-700)}
+.ot-chip{margin-top:7px;border:1px solid var(--green-tint-2);background:var(--green-tint);color:var(--green-700);font-family:inherit;font-size:11.5px;font-weight:800;border-radius:999px;padding:5px 10px;cursor:pointer}
+.ot-res{background:var(--green);color:#fff;border-radius:var(--r);padding:16px;margin-top:14px}
+.ot-res .l{font-size:11.5px;font-weight:750;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+.ot-res .v{font-size:34px;font-weight:850;letter-spacing:-1px;margin-top:2px;font-variant-numeric:tabular-nums}
+.ot-res .s{font-size:12px;font-weight:650;opacity:.85;margin-top:3px;line-height:1.4}
+.ot-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ot-chips button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:13px;font-weight:800;color:var(--ink-soft);cursor:pointer}
+.ot-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:4px}
+.ot-tab th{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-faint);text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+.ot-tab th:first-child,.ot-tab td:first-child{text-align:left}
+.ot-tab td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;font-weight:750}
 .sl-del{border:0;background:var(--bg);color:var(--ink-faint);width:24px;height:24px;border-radius:999px;font-size:11px;cursor:pointer;flex:none}
 /* ---------- holerite ---------- */
 .hol{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
@@ -2810,7 +2821,8 @@ function renderFolha(){
     +'<div class="k"><div class="v">'+brl(tot.custo)+'</div><div class="l">custo total da empresa (com FGTS)</div></div></div>'
     +calLine
     +'<div class="btn-row" style="margin-top:12px"><button class="btn btn-green" id="fpFalta" style="flex:1;font-size:14.5px">Registrar falta</button>'
-    +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>';
+    +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>'
+    +'<button class="btn-ghost" id="fpCalc" style="width:100%;margin-top:9px">Calculadora de hora extra</button>';
   $('fpList').innerHTML = rows.length ? rows.map(p=>{
       const bits=[];
       if(p.faltas.length) bits.push('<b style="color:var(--danger)">'+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+'</b>');
@@ -2822,13 +2834,16 @@ function renderFolha(){
       return '<div class="fc-row" data-pay="'+p.e.id+'">'+avatar(p.e)
         +'<div class="fc-b"><div class="n">'+esc(p.e.name)+(p.clt?'':'<span class="tag-pj">PJ</span>')+'</div>'
         +'<div class="s">'+(p.sal?'salário '+brl(p.sal)+' · ':'<b style="color:var(--gold-ink)">sem salário cadastrado</b> · ')+bits.join(' · ')+'</div>'
-        +'<div class="s">ganha <b style="color:var(--ink-soft)">'+brl(p.liquido+p.food-p.foodDesc+p.vtTotal)+'</b> no mês</div></div>'
+        +'<div class="s">ganha <b style="color:var(--ink-soft)">'+brl(p.liquido+p.food-p.foodDesc+p.vtTotal)+'</b> no mês</div>'
+        +(p.sal?'<button class="ot-chip" data-otc="'+p.e.id+'">⏱ 1h extra = '+brl(otValue(p.e,60,p.clt?payCfg().extraPct:payCfg().pjExtraPct))+'</button>':'')+'</div>'
         +'<div class="fc-v"><div class="v">'+brl(p.depositar)+'</div><div class="l">'+(p.paid.saldo?'✓ transferido':'transferir '+fmtDM(p.payDay))+'</div></div></div>';
     }).join('') : '<div class="empty"><p>Sem equipe cadastrada.</p></div>';
   $('fpAlerts').innerHTML = noSal.length
     ? '<div class="banner warn"><span><b>Falta cadastrar o salário</b> de '+esc(noSal.map(p=>p.e.name).join(', '))+'. Toque na pessoa → <b>Salário e benefícios</b>.</span></div>' : '';
   $('fpFalta').addEventListener('click',()=>openFaltaSheet(null));
   $('fpLanc').addEventListener('click',()=>openPayEntrySheet(null,null));
+  $('fpCalc').addEventListener('click',()=>openOTCalc(null));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-otc]'),b=>b.addEventListener('click',ev=>{ ev.stopPropagation(); openOTCalc(b.getAttribute('data-otc')); }));
   Array.prototype.forEach.call(document.querySelectorAll('[data-pay]'),b=>b.addEventListener('click',()=>openPayslip(b.getAttribute('data-pay'))));
 }
 /* card: quanto ganha no mês (total) e quanto transferir no 5º dia útil */
@@ -2902,6 +2917,7 @@ function openPayslip(empId){
   p.atest.forEach(d=>evs.push({t:'Atestado (não desconta)', s:dayLabel(d), v:'—', del:'fa|'+d}));
   if(p.xPonto) evs.push({t:'Extras pelo ponto', s:'dias fechados no ponto', v:hm(p.xPonto)});
   if(p.menosPonto) evs.push({t:'Horas a menos pelo ponto', s:'dias fechados no ponto', v:hm(p.menosPonto), cls:'neg'});
+  p.ents.filter(x=>x.kind==='xpago').forEach(x=>evs.push({t:'Hora extra paga por fora', s:(x.date?dayLabel(x.date):'')+' · '+hm(x.qty)+' a '+x.pct+'%'+(x.note?' · '+esc(x.note):'')+' — fora da folha', v:brl(x.amount), del:'en|'+x.id}));
   p.ents.filter(x=>PAY_KINDS[x.kind]||x.kind==='adiant').forEach(x=>{
     const K=PAY_KINDS[x.kind];
     const v= x.kind==='extra'? hm(x.qty)+' · '+(x.pct==null?P.extraPct:x.pct)+'%' : x.kind==='menos'? hm(x.qty) : brl(x.amount);
@@ -2912,7 +2928,8 @@ function openPayslip(empId){
     : '<div class="sl-row"><div class="sl-k">Nada lançado<small>faltas vêm da escala; extras, do ponto ou de um lançamento</small></div></div>';
   h+='</div>';
 
-  h+='<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
+  h+='<button class="btn btn-green" id="psCalc" style="margin-top:14px">Calculadora de hora extra</button>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
     +'<div class="btn-row"><button class="btn-ghost" id="psAdv">'+(p.paid.adiant?'Desfazer adiant. pago':'Adiant. pago ✓')+'</button>'
     +'<button class="btn-ghost" id="psPaid">'+(p.paid.saldo?'Desfazer saldo pago':'Saldo pago ✓')+'</button></div>'
     +'<div class="btn-row"><button class="btn-ghost" id="psSal">Salário e benefícios</button><button class="btn-ghost" id="psAdvEdit">Ajustar adiantamento</button></div>';
@@ -2920,6 +2937,7 @@ function openPayslip(empId){
     $('psFalta').addEventListener('click',()=>openFaltaSheet(empId));
     $('psLanc').addEventListener('click',()=>openPayEntrySheet(empId,null));
     $('psSal').addEventListener('click',()=>openEmpSheet(empId,true));
+    $('psCalc').addEventListener('click',()=>openOTCalc(empId));
     $('psAdvEdit').addEventListener('click',()=>openAdvSheet(empId));
     $('psAdv').addEventListener('click',()=>togglePaid(empId,'adiant',p.adiant,p.advDay));
     $('psPaid').addEventListener('click',()=>togglePaid(empId,'saldo',p.depositar,p.payDay));
@@ -3049,6 +3067,46 @@ function openPayEntrySheet(empId,kind){
       if(!(x.qty>0) && !(x.amount>0)){ toast('Coloque '+(PAY_KINDS[k].unit==='h'?'as horas':'o valor')); return; }
       addPayEntry(x); viewMonth=x.ym; render(); openPayslip(who); toast('Lançado');
     });
+  });
+}
+/* ---------- calculadora de hora extra ---------- */
+function otValue(e,min,pct){ const hora=(+e.salary||0)/(+payCfg().divisor||220); return r2(min/60*hora*(1+(+pct||0)/100)); }
+function openOTCalc(empId){
+  const P=payCfg(); let who=empId||'', pct=null;
+  const h='<div class="fld"><label>Colaborador</label>'+whoPicker('otWho',who)+'</div>'
+   +'<div class="fld"><label>Quantas horas</label><input id="otH" inputmode="decimal" placeholder="ex.: 2 · 1:30 · 45min" value="1">'
+   +'<div class="ot-chips">'+['0:30','1','2','3','4','6','8'].map(x=>'<button data-oth="'+x+'">'+(x.indexOf(':')>=0?x.replace(':','h'):x+'h')+'</button>').join('')+'</div></div>'
+   +'<div class="fld"><label>Adicional</label><div class="opt" id="otPct">'
+   +'<button data-p="'+P.extraPct+'"><span class="ot">'+P.extraPct+'%</span><span class="os">dia normal</span></button>'
+   +'<button data-p="'+P.extraOffPct+'"><span class="ot">'+P.extraOffPct+'%</span><span class="os">domingo, feriado, folga</span></button>'
+   +'<button data-p="0"><span class="ot">0%</span><span class="os">só a hora</span></button></div></div>'
+   +'<div id="otOut"></div>';
+  openSheet('Calculadora de hora extra', h, ()=>{
+    function setPct(v){ pct=+v; Array.prototype.forEach.call(document.querySelectorAll('#otPct button'),x=>x.classList.toggle('sel',+x.getAttribute('data-p')===pct)); }
+    function calc(){
+      const e=empById(who);
+      if(!e){ $('otOut').innerHTML='<div class="note">Escolha o colaborador.</div>'; return; }
+      if(pct==null) setPct(isCLT(e)?P.extraPct:P.pjExtraPct);
+      if(!(+e.salary)){ $('otOut').innerHTML='<div class="banner warn"><span>'+esc(e.name)+' está sem salário cadastrado.</span></div>'; return; }
+      const min=parseHours($('otH').value), hora=r2(e.salary/(+P.divisor||220)), v=otValue(e,min,pct), hx=r2(hora*(1+pct/100));
+      $('otOut').innerHTML='<div class="ot-res"><div class="l">'+esc(e.name)+' · '+(hm(min)||'0h')+' a '+pct+'%</div><div class="v">'+brl(v)+'</div>'
+        +'<div class="s">hora normal '+brl(hora)+' (salário '+brl(e.salary)+' ÷ '+(P.divisor||220)+') · hora extra '+brl(hx)+'</div></div>'
+        +'<table class="ot-tab"><thead><tr><th>Horas</th><th>'+P.extraPct+'%</th><th>'+P.extraOffPct+'%</th><th>sem adicional</th></tr></thead><tbody>'
+        +[60,120,180,240,360,480].map(m=>'<tr><td>'+hm(m)+'</td><td>'+brl(otValue(e,m,P.extraPct))+'</td><td>'+brl(otValue(e,m,P.extraOffPct))+'</td><td>'+brl(otValue(e,m,0))+'</td></tr>').join('')
+        +'</tbody></table>'
+        +'<div class="fld"><label>Observação (opcional)</label><input id="otNote" placeholder="ex.: cobriu o turno do Paulo"></div>'
+        +'<div class="btn-row"><button class="btn-ghost" id="otFora"'+(min?'':' disabled')+'>Paguei por fora</button>'
+        +'<button class="btn-ghost" id="otFolha" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800"'+(min?'':' disabled')+'>Lançar na folha</button></div>'
+        +'<div class="hint" style="margin-top:8px"><b>Paguei por fora</b>: fica só registrado (não muda o holerite). <b>Lançar na folha</b>: soma no salário e sai no 5º dia útil (com INSS e DSR).</div>';
+      const base={ym:viewMonth, emp:who, qty:min, pct, date:defaultDateIn(viewMonth)};
+      $('otFora').addEventListener('click',()=>{ addPayEntry(Object.assign({kind:'xpago', amount:v, note:$('otNote').value.trim()},base)); render(); toast('Registrado: '+brl(v)+' pago por fora'); openPayslip(who); });
+      $('otFolha').addEventListener('click',()=>{ addPayEntry(Object.assign({kind:'extra', note:$('otNote').value.trim()},base)); render(); toast('Hora extra lançada na folha'); openPayslip(who); });
+    }
+    bindWho('otWho',w=>{ who=w; pct=null; calc(); });
+    $('otH').addEventListener('input',calc);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-oth]'),b=>b.addEventListener('click',()=>{ $('otH').value=b.getAttribute('data-oth'); calc(); }));
+    Array.prototype.forEach.call(document.querySelectorAll('#otPct button'),b=>b.addEventListener('click',()=>{ setPct(b.getAttribute('data-p')); calc(); }));
+    calc();
   });
 }
 function openAdvSheet(empId){
