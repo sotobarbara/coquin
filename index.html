@@ -1025,15 +1025,17 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.4 · relatório da loja';
+const APP_VERSION='v6.5 · evento→beira mar';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
 const DEFAULT_STORES=[{id:'beiramar',name:'Beira Mar'},{id:'imprensa',name:'Imprensa'},{id:'praia',name:'Praia do Futuro'},{id:'eventos',name:'Eventos'}];
-const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':{store:'beiramar',from:'2026-10-23'},'4AH78SS4W':'imprensa','XC03020753916':'eventos'};
+const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':{store:'beiramar',from:'2026-10-23'},'4AH78SS4W':'imprensa','XC03020753916':[{store:'eventos',to:'2026-10-31'},{store:'beiramar',from:'2026-11-01'}]};
 function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap=JSON.parse(JSON.stringify(DEFAULT_SERIALMAP));
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
-  if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'}; }
+  if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
+  // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
+  if(db.settings.serialMap['XC03020753916']==='eventos') db.settings.serialMap['XC03020753916']=[{store:'eventos',to:'2026-10-31'},{store:'beiramar',from:'2026-11-01'}]; }
 function storeName(id){ const s=(db.settings.stores||[]).find(x=>x.id===id); return s?s.name:null; }
 function serialStore(ser,date){ const v=(db.settings.serialMap||{})[ser]; if(v==null) return null;
   if(typeof v==='string') return v||null;
