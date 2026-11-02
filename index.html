@@ -473,7 +473,9 @@ main{padding-top:18px}
 .home-bento .fat-spark{margin:auto -6px -6px;padding-top:12px}
 
 /* ---------- Vendas por loja (home, compacto) ---------- */
-.loja-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:9px}
+.loja-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:9px;cursor:pointer;transition:transform .08s}
+.loja-row:active{transform:scale(.985)}
+.loja-row .lchev{color:var(--green);font-weight:900;opacity:.5}
 .loja-row .rk{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;flex:0 0 auto}
 .loja-row .m{flex:1;min-width:0}
 .loja-row .nm{font-weight:800;font-size:14.5px;color:var(--ink)}
@@ -921,6 +923,14 @@ main{padding-top:18px}
   <button class="btn-primary" id="saveTransfer" disabled>Transferir</button>
 </div>
 
+<!-- SHEET: relatório da loja -->
+<div class="sheet" id="storeDetail" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2 id="sdTitle">Loja</h2>
+  <p class="h2sub" id="sdSub"></p>
+  <div id="sdBody"></div>
+</div>
+
 <!-- SHEET: detalhe do dia -->
 <div class="sheet" id="dayDetail" role="dialog" aria-modal="true">
   <div class="grip"></div>
@@ -1015,7 +1025,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.3 · estoque por loja';
+const APP_VERSION='v6.4 · relatório da loja';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1524,6 +1534,55 @@ function drawRevSpark(list){
     +'<path d="'+d+' L'+X(byDay.length-1).toFixed(1)+' '+H+' L'+X(0).toFixed(1)+' '+H+' Z" fill="url(#rsf)"/>'
     +'<path d="'+d+'" fill="none" stroke="url(#rsg)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
+/* relatório completo de uma loja (dia a dia + 2/3 bolas) */
+function storeDailyBreakdown(storeId, key){
+  const out=[];
+  closingsOf(key).forEach(c=>{ if(!c.bySerial||typeof c.bySerial!=='object') return;
+    let rev=0,tx=0,g30=0,g35=0,has=false;
+    Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,c.date)===storeId){ const s=c.bySerial[ser]||{}; rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); tx+=s.tx||0; g30+=s.g30||0; g35+=s.g35||0; has=true; } });
+    if(has) out.push({date:c.date,rev,tx,g30:Math.round(g30),g35:Math.round(g35)});
+  });
+  return out.sort((a,b)=>b.date.localeCompare(a.date));
+}
+function openStoreDetail(storeId){
+  const key=viewMonth, nm=storeName(storeId)||'Loja';
+  const {by}=storeAggregate(closingsOf(key)); const g=by[storeId]||blankStoreAgg();
+  const gel=Math.round(g.g30+g.g35), nd=g.days.size, pk=storePeakHour(g);
+  $('sdTitle').textContent='🏪 '+nm;
+  $('sdSub').textContent=monthName(key)+' · cartão/Pix da Stone';
+  const rev30=g.g30*price2(), rev35=g.g35*price(), totB=g.g30+g.g35;
+  const p35=totB>0?Math.round(g.g35/totB*100):0, p30=100-(totB>0?p35:0);
+  let html='<div class="card" style="padding:14px 16px;margin-bottom:12px">'
+    +'<div class="chk-head"><span>Faturamento no mês</span><b>'+money(g.rev)+'</b></div>'
+    +'<div class="chk-row"><span>Vendas (cartão/Pix)</span><span><b>'+NUM.format(g.tx)+'</b></span></div>'
+    +'<div class="chk-row"><span>Gelatos</span><span>'+NUM.format(gel)+'</span></div>'
+    +'<div class="chk-row"><span>Ticket médio</span><span>'+(gel>0?money(g.rev/gel):'—')+'</span></div>'
+    +'<div class="chk-row"><span>Dias de operação</span><span>'+nd+' · '+(nd>0?money(g.rev/nd)+'/dia':'—')+'</span></div>'
+    +(pk!=null?'<div class="chk-row"><span>Hora de pico</span><span>'+pk+'h–'+((pk+1)%24)+'h</span></div>':'')
+    +'<div class="chk-row" style="opacity:.6"><span>Maquininha(s)</span><span style="font-size:11px">'+[...g.serials].join(', ')+'</span></div>'
+    +'</div>';
+  // 2 bolas x 3 bolas
+  if(totB>0){ const mx=Math.max(g.g30,g.g35)||1;
+    html+='<div class="section-title" style="margin:6px 4px 8px">Sorvete · 2 bolas × 3 bolas</div><div class="card" style="padding:14px 16px;margin-bottom:12px">'
+      +'<div class="bolas-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span>🍨 <b>3 bolas</b> · '+money(price())+'</span><span><b>'+NUM.format(Math.round(g.g35))+'</b> <small style="opacity:.6">'+p35+'% · '+money(rev35)+'</small></span></div>'
+      +'<div class="lbar" style="height:7px;border-radius:99px;background:var(--green-tint);overflow:hidden;margin-bottom:12px"><i style="display:block;height:100%;width:'+Math.round(g.g35/mx*100)+'%;background:var(--grad)"></i></div>'
+      +'<div class="bolas-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span>🍦 <b>2 bolas</b> · '+money(price2())+'</span><span><b>'+NUM.format(Math.round(g.g30))+'</b> <small style="opacity:.6">'+p30+'% · '+money(rev30)+'</small></span></div>'
+      +'<div class="lbar" style="height:7px;border-radius:99px;background:var(--green-tint);overflow:hidden"><i style="display:block;height:100%;width:'+Math.round(g.g30/mx*100)+'%;background:var(--grad)"></i></div>'
+      +'</div>';
+  }
+  // dia a dia
+  const days=storeDailyBreakdown(storeId,key);
+  html+='<div class="section-title" style="margin:6px 4px 8px">Dia a dia <span class="st-side">'+days.length+' dia'+(days.length!==1?'s':'')+'</span></div>';
+  if(days.length){ html+='<div class="card sales" style="padding:4px 2px">'+days.map(d=>{
+      const [Y,M,D]=d.date.split('-'); const gg=d.g30+d.g35;
+      return '<div class="lrow" style="padding:11px 14px"><div class="ld">'+D+'/'+M+'</div>'
+        +'<div class="lmid">'+NUM.format(d.tx)+' vendas · '+gg+' gelatos <small style="opacity:.65">('+d.g35+'×3b · '+d.g30+'×2b)</small></div>'
+        +'<div class="lbal">'+money(d.rev)+'</div></div>';
+    }).join('')+'</div>'; }
+  else html+='<div class="store-empty">Sem vendas desta loja no mês.</div>';
+  $('sdBody').innerHTML=html;
+  closeSheets(); openSheet(storeDetail);
+}
 /* versão compacta p/ a home: ranking + TOTAL GERAL somando as lojas */
 function renderStoreSalesHome(list){
   const host=document.getElementById('storeSalesHome'); if(!host) return;
@@ -1534,8 +1593,8 @@ function renderStoreSalesHome(list){
   const maxRev=Math.max(1,...stores.map(s=>s.g.rev));
   let html='';
   stores.forEach((s,i)=>{ const g=s.g, nd=g.days.size;
-    html+='<div class="loja-row"><div class="rk">'+(i+1)+'</div>'
-      +'<div class="m"><div class="nm">'+s.name+'</div>'
+    html+='<div class="loja-row" data-store="'+s.id+'"><div class="rk">'+(i+1)+'</div>'
+      +'<div class="m"><div class="nm">'+s.name+' <span class="lchev">›</span></div>'
       +'<div class="tg">'+NUM.format(g.tx)+' vendas · '+nd+' dia'+(nd!==1?'s':'')+'</div>'
       +'<div class="lbar"><i style="width:'+Math.round(g.rev/maxRev*100)+'%"></i></div></div>'
       +'<div class="rv">'+money(g.rev)+'</div></div>';
@@ -1548,6 +1607,7 @@ function renderStoreSalesHome(list){
     +'<button type="button" class="btn-ghost" id="homeUnassigned" style="margin-top:9px">Atribuir às lojas</button></div>'; }
   host.innerHTML=html;
   const b=document.getElementById('homeUnassigned'); if(b) b.addEventListener('click',()=>{ closeSheets(); openLojaSheet(); });
+  host.querySelectorAll('.loja-row[data-store]').forEach(row=>row.addEventListener('click',()=>openStoreDetail(row.getAttribute('data-store'))));
 }
 function renderDados(){
   const key=viewMonth, list=closingsOf(key).slice().sort((a,b)=>a.date.localeCompare(b.date)), goal=goalFor(key);
@@ -1841,9 +1901,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail].forEach(s=>s.classList.remove('on')); }
 function openPassSheet(){ closeSheets(); document.getElementById('passNew').value=''; document.getElementById('passNew2').value=''; document.getElementById('passErr').textContent=''; openSheet(passSheet); }
 document.getElementById('cancelPass').addEventListener('click', closeSheets);
 document.getElementById('savePass').addEventListener('click', async ()=>{
