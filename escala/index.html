@@ -283,6 +283,17 @@ body.emp-mode .admin-only{display:none!important}
 .sl-v .neg,.sl-v.neg{color:var(--danger)}
 .sl-row.tot .sl-k{font-size:14.5px;font-weight:850}
 .sl-row.tot .sl-v{font-size:16px;color:var(--green-700)}
+.ot-chip{margin-top:7px;border:1px solid var(--green-tint-2);background:var(--green-tint);color:var(--green-700);font-family:inherit;font-size:11.5px;font-weight:800;border-radius:999px;padding:5px 10px;cursor:pointer}
+.ot-res{background:var(--green);color:#fff;border-radius:var(--r);padding:16px;margin-top:14px}
+.ot-res .l{font-size:11.5px;font-weight:750;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+.ot-res .v{font-size:34px;font-weight:850;letter-spacing:-1px;margin-top:2px;font-variant-numeric:tabular-nums}
+.ot-res .s{font-size:12px;font-weight:650;opacity:.85;margin-top:3px;line-height:1.4}
+.ot-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ot-chips button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:13px;font-weight:800;color:var(--ink-soft);cursor:pointer}
+.ot-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:4px}
+.ot-tab th{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-faint);text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+.ot-tab th:first-child,.ot-tab td:first-child{text-align:left}
+.ot-tab td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;font-weight:750}
 .sl-del{border:0;background:var(--bg);color:var(--ink-faint);width:24px;height:24px;border-radius:999px;font-size:11px;cursor:pointer;flex:none}
 /* ---------- holerite ---------- */
 .hol{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
@@ -310,6 +321,57 @@ body.emp-mode .admin-only{display:none!important}
 .hol-foot div:last-child{border-right:0}
 .hol-foot span{display:block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-faint)}
 .hol-foot b{display:block;font-size:11.5px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+/* ---------- impressão da escala (A4 deitado) ---------- */
+#printArea{display:none}
+.pr{width:1060px;background:#fff;color:#1F2A22;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pr-page{padding:4px 2px}
+.pr-page+.pr-page{break-before:page;page-break-before:always;margin-top:24px}
+.pr-head{display:flex;align-items:center;gap:16px;border-bottom:3px solid #446349;padding-bottom:10px;margin-bottom:12px}
+.pr-head img{height:30px;filter:none}
+.pr-head h1{font-size:22px;margin:0;font-weight:850;letter-spacing:-.4px}
+.pr-head p{margin:2px 0 0;font-size:12px;color:#5E6B60;font-weight:600}
+.pr-head .pr-rule{margin-left:auto;background:#F3E9CF;color:#7A5E14;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:800}
+.pr-t{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}
+.pr-t th,.pr-t td{border:1px solid #D9D5CB;text-align:center;padding:0;height:30px}
+.pr-t thead th{background:#F5F3EE;font-weight:800;color:#3B463E;height:34px;line-height:1.1}
+.pr-t thead th small{display:block;font-size:9px;font-weight:700;color:#7C877E;text-transform:uppercase}
+.pr-t th.nm,.pr-t td.nm{width:150px;text-align:left;padding:3px 8px}
+.pr-t td.nm b{display:block;font-size:12.5px;font-weight:800}
+.pr-t td.nm small{display:block;font-size:9.5px;color:#5E6B60;font-weight:650}
+.pr-t .we{background:#FBF6E8}
+.pr-t thead th.we{background:#F3E9CF;color:#7A5E14}
+.pr-t thead th.ph{color:#B23A30}
+.pr-t td.w{font-weight:800;color:#fff;font-size:12px}
+.pr-t tbody td{height:auto}
+.pr-t td.f{background:#E7E4DC;color:#4B554D;font-weight:850}
+.pr-t td.x{color:#fff;font-weight:850;font-size:10px}
+.pr-t tfoot td{background:#F5F3EE;font-weight:800;font-size:11px;height:24px}
+.pr-leg{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:11px;color:#3B463E;font-weight:650}
+.pr-leg span{display:inline-flex;align-items:center;gap:5px}
+.pr-leg i{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid #D9D5CB}
+.pr-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.pr-cal .h{font-size:11px;font-weight:850;text-transform:uppercase;color:#5E6B60;text-align:center;padding:4px 0}
+.pr-cal .h.we{color:#7A5E14}
+.pr-cal .c{border:1px solid #D9D5CB;border-radius:8px;min-height:84px;padding:5px 7px;font-size:11px}
+.pr-cal .c.out{border:0}
+.pr-cal .c.we{background:#FBF6E8}
+.pr-cal .c .pd{font-weight:850;font-size:13px;line-height:1.25}
+.pr-cal .c .pd.ph{color:#B23A30;font-size:12px}
+.pr-cal .c .lb{font-size:9px;font-weight:800;text-transform:uppercase;color:#7C877E;margin-top:3px}
+.pr-cal .c .p{display:block;font-weight:750;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-cal .c .full{display:block;margin-top:6px;font-size:10px;font-weight:800;color:#446349}
+.pr-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pr-list div{border:1px solid #D9D5CB;border-radius:8px;padding:8px 10px;font-size:11px}
+.pr-list b{font-size:12.5px}
+.pr-foot{margin-top:10px;font-size:10px;color:#7C877E}
+.pr-prev{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:6px}
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  html,body{background:#fff!important;padding:0!important}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important}
+  #printArea .pr{width:100%}
+}
 /* ---------- formulários / sheets ---------- */
 .fld{margin-top:13px}
 .fld label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
@@ -461,6 +523,7 @@ body.emp-mode .admin-only{display:none!important}
   <div id="escClt"></div>
   <div class="section-title">Resumo por pessoa <span class="st-side" id="escSumSide"></span></div>
   <div class="card" id="escSummary"></div>
+  <button class="btn btn-green" id="btnPrint" style="margin-top:16px">Imprimir / salvar PDF da escala</button>
   <div class="btn-row admin-only">
     <button class="btn-ghost" id="btnTeam">Equipe</button>
     <button class="btn-ghost" id="btnSettings">Ajustes</button>
@@ -554,6 +617,7 @@ body.emp-mode .admin-only{display:none!important}
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="printArea"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -612,7 +676,8 @@ const SCALES={
 };
 /* mínimo de gente na loja em cada dia da semana (0=dom) */
 const DEFAULT_DEMAND={0:2, 1:2, 2:2, 3:1, 4:3, 5:3, 6:3};   /* dom seg ter qua qui sex sáb */
-const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60, minStaff:1};
+const DEFAULT_RULES={weekly:44, maxDaily:8, maxExtra:2, maxConsec:6, sundayEvery:3, interJornada:11, tolerance:10, minLunch:60, minStaff:1,
+  noOff:[5,6,0]};          /* regra da casa: ninguém folga sexta, sábado e domingo (operação 100%) */
 /* ---- folha de pagamento (Ajustes da folha) ---- */
 const DEFAULT_PAY={
   inss:[[1621.00,7.5],[2902.84,9],[4354.27,12],[8475.55,14]],   /* 2026: até R$ x → alíquota % */
@@ -848,7 +913,10 @@ function coverageText(date){
   if(!b.length) return 'ninguém escalado';
   return b.map(x=>x.from+'–'+x.to+': '+x.n+(x.n===1?' pessoa':' pessoas')).join(' · ');
 }
-function demandOf(date){ const d=db.cfg.demand[wdOf(date)]; return d==null?0:+d; }
+function demandOf(date){ if(isNoOff(date)) return activeEmps().length; const d=db.cfg.demand[wdOf(date)]; return d==null?0:+d; }
+function noOffDays(){ const n=RULES().noOff; return Array.isArray(n)?n:[]; }
+function isNoOff(date){ return noOffDays().indexOf(wdOf(date))>=0; }
+function sundayBlocked(){ return noOffDays().indexOf(0)>=0; }
 function minStaff(){ const n=RULES().minStaff; return n==null?1:Math.max(0,+n); }      /* piso absoluto: nunca menos que isso */
 function floorOf(date){ return Math.max(minStaff(), 0); }
 function workersOn(plan,date){ let n=0; activeEmps().forEach(e=>{ if(isWork(plan? plan[date+'|'+e.id] : codeOf(date,e.id))) n++; }); return n; }
@@ -901,6 +969,7 @@ function weekKnown(ctx,date,empId){
 /* por que esta pessoa TEM que folgar neste dia */
 function mustRest(ctx,date,emp){
   const R=RULES(), st=ctx.st[emp.id], wk=weekKey(date), wd=wdOf(date);
+  if(isNoOff(date)) return null;                       /* sexta/sábado/domingo: operação 100%, ninguém folga */
   if(st.consec>=R.maxConsec) return 'já trabalhou '+R.maxConsec+' dias seguidos (art. 67)';
   if(isCLT(emp) && wd===0 && R.sundayEvery>0 && st.sunSince>=R.sundayEvery-1) return 'domingo de folga (Lei 10.101/2000)';
   const falta=offQuota(emp)-(st.weekOff[wk]||0);
@@ -950,10 +1019,10 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
     const has=days.filter(d=>{ const c=ctxCode(ctx,d,e.id); return c && isOff(c); }).length;
     let need=offQuota(e)-has;
     if(need<=0) return;
-    const free=days.filter(d=>inRange(d) && !ctx.fixed[d+'|'+e.id] && !ctxCode(ctx,d,e.id));
+    const free=days.filter(d=>inRange(d) && !ctx.fixed[d+'|'+e.id] && !ctxCode(ctx,d,e.id) && !isNoOff(d));
     const picks=[];
     const sun=days[0];                                     /* semana civil: domingo é o primeiro */
-    const sunDue = isCLT(e) && R.sundayEvery>0 && ctx.st[e.id].sunSince>=R.sundayEvery-1;
+    const sunDue = isCLT(e) && R.sundayEvery>0 && !sundayBlocked() && ctx.st[e.id].sunSince>=R.sundayEvery-1;
     /* folga fixa: os mesmos dias da semana, toda semana */
     if(e.fixedOff && (e.prefOff||[]).length){
       let realoca=0;
@@ -1018,7 +1087,7 @@ function planWeekOffs(ctx, weekStart, inRange, opts, rnd){
     /* se ainda assim a sequência passar do limite, entra uma folga extra no melhor dia */
     let guard=0;
     while(maxRunWeek(ctx,e,days,picks,inRange)>R.maxConsec && guard++<3){
-      const cand=days.filter(d=>inRange(d) && !ctx.fixed[d+'|'+e.id] && !ctxCode(ctx,d,e.id) && picks.indexOf(d)<0);
+      const cand=days.filter(d=>inRange(d) && !ctx.fixed[d+'|'+e.id] && !ctxCode(ctx,d,e.id) && picks.indexOf(d)<0 && !isNoOff(d));
       if(!cand.length) break;
       let best=null;
       cand.forEach(d=>{
@@ -1063,7 +1132,7 @@ function generateSchedule(monthKey, opts){
       const rest=mustRest(ctx,date,e);
       if(rest){ plan[k]='F'; return; }
       const ok=canWork(ctx,date,e);
-      plan[k]= ok.ok ? WORK : 'F';
+      plan[k]= (ok.ok || isNoOff(date)) ? WORK : 'F';
     });
     let workers=0; emps.forEach(e=>{ if(isWork(plan[date+'|'+e.id])) workers++; });
     if(workers<minStaff()){                                  /* regra da casa: sempre alguém na loja */
@@ -1105,6 +1174,7 @@ function giveBackRest(ctx,empId,fromDate,endDate,protect){
     if(protect && protect[d+'|'+empId]) continue;
     if(ctx.fixed && ctx.fixed[d+'|'+empId]) continue;
     if(!isWork(ctxCode(ctx,d,empId))) continue;
+    if(isNoOff(d)) continue;                               /* folga nunca cai em sex/sáb/dom */
     let have=0; activeEmps().forEach(x=>{ if(isWork(ctxCode(ctx,d,x.id))) have++; });
     const folga=(weekKey(d)===wk)?0:6;                      /* prefere a mesma semana */
     cand.push({d, sobra:have-demandOf(d), pen:folga});
@@ -1320,7 +1390,16 @@ function validateMonth(key){
     const det=over.map(e=>e.name+' '+hm(Math.max.apply(null,e && P[e.id].overWeek.map(w=>P[e.id].weeks[w])))+'/semana').join(' · ');
     it('warn','Semana acima de '+R.weekly+'h', det+' — o excedente é hora extra (art. 59) ou pede ajuste na jornada');
   } else it('ok','Jornada dentro de '+R.weekly+'h por semana','8h por dia — art. 58 da CLT');
-  (sunBad.length? it('warn','Domingo de folga atrasado', sunBad.map(e=>e.name).join(', ')+' — a folga precisa cair num domingo a cada '+R.sundayEvery+' semanas')
+  const nOffDays=noOffDays();
+  if(nOffDays.length){
+    const viol=[]; dates.forEach(d=>{ if(!isNoOff(d)) return; emps.forEach(e=>{ if(codeOf(d,e.id)==='F') viol.push(e.name+' '+dayLabel(d)); }); });
+    const nm=nOffDays.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(i=>WDL[i].toLowerCase()).join(', ');
+    viol.length? it('bad','Folga em dia proibido ('+nm+')', viol.slice(0,4).join(' · ')+(viol.length>4?'…':'')+' — regra da casa: operação 100%. Gere de novo ou troque a folga.')
+               : it('ok','Ninguém folga '+nm,'Regra da casa: operação 100% nesses dias');
+  }
+  if(sundayBlocked() && clt.length) it('warn','Sem domingo de folga para quem é CLT',
+    'A Lei 10.101/2000 (art. 6º, parágrafo único) pede folga num domingo ao menos a cada 3 semanas no comércio. Com o domingo bloqueado, confira com a contabilidade/convenção coletiva (pode exigir pagamento em dobro ou acordo).');
+  else (sunBad.length? it('warn','Domingo de folga atrasado', sunBad.map(e=>e.name).join(', ')+' — a folga precisa cair num domingo a cada '+R.sundayEvery+' semanas')
                 : it('ok','Domingo de folga a cada '+R.sundayEvery+' semanas','Lei 10.101/2000, art. 6º, parágrafo único'));
   (interj.length? it('bad','Menos de '+R.interJornada+'h entre jornadas', interj.map(e=>e.name).join(', ')+' — art. 66 da CLT')
                 : it('ok',R.interJornada+'h de descanso entre um dia e outro','Intervalo interjornada — art. 66'));
@@ -2030,6 +2109,7 @@ function openCellSheet(date,empId){
     $('cellLock').addEventListener('click',()=>{ locked=!locked; $('cellLock').classList.toggle('on',locked); });
     $('cellSave').addEventListener('click',()=>{
       if(!code){ toast('Escolha uma opção'); return; }
+      if(code==='F' && isNoOff(date) && !confirm(WDL[wdOf(date)]+' é dia de operação 100% — ninguém folga. Marcar folga mesmo assim?')) return;
       setSched(date,empId,code,{locked, src:'manual', note:$('cellNote').value.trim()});
       saveLocal(); Cloud.pushSchedule(); closeSheet(); render(); toast('Escala atualizada');
     });
@@ -2219,7 +2299,10 @@ function openSettingsSheet(){
   let h='<div class="section-title" style="margin:6px 4px 8px">Regra da casa</div><div class="card" style="padding:6px 13px 13px;box-shadow:none">'
    +'<div class="fld" style="margin-top:8px"><label>A loja nunca fica com menos de</label>'
    +'<input type="number" inputmode="numeric" min="1" max="9" id="rMin" value="'+minStaff()+'">'
-   +'<div class="hint">Piso absoluto: o app nunca monta (nem aceita troca) um dia com menos gente que isso. Folga de todo mundo no mesmo dia fica impossível.</div></div></div>'
+   +'<div class="hint">Piso absoluto: o app nunca monta (nem aceita troca) um dia com menos gente que isso. Folga de todo mundo no mesmo dia fica impossível.</div></div>'
+   +'<div class="fld"><label>Ninguém folga nestes dias (operação 100%)</label><div class="wdays" id="rNoOff">'
+   +WD.map((w,i)=>'<button data-w="'+i+'" class="'+(noOffDays().indexOf(i)>=0?'sel':'')+'">'+w+'</button>').join('')
+   +'</div><div class="hint">O gerador e as trocas nunca põem folga nesses dias. Padrão da Coquin: sexta, sábado e domingo.</div></div></div>'
    +'<div class="section-title" style="margin:16px 4px 8px">Quantas pessoas por dia (alvo)</div><div class="card" style="padding:6px 13px;box-shadow:none">';
   for(let w=0;w<7;w++){
     h+='<div class="switch"><div class="sl">'+WDL[w]+'<small>quantas pessoas precisam estar escaladas</small></div>'
@@ -2235,7 +2318,12 @@ function openSettingsSheet(){
    +'<div class="note">A jornada e a escala de cada pessoa (6x1, 5x2, horário e intervalo) ficam em <b>Equipe</b>.</div>'
    +'<button class="btn btn-green" id="cfgSave" style="margin-top:16px">Salvar ajustes</button>';
   openSheet('Ajustes da escala', h, ()=>{
+    const noOff=noOffDays().slice();
+    Array.prototype.forEach.call(document.querySelectorAll('#rNoOff button'),b=>b.addEventListener('click',()=>{
+      const w=+b.getAttribute('data-w'), i=noOff.indexOf(w); if(i>=0) noOff.splice(i,1); else noOff.push(w); b.classList.toggle('sel',noOff.indexOf(w)>=0);
+    }));
     $('cfgSave').addEventListener('click',()=>{
+      RULES().noOff=noOff.slice().sort();
       Array.prototype.forEach.call(document.querySelectorAll('[data-dm]'),inp=>{
         db.cfg.demand[inp.getAttribute('data-dm')]=Math.max(0,+inp.value||0);
       });
@@ -2562,7 +2650,7 @@ function openSwapSheet(){
       const id=$('swEmp').value;
       const days=daysOfMonth(viewMonth).concat(daysOfMonth(nextMonthKey(viewMonth))).filter(d=>d>=start);
       const folgas=days.filter(d=>codeOf(d,id)==='F');
-      const trab=days.filter(d=>isWork(codeOf(d,id)));
+      const trab=days.filter(d=>isWork(codeOf(d,id)) && !isNoOff(d));
       $('swFrom').innerHTML=folgas.length?folgas.map(d=>'<option value="'+d+'">'+cap(dayLong(d))+'</option>').join(''):'<option value="">sem folga cadastrada</option>';
       $('swTo').innerHTML=trab.length?trab.map(d=>'<option value="'+d+'">'+cap(dayLong(d))+'</option>').join(''):'<option value="">sem dia de trabalho cadastrado</option>';
     }
@@ -2733,7 +2821,8 @@ function renderFolha(){
     +'<div class="k"><div class="v">'+brl(tot.custo)+'</div><div class="l">custo total da empresa (com FGTS)</div></div></div>'
     +calLine
     +'<div class="btn-row" style="margin-top:12px"><button class="btn btn-green" id="fpFalta" style="flex:1;font-size:14.5px">Registrar falta</button>'
-    +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>';
+    +'<button class="btn-ghost" id="fpLanc" style="flex:1">+ Hora extra, vale…</button></div>'
+    +'<button class="btn-ghost" id="fpCalc" style="width:100%;margin-top:9px">Calculadora de hora extra</button>';
   $('fpList').innerHTML = rows.length ? rows.map(p=>{
       const bits=[];
       if(p.faltas.length) bits.push('<b style="color:var(--danger)">'+p.faltas.length+' falta'+(p.faltas.length===1?'':'s')+'</b>');
@@ -2745,13 +2834,16 @@ function renderFolha(){
       return '<div class="fc-row" data-pay="'+p.e.id+'">'+avatar(p.e)
         +'<div class="fc-b"><div class="n">'+esc(p.e.name)+(p.clt?'':'<span class="tag-pj">PJ</span>')+'</div>'
         +'<div class="s">'+(p.sal?'salário '+brl(p.sal)+' · ':'<b style="color:var(--gold-ink)">sem salário cadastrado</b> · ')+bits.join(' · ')+'</div>'
-        +'<div class="s">ganha <b style="color:var(--ink-soft)">'+brl(p.liquido+p.food-p.foodDesc+p.vtTotal)+'</b> no mês</div></div>'
+        +'<div class="s">ganha <b style="color:var(--ink-soft)">'+brl(p.liquido+p.food-p.foodDesc+p.vtTotal)+'</b> no mês</div>'
+        +(p.sal?'<button class="ot-chip" data-otc="'+p.e.id+'">⏱ 1h extra = '+brl(otValue(p.e,60,p.clt?payCfg().extraPct:payCfg().pjExtraPct))+'</button>':'')+'</div>'
         +'<div class="fc-v"><div class="v">'+brl(p.depositar)+'</div><div class="l">'+(p.paid.saldo?'✓ transferido':'transferir '+fmtDM(p.payDay))+'</div></div></div>';
     }).join('') : '<div class="empty"><p>Sem equipe cadastrada.</p></div>';
   $('fpAlerts').innerHTML = noSal.length
     ? '<div class="banner warn"><span><b>Falta cadastrar o salário</b> de '+esc(noSal.map(p=>p.e.name).join(', '))+'. Toque na pessoa → <b>Salário e benefícios</b>.</span></div>' : '';
   $('fpFalta').addEventListener('click',()=>openFaltaSheet(null));
   $('fpLanc').addEventListener('click',()=>openPayEntrySheet(null,null));
+  $('fpCalc').addEventListener('click',()=>openOTCalc(null));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-otc]'),b=>b.addEventListener('click',ev=>{ ev.stopPropagation(); openOTCalc(b.getAttribute('data-otc')); }));
   Array.prototype.forEach.call(document.querySelectorAll('[data-pay]'),b=>b.addEventListener('click',()=>openPayslip(b.getAttribute('data-pay'))));
 }
 /* card: quanto ganha no mês (total) e quanto transferir no 5º dia útil */
@@ -2825,6 +2917,7 @@ function openPayslip(empId){
   p.atest.forEach(d=>evs.push({t:'Atestado (não desconta)', s:dayLabel(d), v:'—', del:'fa|'+d}));
   if(p.xPonto) evs.push({t:'Extras pelo ponto', s:'dias fechados no ponto', v:hm(p.xPonto)});
   if(p.menosPonto) evs.push({t:'Horas a menos pelo ponto', s:'dias fechados no ponto', v:hm(p.menosPonto), cls:'neg'});
+  p.ents.filter(x=>x.kind==='xpago').forEach(x=>evs.push({t:'Hora extra paga por fora', s:(x.date?dayLabel(x.date):'')+' · '+hm(x.qty)+' a '+x.pct+'%'+(x.note?' · '+esc(x.note):'')+' — fora da folha', v:brl(x.amount), del:'en|'+x.id}));
   p.ents.filter(x=>PAY_KINDS[x.kind]||x.kind==='adiant').forEach(x=>{
     const K=PAY_KINDS[x.kind];
     const v= x.kind==='extra'? hm(x.qty)+' · '+(x.pct==null?P.extraPct:x.pct)+'%' : x.kind==='menos'? hm(x.qty) : brl(x.amount);
@@ -2835,7 +2928,8 @@ function openPayslip(empId){
     : '<div class="sl-row"><div class="sl-k">Nada lançado<small>faltas vêm da escala; extras, do ponto ou de um lançamento</small></div></div>';
   h+='</div>';
 
-  h+='<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
+  h+='<button class="btn btn-green" id="psCalc" style="margin-top:14px">Calculadora de hora extra</button>'
+    +'<div class="btn-row"><button class="btn-ghost" id="psFalta">Registrar falta</button><button class="btn-ghost" id="psLanc">+ Lançamento</button></div>'
     +'<div class="btn-row"><button class="btn-ghost" id="psAdv">'+(p.paid.adiant?'Desfazer adiant. pago':'Adiant. pago ✓')+'</button>'
     +'<button class="btn-ghost" id="psPaid">'+(p.paid.saldo?'Desfazer saldo pago':'Saldo pago ✓')+'</button></div>'
     +'<div class="btn-row"><button class="btn-ghost" id="psSal">Salário e benefícios</button><button class="btn-ghost" id="psAdvEdit">Ajustar adiantamento</button></div>';
@@ -2843,6 +2937,7 @@ function openPayslip(empId){
     $('psFalta').addEventListener('click',()=>openFaltaSheet(empId));
     $('psLanc').addEventListener('click',()=>openPayEntrySheet(empId,null));
     $('psSal').addEventListener('click',()=>openEmpSheet(empId,true));
+    $('psCalc').addEventListener('click',()=>openOTCalc(empId));
     $('psAdvEdit').addEventListener('click',()=>openAdvSheet(empId));
     $('psAdv').addEventListener('click',()=>togglePaid(empId,'adiant',p.adiant,p.advDay));
     $('psPaid').addEventListener('click',()=>togglePaid(empId,'saldo',p.depositar,p.payDay));
@@ -2974,6 +3069,46 @@ function openPayEntrySheet(empId,kind){
     });
   });
 }
+/* ---------- calculadora de hora extra ---------- */
+function otValue(e,min,pct){ const hora=(+e.salary||0)/(+payCfg().divisor||220); return r2(min/60*hora*(1+(+pct||0)/100)); }
+function openOTCalc(empId){
+  const P=payCfg(); let who=empId||'', pct=null;
+  const h='<div class="fld"><label>Colaborador</label>'+whoPicker('otWho',who)+'</div>'
+   +'<div class="fld"><label>Quantas horas</label><input id="otH" inputmode="decimal" placeholder="ex.: 2 · 1:30 · 45min" value="1">'
+   +'<div class="ot-chips">'+['0:30','1','2','3','4','6','8'].map(x=>'<button data-oth="'+x+'">'+(x.indexOf(':')>=0?x.replace(':','h'):x+'h')+'</button>').join('')+'</div></div>'
+   +'<div class="fld"><label>Adicional</label><div class="opt" id="otPct">'
+   +'<button data-p="'+P.extraPct+'"><span class="ot">'+P.extraPct+'%</span><span class="os">dia normal</span></button>'
+   +'<button data-p="'+P.extraOffPct+'"><span class="ot">'+P.extraOffPct+'%</span><span class="os">domingo, feriado, folga</span></button>'
+   +'<button data-p="0"><span class="ot">0%</span><span class="os">só a hora</span></button></div></div>'
+   +'<div id="otOut"></div>';
+  openSheet('Calculadora de hora extra', h, ()=>{
+    function setPct(v){ pct=+v; Array.prototype.forEach.call(document.querySelectorAll('#otPct button'),x=>x.classList.toggle('sel',+x.getAttribute('data-p')===pct)); }
+    function calc(){
+      const e=empById(who);
+      if(!e){ $('otOut').innerHTML='<div class="note">Escolha o colaborador.</div>'; return; }
+      if(pct==null) setPct(isCLT(e)?P.extraPct:P.pjExtraPct);
+      if(!(+e.salary)){ $('otOut').innerHTML='<div class="banner warn"><span>'+esc(e.name)+' está sem salário cadastrado.</span></div>'; return; }
+      const min=parseHours($('otH').value), hora=r2(e.salary/(+P.divisor||220)), v=otValue(e,min,pct), hx=r2(hora*(1+pct/100));
+      $('otOut').innerHTML='<div class="ot-res"><div class="l">'+esc(e.name)+' · '+(hm(min)||'0h')+' a '+pct+'%</div><div class="v">'+brl(v)+'</div>'
+        +'<div class="s">hora normal '+brl(hora)+' (salário '+brl(e.salary)+' ÷ '+(P.divisor||220)+') · hora extra '+brl(hx)+'</div></div>'
+        +'<table class="ot-tab"><thead><tr><th>Horas</th><th>'+P.extraPct+'%</th><th>'+P.extraOffPct+'%</th><th>sem adicional</th></tr></thead><tbody>'
+        +[60,120,180,240,360,480].map(m=>'<tr><td>'+hm(m)+'</td><td>'+brl(otValue(e,m,P.extraPct))+'</td><td>'+brl(otValue(e,m,P.extraOffPct))+'</td><td>'+brl(otValue(e,m,0))+'</td></tr>').join('')
+        +'</tbody></table>'
+        +'<div class="fld"><label>Observação (opcional)</label><input id="otNote" placeholder="ex.: cobriu o turno do Paulo"></div>'
+        +'<div class="btn-row"><button class="btn-ghost" id="otFora"'+(min?'':' disabled')+'>Paguei por fora</button>'
+        +'<button class="btn-ghost" id="otFolha" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:800"'+(min?'':' disabled')+'>Lançar na folha</button></div>'
+        +'<div class="hint" style="margin-top:8px"><b>Paguei por fora</b>: fica só registrado (não muda o holerite). <b>Lançar na folha</b>: soma no salário e sai no 5º dia útil (com INSS e DSR).</div>';
+      const base={ym:viewMonth, emp:who, qty:min, pct, date:defaultDateIn(viewMonth)};
+      $('otFora').addEventListener('click',()=>{ addPayEntry(Object.assign({kind:'xpago', amount:v, note:$('otNote').value.trim()},base)); render(); toast('Registrado: '+brl(v)+' pago por fora'); openPayslip(who); });
+      $('otFolha').addEventListener('click',()=>{ addPayEntry(Object.assign({kind:'extra', note:$('otNote').value.trim()},base)); render(); toast('Hora extra lançada na folha'); openPayslip(who); });
+    }
+    bindWho('otWho',w=>{ who=w; pct=null; calc(); });
+    $('otH').addEventListener('input',calc);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-oth]'),b=>b.addEventListener('click',()=>{ $('otH').value=b.getAttribute('data-oth'); calc(); }));
+    Array.prototype.forEach.call(document.querySelectorAll('#otPct button'),b=>b.addEventListener('click',()=>{ setPct(b.getAttribute('data-p')); calc(); }));
+    calc();
+  });
+}
 function openAdvSheet(empId){
   const p=payroll(viewMonth,empId), ov=payEntries(viewMonth,empId).find(x=>x.kind==='adiant');
   const h='<div class="note" style="margin-top:4px">Padrão: <b>'+p.advPct+'% do salário</b> = '+brl(r2(p.sal*p.advPct/100))+', pago em '+cap(dayLabel(p.advDay))+'.</div>'
@@ -3045,6 +3180,71 @@ function openPaySettingsSheet(){
 }
 
 /* ============================================================
+   IMPRESSÃO — escala do mês em A4 deitado (vira PDF pelo "Salvar como PDF")
+   ============================================================ */
+function printHTML(key){
+  const emps=activeEmps(), days=daysOfMonth(key), nm=cap(monthName(key));
+  const rowH=Math.max(30,Math.min(52,Math.floor(380/Math.max(1,emps.length))));
+  const noOff=noOffDays(), nmNo=noOff.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(i=>WDL[i].toLowerCase());
+  const thDays=days.map(d=>'<th class="'+(isNoOff(d)?'we ':'')+(isHoliday(d)?'ph':'')+'">'+dOf(d).getDate()+'<small>'+WD[wdOf(d)].slice(0,3)+'</small></th>').join('');
+  let rows='';
+  emps.forEach(e=>{
+    rows+='<tr style="height:'+rowH+'px"><td class="nm"><b>'+esc(e.name)+'</b><small>'+empRange(e)+' · '+e.scale+'</small></td>';
+    days.forEach(d=>{
+      const c=codeOf(d,e.id), we=isNoOff(d)?' we':'';
+      if(isWork(c)) rows+='<td class="w" style="background:'+(e.color||'#446349')+'">'+Math.floor(t2m(e.start)/60)+'h</td>';
+      else if(c==='F') rows+='<td class="f">F</td>';
+      else if(c) rows+='<td class="x" style="background:'+OFF_CODES[c].color+'">'+OFF_CODES[c].short+'</td>';
+      else rows+='<td class="'+we.trim()+'"></td>';
+    });
+    rows+='</tr>';
+  });
+  const foot='<tr><td class="nm">Na loja</td>'+days.map(d=>'<td class="'+(isNoOff(d)?'we':'')+'">'+workersOn(null,d)+'</td>').join('')+'</tr>';
+  const hols=holidaysIn(key);
+  const head=(sub)=>'<div class="pr-head"><img src="logo-coquin.png" alt=""><div><h1>Escala · '+nm+'</h1><p>'+esc(COMPANY.name)+' · '+esc(COMPANY.unit)+' — '+sub+'</p></div>'
+    +(noOff.length?'<div class="pr-rule">'+cap(nmNo.join(', '))+': equipe completa</div>':'')+'</div>';
+  const p1='<div class="pr-page">'+head('grade do mês · gerada em '+new Date().toLocaleDateString('pt-BR'))
+    +'<table class="pr-t"><thead><tr><th class="nm">Pessoa</th>'+thDays+'</tr></thead><tbody>'+rows+'</tbody><tfoot>'+foot+'</tfoot></table>'
+    +'<div class="pr-leg">'+emps.map(e=>'<span><i style="background:'+(e.color||'#446349')+'"></i>'+esc(e.name)+' · '+empRange(e)+'</span>').join('')
+    +'<span><i style="background:#E7E4DC"></i>F = folga</span><span><i style="background:#7A6BA8"></i>FÉ = férias</span><span><i style="background:#C0483F"></i>AT = atestado · FA = falta</span>'
+    +'<span><i style="background:#F3E9CF"></i>'+(noOff.length?cap(nmNo.join('/'))+' (sem folga)':'fim de semana')+'</span></div>'
+    +(hols.length?'<div class="pr-foot">Feriados: '+hols.map(d=>fmtDM(d)+' '+holName(d)).join(' · ')+'</div>':'')+'</div>';
+  /* página 2: calendário de folgas (para o grupo da equipe) */
+  const first=dOf(days[0]).getDay();
+  let cal='<div class="pr-cal">'+WDL.map((w,i)=>'<div class="h'+(noOff.indexOf(i)>=0?' we':'')+'">'+w+'</div>').join('');
+  for(let i=0;i<first;i++) cal+='<div class="c out"></div>';
+  days.forEach(d=>{
+    const off=emps.filter(e=>codeOf(d,e.id)==='F'), aus=emps.filter(e=>{ const c=codeOf(d,e.id); return c && c!=='F' && !isWork(c); });
+    cal+='<div class="c'+(isNoOff(d)?' we':'')+'"><div class="pd'+(isHoliday(d)?' ph':'')+'">'+dOf(d).getDate()+(isHoliday(d)?' · '+holName(d):'')+'</div>'
+      +(off.length?'<div class="lb">Folga</div>'+off.map(e=>'<span class="p" style="color:'+(e.color||'#446349')+'">'+esc(e.name)+'</span>').join(''):'<span class="full">Equipe completa ('+workersOn(null,d)+')</span>')
+      +(aus.length?'<div class="lb">Ausente</div>'+aus.map(e=>'<span class="p">'+esc(e.name)+' ('+OFF_CODES[codeOf(d,e.id)].label.toLowerCase()+')</span>').join(''):'')+'</div>';
+  });
+  cal+='</div>';
+  const list='<div class="pr-list">'+emps.map(e=>{
+    const f=days.filter(d=>codeOf(d,e.id)==='F');
+    return '<div><b>'+esc(e.name)+'</b> · '+empRange(e)+'<br>'+(f.length?f.length+' folga'+(f.length===1?'':'s')+': '+f.map(d=>dOf(d).getDate()+' ('+WD[wdOf(d)]+')').join(', '):'sem folga cadastrada')+'</div>';
+  }).join('')+'</div>';
+  const p2='<div class="pr-page">'+head('quem folga em cada dia')+cal+list+'</div>';
+  return '<div class="pr">'+p1+p2+'</div>';
+}
+function openPrintSheet(){
+  const key=viewMonth, hasAny=daysOfMonth(key).some(d=>activeEmps().some(e=>codeOf(d,e.id)));
+  const h=(hasAny?'':'<div class="banner warn"><span>A escala de '+monthName(key)+' ainda não foi gerada. Toque em <b>Gerar</b> antes de imprimir.</span></div>')
+    +'<div class="note" style="margin-top:4px">2 páginas em <b>A4 deitado</b>: a grade do mês e o calendário de folgas. No celular, toque em <b>Imprimir</b> e escolha <b>Salvar como PDF</b> (ou compartilhe direto no WhatsApp).</div>'
+    +'<div class="pr-prev" id="prPrev">'+printHTML(key)+'</div>'
+    +'<button class="btn btn-green" id="prGo" style="margin-top:14px">Imprimir / salvar PDF</button>';
+  openSheet('Escala para imprimir · '+monthName(key), h, ()=>{
+    const box=$('prPrev'), pr=box.firstChild, sc=box.clientWidth/1060;
+    pr.style.zoom=sc;
+    $('prGo').addEventListener('click',()=>{
+      $('printArea').innerHTML=printHTML(key);
+      const old=document.title; document.title='Escala Coquin - '+monthName(key);
+      setTimeout(()=>{ window.print(); document.title=old; },150);
+    });
+  });
+}
+
+/* ============================================================
    RENDER geral + navegação
    ============================================================ */
 function renderHeader(){
@@ -3080,6 +3280,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#viewSeg button'),b=>b.a
 $('prevM').addEventListener('click',()=>{ const p=viewMonth.split('-').map(Number); viewMonth=ym(new Date(p[0],p[1]-2,1)); render(); });
 $('nextM').addEventListener('click',()=>{ const p=viewMonth.split('-').map(Number); viewMonth=ym(new Date(p[0],p[1],1)); render(); });
 $('btnTeam').addEventListener('click',openTeamSheet);
+$('btnPrint').addEventListener('click',openPrintSheet);
 $('btnSettings').addEventListener('click',openSettingsSheet);
 $('btnNewSwap').addEventListener('click',openSwapSheet);
 $('btnNewDoc').addEventListener('click',openDocSheet);

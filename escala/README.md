@@ -38,6 +38,22 @@ fica com as duas (5 dias de trabalho), o que o app explica no cartão de conform
 A semana usada é a **civil, de domingo a sábado** — a mesma do DSR e a do calendário que a
 loja já usa.
 
+### Sexta, sábado e domingo: operação 100%
+
+Regra da casa: **ninguém folga sexta, sábado e domingo**. O gerador, as trocas de folga e a devolução
+de folga nunca põem folga nesses dias (marcar à mão pede confirmação), e o cartão de conformidade
+acusa se alguma folga cair ali. Os dias mudam em *Ajustes da escala → Ninguém folga nestes dias*.
+
+> Atenção: com o domingo bloqueado, quem é CLT fica sem o **domingo de folga a cada 3 semanas** da
+> Lei 10.101/2000 (art. 6º, parágrafo único). O app avisa no cartão de conformidade — confira com a
+> contabilidade/convenção coletiva.
+
+### Imprimir / PDF
+
+Botão **Imprimir / salvar PDF da escala** (aba Escala): 2 páginas em **A4 deitado** — a grade do mês
+(pessoa × dia, com a hora de entrada e as folgas) e o **calendário de folgas** com a lista por pessoa.
+No celular: *Imprimir → Salvar como PDF* (ou compartilhar no WhatsApp).
+
 ### Cobertura mínima por dia
 
 Padrão lido da operação: **qui, sex e sáb com 3 pessoas**; **dom, seg e ter com 2**;
@@ -162,6 +178,10 @@ Você registra o que aconteceu e o app **já mostra o saldo final** de cada pess
   (dá pra desligar em *Ajustes da folha*).
 - **Holerite** (toque na pessoa): proventos, descontos, líquido, adiantamento, benefícios e o
   **valor a depositar no 5º dia útil**. Marque *adiantamento pago* / *saldo pago*.
+- **Calculadora de hora extra**: na Folha (botão, ou o atalho "⏱ 1h extra = R$ …" em cada pessoa) e no
+  holerite. Escolhe a pessoa, as horas (atalhos 0h30 a 8h) e o adicional (50%, 100% ou só a hora): mostra
+  o valor na hora e uma tabelinha de 1h a 8h. Depois: **Paguei por fora** (fica só registrado, não mexe
+  no holerite) ou **Lançar na folha** (soma no salário do 5º dia útil, com INSS e DSR).
 - **CSV da folha** para mandar pra contabilidade.
 
 ### A conta (exemplo: Wagner, CLT — R$ 2.000, alimentação R$ 400, VT R$ 10,80/dia)
