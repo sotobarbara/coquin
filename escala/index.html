@@ -1716,10 +1716,14 @@ const Cloud={
       c.from('time_punches').select('*'),
       c.from('shift_config').select('*').eq('id',1).maybeSingle()
     ]);
-    const err=r.find(x=>x.error && x.error.code!=='PGRST116');
-    if(err && err.error) throw err.error;
-    const emps=r[0].data||[], sched=r[1].data||[], swaps=r[2].data||[], punch=r[3].data||[], cfg=r[4].data;
-    if(emps.length){
+    /* tolerante: o que falhar fica com os dados do aparelho e o motivo vai para o diagnóstico */
+    const names=['equipe (shift_employees)','escala (shift_schedule)','trocas (shift_swaps)','ponto (time_punches)','ajustes (shift_config)'];
+    this.errs=[];
+    r.forEach((x,i)=>{ if(x.error && x.error.code!=='PGRST116') this.errs.push(names[i]+': '+(x.error.message||x.error.code||'erro')); });
+    const okT=i=>!(r[i].error && r[i].error.code!=='PGRST116');
+    if(!okT(0) && !okT(1) && !okT(3)) throw r[0].error||r[1].error;   /* nada veio: falha geral */
+    const emps=okT(0)?(r[0].data||[]):[], cfg=okT(4)?r[4].data:null;
+    if(okT(0) && emps.length){
       const prevE={}; db.emps.forEach(x=>prevE[x.id]=x);
       const pv=(row,col,id,key,def)=>(row[col]!=null)?+row[col]:(prevE[id]&&prevE[id][key]!=null?prevE[id][key]:def);
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
@@ -1728,11 +1732,25 @@ const Cloud={
         photo:(e.photo!==undefined? (e.photo||null) : (prevE[e.id]?prevE[e.id].photo:null)),
         salary:pv(e,'salary',e.id,'salary',undefined), food:pv(e,'food',e.id,'food',0), vtDay:pv(e,'vt_day',e.id,'vtDay',0),
         advPct:(e.adv_pct!=null?+e.adv_pct:(prevE[e.id]?prevE[e.id].advPct:null)), deps:pv(e,'deps',e.id,'deps',0)}));
-    }else if(db.emps.length){ for(const e of db.emps) await this.pushEmp(e); }
-    db.sched=sched.map(s=>({date:s.date, emp:s.emp, shift:normCode(s.shift), locked:!!s.locked, src:s.src||'auto', note:s.note||'', synced:true}));
-    db.swaps=swaps.map(s=>({id:s.id, at:s.created_at, emp:s.emp, from:s.from_date, to:s.to_date, cover:s.cover||null,
-      status:s.status||'pendente', reason:s.reason||'', changes:s.changes||[], warns:s.warns||[], resolvedAt:s.resolved_at||'', synced:true}));
-    db.punch=punch.map(p=>({date:p.date, emp:p.emp, marks:Array.isArray(p.marks)?p.marks:[], note:p.note||'', synced:true}));
+    }else if(okT(0) && db.emps.length && isAdmin()){ for(const e of db.emps) await this.pushEmp(e); }
+    if(okT(1)){                                        /* mantém o que foi gerado no aparelho e ainda não subiu */
+      const pend=db.sched.filter(x=>!x.synced), key=x=>x.date+'|'+x.emp;
+      const rows=(r[1].data||[]).map(s=>({date:s.date, emp:s.emp, shift:normCode(s.shift), locked:!!s.locked, src:s.src||'auto', note:s.note||'', synced:true}));
+      const idx={}; rows.forEach((x,i)=>idx[key(x)]=i);
+      pend.forEach(x=>{ if(idx[key(x)]!=null) rows[idx[key(x)]]=x; else rows.push(x); });
+      db.sched=rows;
+    }
+    if(okT(2)){
+      const pend=db.swaps.filter(x=>!x.synced);
+      db.swaps=(r[2].data||[]).map(s=>({id:s.id, at:s.created_at, emp:s.emp, from:s.from_date, to:s.to_date, cover:s.cover||null,
+        status:s.status||'pendente', reason:s.reason||'', changes:s.changes||[], warns:s.warns||[], resolvedAt:s.resolved_at||'', synced:true}));
+      pend.forEach(x=>{ if(!db.swaps.find(y=>y.id===x.id)) db.swaps.unshift(x); });
+    }
+    if(okT(3)){
+      const pend=db.punch.filter(x=>!x.synced);
+      db.punch=(r[3].data||[]).map(p=>({date:p.date, emp:p.emp, marks:Array.isArray(p.marks)?p.marks:[], note:p.note||'', synced:true}));
+      pend.forEach(x=>{ const i=db.punch.findIndex(y=>y.date===x.date&&y.emp===x.emp); if(i>=0) db.punch[i]=x; else db.punch.push(x); });
+    }
     if(cfg){
       if(cfg.demand && typeof cfg.demand[0]!=='object') db.cfg.demand=cfg.demand;
       if(cfg.rules) db.cfg.rules=Object.assign({},DEFAULT_RULES,cfg.rules);
@@ -3305,8 +3323,11 @@ function openAccountSheet(){
      +(me?'<div class="fld"><label>Minha foto</label>'+photoEditor(me,'ac')+'<div class="hint">Aparece na escala e no ponto para a equipe.</div></div>':'')
      +'<div class="fld"><label>Nova senha</label><input id="acPass" type="password" autocomplete="new-password" placeholder="mínimo 6 caracteres"></div>'
      +'<button class="btn btn-green" id="acSave" style="margin-top:12px">Trocar minha senha</button>'
+     +'<div class="btn-row"><button class="btn-ghost" id="acDiag">Diagnóstico da sincronização</button></div>'
+     +'<div id="acDiagOut"></div>'
      +'<div class="btn-row"><button class="btn-ghost btn-danger" id="acOut">Sair</button></div>';
   openSheet('Minha conta', h, ()=>{
+    $('acDiag').addEventListener('click', async()=>{ $('acDiagOut').innerHTML='<div class="note">Conferindo…</div>'; $('acDiagOut').innerHTML=await runDiagnostics(); });
     if(me){
       $('acFile').addEventListener('change', async ev=>{
         try{ const ph=await readPhoto(ev.target.files[0]); if(await saveMyPhoto(ph)){ toast('Foto salva ✓'); openAccountSheet(); } }
@@ -3350,6 +3371,21 @@ async function saveMyPhoto(photo){
   if(error){ toast(/function|schema/i.test(error.message||'')?'Peça ao gerente para rodar o SETUP.sql novo':'Não foi possível salvar a foto'); return false; }
   me.photo=photo; saveLocal(); render(); return true;
 }
+/* diagnóstico: testa cada tabela/função no Supabase e mostra o erro exato (para print) */
+async function runDiagnostics(){
+  const c=Cloud.client, out=[];
+  const line=(ok,t,msg)=>out.push('<div class="clt-item"><span class="clt-ic '+(ok?'ok':'bad')+'">'+(ok?'✓':'!')+'</span><div class="clt-tx">'+esc(t)+(msg?'<small>'+esc(msg)+'</small>':'')+'</div></div>');
+  if(!Cloud.on||!c){ return '<div class="banner warn"><span>Você não está logado (modo local).</span></div>'; }
+  line(true,'Login: '+(Cloud.email||'—'), Cloud.role? (Cloud.role.legacy?'papel: gerente (SETUP v4 ainda não rodou)':(Cloud.role.admin?'papel: gerente':'papel: funcionário · '+(Cloud.role.emp||'sem cadastro'))) : '');
+  try{ const r=await c.rpc('my_role'); line(!r.error,'Função my_role (SETUP v4)', r.error? r.error.message : JSON.stringify(r.data)); }catch(e){ line(false,'Função my_role',e.message); }
+  for(const t of ['shift_employees','shift_schedule','shift_swaps','time_punches','shift_config','payroll_entries','payroll_people','absence_docs']){
+    try{ const r=await c.from(t).select('*',{count:'exact',head:true}); line(!r.error, t, r.error? (r.error.code?r.error.code+' · ':'')+r.error.message : (r.count==null?'ok':r.count+' linha(s)')); }
+    catch(e){ line(false,t,e.message||'sem conexão'); }
+  }
+  try{ const r=await c.from('shift_employees').select('login_email,photo').limit(1); line(!r.error,'Colunas novas (login_email, photo)', r.error?r.error.message:'ok'); }catch(e){}
+  if(Cloud.errs && Cloud.errs.length) line(false,'Último erro ao sincronizar', Cloud.errs.join(' | '));
+  return '<div class="card" style="padding:4px 14px;margin-top:10px;box-shadow:none">'+out.join('')+'</div><div class="hint" style="margin-top:6px">Tire um print desta lista se algo aparecer com “!”.</div>';
+}
 /* gerente cria o login do funcionário (cliente separado, para não derrubar a sessão do gerente) */
 async function createEmpLogin(emp,user,pass){
   const email=loginOf(user);
@@ -3378,7 +3414,8 @@ async function onLoggedIn(sess){
     for(const s of db.swaps.filter(x=>!x.synced)) await Cloud.pushSwap(s);
     for(const x of db.docs.filter(y=>!y.synced && !y.fileData)) await Cloud.pushDoc(x);
     if(!Cloud.payMissing) for(const x of db.pay.filter(y=>!y.synced)) await Cloud.pushPay(x);
-  }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
+    if(Cloud.errs && Cloud.errs.length) toast('Sincronizou em parte — '+esc(Cloud.errs[0])+' · veja Minha conta → Diagnóstico');
+  }catch(e){ Cloud.errs=[(e&&(e.message||e.code))||'sem conexão']; toast('Falha ao sincronizar: '+esc(Cloud.errs[0])+' · veja Minha conta → Diagnóstico'); }
   render(); updateAcct(); Cloud.subscribe();
 }
 async function doLogin(){
