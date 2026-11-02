@@ -22,6 +22,7 @@ alter table public.closings add column if not exists hours_rev jsonb;   -- recei
 alter table public.closings add column if not exists gel30 integer default 0;   -- gelatos 2 bolas (R$30) no cartão/Pix
 alter table public.closings add column if not exists gel35 integer default 0;   -- gelatos 3 bolas (R$35) no cartão/Pix
 alter table public.closings add column if not exists by_serial jsonb;   -- vendas por maquininha (N DE SERIE) p/ separar por loja
+alter table public.closings add column if not exists cash_by_store jsonb;   -- dinheiro por loja no dia
 
 -- ============ Estoque (por produto: coco / sorvete) ============
 create table if not exists public.stock (
