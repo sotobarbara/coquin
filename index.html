@@ -1026,7 +1026,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.6 · dinheiro por loja';
+const APP_VERSION='v6.7 · gelatos no card';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1603,7 +1603,7 @@ function renderStoreSalesHome(list){
   stores.forEach((s,i)=>{ const g=s.g, nd=g.days.size;
     html+='<div class="loja-row" data-store="'+s.id+'"><div class="rk">'+(i+1)+'</div>'
       +'<div class="m"><div class="nm">'+s.name+' <span class="lchev">›</span></div>'
-      +'<div class="tg">'+NUM.format(g.tx)+' vendas · '+nd+' dia'+(nd!==1?'s':'')+'</div>'
+      +'<div class="tg">'+NUM.format(g.tx)+' vendas · '+NUM.format(storeGel(g))+' gelatos · '+nd+' dia'+(nd!==1?'s':'')+'</div>'
       +'<div class="lbar"><i style="width:'+Math.round(g.rev/maxRev*100)+'%"></i></div></div>'
       +'<div class="rv">'+money(g.rev)+'</div></div>';
   });
