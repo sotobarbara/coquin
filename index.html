@@ -238,8 +238,9 @@ main{padding-top:18px}
 .tabs button.sel{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 5px 14px rgba(52,80,58,.28)}
 .tabs button svg{width:17px;height:17px;stroke:currentColor}
 .hide{display:none!important}
-.prodtoggle{display:flex;gap:8px;margin-bottom:2px}
-.prodtoggle button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:13.5px;font-weight:750;padding:10px;border-radius:11px;cursor:pointer}
+.prodtoggle{display:flex;gap:8px;margin-bottom:2px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+.prodtoggle::-webkit-scrollbar{display:none}
+.prodtoggle button{flex:0 0 auto;white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:13px;font-weight:750;padding:9px 13px;border-radius:11px;cursor:pointer}
 .prodtoggle button.sel{background:var(--green-tint);border-color:var(--green);color:var(--green-700)}
 /* estoque */
 .stock-alert{display:flex;gap:11px;align-items:flex-start;border-radius:var(--r);padding:14px 16px;font-size:13.5px;font-weight:650;line-height:1.4;box-shadow:var(--shadow)}
@@ -910,7 +911,8 @@ main{padding-top:18px}
 <div class="sheet" id="transferSheet" role="dialog" aria-modal="true">
   <div class="grip"></div>
   <h2>Transferir p/ a loja</h2>
-  <p class="h2sub">Tira cocos do depósito e coloca quengas na loja. <b>1 coco = 2 quengas.</b></p>
+  <p class="h2sub">Tira cocos do depósito e coloca quengas na loja escolhida. <b>1 coco = 2 quengas.</b></p>
+  <div class="field"><label>Loja de destino</label><select id="tfStore" class="date-input"></select></div>
   <div class="field"><label>Dia</label><input id="tfDate" class="date-input" type="date"></div>
   <div class="field"><label>Cocos a transferir <span class="hintlink" id="tfAvail" style="color:var(--ink-faint);cursor:default"></span></label>
     <input id="tfQty" class="big-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
@@ -1013,7 +1015,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.2 · menos abas';
+const APP_VERSION='v6.3 · estoque por loja';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1041,7 +1043,14 @@ const PRODUCTS={
 };
 const PRODUCT_ORDER=['deposito','loja','sorvete'];
 function migProd(p){ return (!p||p==='coco')?'deposito':p; }   // 'coco' antigo vira 'deposito'
-function prodYield(p){ return PRODUCTS[p]?PRODUCTS[p].yield:GEL_PER_COCO; }
+/* estoque por loja: produto 'loja:<storeId>' (quengas da loja). 'loja' = legado genérico. */
+function isLojaProd(p){ return p==='loja' || (typeof p==='string' && p.indexOf('loja:')===0); }
+function lojaStoreId(p){ return (typeof p==='string' && p.indexOf('loja:')===0) ? p.slice(5) : null; }
+function prodInfo(p){ const id=lojaStoreId(p); if(id!=null) return {name:(storeName(id)||'Loja'),unit:'quengas',unit1:'quenga',yield:1,emoji:'🥥',loja:true,store:id}; return PRODUCTS[p]||PRODUCTS.deposito; }
+function lojaProducts(){ return (db.settings.stores||[]).map(s=>'loja:'+s.id); }
+function stockProductOrder(){ return ['deposito', ...lojaProducts(), 'sorvete']; }
+function storeGelatosOn(date, storeId){ const c=db.closings.find(x=>x.date===date); if(!c||!c.bySerial||typeof c.bySerial!=='object') return 0; let g=0; Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,date)===storeId){ const s=c.bySerial[ser]||{}; g+=(s.g30||0)+(s.g35||0); } }); return Math.round(g); }
+function prodYield(p){ return prodInfo(p).yield; }
 /* categorias do caixa (despesas e outras entradas) */
 const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Insumos','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
 const PAYROLL_CATS=['Salário','Adiantamento','Benefício','Vale','Comissão'];   // categorias que vão pra Equipe
@@ -1257,7 +1266,7 @@ function reconcile(c){
 function stockEntry(date, prod){ return db.stock.find(s=> s.date===date && (s.product||'deposito')===prod); }
 function stockOf(key, prod){ return db.stock.filter(s=> s.date.slice(0,7)===key && (s.product||'deposito')===prod); }
 /* Vendas baixam só a LOJA (quenga) e o SORVETE; o depósito baixa por corte/transferência. */
-function consumedUnits(date, prod){ if(prod==='deposito') return 0; const c=db.closings.find(x=>x.date===date); return c?(c.gelatos||0)/prodYield(prod):0; }
+function consumedUnits(date, prod){ if(prod==='deposito') return 0; const id=lojaStoreId(prod); if(id!=null) return storeGelatosOn(date,id); const c=db.closings.find(x=>x.date===date); return c?(c.gelatos||0)/prodYield(prod):0; }
 /* Saldo tipo "livro-caixa" por estoque: (compras + recebido de transferência) − consumo(vendas)/degustação/treino/desperdício − transferido.
    Com CONTAGEM FÍSICA, calcula a quebra (teórico − contado) e ANCORA o saldo no contado. */
 function computeBalances(prod){
@@ -1279,8 +1288,8 @@ function avgDailyConsumo(prod){
   prod=prod||'deposito';
   const days=db.closings.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
   if(!days.length) return 0;
-  const g=days.reduce((s,c)=>s+(c.gelatos||0),0);
-  return (g/prodYield(prod))/days.length;   // depósito: cocos-equiv (gelatos/2) = ritmo que a loja puxa
+  if(prod==='deposito'){ const g=days.reduce((s,c)=>s+(c.gelatos||0),0); return (g/2)/days.length; }   // cocos-equiv (gelatos/2)
+  const u=days.reduce((s,c)=>s+consumedUnits(c.date,prod),0); return u/days.length;   // loja:<id>/sorvete: consumo próprio
 }
 /* consumo por venda na unidade da LOJA (quengas = gelatos) */
 function consumedCocos(date){ return consumedUnits(date,'loja'); }
@@ -1298,13 +1307,13 @@ function avgUnitCost(arr, prod){
 function avgCocoCost(arr){ return avgUnitCost(arr,'deposito'); }
 function lastCocoCost(){ return lastUnitCost('deposito'); }
 function renderEstoque(){
-  const key=viewMonth, prod=stockProduct, P=PRODUCTS[prod], U=P.unit, U1=P.unit1;
-  const isDep=prod==='deposito', isLoja=prod==='loja';
-  document.getElementById('prodToggle').innerHTML=PRODUCT_ORDER.map(k=>'<button class="'+(k===prod?'sel':'')+'" data-prod="'+k+'">'+PRODUCTS[k].emoji+' '+PRODUCTS[k].name+'</button>').join('');
+  const key=viewMonth, prod=stockProduct, P=prodInfo(prod), U=P.unit, U1=P.unit1;
+  const isDep=prod==='deposito', isLoja=isLojaProd(prod);
+  document.getElementById('prodToggle').innerHTML=stockProductOrder().map(k=>{const info=prodInfo(k);return '<button class="'+(k===prod?'sel':'')+'" data-prod="'+k+'">'+info.emoji+' '+info.name+'</button>';}).join('');
   document.getElementById('stockHint').textContent = isDep?'em cocos · 1 coco = 2 quengas' : (isLoja?'em quengas · 1 quenga = 1 gelato':'1 caixa = 25 gelatos');
   document.getElementById('transferBtn').style.display=(isDep||isLoja)?'flex':'none';
   const B=computeBalances(prod); const now=B.current, avg=avgDailyConsumo(prod), auto=avg>0?now/avg:null;
-  document.getElementById('stockLab').textContent = isDep?'Cocos no depósito':(isLoja?'Quengas na loja':'Sorvete em estoque');
+  document.getElementById('stockLab').textContent = isDep?'Cocos no depósito':(isLoja?('Quengas · '+P.name):'Sorvete em estoque');
   document.getElementById('stockLoc').textContent = P.name;
   document.getElementById('stockNow').textContent=NUM.format(Math.round(now));
   document.getElementById('stockNowUnit').textContent=U;
@@ -1655,7 +1664,7 @@ function renderDados(){
     rows.push(irow('🔥','Pico de vendas entre <b>'+pk+'h e '+((pk+1)%24)+'h</b><span class="muted"> — '+Math.round(gph[pk])+' gelatos no horário</span>')); }
   if(gel>0) rows.push(irow('💰','Margem líquida de <b>'+Math.round(margem)+'%</b><span class="muted"> — lucro líquido '+money(lucro)+' no mês</span>'));
   if(gel>0) rows.push(irow('🍨','Ticket médio de <b>'+money(rev/gel)+'</b><span class="muted"> — '+NUM.format(gel)+' gelatos vendidos</span>'));
-  const depNow=Math.round(currentStock('deposito')), lojaNow=Math.round(currentStock('loja')), sorvNow=Math.round(currentStock('sorvete'));
+  const depNow=Math.round(currentStock('deposito')), lojaNow=Math.round(lojaProducts().reduce((t,p)=>t+currentStock(p),0)+currentStock('loja')), sorvNow=Math.round(currentStock('sorvete'));
   if(db.stock.length) rows.push(irow('📦','Estoque: <b>'+NUM.format(depNow)+' cocos</b> (depósito) · <b>'+NUM.format(lojaNow)+' quengas</b> (loja) · <b>'+NUM.format(sorvNow)+' caixas</b>'));
   ins.innerHTML = rows.length? rows.join('') : '<div class="irow"><div class="it">Feche alguns dias e importe a Stone para ver os destaques.</div></div>';
   renderStoreSales(list);
@@ -1851,12 +1860,12 @@ scrim.addEventListener('click', closeSheets);
 
 /* ---------- abas Vendas | Estoque ---------- */
 let currentView='vendas';
-function updateFabLabel(){ document.getElementById('fabLabel').textContent=(currentView==='estoque')?('Registrar '+PRODUCTS[stockProduct].name.toLowerCase()):(currentView==='caixa'?'Nova movimentação':(currentView==='equipe'?'Novo pagamento':'Fechar o dia')); }
+function updateFabLabel(){ document.getElementById('fabLabel').textContent=(currentView==='estoque')?('Registrar '+prodInfo(stockProduct).name.toLowerCase()):(currentView==='caixa'?'Nova movimentação':(currentView==='equipe'?'Novo pagamento':'Fechar o dia')); }
 function switchView(v){
   currentView=v;
   [['Vendas','vendas'],['Estoque','estoque'],['Caixa','caixa'],['Equipe','equipe'],['Dados','dados']].forEach(([n,k])=>{
-    document.getElementById('view'+n).classList.toggle('hide', v!==k);
-    document.getElementById('tab'+n).classList.toggle('sel', v===k);
+    const view=document.getElementById('view'+n); if(view) view.classList.toggle('hide', v!==k);
+    const tab=document.getElementById('tab'+n); if(tab) tab.classList.toggle('sel', v===k);
   });
   document.getElementById('fab').style.display = v==='dados'?'none':'flex';
   updateFabLabel();
@@ -2111,8 +2120,8 @@ function theoreticalAt(date, draft, prod){
   return bal;
 }
 function renderKProd(){
-  $('kProdPick').innerHTML=PRODUCT_ORDER.map(k=>'<div class="method '+(k===stockDraftProduct?'sel':'')+'" data-kprod="'+k+'"><span>'+PRODUCTS[k].emoji+' '+PRODUCTS[k].name+'</span></div>').join('');
-  const p=stockDraftProduct, P=PRODUCTS[p], U=P.unit, U1=P.unit1, isLoja=p==='loja', isDep=p==='deposito';
+  $('kProdPick').innerHTML=stockProductOrder().map(k=>{const info=prodInfo(k);return '<div class="method '+(k===stockDraftProduct?'sel':'')+'" data-kprod="'+k+'"><span>'+info.emoji+' '+info.name+'</span></div>';}).join('');
+  const p=stockDraftProduct, P=prodInfo(p), U=P.unit, U1=P.unit1, isLoja=isLojaProd(p), isDep=p==='deposito';
   $('stockTitle').textContent=(editingStock?'Editar — ':'')+P.emoji+' '+P.name;
   $('kBuyField').style.display=isLoja?'none':'';        // loja recebe por transferência, não compra
   $('kCostField').style.display=isLoja?'none':'';
@@ -2126,7 +2135,7 @@ function renderKProd(){
   $('kCount').placeholder='quanto tem '+(isDep?'no depósito':(isLoja?'na loja':'no estoque'));
 }
 function renderKNote(){
-  const d=kDraft(), prod=d.product, U=PRODUCTS[prod].unit;
+  const d=kDraft(), prod=d.product, U=prodInfo(prod).unit;
   const c=db.closings.find(x=>x.date===d.date); const cons=consumedUnits(d.date,prod);
   let msg = c ? ('Vendas do dia: <b>'+(c.gelatos||0)+' gelatos</b> → consumo <b>'+r1(cons)+' '+U+'</b>. ')
               : 'Sem fechamento de vendas nesse dia ainda. ';
@@ -2166,7 +2175,7 @@ $('saveStock').addEventListener('click', ()=>{
   Store.save(db); closeSheets(); viewMonth=d.date.slice(0,7); stockProduct=d.product; switchView('estoque'); render();
   if(oldKey && (oldKey.date!==saved.date || oldKey.product!==saved.product)) Cloud.delStock(oldKey.date, oldKey.product);
   Cloud.pushStock(saved);
-  toast(PRODUCTS[d.product].name+' atualizado '+PRODUCTS[d.product].emoji);
+  toast(prodInfo(d.product).name+' atualizado '+prodInfo(d.product).emoji);
 });
 $('deleteStock').addEventListener('click', ()=>{
   if(!editingStock) return;
@@ -2183,24 +2192,32 @@ $('prodToggle').addEventListener('click', e=>{ const b=e.target.closest('[data-p
 function stockRow(date, prod){ let s=stockEntry(date,prod); if(!s){ s={ id:'k'+Date.now()+Math.floor(Math.random()*1000), date, product:prod, comprados:0, custo:0, recebido:0, transferido:0, degustacao:0, treinamento:0, perda:0, contagem:null, note:'', createdAt:new Date().toISOString() }; db.stock.push(s); } return s; }
 function renderTfNote(){
   const qty=parseInt2($('tfQty').value), avail=Math.round(currentStock('deposito'));
+  const loja=storeName($('tfStore').value)||'loja';
   $('tfAvail').textContent='depósito: '+NUM.format(avail)+' cocos';
-  $('tfNote').innerHTML = qty>0 ? ('Sai <b>'+qty+' coco'+(qty>1?'s':'')+'</b> do depósito → entra <b>'+(qty*QUENGAS_POR_COCO)+' quengas</b> na loja.'+(qty>avail?' <span style="color:var(--danger)">⚠︎ mais do que tem no depósito</span>':'')) : '';
-  $('saveTransfer').disabled=!(qty>0);
+  $('tfNote').innerHTML = qty>0 ? ('Sai <b>'+qty+' coco'+(qty>1?'s':'')+'</b> do depósito → entra <b>'+(qty*QUENGAS_POR_COCO)+' quengas</b> em <b>'+loja+'</b>.'+(qty>avail?' <span style="color:var(--danger)">⚠︎ mais do que tem no depósito</span>':'')) : '';
+  $('saveTransfer').disabled=!(qty>0 && $('tfStore').value);
 }
-function openTransfer(){ $('tfDate').value=todayISO(); $('tfQty').value=''; renderTfNote(); openSheet(transferSheet); }
+function openTransfer(){
+  const stores=db.settings.stores||[];
+  const pre=lojaStoreId(stockProduct);
+  $('tfStore').innerHTML=stores.map(s=>'<option value="'+s.id+'"'+(s.id===pre?' selected':'')+'>'+s.name+'</option>').join('');
+  $('tfDate').value=todayISO(); $('tfQty').value=''; renderTfNote(); openSheet(transferSheet);
+}
 $('tfQty').addEventListener('input', renderTfNote);
+$('tfStore').addEventListener('change', renderTfNote);
 $('transferBtn').addEventListener('click', openTransfer);
 $('saveTransfer').addEventListener('click', ()=>{
   const qty=parseInt2($('tfQty').value); if(!(qty>0)) return;
+  const storeId=$('tfStore').value; if(!storeId) return;
   $('saveTransfer').disabled=true;
   const date=$('tfDate').value||todayISO();
-  const quengas=qty*QUENGAS_POR_COCO;
+  const quengas=qty*QUENGAS_POR_COCO; const lojaProd='loja:'+storeId;
   // se o dia já tem contagem física, ajusta a contagem (ela é a verdade); senão, lança como baixa/entrada
   const dep=stockRow(date,'deposito'); if(dep.contagem!=null && dep.contagem!=='') dep.contagem=Math.max(0,+dep.contagem-qty); else dep.transferido=(dep.transferido||0)+qty; dep.synced=false;
-  const loja=stockRow(date,'loja'); if(loja.contagem!=null && loja.contagem!=='') loja.contagem=(+loja.contagem)+quengas; else loja.recebido=(loja.recebido||0)+quengas; loja.synced=false;
-  Store.save(db); closeSheets(); viewMonth=date.slice(0,7); stockProduct='loja'; switchView('estoque'); render();
+  const loja=stockRow(date,lojaProd); if(loja.contagem!=null && loja.contagem!=='') loja.contagem=(+loja.contagem)+quengas; else loja.recebido=(loja.recebido||0)+quengas; loja.synced=false;
+  Store.save(db); closeSheets(); viewMonth=date.slice(0,7); stockProduct=lojaProd; switchView('estoque'); render();
   Cloud.pushStock(dep); Cloud.pushStock(loja);
-  toast('Transferido: '+qty+' coco'+(qty>1?'s':'')+' → '+(qty*QUENGAS_POR_COCO)+' quengas 🥥');
+  toast('Transferido: '+qty+' coco'+(qty>1?'s':'')+' → '+quengas+' quengas em '+(storeName(storeId)||'loja')+' 🥥');
 });
 
 /* ---- zerar tudo e recomeçar ---- */
