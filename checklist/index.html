@@ -944,7 +944,7 @@ async function onLoggedIn(sess){
     const {data:ck}=await Cloud.client.from('checklists').select('date').limit(1);
     if((!ck||!ck.length) && db.checklists.length){ for(const k of db.checklists){ await Cloud.push(k); } }
     await Cloud.pull();
-  }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
+  }catch(e){ toast('Falha ao sincronizar: '+String((e&&(e.message||e.code))||'sem conexão').replace(/[<>&]/g,'')+' — usando dados locais'); }
   render(); updateAcct(); Cloud.subscribe();
 }
 async function doLogin(){

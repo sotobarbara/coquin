@@ -2761,7 +2761,7 @@ async function onLoggedIn(sess){
       await Cloud.pushSettings();
     }
     await Cloud.pull();
-  }catch(e){ toast('Falha ao sincronizar — usando dados locais'); }
+  }catch(e){ toast('Falha ao sincronizar: '+String((e&&(e.message||e.code))||'sem conexão').replace(/[<>&]/g,'')+' — usando dados locais'); }
   render(); updateAcct(); Cloud.subscribe();
 }
 async function doLogin(){
