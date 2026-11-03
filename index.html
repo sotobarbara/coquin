@@ -685,10 +685,9 @@ main{padding-top:18px}
     </div>
     <div class="meta-nums"><span class="big" id="cashSaldo">R$ 0</span></div>
     <div class="meta-sub" id="cashSub">Saldo inicial + vendas + entradas − saídas</div>
-    <div class="cash-split cash-split-3 cash-split-4">
+    <div class="cash-split cash-split-3">
       <div><span class="cs-lab">🏦 Saldo 01</span><span class="cs-v" id="cashIni">R$ 0</span></div>
-      <div><span class="cs-lab">🍨 Vendas</span><span class="cs-v" id="cashSales">R$ 0</span></div>
-      <div><span class="cs-lab">↑ Entradas</span><span class="cs-v" id="cashIn">R$ 0</span></div>
+      <div><span class="cs-lab">↑ Entradas <small style="opacity:.75">vendas + aportes</small></span><span class="cs-v" id="cashIn">R$ 0</span></div>
       <div><span class="cs-lab">↓ Saídas</span><span class="cs-v" id="cashOut">R$ 0</span></div>
     </div>
   </div>
@@ -1044,7 +1043,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v7.0 · saldo em caixa';
+const APP_VERSION='v7.1 · entrada = vendas';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1778,9 +1777,8 @@ function renderCaixa(){
   list.forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in') inn+=m.amount||0; else { out+=m.amount||0; byCat[m.category]=(byCat[m.category]||0)+(m.amount||0); cntCat[m.category]=(cntCat[m.category]||0)+1; } });
   const ini=caixaInicialOf(key);
   $('cashIni').textContent=money(ini);
-  $('cashSales').textContent=money(sales);
   $('cashSaldo').textContent=money(ini+sales+inn-out);
-  $('cashIn').textContent=money(inn);
+  $('cashIn').textContent=money(sales+inn);   // entradas = vendas + outras entradas (aportes)
   $('cashOut').textContent=money(out);
   $('cashSub').textContent = ini>0 ? ('Começou com '+money(ini)+' no dia 01 · soma vendas e tira saídas') : 'Defina o saldo inicial p/ bater com a conta';
 
