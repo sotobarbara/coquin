@@ -495,13 +495,21 @@ main{padding-top:18px}
 .otn .onm{font-weight:800;font-size:12.5px;color:var(--ink)}
 .otn .osub{font-size:10px;font-weight:650;color:var(--ink-soft);margin-top:1px}
 .otn .ocst{font-size:10.5px;font-weight:800;color:var(--green-700);margin-left:3px}
-.sqgli{padding-top:16px}
-.sqgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sqg{display:flex;flex-direction:column;align-items:center;gap:4px;width:75px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:9px 5px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.sqg:active{transform:scale(.98)}
-.sqg .oav{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;font-size:15px;color:#fff}
-.sqg-nm{font-size:10.5px;font-weight:800;color:var(--ink);text-align:center;line-height:1.12}
-.sqg-sub{font-size:9px;font-weight:700;color:var(--ink-soft)}
+.lojahdr{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow);padding:5px 13px 5px 5px;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.lojahdr:active{transform:scale(.98)}
+.lojahdr .oav{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-size:14px;color:#fff;flex:none}
+.lojahdr .ln{font-size:12px;font-weight:850;color:var(--ink)}
+.role-stack{display:flex;flex-direction:column;gap:6px;margin-top:14px;position:relative;align-items:stretch;min-width:138px}
+.role-stack::before{content:'';position:absolute;top:-14px;left:50%;width:2px;height:14px;background:var(--green-tint-2)}
+.rolechip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 9px;box-shadow:var(--shadow);cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+.rolechip:active{transform:scale(.99)}
+.rolechip.open{border-style:dashed;background:#FBFAF7}
+.rolechip.freela{background:#FFFBF4}
+.rolechip .rc-ic{font-size:14px;flex:none}
+.rolechip .rc-fn{font-size:10.5px;font-weight:800;color:var(--ink);line-height:1.12;white-space:nowrap}
+.rolechip .rc-who{font-size:9.5px;font-weight:700;color:var(--ink-soft);margin-top:1px;white-space:nowrap}
+.rolechip.open .rc-who{color:#B0732A}
+.rolechip.freela .rc-who{color:#9A6800}
 .otn.ceo{background:var(--grad);border:0;box-shadow:0 8px 20px rgba(242,107,58,.28)}
 .otn.ceo .onm{color:#fff}.otn.ceo .osub{color:rgba(255,255,255,.92)}
 .otn.ceo .oav{background:rgba(255,255,255,.22)}
@@ -672,7 +680,6 @@ main{padding-top:18px}
   #squadCards .squad{margin-bottom:0}
   #folhaCal{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
   #folhaCal .folha-ev{margin-bottom:0}
-  #orgChart{max-width:640px}
 }
 @media (min-width:1240px){
   .head-inner,.tabs,.wrap{max-width:1120px}
@@ -1314,7 +1321,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.1 · organograma compacto'
+const APP_VERSION='v8.2 · organograma detalhado'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -2845,6 +2852,14 @@ $('saveCaixaIni').addEventListener('click', ()=>{ const v=parseMoney($('ciAmount
 
 /* ---- Equipe (pagamento de funcionários) ---- */
 function isPayroll(m){ return m.type==='out' && (m.employee||'').trim(); }
+function roleShort(r){ if(r.tipo==='freela') return 'Freela'; const f=(r.fn||'').toLowerCase();
+  if(/montar|montagem/.test(f)) return 'Atendente · montagem';
+  if(/cobrar|maquin/.test(f)) return 'Atendente · caixa';
+  if(/supervis/.test(f)) return 'Supervisão';
+  if(/cortar/.test(f)) return 'Produção · cocos';
+  if(/operacional|repor|apoio|limpeza|embalar|pesado/.test(f)) return 'Operacional';
+  if(/coco/.test(f)) return 'Produção · cocos';
+  return 'Operacional'; }
 function squadTotals(s){
   const key=viewMonth; let fixo=0, people=0, filled=0, freelas=0, freelaDia=0;
   s.roles.forEach(r=>{ if(r.tipo==='freela'){ freelas++; freelaDia+=(+r.cost||0); } else { fixo+=roleCost(r,key); people++; if(r.empId&&empById(r.empId)) filled++; } });
@@ -2855,10 +2870,17 @@ function renderSquads(){
   // ---- organograma (top-down) ----
   const otn=(cls,avc,av,nm,sub,cost,jump)=>'<div class="otn '+cls+'"'+(jump?' data-sqjump="'+jump+'"':'')+'><div class="oav" style="background:'+avc+'">'+av+'</div><div class="otx"><div class="onm">'+nm+'</div>'+(sub?'<div class="osub">'+sub+'</div>':'')+'</div>'+(cost?'<div class="ocst">'+cost+'</div>':'')+'</div>';
   const K=LIDERANCA[0], B=LIDERANCA[1], I=LIDERANCA[2];
-  const grid='<div class="sqgrid">'+SQ.map(s=>{ const t=squadTotals(s); return '<div class="sqg" data-sqjump="'+s.id+'"><div class="oav" style="background:'+s.c+'">'+s.ic+'</div><div class="sqg-nm">'+s.name+'</div><div class="sqg-sub">'+t.filled+'/'+t.people+' vagas</div></div>'; }).join('')+'</div>';
+  const lojaCol=s=>{
+    const roles=s.roles.map(r=>{
+      const fre=r.tipo==='freela'; const e=(!fre&&r.empId)?empById(r.empId):null; const open=!fre&&!e;
+      const who=fre?(money(+r.cost||0)+'/dia'):(e?e.name:'A definir');
+      return '<div class="rolechip'+(open?' open':'')+(fre?' freela':'')+'" data-role="'+s.id+':'+r.id+'"><span class="rc-ic">'+r.ic+'</span><div class="rc-tx"><div class="rc-fn">'+roleShort(r)+'</div><div class="rc-who">'+who+'</div></div></div>';
+    }).join('');
+    return '<li><div class="lojahdr" data-sqjump="'+s.id+'"><span class="oav" style="background:'+s.c+'">'+s.ic+'</span><span class="ln">'+s.name+'</span></div><div class="role-stack">'+roles+'</div></li>';
+  };
   $('orgChart').innerHTML='<div class="otree"><ul><li>'+otn('ceo',K.c,K.ic,K.who,'CEO · Estratégico')
     +'<ul><li>'+otn('',B.c,B.ic,B.who,'ADM')+'</li>'
-    +'<li>'+otn('sup',I.c,I.ic,I.who,'Supervisora','')+'<ul><li class="sqgli">'+grid+'</li></ul></li></ul></li></ul></div>';
+    +'<li>'+otn('sup',I.c,I.ic,I.who,'Supervisora','')+'<ul>'+SQ.map(lojaCol).join('')+'</ul></li></ul></li></ul></div>';
   // ---- visão geral (KPIs) ----
   const emps=activeEmployees();
   const leadExtra=LIDERANCA.filter(p=>!emps.some(e=>(e.name||'').toLowerCase().includes((p.who||'').toLowerCase()))).length;
@@ -2919,7 +2941,7 @@ function renderSquads(){
     +'<div class="ss"><div class="ssv">'+money(freelaDiaTot)+'</div><div class="ssl">freelas · por dia (todos)</div></div>'
     +'<div class="ss wide"><div class="ssv">'+money(fixoTot+leadTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">total fixo mensal (squads + liderança) — sem freelas</div></div>';
 }
-$('orgChart').addEventListener('click', e=>{ const n=e.target.closest('[data-sqjump]'); if(!n) return; const c=$('sqcard-'+n.getAttribute('data-sqjump')); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); });
+$('orgChart').addEventListener('click', e=>{ const rc=e.target.closest('[data-role]'); if(rc){ const [sid,rid]=rc.getAttribute('data-role').split(':'); openRoleEdit(sid,rid); return; } const n=e.target.closest('[data-sqjump]'); if(!n) return; const c=$('sqcard-'+n.getAttribute('data-sqjump')); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); });
 $('sqOverview').addEventListener('click', e=>{ const row=e.target.closest('[data-role]'); if(!row) return; const [sid,rid]=row.getAttribute('data-role').split(':'); openRoleEdit(sid,rid); });
 
 /* ---- editar vaga da squad (vincula à folha) ---- */
