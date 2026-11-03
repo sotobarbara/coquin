@@ -362,6 +362,8 @@ main{padding-top:18px}
 .cash-split-3 > div{padding:9px 10px}
 .cash-split-3 .cs-lab{font-size:10.5px}
 .cash-split-3 .cs-v{font-size:15px}
+.cash-split-4{flex-wrap:wrap}
+.cash-split-4 > div{flex:1 1 calc(50% - 5px)}
 /* alerta de vencimento */
 .due-alert{border-radius:16px;padding:13px 15px;margin-bottom:4px;display:flex;flex-direction:column;gap:7px}
 .due-alert .da-row{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700}
@@ -677,13 +679,17 @@ main{padding-top:18px}
 
   <div class="section-title">Despesas do mês</div>
   <div class="card meta">
-    <div class="meta-lab">Resultado do caixa</div>
+    <div class="meta-top">
+      <div class="meta-lab">Saldo em caixa</div>
+      <button class="meta-edit" id="editCaixaIni">Saldo inicial</button>
+    </div>
     <div class="meta-nums"><span class="big" id="cashSaldo">R$ 0</span></div>
-    <div class="meta-sub" id="cashSub">Vendas + outras entradas − saídas pagas</div>
-    <div class="cash-split cash-split-3">
+    <div class="meta-sub" id="cashSub">Saldo inicial + vendas + entradas − saídas</div>
+    <div class="cash-split cash-split-3 cash-split-4">
+      <div><span class="cs-lab">🏦 Saldo 01</span><span class="cs-v" id="cashIni">R$ 0</span></div>
       <div><span class="cs-lab">🍨 Vendas</span><span class="cs-v" id="cashSales">R$ 0</span></div>
-      <div><span class="cs-lab">↑ Outras entradas</span><span class="cs-v" id="cashIn">R$ 0</span></div>
-      <div><span class="cs-lab">↓ Saídas pagas</span><span class="cs-v" id="cashOut">R$ 0</span></div>
+      <div><span class="cs-lab">↑ Entradas</span><span class="cs-v" id="cashIn">R$ 0</span></div>
+      <div><span class="cs-lab">↓ Saídas</span><span class="cs-v" id="cashOut">R$ 0</span></div>
     </div>
   </div>
 
@@ -952,6 +958,16 @@ main{padding-top:18px}
   <p class="det-emp">Troque a categoria de cada um no seletor, ou mova todos de uma vez acima. Toque no lápis para editar/excluir.</p>
 </div>
 
+<!-- SHEET: saldo inicial do caixa -->
+<div class="sheet" id="caixaIniSheet" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2>Saldo inicial do caixa</h2>
+  <p class="h2sub">Quanto tinha em caixa/conta no <b>dia 01 de <span id="ciMonth">—</span></b>. A partir daí o saldo soma as vendas e tira as saídas — passa a bater com a conta.</p>
+  <div class="field"><label>Saldo no dia 01</label><div class="money"><span class="cur">R$</span><input id="ciAmount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
+  <button class="btn-primary" id="saveCaixaIni">Salvar</button>
+  <button type="button" class="btn-ghost" id="cancelCaixaIni" style="margin-top:10px">Cancelar</button>
+</div>
+
 <!-- SHEET: metas por dia da semana -->
 <div class="sheet" id="dayGoalSheet" role="dialog" aria-modal="true">
   <div class="grip"></div>
@@ -1028,13 +1044,13 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.9 · recategorizar fácil';
+const APP_VERSION='v7.0 · saldo em caixa';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
 const DEFAULT_STORES=[{id:'beiramar',name:'Beira Mar'},{id:'imprensa',name:'Imprensa'},{id:'praia',name:'Praia do Futuro'},{id:'eventos',name:'Eventos'}];
 const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':{store:'beiramar',from:'2026-10-23'},'4AH78SS4W':'imprensa','XC03020753916':[{store:'eventos',to:'2026-10-31'},{store:'beiramar',from:'2026-11-01'}]};
-function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap=JSON.parse(JSON.stringify(DEFAULT_SERIALMAP));
+function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap=JSON.parse(JSON.stringify(DEFAULT_SERIALMAP)); if(!db.settings.caixaInicial||typeof db.settings.caixaInicial!=='object') db.settings.caixaInicial={};
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
   if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
   // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
@@ -1112,7 +1128,7 @@ const Cloud={
       pending.forEach(x=>this.pushClosing(x));
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
-      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; } ensureStores(); }
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1166,7 +1182,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null};
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null};
     try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -1760,11 +1776,13 @@ function renderCaixa(){
   const sales=salesRevenueOf(key);
   let inn=0,out=0; const byCat={}, cntCat={};
   list.forEach(m=>{ if(!isPaid(m)) return; if(m.type==='in') inn+=m.amount||0; else { out+=m.amount||0; byCat[m.category]=(byCat[m.category]||0)+(m.amount||0); cntCat[m.category]=(cntCat[m.category]||0)+1; } });
+  const ini=caixaInicialOf(key);
+  $('cashIni').textContent=money(ini);
   $('cashSales').textContent=money(sales);
-  $('cashSaldo').textContent=money(sales+inn-out);
+  $('cashSaldo').textContent=money(ini+sales+inn-out);
   $('cashIn').textContent=money(inn);
   $('cashOut').textContent=money(out);
-  $('cashSub').textContent='Vendas + outras entradas − saídas pagas';
+  $('cashSub').textContent = ini>0 ? ('Começou com '+money(ini)+' no dia 01 · soma vendas e tira saídas') : 'Defina o saldo inicial p/ bater com a conta';
 
   // A pagar / A receber (pendentes do mês) — ordenados por vencimento
   const byDue=(a,b)=>(a.due||'9999').localeCompare(b.due||'9999');
@@ -1911,9 +1929,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail'), caixaIniSheet=document.getElementById('caixaIniSheet');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail,caixaIniSheet].forEach(s=>s.classList.remove('on')); }
 function openPassSheet(){ closeSheets(); document.getElementById('passNew').value=''; document.getElementById('passNew2').value=''; document.getElementById('passErr').textContent=''; openSheet(passSheet); }
 document.getElementById('cancelPass').addEventListener('click', closeSheets);
 document.getElementById('savePass').addEventListener('click', async ()=>{
@@ -2463,6 +2481,13 @@ function openCatDetail(cat){
 $('cashCats').addEventListener('click', e=>{ const row=e.target.closest('[data-catrow]'); if(!row) return; openCatDetail(row.getAttribute('data-catrow')); });
 $('catList').addEventListener('change', e=>{ const sel=e.target.closest('[data-catmove]'); if(!sel) return; const m=db.cashflow.find(x=>x.id===sel.getAttribute('data-catmove')); if(!m) return; const nc=sel.value; if(nc===m.category) return; m.category=nc; m.synced=false; Store.save(db); Cloud.pushCash(m); render(); toast('Movido para '+nc); openCatDetail(_catDetailCat); });
 $('catList').addEventListener('click', e=>{ const btn=e.target.closest('[data-cashedit]'); if(!btn) return; const m=db.cashflow.find(x=>x.id===btn.getAttribute('data-cashedit')); if(!m) return; closeSheets(); setTimeout(()=>openCash(m),140); });
+
+/* ---- saldo inicial do caixa (por mês) ---- */
+function caixaInicialOf(key){ const c=db.settings.caixaInicial; return (c&&+c[key])||0; }
+function openCaixaIni(){ $('ciMonth').textContent=monthName(viewMonth); const v=caixaInicialOf(viewMonth); $('ciAmount').value=v>0?String(v.toFixed(2)).replace('.',','):''; closeSheets(); openSheet(caixaIniSheet); }
+$('editCaixaIni').addEventListener('click', openCaixaIni);
+$('cancelCaixaIni').addEventListener('click', closeSheets);
+$('saveCaixaIni').addEventListener('click', ()=>{ const v=parseMoney($('ciAmount').value); if(!db.settings.caixaInicial) db.settings.caixaInicial={}; if(v>0) db.settings.caixaInicial[viewMonth]=v; else delete db.settings.caixaInicial[viewMonth]; Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Saldo inicial salvo'); });
 
 /* ---- Equipe (pagamento de funcionários) ---- */
 function isPayroll(m){ return m.type==='out' && (m.employee||'').trim(); }
