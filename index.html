@@ -450,6 +450,71 @@ main{padding-top:18px}
 .pay-chk{flex:none;width:30px;height:30px;border-radius:999px;border:2px solid var(--line);background:#fff;color:#fff;font-weight:900;font-size:15px;line-height:1;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .pay-chk.on{background:var(--green);border-color:var(--green)}
 .pay-ln .pzero{flex:none;font-size:11.5px;font-weight:700;color:var(--ink-faint)}
+/* ===== Squads / organograma / fluxo ===== */
+.sq-lead{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 14px;line-height:1.4}
+/* organograma (árvore) */
+.org-root{margin-bottom:2px}
+.onode{display:flex;align-items:center;gap:11px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+.onode .oav{width:38px;height:38px;border-radius:999px;flex:none;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff}
+.onode .oinfo{flex:1;min-width:0}
+.onode .onm{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.15}
+.onode .orl{font-size:11.5px;font-weight:650;color:var(--ink-soft);margin-top:1px}
+.onode .ocost{flex:none;font-size:12px;font-weight:800;color:var(--green-700);white-space:nowrap}
+.onode.ceo{border-color:var(--green-tint-2);background:var(--green-tint)}
+.tree{list-style:none;margin:0;padding:0}
+.tree .tli{position:relative;padding-left:24px;margin-top:10px}
+.tree .tli::before{content:'';position:absolute;left:9px;top:-10px;bottom:0;width:2px;background:var(--green-tint-2)}
+.tree .tli:last-child::before{bottom:auto;height:34px}
+.tree .tli::after{content:'';position:absolute;left:9px;top:24px;width:14px;height:2px;background:var(--green-tint-2)}
+.tree .tree{margin-left:2px}
+.tree .tree .tli::after{width:12px}
+.onode.mini{padding:9px 11px}
+.onode.mini .oav{width:30px;height:30px;font-size:12px;border-radius:9px}
+.onode.mini .onm{font-size:13.5px}
+.onode.mini .osub{font-size:11px;font-weight:650;color:var(--ink-soft);margin-top:1px}
+.onode.sq{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.onode.sq:active{transform:scale(.99)}
+/* squad cards */
+.squad{border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-bottom:14px;background:var(--surface,#fff)}
+.squad .sq-head{display:flex;align-items:center;gap:11px;padding:13px 15px;color:#fff}
+.squad .sq-head .si{font-size:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+.squad .sq-head .st{flex:1;min-width:0}
+.squad .sq-head .stt{font-size:16px;font-weight:850;letter-spacing:-.2px;line-height:1.1}
+.squad .sq-head .sts{font-size:11.5px;font-weight:650;opacity:.92;margin-top:2px}
+.squad .sq-head .scost{text-align:right;font-size:15px;font-weight:850;white-space:nowrap}
+.squad .sq-head .scost small{display:block;font-size:10px;font-weight:650;opacity:.9}
+.srole{display:flex;align-items:center;gap:10px;padding:11px 15px;border-top:1px solid var(--line)}
+.srole .srn{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:15px}
+.srole .sri{flex:1;min-width:0}
+.srole .srf{font-size:13px;font-weight:750;color:var(--ink);line-height:1.25}
+.srole .srw{margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.who-chip{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--green-tint);color:var(--green-700)}
+.who-chip.tbd{background:#EFEBE4;color:#8A8577}
+.who-chip.freela{background:#FDF0DC;color:#9A6800}
+.srole .srv{flex:none;text-align:right;font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap}
+.srole .srv small{display:block;font-size:10px;font-weight:650;color:var(--ink-faint)}
+.srole .srv.fre{color:#9A6800}
+.squad .sq-foot{display:flex;gap:8px;padding:10px 15px;border-top:1px dashed var(--line);background:#FBFAF7}
+.squad .sq-foot .sf{flex:1;text-align:center}
+.squad .sq-foot .sf .v{font-size:14px;font-weight:850;color:var(--ink)}
+.squad .sq-foot .sf .l{font-size:10px;font-weight:700;color:var(--ink-faint);margin-top:1px;text-transform:uppercase;letter-spacing:.3px}
+/* fluxo operacional */
+.flow{display:flex;flex-direction:column;gap:0}
+.flow-step{display:flex;gap:11px;align-items:flex-start;background:var(--surface,#fff);border:1px solid var(--line);border-radius:13px;padding:12px 13px}
+.flow-step .fi{width:36px;height:36px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:19px;color:#fff}
+.flow-step .ft{flex:1;min-width:0}
+.flow-step .ftt{font-size:14px;font-weight:800;color:var(--ink)}
+.flow-step .fts{font-size:11.8px;font-weight:600;color:var(--ink-soft);margin-top:2px;line-height:1.35}
+.flow-arrow{display:flex;justify-content:center;color:var(--green);padding:4px 0}
+.flow-arrow svg{width:20px;height:20px}
+/* resumo de custo */
+.sq-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sq-sum .ss{background:var(--surface,#fff);border:1px solid var(--line);border-radius:13px;padding:12px 13px}
+.sq-sum .ss .ssv{font-size:19px;font-weight:850;color:var(--ink);letter-spacing:-.3px}
+.sq-sum .ss .ssl{font-size:11px;font-weight:700;color:var(--ink-soft);margin-top:2px}
+.sq-sum .ss.wide{grid-column:1/3}
+.sq-sum .ss.hi{background:var(--green-tint);border-color:var(--green-tint-2)}
+.sq-sum .ss.hi .ssv{color:var(--green-900)}
 /* import extrato do banco */
 .bankrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bankrow:last-child{border-bottom:0}
@@ -527,19 +592,29 @@ main{padding-top:18px}
 .store-unassigned .uh{display:flex;justify-content:space-between;font-weight:800;font-size:13.5px;color:var(--ink)}
 .store-unassigned .us{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:4px}
 .store-empty{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:16px;color:var(--ink-faint);font-size:13px;text-align:center;font-weight:600}
-/* folha: calendário de pagamento */
-.folha-ev{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 15px;margin-bottom:11px}
-.folha-ev .fh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:9px}
-.folha-ev .ft{font-size:13.5px;font-weight:900;color:var(--ink)}
-.folha-ev .fd{font-size:11px;color:var(--ink-faint);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
-.folha-ev .fv{font-size:14px;font-weight:900;color:var(--green-700)}
-.pay-ln{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid var(--line)}
-.pay-ln .pn{flex:1;min-width:0}.pay-ln .pn b{font-weight:800;font-size:13.5px}.pay-ln .pn small{display:block;font-size:11px;color:var(--ink-faint);font-weight:700}
-.pay-ln .pv{font-weight:800;font-size:13.5px;white-space:nowrap}
-.pay-chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;flex:none;color:transparent}
-.pay-chk.on{background:var(--green);border-color:var(--green);color:#fff}
-.pay-chk svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.emprow .es .tagc{display:inline-block;font-size:10.5px;font-weight:800;color:var(--green-700);background:var(--green-tint);padding:1px 7px;border-radius:999px;margin-left:4px}
+/* ===== Layout web (desktop): sidebar fixa + conteúdo largo ===== */
+@media (min-width:900px){
+  body{padding-left:264px}
+  #menuBtn{display:none}
+  .side-scrim{display:none!important}
+  .sidebar{transform:none!important;box-shadow:none;border-right:1px solid var(--line);width:264px;max-width:264px}
+  .side-close{display:none}
+  .head-inner{max-width:980px}
+  .tabs{max-width:980px}
+  .wrap{max-width:980px}
+  .sheet{left:264px;right:0;max-width:600px}
+  .fab{left:calc(50% + 132px)}
+  .toast{left:calc(50% + 132px)}
+  /* coleções em múltiplas colunas no desktop */
+  #squadCards{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  #squadCards .squad{margin-bottom:0}
+  #folhaCal{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
+  #folhaCal .folha-ev{margin-bottom:0}
+  #orgChart{max-width:640px}
+}
+@media (min-width:1240px){
+  .head-inner,.tabs,.wrap{max-width:1120px}
+}
 </style>
 </head>
 <body>
@@ -573,6 +648,10 @@ main{padding-top:18px}
   <button id="tabVendas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Vendas</button>
   <button id="tabEstoque"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Estoque</button>
   <button id="tabDados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Dados</button>
+</div>
+<div class="tabs" id="pessoalTabs" style="display:none">
+  <button id="tabSquads" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3"/><circle cx="5" cy="17" r="2.5"/><circle cx="19" cy="17" r="2.5"/><path d="M12 10v3M7 15l4-2M17 15l-4-2"/></svg>Squads</button>
+  <button id="tabFolha"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>Folha</button>
 </div>
 
 <main class="wrap">
@@ -776,9 +855,29 @@ main{padding-top:18px}
 
  </div><!-- /viewCaixa -->
 
+ <div id="viewSquads" class="hide">
+
+  <div class="section-title">Organograma</div>
+  <p class="sq-lead">Estrutura da operação — liderança e squads por loja.</p>
+  <div id="orgChart"></div>
+
+  <div class="section-title" style="margin-top:22px">Squads <span class="st-side" id="sqCount"></span></div>
+  <div id="squadCards"></div>
+
+  <div class="section-title" style="margin-top:8px">Fluxo operacional</div>
+  <p class="sq-lead">Do depósito ao cliente — como o trabalho atravessa a operação.</p>
+  <div id="opFlow" class="flow"></div>
+
+  <div class="section-title" style="margin-top:22px">Custo da operação</div>
+  <div id="squadResumo" class="sq-sum"></div>
+
+  <div class="foot"><div>Nomes com <b>A definir</b> são vagas abertas. Freelas contam por diária (sex, sáb, dom e feriados / alta temporada).</div></div>
+
+ </div><!-- /viewSquads -->
+
  <div id="viewEquipe" class="hide">
 
-  <div class="section-title">Administração de pessoal</div>
+  <div class="section-title">Folha de pagamento</div>
   <div class="card meta">
     <div class="meta-lab">Total com a equipe no mês</div>
     <div class="meta-nums"><span class="big" id="folhaTot">R$ 0</span></div>
@@ -1128,7 +1227,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v7.6 · folha de pagamento'
+const APP_VERSION='v7.8 · layout web'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1142,6 +1241,35 @@ const DEFAULT_EMPLOYEES=[
   {id:'e4',name:'Laryssa Cristina',cargo:'Atendente I',contrato:'PJ',escala:'6x1',salario:1700,va:400,vt:250,vtDia:0,producao:140,desconto:0,active:true},
   {id:'e5',name:'Ingrid Kaianny',cargo:'Supervisora Operacional',contrato:'PJ',escala:'6x1',salario:4000,va:0,vt:0,vtDia:0,producao:0,desconto:0,active:true},
   {id:'e6',name:'Paulo Roberto',cargo:'Atendente I',contrato:'CLT',escala:'5x2',salario:1750,va:400,vt:0,vtDia:10.80,producao:0,desconto:0,active:true}
+];
+/* squads — estrutura da operação por loja (visual/organograma) */
+const SQUADS=[
+  {id:'beiramar', name:'Beira Mar', ic:'🌊', c:'#2E8BC0', roles:[
+    {ic:'🍧', fn:'Atendimento · montar os gelatos', who:'Paulinho', cost:2500, tipo:'fixo'},
+    {ic:'💳', fn:'Atendimento · cobrar na maquininha', who:'Laryssa', cost:2500, tipo:'fixo'},
+    {ic:'🔁', fn:'Atendimento · revezar na montagem', who:'Freela', cost:100, tipo:'freela', when:'sex, sáb, dom e feriados'},
+    {ic:'📦', fn:'Operacional · repor/buscar produtos, pegar no pesado', who:'A definir', cost:2000, tipo:'fixo'}
+  ]},
+  {id:'imprensa', name:'Imprensa', ic:'🏢', c:'#F26B3A', roles:[
+    {ic:'🛎️', fn:'Atendimento + operacional (fora da sazonalidade)', who:'Paulo', cost:2500, tipo:'fixo'},
+    {ic:'☀️', fn:'Apoio na alta temporada', who:'A definir', cost:100, tipo:'freela', when:'época sazonal'}
+  ]},
+  {id:'praia', name:'Praia do Futuro', ic:'🏖️', c:'#F59E0B', roles:[
+    {ic:'🍧', fn:'Atendimento · montar os gelatos', who:'A definir', cost:2500, tipo:'fixo'},
+    {ic:'💳', fn:'Atendimento · cobrar na maquininha', who:'A definir', cost:2500, tipo:'fixo'},
+    {ic:'🔁', fn:'Atendimento · revezar na montagem', who:'A definir', cost:100, tipo:'freela', when:'sex, sáb, dom e feriados'},
+    {ic:'📦', fn:'Operacional · repor/buscar produtos, pegar no pesado', who:'A definir', cost:2000, tipo:'fixo'}
+  ]},
+  {id:'deposito', name:'Depósito', ic:'📦', c:'#2A9D6A', roles:[
+    {ic:'🥥', fn:'Cortar os cocos', who:'Wagner', cost:2000, tipo:'fixo'},
+    {ic:'🥥', fn:'Cortar os cocos', who:'Arnaldo', cost:2000, tipo:'fixo'},
+    {ic:'🧼', fn:'Operacional · coco queimado, água de coco, embalar + apoio e limpeza', who:'A definir', cost:2000, tipo:'fixo'}
+  ]}
+];
+const LIDERANCA=[
+  {who:'Kaiane', role:'CEO · Estratégico', cost:null, c:'#F26B3A', ic:'K'},
+  {who:'Barbara', role:'Administrativo (ADM)', cost:null, c:'#8A6FB0', ic:'B'},
+  {who:'Ingrid', role:'Supervisora Operacional', cost:4000, c:'#2A9D6A', ic:'I'}
 ];
 function diasUteis(escala, key){ const [y,m]=key.split('-').map(Number); const dim=new Date(y,m,0).getDate();
   if(escala==='5x2'){ let n=0; for(let d=1;d<=dim;d++){ const wd=new Date(y,m-1,d).getDay(); if(wd>=1&&wd<=5) n++; } return n; }
@@ -2031,6 +2159,7 @@ function render(){
   }
   renderEstoque();
   renderCaixa();
+  renderSquads();
   renderEquipe();
   renderDados();
 }
@@ -2063,24 +2192,28 @@ let currentView='vendas';
 function updateFabLabel(){ document.getElementById('fabLabel').textContent=(currentView==='estoque')?('Registrar '+prodInfo(stockProduct).name.toLowerCase()):(currentView==='caixa'?'Nova movimentação':(currentView==='equipe'?'Novo pagamento':'Fechar o dia')); }
 function switchView(v){
   currentView=v;
-  [['Vendas','vendas'],['Estoque','estoque'],['Caixa','caixa'],['Equipe','equipe'],['Dados','dados']].forEach(([n,k])=>{
+  [['Vendas','vendas'],['Estoque','estoque'],['Caixa','caixa'],['Squads','squads'],['Equipe','equipe'],['Dados','dados']].forEach(([n,k])=>{
     const view=document.getElementById('view'+n); if(view) view.classList.toggle('hide', v!==k);
     const tab=document.getElementById('tab'+n); if(tab) tab.classList.toggle('sel', v===k);
   });
-  const hub = (v==='caixa')?'financeiro':((v==='equipe')?'pessoal':'operacoes');
+  const hub = (v==='caixa')?'financeiro':((v==='equipe'||v==='squads')?'pessoal':'operacoes');
   if(hub==='operacoes') lastOpView=v;
+  if(hub==='pessoal') lastPessoalView=v;
   document.getElementById('opTabs').style.display = (hub==='operacoes')?'flex':'none';
+  document.getElementById('pessoalTabs').style.display = (hub==='pessoal')?'flex':'none';
+  document.getElementById('tabSquads').classList.toggle('sel', v==='squads');
+  document.getElementById('tabFolha').classList.toggle('sel', v==='equipe');
   document.querySelectorAll('#sideNav .side-item').forEach(it=>it.classList.toggle('sel', it.dataset.hub===hub));
-  document.getElementById('fab').style.display = v==='dados'?'none':'flex';
+  document.getElementById('fab').style.display = (v==='dados'||v==='squads')?'none':'flex';
   updateFabLabel();
   window.scrollTo(0,0);
 }
 /* menu lateral (hubs) + sub-abas de Operações */
-const HUB_FIRST={operacoes:'vendas', financeiro:'caixa', pessoal:'equipe'};
-let lastOpView='vendas';
+const HUB_FIRST={operacoes:'vendas', financeiro:'caixa', pessoal:'squads'};
+let lastOpView='vendas', lastPessoalView='squads';
 function openSidebar(){ document.getElementById('sidebar').classList.add('on'); document.getElementById('sideScrim').classList.add('on'); }
 function closeSidebar(){ document.getElementById('sidebar').classList.remove('on'); document.getElementById('sideScrim').classList.remove('on'); }
-function switchHub(h){ switchView(h==='operacoes'? lastOpView : HUB_FIRST[h]); }
+function switchHub(h){ switchView(h==='operacoes'? lastOpView : (h==='pessoal'? lastPessoalView : HUB_FIRST[h])); }
 document.getElementById('menuBtn').addEventListener('click', openSidebar);
 document.getElementById('sideClose').addEventListener('click', closeSidebar);
 document.getElementById('sideScrim').addEventListener('click', closeSidebar);
@@ -2088,6 +2221,8 @@ document.querySelectorAll('#sideNav .side-item').forEach(it=>it.addEventListener
 document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
 document.getElementById('tabEstoque').addEventListener('click',()=>switchView('estoque'));
 document.getElementById('tabDados').addEventListener('click',()=>switchView('dados'));
+document.getElementById('tabSquads').addEventListener('click',()=>switchView('squads'));
+document.getElementById('tabFolha').addEventListener('click',()=>switchView('equipe'));
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
@@ -2616,6 +2751,66 @@ $('saveCaixaIni').addEventListener('click', ()=>{ const v=parseMoney($('ciAmount
 
 /* ---- Equipe (pagamento de funcionários) ---- */
 function isPayroll(m){ return m.type==='out' && (m.employee||'').trim(); }
+function squadTotals(s){
+  let fixo=0, people=0, freelas=0, freelaDia=0;
+  s.roles.forEach(r=>{ if(r.tipo==='freela'){ freelas++; freelaDia+=r.cost; } else { fixo+=r.cost; people++; } });
+  return {fixo, people, freelas, freelaDia};
+}
+function renderSquads(){
+  const oav=(ic,c)=>'<div class="oav" style="background:'+c+'">'+ic+'</div>';
+  // ---- organograma ----
+  const ceo=LIDERANCA[0], others=LIDERANCA.slice(1);
+  let org='<div class="org-root"><div class="onode ceo">'+oav(ceo.ic,ceo.c)+'<div class="oinfo"><div class="onm">'+ceo.who+'</div><div class="orl">'+ceo.role+'</div></div></div></div><ul class="tree">';
+  others.forEach(p=>{
+    org+='<li class="tli"><div class="onode mini">'+oav(p.ic,p.c)+'<div class="oinfo"><div class="onm">'+p.who+'</div><div class="osub">'+p.role+'</div></div>'+(p.cost?'<div class="ocost">'+money(p.cost)+'</div>':'')+'</div>';
+    if(p.who==='Ingrid'){
+      org+='<ul class="tree">'+SQUADS.map(s=>{ const t=squadTotals(s);
+        return '<li class="tli"><div class="onode mini sq" data-sqjump="'+s.id+'"><div class="oav" style="background:'+s.c+'">'+s.ic+'</div><div class="oinfo"><div class="onm">'+s.name+'</div><div class="osub">'+t.people+' pessoa'+(t.people!==1?'s':'')+' · '+money(t.fixo)+(t.freelaDia>0?' + freela':'')+'</div></div></div></li>';
+      }).join('')+'</ul>';
+    }
+    org+='</li>';
+  });
+  org+='</ul>';
+  $('orgChart').innerHTML=org;
+  // ---- squad cards ----
+  $('sqCount').textContent=SQUADS.length+' squads';
+  $('squadCards').innerHTML=SQUADS.map(s=>{
+    const t=squadTotals(s);
+    const roles=s.roles.map(r=>{
+      const tbd=/definir/i.test(r.who), fre=r.tipo==='freela';
+      const whoCls=fre?'freela':(tbd?'tbd':''); const whoTxt=fre?(tbd?'A definir':'Freela'):r.who;
+      const val=fre?('<div class="srv fre">'+money(r.cost)+'<small>/dia</small></div>'):('<div class="srv">'+money(r.cost)+'<small>/mês</small></div>');
+      return '<div class="srole"><div class="srn" style="background:'+s.c+'22">'+r.ic+'</div><div class="sri"><div class="srf">'+r.fn+'</div>'
+        +'<div class="srw"><span class="who-chip '+whoCls+'">'+whoTxt+'</span>'+(r.when?'<span style="font-size:10.5px;color:var(--ink-faint);font-weight:650">'+r.when+'</span>':'')+'</div></div>'+val+'</div>';
+    }).join('');
+    const foot='<div class="sq-foot"><div class="sf"><div class="v">'+t.people+'</div><div class="l">pessoas</div></div>'
+      +'<div class="sf"><div class="v">'+money(t.fixo)+'</div><div class="l">fixo/mês</div></div>'
+      +(t.freelaDia>0?'<div class="sf"><div class="v">'+money(t.freelaDia)+'</div><div class="l">freela/dia</div></div>':'')+'</div>';
+    return '<div class="squad" id="sqcard-'+s.id+'"><div class="sq-head" style="background:'+s.c+'"><span class="si">'+s.ic+'</span><div class="st"><div class="stt">'+s.name+'</div><div class="sts">'+t.people+' pessoa'+(t.people!==1?'s':'')+(t.freelas?' + '+t.freelas+' freela':'')+'</div></div><div class="scost">'+money(t.fixo)+'<small>fixo/mês</small></div></div>'+roles+foot+'</div>';
+  }).join('');
+  // ---- fluxo operacional ----
+  const arrow='<div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20"/><polyline points="6 14 12 20 18 14"/></svg></div>';
+  const steps=[
+    {ic:'📦', c:'#2A9D6A', t:'Depósito', s:'Corta os cocos, faz água de coco e coco queimado, embala e mantém tudo limpo.'},
+    {ic:'🚚', c:'#8A6FB0', t:'Transferência', s:'Insumos saem do depósito para cada loja (Beira Mar, Imprensa, Praia).'},
+    {ic:'🏪', c:'#2E8BC0', t:'Loja · operacional', s:'Repõe e busca produtos, pega no pesado — mantém a loja abastecida.'},
+    {ic:'🍧', c:'#F26B3A', t:'Atendimento', s:'Monta os gelatos e cobra na maquininha. Nos fins de semana, freela reveza na montagem.'},
+    {ic:'😋', c:'#F59E0B', t:'Cliente', s:'Gelato na mão. 🎉'}
+  ];
+  $('opFlow').innerHTML=steps.map((st,i)=>'<div class="flow-step"><div class="fi" style="background:'+st.c+'">'+st.ic+'</div><div class="ft"><div class="ftt">'+st.t+'</div><div class="fts">'+st.s+'</div></div></div>'+(i<steps.length-1?arrow:'')).join('');
+  // ---- resumo ----
+  let fixoTot=0, people=0, freelaCnt=0, freelaDiaTot=0;
+  SQUADS.forEach(s=>{ const t=squadTotals(s); fixoTot+=t.fixo; people+=t.people; freelaCnt+=t.freelas; freelaDiaTot+=t.freelaDia; });
+  const leadTot=LIDERANCA.reduce((a,p)=>a+(p.cost||0),0);
+  $('squadResumo').innerHTML=
+     '<div class="ss"><div class="ssv">'+people+'</div><div class="ssl">pessoas fixas nas squads</div></div>'
+    +'<div class="ss"><div class="ssv">'+freelaCnt+'</div><div class="ssl">posições freela</div></div>'
+    +'<div class="ss hi wide"><div class="ssv">'+money(fixoTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">custo fixo das squads (salários)</div></div>'
+    +'<div class="ss"><div class="ssv">'+money(leadTot)+'</div><div class="ssl">liderança (Ingrid)</div></div>'
+    +'<div class="ss"><div class="ssv">'+money(freelaDiaTot)+'</div><div class="ssl">freelas · por dia (todos)</div></div>'
+    +'<div class="ss wide"><div class="ssv">'+money(fixoTot+leadTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">total fixo mensal (squads + liderança) — sem freelas</div></div>';
+}
+$('orgChart').addEventListener('click', e=>{ const n=e.target.closest('[data-sqjump]'); if(!n) return; const c=$('sqcard-'+n.getAttribute('data-sqjump')); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); });
 function renderEquipe(){
   const key=viewMonth, emps=activeEmployees();
   const EVS=[
