@@ -491,6 +491,12 @@ main{padding-top:18px}
 .who-chip{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--green-tint);color:var(--green-700)}
 .who-chip.tbd{background:#EFEBE4;color:#8A8577}
 .who-chip.freela{background:#FDF0DC;color:#9A6800}
+.who-chip.link{background:#E7F3EC;color:#1E6B34}
+.srole{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.srole:active{background:#FAF8F3}
+.srole .cchev{flex:none;color:var(--ink-faint);width:17px;height:17px;margin-left:2px}
+.sq-add{display:block;width:calc(100% - 30px);margin:10px 15px 4px;border:1.5px dashed var(--line);background:transparent;color:var(--green-700);font-weight:800;font-size:12.5px;padding:10px;border-radius:11px;cursor:pointer;font-family:inherit}
+.sq-add:active{background:var(--green-tint)}
 .srole .srv{flex:none;text-align:right;font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap}
 .srole .srv small{display:block;font-size:10px;font-weight:650;color:var(--ink-faint)}
 .srole .srv.fre{color:#9A6800}
@@ -1192,6 +1198,28 @@ main{padding-top:18px}
   <button type="button" class="btn-ghost" id="cancelEmp" style="margin-top:10px">Cancelar</button>
 </div>
 
+<!-- SHEET: editar vaga da squad -->
+<div class="sheet" id="roleEdit" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2 id="roleEditTitle">Vaga</h2>
+  <p class="h2sub" id="roleEditSub">Função, tipo e quem ocupa. Vaga fixa puxa o custo da folha de pagamento.</p>
+  <div class="field"><label>Função</label><input id="erFn" class="txt-input" type="text" autocomplete="off" placeholder="Ex.: Atendimento · montar os gelatos"></div>
+  <div class="field"><label>Tipo</label><div class="seg2" id="erTipo"></div></div>
+  <div id="erFixo">
+    <div class="field"><label>Pessoa <span class="hintlink" style="color:var(--ink-faint);cursor:default">da folha</span></label>
+      <select id="erEmp" class="date-input" style="width:100%;padding:13px"></select></div>
+    <div class="field" id="erPlanField"><label>Estimativa de custo <span class="hintlink" style="color:var(--ink-faint);cursor:default">enquanto a vaga está aberta</span></label><div class="money"><span class="cur">R$</span><input id="erPlan" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  </div>
+  <div id="erFreela" style="display:none">
+    <div class="field"><label>Valor da diária</label><div class="money"><span class="cur">R$</span><input id="erCost" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+    <div class="field"><label>Quando <span class="hintlink" style="color:var(--ink-faint);cursor:default">opcional</span></label><input id="erWhen" class="txt-input" type="text" autocomplete="off" placeholder="Ex.: sex, sáb, dom e feriados"></div>
+  </div>
+  <div class="recon" id="erPreview" style="margin-top:4px"></div>
+  <button class="btn-primary" id="saveRole">Salvar</button>
+  <button type="button" class="btn-ghost" id="delRole" style="margin-top:10px;color:var(--danger);border-color:#E7C3BE">Remover vaga</button>
+  <button type="button" class="btn-ghost" id="cancelRole" style="margin-top:10px">Cancelar</button>
+</div>
+
 <!-- SHEET: detalhe de um funcionário -->
 <div class="sheet" id="empDetail" role="dialog" aria-modal="true">
   <div class="grip"></div>
@@ -1227,7 +1255,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v7.8 · layout web'
+const APP_VERSION='v7.9 · vagas vinculadas à folha'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1243,29 +1271,35 @@ const DEFAULT_EMPLOYEES=[
   {id:'e6',name:'Paulo Roberto',cargo:'Atendente I',contrato:'CLT',escala:'5x2',salario:1750,va:400,vt:0,vtDia:10.80,producao:0,desconto:0,active:true}
 ];
 /* squads — estrutura da operação por loja (visual/organograma) */
-const SQUADS=[
+/* squads editáveis — vaga fixa aponta p/ um funcionário da folha (empId); custo vem da folha.
+   freela tem diária própria (cost). plan = estimativa p/ vaga fixa ainda em aberto. */
+const DEFAULT_SQUADS=[
   {id:'beiramar', name:'Beira Mar', ic:'🌊', c:'#2E8BC0', roles:[
-    {ic:'🍧', fn:'Atendimento · montar os gelatos', who:'Paulinho', cost:2500, tipo:'fixo'},
-    {ic:'💳', fn:'Atendimento · cobrar na maquininha', who:'Laryssa', cost:2500, tipo:'fixo'},
-    {ic:'🔁', fn:'Atendimento · revezar na montagem', who:'Freela', cost:100, tipo:'freela', when:'sex, sáb, dom e feriados'},
-    {ic:'📦', fn:'Operacional · repor/buscar produtos, pegar no pesado', who:'A definir', cost:2000, tipo:'fixo'}
+    {id:'bm1', ic:'🍧', fn:'Atendimento · montar os gelatos', tipo:'fixo', empId:'e3', plan:2500},
+    {id:'bm2', ic:'💳', fn:'Atendimento · cobrar na maquininha', tipo:'fixo', empId:'e4', plan:2500},
+    {id:'bm3', ic:'🔁', fn:'Atendimento · revezar na montagem', tipo:'freela', empId:null, cost:100, when:'sex, sáb, dom e feriados'},
+    {id:'bm4', ic:'📦', fn:'Operacional · repor/buscar produtos, pegar no pesado', tipo:'fixo', empId:null, plan:2000}
   ]},
   {id:'imprensa', name:'Imprensa', ic:'🏢', c:'#F26B3A', roles:[
-    {ic:'🛎️', fn:'Atendimento + operacional (fora da sazonalidade)', who:'Paulo', cost:2500, tipo:'fixo'},
-    {ic:'☀️', fn:'Apoio na alta temporada', who:'A definir', cost:100, tipo:'freela', when:'época sazonal'}
+    {id:'im1', ic:'🛎️', fn:'Atendimento + operacional (fora da sazonalidade)', tipo:'fixo', empId:'e6', plan:2500},
+    {id:'im2', ic:'☀️', fn:'Apoio na alta temporada', tipo:'freela', empId:null, cost:100, when:'época sazonal'}
   ]},
   {id:'praia', name:'Praia do Futuro', ic:'🏖️', c:'#F59E0B', roles:[
-    {ic:'🍧', fn:'Atendimento · montar os gelatos', who:'A definir', cost:2500, tipo:'fixo'},
-    {ic:'💳', fn:'Atendimento · cobrar na maquininha', who:'A definir', cost:2500, tipo:'fixo'},
-    {ic:'🔁', fn:'Atendimento · revezar na montagem', who:'A definir', cost:100, tipo:'freela', when:'sex, sáb, dom e feriados'},
-    {ic:'📦', fn:'Operacional · repor/buscar produtos, pegar no pesado', who:'A definir', cost:2000, tipo:'fixo'}
+    {id:'pf1', ic:'🍧', fn:'Atendimento · montar os gelatos', tipo:'fixo', empId:null, plan:2500},
+    {id:'pf2', ic:'💳', fn:'Atendimento · cobrar na maquininha', tipo:'fixo', empId:null, plan:2500},
+    {id:'pf3', ic:'🔁', fn:'Atendimento · revezar na montagem', tipo:'freela', empId:null, cost:100, when:'sex, sáb, dom e feriados'},
+    {id:'pf4', ic:'📦', fn:'Operacional · repor/buscar produtos, pegar no pesado', tipo:'fixo', empId:null, plan:2000}
   ]},
   {id:'deposito', name:'Depósito', ic:'📦', c:'#2A9D6A', roles:[
-    {ic:'🥥', fn:'Cortar os cocos', who:'Wagner', cost:2000, tipo:'fixo'},
-    {ic:'🥥', fn:'Cortar os cocos', who:'Arnaldo', cost:2000, tipo:'fixo'},
-    {ic:'🧼', fn:'Operacional · coco queimado, água de coco, embalar + apoio e limpeza', who:'A definir', cost:2000, tipo:'fixo'}
+    {id:'dp1', ic:'🥥', fn:'Cortar os cocos', tipo:'fixo', empId:'e1', plan:2000},
+    {id:'dp2', ic:'🥥', fn:'Cortar os cocos', tipo:'fixo', empId:'e2', plan:2000},
+    {id:'dp3', ic:'🧼', fn:'Operacional · coco queimado, água de coco, embalar + apoio e limpeza', tipo:'fixo', empId:null, plan:2000}
   ]}
 ];
+function squadsData(){ return (db.settings.squads&&db.settings.squads.length)?db.settings.squads:DEFAULT_SQUADS; }
+function empById(id){ return (db.settings.employees||[]).find(e=>e.id===id)||null; }
+function roleCost(r,key){ if(r.tipo==='freela') return 0; const e=r.empId?empById(r.empId):null; return e?empTotal(e,key):(+r.plan||0); }
+function roleWho(r){ if(r.tipo==='freela') return 'Freela'; const e=r.empId?empById(r.empId):null; return e?e.name:'A definir'; }
 const LIDERANCA=[
   {who:'Kaiane', role:'CEO · Estratégico', cost:null, c:'#F26B3A', ic:'K'},
   {who:'Barbara', role:'Administrativo (ADM)', cost:null, c:'#8A6FB0', ic:'B'},
@@ -1292,6 +1326,7 @@ function isEventPago(key, empId, ev){ return !!folhaPagoMap(key)[empId+'|'+ev]; 
 function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap=JSON.parse(JSON.stringify(DEFAULT_SERIALMAP)); if(!db.settings.caixaInicial||typeof db.settings.caixaInicial!=='object') db.settings.caixaInicial={};
   if(!Array.isArray(db.settings.employees)||!db.settings.employees.length) db.settings.employees=JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
   if(!db.settings.folhaPago||typeof db.settings.folhaPago!=='object') db.settings.folhaPago={};
+  if(!Array.isArray(db.settings.squads)||!db.settings.squads.length) db.settings.squads=JSON.parse(JSON.stringify(DEFAULT_SQUADS));
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
   if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
   // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
@@ -1369,7 +1404,7 @@ const Cloud={
       pending.forEach(x=>this.pushClosing(x));
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
-      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; } ensureStores(); }
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1423,7 +1458,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null};
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null};
     try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -2170,9 +2205,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail'), caixaIniSheet=document.getElementById('caixaIniSheet'), empEdit=document.getElementById('empEdit');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail'), caixaIniSheet=document.getElementById('caixaIniSheet'), empEdit=document.getElementById('empEdit'), roleEdit=document.getElementById('roleEdit');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail,caixaIniSheet,empEdit].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail,caixaIniSheet,empEdit,roleEdit].forEach(s=>s.classList.remove('on')); }
 function openPassSheet(){ closeSheets(); document.getElementById('passNew').value=''; document.getElementById('passNew2').value=''; document.getElementById('passErr').textContent=''; openSheet(passSheet); }
 document.getElementById('cancelPass').addEventListener('click', closeSheets);
 document.getElementById('savePass').addEventListener('click', async ()=>{
@@ -2752,11 +2787,12 @@ $('saveCaixaIni').addEventListener('click', ()=>{ const v=parseMoney($('ciAmount
 /* ---- Equipe (pagamento de funcionários) ---- */
 function isPayroll(m){ return m.type==='out' && (m.employee||'').trim(); }
 function squadTotals(s){
-  let fixo=0, people=0, freelas=0, freelaDia=0;
-  s.roles.forEach(r=>{ if(r.tipo==='freela'){ freelas++; freelaDia+=r.cost; } else { fixo+=r.cost; people++; } });
-  return {fixo, people, freelas, freelaDia};
+  const key=viewMonth; let fixo=0, people=0, filled=0, freelas=0, freelaDia=0;
+  s.roles.forEach(r=>{ if(r.tipo==='freela'){ freelas++; freelaDia+=(+r.cost||0); } else { fixo+=roleCost(r,key); people++; if(r.empId&&empById(r.empId)) filled++; } });
+  return {fixo, people, filled, freelas, freelaDia};
 }
 function renderSquads(){
+  const SQ=squadsData();
   const oav=(ic,c)=>'<div class="oav" style="background:'+c+'">'+ic+'</div>';
   // ---- organograma ----
   const ceo=LIDERANCA[0], others=LIDERANCA.slice(1);
@@ -2764,7 +2800,7 @@ function renderSquads(){
   others.forEach(p=>{
     org+='<li class="tli"><div class="onode mini">'+oav(p.ic,p.c)+'<div class="oinfo"><div class="onm">'+p.who+'</div><div class="osub">'+p.role+'</div></div>'+(p.cost?'<div class="ocost">'+money(p.cost)+'</div>':'')+'</div>';
     if(p.who==='Ingrid'){
-      org+='<ul class="tree">'+SQUADS.map(s=>{ const t=squadTotals(s);
+      org+='<ul class="tree">'+SQ.map(s=>{ const t=squadTotals(s);
         return '<li class="tli"><div class="onode mini sq" data-sqjump="'+s.id+'"><div class="oav" style="background:'+s.c+'">'+s.ic+'</div><div class="oinfo"><div class="onm">'+s.name+'</div><div class="osub">'+t.people+' pessoa'+(t.people!==1?'s':'')+' · '+money(t.fixo)+(t.freelaDia>0?' + freela':'')+'</div></div></div></li>';
       }).join('')+'</ul>';
     }
@@ -2773,20 +2809,24 @@ function renderSquads(){
   org+='</ul>';
   $('orgChart').innerHTML=org;
   // ---- squad cards ----
-  $('sqCount').textContent=SQUADS.length+' squads';
-  $('squadCards').innerHTML=SQUADS.map(s=>{
+  $('sqCount').textContent=SQ.length+' squads';
+  $('squadCards').innerHTML=SQ.map(s=>{
     const t=squadTotals(s);
     const roles=s.roles.map(r=>{
-      const tbd=/definir/i.test(r.who), fre=r.tipo==='freela';
-      const whoCls=fre?'freela':(tbd?'tbd':''); const whoTxt=fre?(tbd?'A definir':'Freela'):r.who;
-      const val=fre?('<div class="srv fre">'+money(r.cost)+'<small>/dia</small></div>'):('<div class="srv">'+money(r.cost)+'<small>/mês</small></div>');
-      return '<div class="srole"><div class="srn" style="background:'+s.c+'22">'+r.ic+'</div><div class="sri"><div class="srf">'+r.fn+'</div>'
-        +'<div class="srw"><span class="who-chip '+whoCls+'">'+whoTxt+'</span>'+(r.when?'<span style="font-size:10.5px;color:var(--ink-faint);font-weight:650">'+r.when+'</span>':'')+'</div></div>'+val+'</div>';
+      const fre=r.tipo==='freela', who=roleWho(r), tbd=who==='A definir';
+      const linked=!fre&&r.empId&&empById(r.empId);
+      const whoCls=fre?'freela':(tbd?'tbd':'');
+      const val=fre?('<div class="srv fre">'+money(+r.cost||0)+'<small>/dia</small></div>')
+                   :('<div class="srv">'+money(roleCost(r,viewMonth))+'<small>'+(linked?'folha':'estimativa')+'</small></div>');
+      return '<div class="srole" data-role="'+s.id+':'+r.id+'"><div class="srn" style="background:'+s.c+'22">'+r.ic+'</div><div class="sri"><div class="srf">'+r.fn+'</div>'
+        +'<div class="srw"><span class="who-chip '+whoCls+'">'+who+'</span>'+(linked?'<span class="who-chip link">↳ folha</span>':'')+(r.when?'<span style="font-size:10.5px;color:var(--ink-faint);font-weight:650">'+r.when+'</span>':'')+'</div></div>'+val
+        +'<svg class="cchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>';
     }).join('');
-    const foot='<div class="sq-foot"><div class="sf"><div class="v">'+t.people+'</div><div class="l">pessoas</div></div>'
+    const foot='<div class="sq-foot"><div class="sf"><div class="v">'+t.filled+'/'+t.people+'</div><div class="l">vagas fixas</div></div>'
       +'<div class="sf"><div class="v">'+money(t.fixo)+'</div><div class="l">fixo/mês</div></div>'
       +(t.freelaDia>0?'<div class="sf"><div class="v">'+money(t.freelaDia)+'</div><div class="l">freela/dia</div></div>':'')+'</div>';
-    return '<div class="squad" id="sqcard-'+s.id+'"><div class="sq-head" style="background:'+s.c+'"><span class="si">'+s.ic+'</span><div class="st"><div class="stt">'+s.name+'</div><div class="sts">'+t.people+' pessoa'+(t.people!==1?'s':'')+(t.freelas?' + '+t.freelas+' freela':'')+'</div></div><div class="scost">'+money(t.fixo)+'<small>fixo/mês</small></div></div>'+roles+foot+'</div>';
+    const add='<button type="button" class="sq-add" data-sqadd="'+s.id+'">+ Adicionar vaga</button>';
+    return '<div class="squad" id="sqcard-'+s.id+'"><div class="sq-head" style="background:'+s.c+'"><span class="si">'+s.ic+'</span><div class="st"><div class="stt">'+s.name+'</div><div class="sts">'+t.people+' vaga'+(t.people!==1?'s':'')+' fixa'+(t.people!==1?'s':'')+(t.freelas?' + '+t.freelas+' freela':'')+'</div></div><div class="scost">'+money(t.fixo)+'<small>fixo/mês</small></div></div>'+roles+add+foot+'</div>';
   }).join('');
   // ---- fluxo operacional ----
   const arrow='<div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20"/><polyline points="6 14 12 20 18 14"/></svg></div>';
@@ -2799,11 +2839,11 @@ function renderSquads(){
   ];
   $('opFlow').innerHTML=steps.map((st,i)=>'<div class="flow-step"><div class="fi" style="background:'+st.c+'">'+st.ic+'</div><div class="ft"><div class="ftt">'+st.t+'</div><div class="fts">'+st.s+'</div></div></div>'+(i<steps.length-1?arrow:'')).join('');
   // ---- resumo ----
-  let fixoTot=0, people=0, freelaCnt=0, freelaDiaTot=0;
-  SQUADS.forEach(s=>{ const t=squadTotals(s); fixoTot+=t.fixo; people+=t.people; freelaCnt+=t.freelas; freelaDiaTot+=t.freelaDia; });
+  let fixoTot=0, people=0, filledTot=0, freelaCnt=0, freelaDiaTot=0;
+  SQ.forEach(s=>{ const t=squadTotals(s); fixoTot+=t.fixo; people+=t.people; filledTot+=t.filled; freelaCnt+=t.freelas; freelaDiaTot+=t.freelaDia; });
   const leadTot=LIDERANCA.reduce((a,p)=>a+(p.cost||0),0);
   $('squadResumo').innerHTML=
-     '<div class="ss"><div class="ssv">'+people+'</div><div class="ssl">pessoas fixas nas squads</div></div>'
+     '<div class="ss"><div class="ssv">'+filledTot+'/'+people+'</div><div class="ssl">vagas fixas preenchidas</div></div>'
     +'<div class="ss"><div class="ssv">'+freelaCnt+'</div><div class="ssl">posições freela</div></div>'
     +'<div class="ss hi wide"><div class="ssv">'+money(fixoTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">custo fixo das squads (salários)</div></div>'
     +'<div class="ss"><div class="ssv">'+money(leadTot)+'</div><div class="ssl">liderança (Ingrid)</div></div>'
@@ -2811,6 +2851,63 @@ function renderSquads(){
     +'<div class="ss wide"><div class="ssv">'+money(fixoTot+leadTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">total fixo mensal (squads + liderança) — sem freelas</div></div>';
 }
 $('orgChart').addEventListener('click', e=>{ const n=e.target.closest('[data-sqjump]'); if(!n) return; const c=$('sqcard-'+n.getAttribute('data-sqjump')); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); });
+
+/* ---- editar vaga da squad (vincula à folha) ---- */
+let roleDraft=null, roleSquadId=null, roleIsNew=false;
+function openRoleEdit(squadId, roleId){
+  const SQ=db.settings.squads||DEFAULT_SQUADS; const s=SQ.find(x=>x.id===squadId); if(!s) return;
+  roleSquadId=squadId;
+  let r = roleId ? s.roles.find(x=>x.id===roleId) : null;
+  roleIsNew=!r;
+  roleDraft = r ? {...r} : {id:'r'+Date.now()+Math.floor(Math.random()*1000), ic:'🧍', fn:'', tipo:'fixo', empId:null, plan:0, cost:0, when:''};
+  $('roleEditTitle').textContent=(roleId?'Editar vaga':'Nova vaga')+' · '+s.name;
+  $('erFn').value=roleDraft.fn||'';
+  renderSeg('erTipo',['Fixo','Freela'], roleDraft.tipo==='freela'?'Freela':'Fixo');
+  // selector de pessoas (folha)
+  const emps=activeEmployees();
+  $('erEmp').innerHTML='<option value="">A definir</option>'+emps.map(e=>'<option value="'+e.id+'"'+(e.id===roleDraft.empId?' selected':'')+'>'+e.name+' · '+e.cargo+'</option>').join('');
+  $('erPlan').value=(+roleDraft.plan>0)?String((+roleDraft.plan).toFixed(2)).replace('.',','):'';
+  $('erCost').value=(+roleDraft.cost>0)?String((+roleDraft.cost).toFixed(2)).replace('.',','):'';
+  $('erWhen').value=roleDraft.when||'';
+  $('delRole').style.display = roleIsNew ? 'none' : 'block';
+  renderRolePreview(); openSheet(roleEdit);
+}
+function renderRolePreview(){ if(!roleDraft) return;
+  const fre=roleDraft.tipo==='freela';
+  $('erFixo').style.display=fre?'none':'block';
+  $('erFreela').style.display=fre?'block':'none';
+  const emp=$('erEmp').value?empById($('erEmp').value):null;
+  $('erPlanField').style.display=(!fre&&!emp)?'block':'none';
+  let html='';
+  if(fre){ const c=parseMoney($('erCost').value); html='<div class="recon-row"><span>Diária</span><b>'+money(c)+'</b></div><div class="recon-row big"><span class="lbl">Por dia trabalhado</span><span class="dinheiro">'+money(c)+'</span></div>'; }
+  else if(emp){ const tot=empTotal(emp,viewMonth);
+    html='<div class="recon-row"><span>Vinculado à folha</span><b>'+emp.name+'</b></div><div class="recon-row big"><span class="lbl">Custo no mês (da folha)</span><span class="dinheiro">'+money(tot)+'</span></div>';
+  } else { const p=parseMoney($('erPlan').value); html='<div class="recon-row"><span>Vaga em aberto · estimativa</span><b>'+money(p)+'</b></div><div class="recon-row big"><span class="lbl">Custo previsto/mês</span><span class="dinheiro">'+money(p)+'</span></div>'; }
+  $('erPreview').innerHTML=html;
+}
+$('erTipo').addEventListener('click', e=>{ const o=e.target.closest('[data-seg]'); if(!o||!roleDraft) return; roleDraft.tipo=(o.getAttribute('data-seg')==='Freela')?'freela':'fixo'; renderSeg('erTipo',['Fixo','Freela'], roleDraft.tipo==='freela'?'Freela':'Fixo'); renderRolePreview(); });
+$('erEmp').addEventListener('change', renderRolePreview);
+['erPlan','erCost'].forEach(f=>$(f).addEventListener('input', renderRolePreview));
+$('saveRole').addEventListener('click', ()=>{ if(!roleDraft) return;
+  const SQ=db.settings.squads||(db.settings.squads=JSON.parse(JSON.stringify(DEFAULT_SQUADS)));
+  const s=SQ.find(x=>x.id===roleSquadId); if(!s) return;
+  roleDraft.fn=$('erFn').value.trim()||'Vaga';
+  if(roleDraft.tipo==='freela'){ roleDraft.cost=parseMoney($('erCost').value); roleDraft.empId=null; roleDraft.when=$('erWhen').value.trim(); }
+  else { roleDraft.empId=$('erEmp').value||null; roleDraft.plan=parseMoney($('erPlan').value); roleDraft.when=''; }
+  const ix=s.roles.findIndex(x=>x.id===roleDraft.id);
+  if(ix>=0) s.roles[ix]=roleDraft; else s.roles.push(roleDraft);
+  Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast(roleIsNew?'Vaga adicionada':'Vaga atualizada');
+});
+$('delRole').addEventListener('click', ()=>{ if(!roleDraft||roleIsNew) return;
+  const s=(db.settings.squads||[]).find(x=>x.id===roleSquadId); if(!s) return;
+  s.roles=s.roles.filter(x=>x.id!==roleDraft.id);
+  Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Vaga removida');
+});
+$('cancelRole').addEventListener('click', closeSheets);
+$('squadCards').addEventListener('click', e=>{
+  const add=e.target.closest('[data-sqadd]'); if(add){ openRoleEdit(add.getAttribute('data-sqadd'), null); return; }
+  const row=e.target.closest('[data-role]'); if(!row) return; const [sid,rid]=row.getAttribute('data-role').split(':'); openRoleEdit(sid,rid);
+});
 function renderEquipe(){
   const key=viewMonth, emps=activeEmployees();
   const EVS=[
