@@ -530,16 +530,18 @@ main{padding-top:18px}
 <aside class="sidebar" id="sidebar">
   <div class="side-head"><img class="side-logo" src="logo-coquin-coral.png" alt="Coquin"><button class="side-close" id="sideClose" aria-label="Fechar">✕</button></div>
   <nav class="side-nav" id="sideNav">
-    <div class="side-group">Operações</div>
-    <button class="side-item sel" data-view="vendas"><span class="si-ic">🧾</span>Vendas</button>
-    <button class="side-item" data-view="estoque"><span class="si-ic">📦</span>Estoque</button>
-    <button class="side-item" data-view="dados"><span class="si-ic">📊</span>Dados</button>
-    <div class="side-group">Financeiro</div>
-    <button class="side-item" data-view="caixa"><span class="si-ic">💰</span>Despesas</button>
-    <div class="side-group">Administração de pessoal</div>
-    <button class="side-item" data-view="equipe"><span class="si-ic">👥</span>Salários</button>
+    <div class="side-group">Seções</div>
+    <button class="side-item sel" data-hub="operacoes"><span class="si-ic">⚙️</span>Operações</button>
+    <button class="side-item" data-hub="financeiro"><span class="si-ic">💰</span>Financeiro</button>
+    <button class="side-item" data-hub="pessoal"><span class="si-ic">👥</span>Administração de pessoal</button>
   </nav>
 </aside>
+
+<div class="tabs" id="opTabs">
+  <button id="tabVendas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Vendas</button>
+  <button id="tabEstoque"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Estoque</button>
+  <button id="tabDados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Dados</button>
+</div>
 
 <main class="wrap">
 
@@ -1069,7 +1071,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v7.3 · menu lateral'
+const APP_VERSION='v7.4 · hubs na lateral'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1979,18 +1981,27 @@ function switchView(v){
     const view=document.getElementById('view'+n); if(view) view.classList.toggle('hide', v!==k);
     const tab=document.getElementById('tab'+n); if(tab) tab.classList.toggle('sel', v===k);
   });
-  document.querySelectorAll('#sideNav .side-item').forEach(it=>it.classList.toggle('sel', it.dataset.view===v));
+  const hub = (v==='caixa')?'financeiro':((v==='equipe')?'pessoal':'operacoes');
+  if(hub==='operacoes') lastOpView=v;
+  document.getElementById('opTabs').style.display = (hub==='operacoes')?'flex':'none';
+  document.querySelectorAll('#sideNav .side-item').forEach(it=>it.classList.toggle('sel', it.dataset.hub===hub));
   document.getElementById('fab').style.display = v==='dados'?'none':'flex';
   updateFabLabel();
   window.scrollTo(0,0);
 }
-/* menu lateral (sidebar) */
+/* menu lateral (hubs) + sub-abas de Operações */
+const HUB_FIRST={operacoes:'vendas', financeiro:'caixa', pessoal:'equipe'};
+let lastOpView='vendas';
 function openSidebar(){ document.getElementById('sidebar').classList.add('on'); document.getElementById('sideScrim').classList.add('on'); }
 function closeSidebar(){ document.getElementById('sidebar').classList.remove('on'); document.getElementById('sideScrim').classList.remove('on'); }
+function switchHub(h){ switchView(h==='operacoes'? lastOpView : HUB_FIRST[h]); }
 document.getElementById('menuBtn').addEventListener('click', openSidebar);
 document.getElementById('sideClose').addEventListener('click', closeSidebar);
 document.getElementById('sideScrim').addEventListener('click', closeSidebar);
-document.querySelectorAll('#sideNav .side-item').forEach(it=>it.addEventListener('click',()=>{ switchView(it.dataset.view); closeSidebar(); }));
+document.querySelectorAll('#sideNav .side-item').forEach(it=>it.addEventListener('click',()=>{ switchHub(it.dataset.hub); closeSidebar(); }));
+document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
+document.getElementById('tabEstoque').addEventListener('click',()=>switchView('estoque'));
+document.getElementById('tabDados').addEventListener('click',()=>switchView('dados'));
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
