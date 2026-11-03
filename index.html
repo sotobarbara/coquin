@@ -947,8 +947,9 @@ main{padding-top:18px}
   <div class="grip"></div>
   <h2 id="catTitle">Categoria</h2>
   <p class="h2sub" id="catSub"></p>
+  <div id="catBulk" style="margin:0 0 10px"></div>
   <div class="card sales" id="catList" style="margin-bottom:6px"></div>
-  <p class="det-emp">Toque num lançamento para editar ou excluir.</p>
+  <p class="det-emp">Troque a categoria de cada um no seletor, ou mova todos de uma vez acima. Toque no lápis para editar/excluir.</p>
 </div>
 
 <!-- SHEET: metas por dia da semana -->
@@ -1027,7 +1028,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.8 · aba Despesas';
+const APP_VERSION='v6.9 · recategorizar fácil';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1066,7 +1067,7 @@ function stockProductOrder(){ return ['deposito', ...lojaProducts(), 'sorvete'];
 function storeGelatosOn(date, storeId){ const c=db.closings.find(x=>x.date===date); if(!c||!c.bySerial||typeof c.bySerial!=='object') return 0; let g=0; Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,date)===storeId){ const s=c.bySerial[ser]||{}; g+=(s.g30||0)+(s.g35||0); } }); return Math.round(g); }
 function prodYield(p){ return prodInfo(p).yield; }
 /* categorias do caixa (despesas e outras entradas) */
-const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Insumos','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
+const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Insumos','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Pessoal','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
 const PAYROLL_CATS=['Salário','Adiantamento','Benefício','Vale','Comissão'];   // categorias que vão pra Equipe
 const PAY_TYPES=['Salário','Adiantamento','Benefício','Vale','Comissão','Outros'];   // tipos de pagamento à equipe (viram a categoria)
 
@@ -2438,21 +2439,30 @@ document.getElementById('viewCaixa').addEventListener('click', e=>{
 });
 
 /* detalhe por categoria: cada lançamento separado (ex.: Salário Paulo, Salário Ionnara) */
+let _catDetailCat='';
+function catOptions(sel){ return CASH_CATS.out.map(c=>'<option value="'+c+'"'+(c===sel?' selected':'')+'>'+c+'</option>').join(''); }
 function openCatDetail(cat){
+  _catDetailCat=cat;
   const items=cashOf(viewMonth).filter(m=>m.type==='out'&&m.category===cat)
     .sort((a,b)=> b.date.localeCompare(a.date)||(b.createdAt||'').localeCompare(a.createdAt||''));
   const total=items.reduce((s,m)=>s+(m.amount||0),0);
   $('catTitle').textContent=cat;
   $('catSub').innerHTML=items.length+' lançamento'+(items.length>1?'s':'')+' · total <b>'+money(total)+'</b>';
+  $('catBulk').innerHTML = items.length>1 ? ('<div style="display:flex;align-items:center;gap:8px;background:var(--green-tint);border:1px solid var(--green-tint-2);border-radius:var(--r-sm);padding:10px 12px">'
+    +'<span style="font-size:12.5px;font-weight:800;color:var(--green-700);white-space:nowrap">Mover todos p/</span>'
+    +'<select id="catBulkSel" class="date-input" style="flex:1;padding:9px"><option value="">escolher…</option>'+catOptions('')+'</select></div>') : '';
   $('catList').innerHTML=items.map(m=>{ const [Y,M,D]=m.date.split('-');
-    return '<div class="sale" data-cash="'+m.id+'"><div class="m" style="background:var(--danger);color:#fff"><b>↓</b></div>'
-      +'<div class="info"><div class="r1 cf-amt out">−'+money(m.amount||0)+'</div><div class="r2">'+(m.note?m.note+' · ':'')+D+'/'+M+'</div></div>'
+    return '<div class="sale"><div class="m" style="background:var(--danger);color:#fff"><b>↓</b></div>'
+      +'<div class="info"><div class="r1 cf-amt out">−'+money(m.amount||0)+'</div><div class="r2">'+(m.note?m.note+' · ':'')+D+'/'+M+'</div>'
+      +'<select class="catmove date-input" data-catmove="'+m.id+'" style="margin-top:6px;padding:8px;font-size:12.5px">'+catOptions(m.category)+'</select></div>'
       +'<button class="del" data-cashedit="'+m.id+'" aria-label="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></div>';
   }).join('');
+  const bs=$('catBulkSel'); if(bs) bs.addEventListener('change',()=>{ const nc=bs.value; if(!nc||nc===cat) return; items.forEach(m=>{ const e=db.cashflow.find(x=>x.id===m.id); if(e){ e.category=nc; e.synced=false; Cloud.pushCash(e); } }); Store.save(db); render(); closeSheets(); toast(items.length+' movido(s) para '+nc); });
   openSheet(catDetail);
 }
 $('cashCats').addEventListener('click', e=>{ const row=e.target.closest('[data-catrow]'); if(!row) return; openCatDetail(row.getAttribute('data-catrow')); });
-$('catList').addEventListener('click', e=>{ const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(!m) return; closeSheets(); setTimeout(()=>openCash(m),140); });
+$('catList').addEventListener('change', e=>{ const sel=e.target.closest('[data-catmove]'); if(!sel) return; const m=db.cashflow.find(x=>x.id===sel.getAttribute('data-catmove')); if(!m) return; const nc=sel.value; if(nc===m.category) return; m.category=nc; m.synced=false; Store.save(db); Cloud.pushCash(m); render(); toast('Movido para '+nc); openCatDetail(_catDetailCat); });
+$('catList').addEventListener('click', e=>{ const btn=e.target.closest('[data-cashedit]'); if(!btn) return; const m=db.cashflow.find(x=>x.id===btn.getAttribute('data-cashedit')); if(!m) return; closeSheets(); setTimeout(()=>openCash(m),140); });
 
 /* ---- Equipe (pagamento de funcionários) ---- */
 function isPayroll(m){ return m.type==='out' && (m.employee||'').trim(); }
