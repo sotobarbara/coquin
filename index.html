@@ -475,11 +475,11 @@ main{padding-top:18px}
 .vg-row .vgc{color:var(--ink-faint);width:16px;height:16px;flex:none}
 .vg-empty{background:linear-gradient(135deg,#ECF7EF,#DFF1E5);border:1px solid #CBE7D4;border-radius:14px;padding:16px;text-align:center;font-weight:750;color:#1E6B34;font-size:13px;margin-top:10px}
 /* organograma top-down (árvore com conectores) */
-.otree-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 6px}
+.otree-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 6px;text-align:center}
 .otree{display:inline-block;min-width:100%;box-sizing:border-box}
-.otree ul{display:flex;justify-content:center;padding-top:18px;position:relative;margin:0;list-style:none}
+.otree ul{display:flex;justify-content:center;padding-top:16px;position:relative;margin:0;list-style:none}
 .otree>ul{padding-top:0}
-.otree li{list-style:none;position:relative;padding:18px 9px 0;display:flex;flex-direction:column;align-items:center}
+.otree li{list-style:none;position:relative;padding:15px 3px 0;display:flex;flex-direction:column;align-items:center}
 .otree li::before,.otree li::after{content:'';position:absolute;top:0;right:50%;border-top:2px solid var(--green-tint-2);width:50%;height:18px}
 .otree li::after{right:auto;left:50%;border-left:2px solid var(--green-tint-2)}
 .otree li:only-child::before,.otree li:only-child::after{display:none}
@@ -489,12 +489,19 @@ main{padding-top:18px}
 .otree li:last-child::before{border-right:2px solid var(--green-tint-2);border-radius:0 7px 0 0}
 .otree li:first-child::after{border-radius:7px 0 0 0}
 .otree ul ul::before{content:'';position:absolute;top:0;left:50%;border-left:2px solid var(--green-tint-2);width:0;height:18px}
-.otn{display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 13px 9px 9px;box-shadow:var(--shadow);white-space:nowrap}
-.otn .oav{width:34px;height:34px;border-radius:999px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff}
-.otn .otx{text-align:left;line-height:1.15}
-.otn .onm{font-weight:800;font-size:13px;color:var(--ink)}
-.otn .osub{font-size:10.5px;font-weight:650;color:var(--ink-soft);margin-top:1px}
-.otn .ocst{font-size:11px;font-weight:800;color:var(--green-700);margin-left:4px}
+.otn{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:7px 10px 7px 7px;box-shadow:var(--shadow);white-space:nowrap}
+.otn .oav{width:30px;height:30px;border-radius:999px;flex:none;display:grid;place-items:center;font-weight:800;font-size:12px;color:#fff}
+.otn .otx{text-align:left;line-height:1.12}
+.otn .onm{font-weight:800;font-size:12.5px;color:var(--ink)}
+.otn .osub{font-size:10px;font-weight:650;color:var(--ink-soft);margin-top:1px}
+.otn .ocst{font-size:10.5px;font-weight:800;color:var(--green-700);margin-left:3px}
+.sqgli{padding-top:16px}
+.sqgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sqg{display:flex;flex-direction:column;align-items:center;gap:4px;width:75px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:9px 5px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sqg:active{transform:scale(.98)}
+.sqg .oav{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;font-size:15px;color:#fff}
+.sqg-nm{font-size:10.5px;font-weight:800;color:var(--ink);text-align:center;line-height:1.12}
+.sqg-sub{font-size:9px;font-weight:700;color:var(--ink-soft)}
 .otn.ceo{background:var(--grad);border:0;box-shadow:0 8px 20px rgba(242,107,58,.28)}
 .otn.ceo .onm{color:#fff}.otn.ceo .osub{color:rgba(255,255,255,.92)}
 .otn.ceo .oav{background:rgba(255,255,255,.22)}
@@ -1307,7 +1314,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.0 · organograma + visão geral'
+const APP_VERSION='v8.1 · organograma compacto'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -2848,10 +2855,10 @@ function renderSquads(){
   // ---- organograma (top-down) ----
   const otn=(cls,avc,av,nm,sub,cost,jump)=>'<div class="otn '+cls+'"'+(jump?' data-sqjump="'+jump+'"':'')+'><div class="oav" style="background:'+avc+'">'+av+'</div><div class="otx"><div class="onm">'+nm+'</div>'+(sub?'<div class="osub">'+sub+'</div>':'')+'</div>'+(cost?'<div class="ocst">'+cost+'</div>':'')+'</div>';
   const K=LIDERANCA[0], B=LIDERANCA[1], I=LIDERANCA[2];
-  const leaves=SQ.map(s=>{ const t=squadTotals(s); return '<li>'+otn('leaf',s.c,s.ic,s.name,t.filled+'/'+t.people+' vagas'+(t.freelas?' +freela':''),'',s.id)+'</li>'; }).join('');
-  $('orgChart').innerHTML='<div class="otree"><ul><li>'+otn('ceo',K.c,K.ic,K.who,K.role)
-    +'<ul><li>'+otn('',B.c,B.ic,B.who,B.role)+'</li>'
-    +'<li>'+otn('sup',I.c,I.ic,I.who,I.role,money(I.cost))+'<ul>'+leaves+'</ul></li></ul></li></ul></div>';
+  const grid='<div class="sqgrid">'+SQ.map(s=>{ const t=squadTotals(s); return '<div class="sqg" data-sqjump="'+s.id+'"><div class="oav" style="background:'+s.c+'">'+s.ic+'</div><div class="sqg-nm">'+s.name+'</div><div class="sqg-sub">'+t.filled+'/'+t.people+' vagas</div></div>'; }).join('')+'</div>';
+  $('orgChart').innerHTML='<div class="otree"><ul><li>'+otn('ceo',K.c,K.ic,K.who,'CEO · Estratégico')
+    +'<ul><li>'+otn('',B.c,B.ic,B.who,'ADM')+'</li>'
+    +'<li>'+otn('sup',I.c,I.ic,I.who,'Supervisora','')+'<ul><li class="sqgli">'+grid+'</li></ul></li></ul></li></ul></div>';
   // ---- visão geral (KPIs) ----
   const emps=activeEmployees();
   const leadExtra=LIDERANCA.filter(p=>!emps.some(e=>(e.name||'').toLowerCase().includes((p.who||'').toLowerCase()))).length;
