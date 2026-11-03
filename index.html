@@ -399,6 +399,8 @@ main{padding-top:18px}
 .cash-cats .cat.sel{border-color:var(--green);background:var(--green-tint);color:var(--green-700)}
 /* toggle entrada/saída */
 .seg2{display:flex;gap:10px}
+.seg2 .seg-opt{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 8px;font-weight:800;font-size:14px;color:var(--ink-soft);cursor:pointer;text-align:center}
+.seg2 .seg-opt.on{border-color:var(--green);background:var(--green-tint);color:var(--green-700)}
 .seg2 button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px 8px 12px;cursor:pointer;font-family:inherit;color:var(--ink-soft);-webkit-tap-highlight-color:transparent;transition:border-color .12s,background .12s,color .12s}
 .seg2 button .ic{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-size:20px;font-weight:900;line-height:1;background:#D9D5CC;color:#fff}
 .seg2 button .tl{font-size:15.5px;font-weight:800;letter-spacing:-.2px}
@@ -432,6 +434,22 @@ main{padding-top:18px}
 .emprow .es{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
 .emprow .es b{color:var(--ink);font-weight:800}
 .emprow .cchev{flex:none;color:var(--ink-faint);width:18px;height:18px}
+.emprow .es .tagc{display:inline-block;background:var(--green-tint);color:var(--green-700);font-weight:800;font-size:10.5px;padding:1px 6px;border-radius:6px;vertical-align:middle}
+/* folha — calendário de pagamento */
+.folha-ev{background:var(--surface,#fff);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:12px;overflow:hidden}
+.folha-ev .fe-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:12px 16px 2px}
+.folha-ev .fe-when{font-size:14px;font-weight:850;color:var(--ink)}
+.folha-ev .fe-tot{font-size:12.5px;font-weight:800;color:var(--green-700);white-space:nowrap}
+.folha-ev .fe-sub{font-size:11.5px;font-weight:600;color:var(--ink-faint);padding:0 16px 8px}
+.pay-ln{display:flex;align-items:center;gap:11px;padding:11px 16px;border-top:1px solid var(--line)}
+.pay-ln .pn{flex:1;min-width:0}
+.pay-ln .pn .nm{font-size:14px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay-ln .pn .vl{font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:1px}
+.pay-ln.done .pn .nm{color:var(--ink-soft)}
+.pay-ln.done .pn .vl{color:var(--green-700)}
+.pay-chk{flex:none;width:30px;height:30px;border-radius:999px;border:2px solid var(--line);background:#fff;color:#fff;font-weight:900;font-size:15px;line-height:1;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pay-chk.on{background:var(--green);border-color:var(--green)}
+.pay-ln .pzero{flex:none;font-size:11.5px;font-weight:700;color:var(--ink-faint)}
 /* import extrato do banco */
 .bankrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bankrow:last-child{border-bottom:0}
@@ -509,6 +527,19 @@ main{padding-top:18px}
 .store-unassigned .uh{display:flex;justify-content:space-between;font-weight:800;font-size:13.5px;color:var(--ink)}
 .store-unassigned .us{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:4px}
 .store-empty{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:16px;color:var(--ink-faint);font-size:13px;text-align:center;font-weight:600}
+/* folha: calendário de pagamento */
+.folha-ev{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 15px;margin-bottom:11px}
+.folha-ev .fh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:9px}
+.folha-ev .ft{font-size:13.5px;font-weight:900;color:var(--ink)}
+.folha-ev .fd{font-size:11px;color:var(--ink-faint);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.folha-ev .fv{font-size:14px;font-weight:900;color:var(--green-700)}
+.pay-ln{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid var(--line)}
+.pay-ln .pn{flex:1;min-width:0}.pay-ln .pn b{font-weight:800;font-size:13.5px}.pay-ln .pn small{display:block;font-size:11px;color:var(--ink-faint);font-weight:700}
+.pay-ln .pv{font-weight:800;font-size:13.5px;white-space:nowrap}
+.pay-chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;flex:none;color:transparent}
+.pay-chk.on{background:var(--green);border-color:var(--green);color:#fff}
+.pay-chk svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.emprow .es .tagc{display:inline-block;font-size:10.5px;font-weight:800;color:var(--green-700);background:var(--green-tint);padding:1px 7px;border-radius:999px;margin-left:4px}
 </style>
 </head>
 <body>
@@ -760,10 +791,14 @@ main{padding-top:18px}
 
   <div id="folhaAlert"></div>
 
-  <div class="section-title">Funcionários <span class="st-side" id="empCount"></span></div>
-  <div class="card sales" id="empList"></div>
+  <div class="section-title">Calendário de pagamento <span class="st-side">marque o que já foi pago</span></div>
+  <div id="folhaCal"></div>
 
-  <div class="foot"><div>Cada pagamento também entra no Caixa e no lucro (Dados)</div></div>
+  <div class="section-title">Cargos e salários <span class="st-side" id="empCount"></span></div>
+  <div class="card sales" id="empList"></div>
+  <button type="button" class="import-btn" id="addEmpBtn" style="margin-top:10px">+ Cadastrar funcionário</button>
+
+  <div class="foot"><div>Marcar pago lança a saída no Caixa e no lucro (Dados). VT calculado pelos dias úteis.</div></div>
 
  </div><!-- /viewEquipe -->
 
@@ -1037,6 +1072,27 @@ main{padding-top:18px}
   <button class="btn-ghost" id="bankToggleAll" style="margin-top:8px">Marcar / desmarcar todas</button>
 </div>
 
+<!-- SHEET: cadastro de funcionário -->
+<div class="sheet" id="empEdit" role="dialog" aria-modal="true">
+  <div class="grip"></div>
+  <h2 id="empEditTitle">Funcionário</h2>
+  <p class="h2sub">Cargo, contrato e composição do salário. O VT é calculado pelos dias úteis do mês.</p>
+  <div class="field"><label>Nome</label><input id="eeName" class="txt-input" type="text" autocomplete="off"></div>
+  <div class="field"><label>Cargo</label><input id="eeCargo" class="txt-input" type="text" autocomplete="off" placeholder="Ex.: Atendente I"></div>
+  <div class="field"><label>Contrato</label><div class="seg2" id="eeContrato"></div></div>
+  <div class="field"><label>Escala</label><div class="seg2" id="eeEscala"></div></div>
+  <div class="field"><label>Salário base</label><div class="money"><span class="cur">R$</span><input id="eeSalario" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  <div class="field"><label>VA (vale alimentação) <span class="hintlink" style="color:var(--ink-faint);cursor:default">fixo/mês</span></label><div class="money"><span class="cur">R$</span><input id="eeVa" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  <div class="field"><label>VT por dia <span class="hintlink" style="color:var(--ink-faint);cursor:default">× dias úteis</span></label><div class="money"><span class="cur">R$</span><input id="eeVtDia" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  <div class="field"><label>VT fixo no mês <span class="hintlink" style="color:var(--ink-faint);cursor:default">se não for por dia</span></label><div class="money"><span class="cur">R$</span><input id="eeVt" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  <div class="field"><label>Produção <span class="hintlink" style="color:var(--ink-faint);cursor:default">fixo/mês</span></label><div class="money"><span class="cur">R$</span><input id="eeProducao" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  <div class="field" id="eeDescField"><label>Descontos (INSS/IRRF) <span class="hintlink" style="color:var(--ink-faint);cursor:default">CLT · no 5º dia útil</span></label><div class="money"><span class="cur">R$</span><input id="eeDesconto" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+  <div class="recon" id="eePreview" style="margin-top:4px"></div>
+  <button class="btn-primary" id="saveEmp">Salvar</button>
+  <button type="button" class="btn-ghost" id="delEmp" style="margin-top:10px;display:none;color:var(--danger);border-color:#E7C3BE">Remover funcionário</button>
+  <button type="button" class="btn-ghost" id="cancelEmp" style="margin-top:10px">Cancelar</button>
+</div>
+
 <!-- SHEET: detalhe de um funcionário -->
 <div class="sheet" id="empDetail" role="dialog" aria-modal="true">
   <div class="grip"></div>
@@ -1072,13 +1128,42 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v7.5 · abas lado a lado'
+const APP_VERSION='v7.6 · folha de pagamento'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
 const DEFAULT_STORES=[{id:'beiramar',name:'Beira Mar'},{id:'imprensa',name:'Imprensa'},{id:'praia',name:'Praia do Futuro'},{id:'eventos',name:'Eventos'}];
 const DEFAULT_SERIALMAP={'XC03020355074':'beiramar','4AH38939D':{store:'beiramar',from:'2026-10-23'},'4AH78SS4W':'imprensa','XC03020753916':[{store:'eventos',to:'2026-10-31'},{store:'beiramar',from:'2026-11-01'}]};
+/* folha de pagamento — cadastro de cargos e salários */
+const DEFAULT_EMPLOYEES=[
+  {id:'e1',name:'José Wagner',cargo:'Auxiliar de Operações II',contrato:'CLT',escala:'6x1',salario:2000,va:400,vt:0,vtDia:10.80,producao:0,desconto:0,active:true},
+  {id:'e2',name:'José Arnaldo',cargo:'Auxiliar de Operações I',contrato:'PJ',escala:'6x1',salario:1700,va:400,vt:0,vtDia:0,producao:0,desconto:0,active:true},
+  {id:'e3',name:'Paulo Johnatam',cargo:'Atendente I',contrato:'PJ',escala:'6x1',salario:1700,va:400,vt:250,vtDia:0,producao:140,desconto:0,active:true},
+  {id:'e4',name:'Laryssa Cristina',cargo:'Atendente I',contrato:'PJ',escala:'6x1',salario:1700,va:400,vt:250,vtDia:0,producao:140,desconto:0,active:true},
+  {id:'e5',name:'Ingrid Kaianny',cargo:'Supervisora Operacional',contrato:'PJ',escala:'6x1',salario:4000,va:0,vt:0,vtDia:0,producao:0,desconto:0,active:true},
+  {id:'e6',name:'Paulo Roberto',cargo:'Atendente I',contrato:'CLT',escala:'5x2',salario:1750,va:400,vt:0,vtDia:10.80,producao:0,desconto:0,active:true}
+];
+function diasUteis(escala, key){ const [y,m]=key.split('-').map(Number); const dim=new Date(y,m,0).getDate();
+  if(escala==='5x2'){ let n=0; for(let d=1;d<=dim;d++){ const wd=new Date(y,m-1,d).getDay(); if(wd>=1&&wd<=5) n++; } return n; }
+  return dim - Math.floor(dim/7);   // 6x1: ~1 folga por semana
+}
+function quintoDiaUtilDia(key){ const [y,m]=key.split('-').map(Number); let c=0,d=1; for(;d<=28;d++){ const wd=new Date(y,m-1,d).getDay(); if(wd>=1&&wd<=5){ c++; if(c===5) break; } } return d; }
+function empVT(e,key){ return (+e.vtDia>0)? (+e.vtDia)*diasUteis(e.escala,key) : (+e.vt||0); }
+function empEvents(e,key){
+  const vt=empVT(e,key), sal=+e.salario||0, prod=+e.producao||0, va=+e.va||0, desc=(e.contrato==='CLT')?(+e.desconto||0):0;
+  return [
+    {ev:'beneficios', dia:1, label:'Benefícios · VA + VT', cat:'Benefício', amount: va+vt},
+    {ev:'saldo', dia:quintoDiaUtilDia(key), label:'5º dia útil · ½ salário + produção'+(desc>0?' − descontos':''), cat:'Salário', amount: Math.max(0, sal/2 + prod - desc)},
+    {ev:'adiant', dia:15, label:'Dia 15 · adiantamento (½ salário)', cat:'Adiantamento', amount: sal/2}
+  ];
+}
+function empTotal(e,key){ return empEvents(e,key).reduce((s,x)=>s+x.amount,0); }
+function activeEmployees(){ return (db.settings.employees||[]).filter(e=>e.active!==false); }
+function folhaPagoMap(key){ if(!db.settings.folhaPago) db.settings.folhaPago={}; if(!db.settings.folhaPago[key]) db.settings.folhaPago[key]={}; return db.settings.folhaPago[key]; }
+function isEventPago(key, empId, ev){ return !!folhaPagoMap(key)[empId+'|'+ev]; }
 function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.stores.length) db.settings.stores=DEFAULT_STORES.map(s=>({...s})); if(!db.settings.serialMap||typeof db.settings.serialMap!=='object') db.settings.serialMap=JSON.parse(JSON.stringify(DEFAULT_SERIALMAP)); if(!db.settings.caixaInicial||typeof db.settings.caixaInicial!=='object') db.settings.caixaInicial={};
+  if(!Array.isArray(db.settings.employees)||!db.settings.employees.length) db.settings.employees=JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
+  if(!db.settings.folhaPago||typeof db.settings.folhaPago!=='object') db.settings.folhaPago={};
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
   if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
   // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
@@ -1156,7 +1241,7 @@ const Cloud={
       pending.forEach(x=>this.pushClosing(x));
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
-      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; } ensureStores(); }
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1210,7 +1295,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null};
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null};
     try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -1956,9 +2041,9 @@ function toast(html){ const t=document.getElementById('toast'); t.innerHTML=html
 
 /* ---------- sheets ---------- */
 const scrim=document.getElementById('scrim'), closeSheet=document.getElementById('closeSheet'), goalSheet=document.getElementById('goalSheet'),
-      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail'), caixaIniSheet=document.getElementById('caixaIniSheet');
+      stockSheet=document.getElementById('stockSheet'), dayDetail=document.getElementById('dayDetail'), cashSheet=document.getElementById('cashSheet'), dayGoalSheet=document.getElementById('dayGoalSheet'), catDetail=document.getElementById('catDetail'), empDetail=document.getElementById('empDetail'), bankSheet=document.getElementById('bankSheet'), transferSheet=document.getElementById('transferSheet'), resetSheet=document.getElementById('resetSheet'), passSheet=document.getElementById('passSheet'), lojaSheet=document.getElementById('lojaSheet'), storeDetail=document.getElementById('storeDetail'), caixaIniSheet=document.getElementById('caixaIniSheet'), empEdit=document.getElementById('empEdit');
 function openSheet(el){ scrim.classList.add('on'); el.classList.add('on'); }
-function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail,caixaIniSheet].forEach(s=>s.classList.remove('on')); }
+function closeSheets(){ scrim.classList.remove('on'); [closeSheet,goalSheet,stockSheet,dayDetail,cashSheet,dayGoalSheet,catDetail,empDetail,bankSheet,transferSheet,resetSheet,passSheet,lojaSheet,storeDetail,caixaIniSheet,empEdit].forEach(s=>s.classList.remove('on')); }
 function openPassSheet(){ closeSheets(); document.getElementById('passNew').value=''; document.getElementById('passNew2').value=''; document.getElementById('passErr').textContent=''; openSheet(passSheet); }
 document.getElementById('cancelPass').addEventListener('click', closeSheets);
 document.getElementById('savePass').addEventListener('click', async ()=>{
@@ -2532,36 +2617,111 @@ $('saveCaixaIni').addEventListener('click', ()=>{ const v=parseMoney($('ciAmount
 /* ---- Equipe (pagamento de funcionários) ---- */
 function isPayroll(m){ return m.type==='out' && (m.employee||'').trim(); }
 function renderEquipe(){
-  const key=viewMonth, sum=arr=>arr.reduce((s,m)=>s+(m.amount||0),0);
-  const monthPay=cashOf(key).filter(isPayroll);
-  const paid=monthPay.filter(isPaid), pend=monthPay.filter(m=>!isPaid(m));
-  const totPaid=sum(paid), totPend=sum(pend);
-  $('folhaPaid').textContent=money(totPaid); $('folhaPend').textContent=money(totPend); $('folhaTot').textContent=money(totPaid+totPend);
-  $('folhaSub').textContent=(monthPay.length)?(monthPay.length+' pagamento'+(monthPay.length>1?'s':'')+' no mês'):'Salários, adiantamentos, benefícios e vales';
-  // alerta de vencimentos (qualquer mês)
-  const allPend=db.cashflow.filter(m=>isPayroll(m)&&!isPaid(m)&&m.due);
-  const over=allPend.filter(m=>daysUntil(m.due)<0), soon=allPend.filter(m=>{const d=daysUntil(m.due);return d>=0&&d<=7;});
-  let al='';
-  if(over.length) al+='<div class="da-row">🔴 <span><b>'+over.length+'</b> pagamento'+(over.length>1?'s':'')+' atrasado'+(over.length>1?'s':'')+' · <b>'+money(sum(over))+'</b></span></div>';
-  if(soon.length) al+='<div class="da-row">🟡 <span><b>'+soon.length+'</b> vence'+(soon.length>1?'m':'')+' essa semana · <b>'+money(sum(soon))+'</b></span></div>';
-  $('folhaAlert').innerHTML = al? '<div class="due-alert '+(over.length?'over':'soon')+'">'+al+'</div>' : '';
-  // por funcionário (mês)
-  const byEmp={}; monthPay.forEach(m=>{ const n=(m.employee||'').trim(); (byEmp[n]=byEmp[n]||[]).push(m); });
-  const names=Object.keys(byEmp).sort((a,b)=>a.localeCompare(b));
-  $('empCount').textContent=names.length?(names.length+(names.length>1?' pessoas':' pessoa')):'';
+  const key=viewMonth, emps=activeEmployees();
+  const EVS=[
+    {ev:'beneficios', title:'Dia 01 · Benefícios', sub:'Vale alimentação (VA) + vale transporte (VT, por dias úteis)'},
+    {ev:'saldo', title:'5º dia útil (dia '+quintoDiaUtilDia(key)+')', sub:'Metade do salário + produção · CLT: menos descontos (INSS/IRRF)'},
+    {ev:'adiant', title:'Dia 15 · Adiantamento', sub:'Metade do salário'}
+  ];
+  let totMonth=0, paidMonth=0;
+  const cal=EVS.map(E=>{
+    let lns='', grpTot=0, grpPaid=0;
+    emps.forEach(e=>{
+      const evt=empEvents(e,key).find(x=>x.ev===E.ev); const amt=evt?evt.amount:0;
+      totMonth+=amt; grpTot+=amt;
+      const paid=isEventPago(key,e.id,E.ev); if(paid){ paidMonth+=amt; grpPaid+=amt; }
+      const tag=e.id+'|'+E.ev;
+      const right = amt>0
+        ? '<button class="pay-chk'+(paid?' on':'')+'" data-pago="'+tag+'" aria-label="Marcar como pago">'+(paid?'✓':'')+'</button>'
+        : '<span class="pzero">—</span>';
+      lns+='<div class="pay-ln'+(paid?' done':'')+'"><div class="pn"><div class="nm">'+e.name+'</div><div class="vl">'+money(amt)+'</div></div>'+right+'</div>';
+    });
+    return '<div class="folha-ev"><div class="fe-head"><span class="fe-when">'+E.title+'</span><span class="fe-tot">'+money(grpPaid)+' / '+money(grpTot)+'</span></div><div class="fe-sub">'+E.sub+'</div>'+lns+'</div>';
+  }).join('');
+  $('folhaCal').innerHTML=cal;
+  $('folhaTot').textContent=money(totMonth);
+  $('folhaPaid').textContent=money(paidMonth);
+  $('folhaPend').textContent=money(Math.max(0,totMonth-paidMonth));
+  $('folhaSub').textContent=emps.length+' pessoa'+(emps.length!==1?'s':'')+' · '+monthName(key);
+  $('folhaAlert').innerHTML='';
+  // registro de cargos e salários
+  $('empCount').textContent=emps.length?(emps.length+(emps.length>1?' pessoas':' pessoa')):'';
   const el=$('empList');
-  if(!names.length){ el.innerHTML='<div class="empty"><div class="em">👥</div><p>Nenhum pagamento à equipe neste mês.<br>Toque em <b>+ Novo pagamento</b>.</p></div>'; return; }
-  el.innerHTML=names.map(n=>{
-    const items=byEmp[n];
-    const pg=sum(items.filter(isPaid)), pe=items.filter(m=>!isPaid(m)), peTot=sum(pe);
-    const nextDue=pe.filter(m=>m.due).sort((a,b)=>(a.due||'').localeCompare(b.due||''))[0];
-    const ini=n.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
-    let s='Pago no mês: <b>'+money(pg)+'</b>';
-    if(peTot>0){ s+=' · a pagar <b>'+money(peTot)+'</b>'; if(nextDue){ const di=dueInfo(nextDue.due); s+=' <span class="duechip '+di.cls+'">'+nextDue.category+' · '+di.txt+'</span>'; } }
-    return '<div class="emprow" data-emp="'+n.replace(/"/g,'&quot;')+'"><div class="eav">'+(ini||'?')+'</div><div class="einfo"><div class="en">'+n+'</div><div class="es">'+s+'</div></div>'
+  if(!emps.length){ el.innerHTML='<div class="empty"><div class="em">👥</div><p>Nenhum funcionário cadastrado.<br>Toque em <b>+ Cadastrar funcionário</b>.</p></div>'; return; }
+  el.innerHTML=emps.map(e=>{
+    const ini=(e.name||'').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+    const tot=empTotal(e,key);
+    return '<div class="emprow" data-empedit="'+e.id+'"><div class="eav">'+(ini||'?')+'</div>'
+      +'<div class="einfo"><div class="en">'+e.name+'</div>'
+      +'<div class="es">'+(e.cargo||'')+' · <span class="tagc">'+(e.contrato||'')+'</span> · '+(e.escala||'')+' · <b>'+money(tot)+'</b>/mês</div></div>'
       +'<svg class="cchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>';
   }).join('');
 }
+function togglePago(tag){
+  const [empId,ev]=tag.split('|'); const key=viewMonth;
+  const emp=(db.settings.employees||[]).find(x=>x.id===empId); if(!emp) return;
+  const evt=empEvents(emp,key).find(x=>x.ev===ev); if(!evt) return;
+  const map=folhaPagoMap(key);
+  if(map[tag]){ const id=map[tag]; db.cashflow=db.cashflow.filter(x=>x.id!==id); delete map[tag];
+    Store.save(db); Cloud.delCash(id); Cloud.pushSettings(); render(); toast('Pagamento desmarcado'); return; }
+  if(!(evt.amount>0)) return;
+  const dd=String(evt.dia).padStart(2,'0');
+  const saved={ id:'cf'+Date.now()+Math.floor(Math.random()*1000), date:key+'-'+dd, type:'out', category:evt.cat, amount:evt.amount, status:'pago', due:null, employee:emp.name, note:evt.label, createdAt:new Date().toISOString() };
+  db.cashflow.push(saved); map[tag]=saved.id;
+  Store.save(db); Cloud.pushCash(saved); Cloud.pushSettings(); render();
+  toast('✓ Pago '+emp.name+' · <b>'+money(evt.amount)+'</b>');
+}
+$('folhaCal').addEventListener('click', e=>{ const b=e.target.closest('[data-pago]'); if(!b) return; togglePago(b.getAttribute('data-pago')); });
+
+/* ---- Cadastro / edição de funcionário ---- */
+let eeDraft=null;
+const nMoney=v=>{ const n=+v; return n>0?String(n.toFixed(2)).replace('.',','):''; };
+function renderSeg(id, opts, sel){ $(id).innerHTML=opts.map(o=>'<div class="seg-opt'+(o===sel?' on':'')+'" data-seg="'+o+'">'+o+'</div>').join(''); }
+function openEmpEdit(id){
+  const e = id ? (db.settings.employees||[]).find(x=>x.id===id) : null;
+  eeDraft = e ? {...e} : {id:'e'+Date.now()+Math.floor(Math.random()*1000), name:'', cargo:'', contrato:'PJ', escala:'6x1', salario:0, va:0, vt:0, vtDia:0, producao:0, desconto:0, active:true, _new:true};
+  $('empEditTitle').textContent = e ? 'Editar funcionário' : 'Novo funcionário';
+  $('eeName').value=eeDraft.name||''; $('eeCargo').value=eeDraft.cargo||'';
+  renderSeg('eeContrato',['CLT','PJ'],eeDraft.contrato); renderSeg('eeEscala',['6x1','5x2'],eeDraft.escala);
+  $('eeSalario').value=nMoney(eeDraft.salario); $('eeVa').value=nMoney(eeDraft.va);
+  $('eeVtDia').value=nMoney(eeDraft.vtDia); $('eeVt').value=nMoney(eeDraft.vt);
+  $('eeProducao').value=nMoney(eeDraft.producao); $('eeDesconto').value=nMoney(eeDraft.desconto);
+  $('delEmp').style.display = e ? 'block' : 'none';
+  renderEePreview(); openSheet(empEdit);
+}
+function eeReadInputs(){ if(!eeDraft) return;
+  eeDraft.name=$('eeName').value.trim(); eeDraft.cargo=$('eeCargo').value.trim();
+  eeDraft.salario=parseMoney($('eeSalario').value); eeDraft.va=parseMoney($('eeVa').value);
+  eeDraft.vtDia=parseMoney($('eeVtDia').value); eeDraft.vt=parseMoney($('eeVt').value);
+  eeDraft.producao=parseMoney($('eeProducao').value); eeDraft.desconto=parseMoney($('eeDesconto').value);
+}
+function renderEePreview(){ if(!eeDraft) return; eeReadInputs();
+  const key=viewMonth, evs=empEvents(eeDraft,key), tot=evs.reduce((s,x)=>s+x.amount,0);
+  const vt=empVT(eeDraft,key), du=diasUteis(eeDraft.escala,key);
+  $('eeDescField').style.display = (eeDraft.contrato==='CLT') ? 'block' : 'none';
+  let r='<div class="recon-row"><span>VT no mês <span style="color:var(--ink-faint)">('+(+eeDraft.vtDia>0?('R$ '+nMoney(eeDraft.vtDia)+' × '+du+' dias úteis'):'fixo')+')</span></span><b>'+money(vt)+'</b></div>';
+  evs.forEach(x=>{ r+='<div class="recon-row"><span>'+x.label.replace(/·.*$/, '').trim()+' <span style="color:var(--ink-faint)">dia '+x.dia+'</span></span><b>'+money(x.amount)+'</b></div>'; });
+  r+='<div class="recon-row big"><span class="lbl">Total no mês</span><span class="dinheiro">'+money(tot)+'</span></div>';
+  $('eePreview').innerHTML=r;
+}
+$('eeContrato').addEventListener('click', e=>{ const o=e.target.closest('[data-seg]'); if(!o||!eeDraft) return; eeDraft.contrato=o.getAttribute('data-seg'); renderSeg('eeContrato',['CLT','PJ'],eeDraft.contrato); renderEePreview(); });
+$('eeEscala').addEventListener('click', e=>{ const o=e.target.closest('[data-seg]'); if(!o||!eeDraft) return; eeDraft.escala=o.getAttribute('data-seg'); renderSeg('eeEscala',['6x1','5x2'],eeDraft.escala); renderEePreview(); });
+['eeSalario','eeVa','eeVtDia','eeVt','eeProducao','eeDesconto'].forEach(f=>$(f).addEventListener('input', renderEePreview));
+$('saveEmp').addEventListener('click', ()=>{ if(!eeDraft) return; eeReadInputs();
+  if(!eeDraft.name){ toast('Informe o nome'); return; }
+  if(!Array.isArray(db.settings.employees)) db.settings.employees=[];
+  const isNew=eeDraft._new; delete eeDraft._new;
+  const ix=db.settings.employees.findIndex(x=>x.id===eeDraft.id);
+  if(ix>=0) db.settings.employees[ix]=eeDraft; else db.settings.employees.push(eeDraft);
+  Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast(isNew?'Funcionário cadastrado':'Funcionário atualizado');
+});
+$('delEmp').addEventListener('click', ()=>{ if(!eeDraft||eeDraft._new) return;
+  if(!confirm('Remover '+(eeDraft.name||'este funcionário')+' do cadastro? Os pagamentos já lançados no caixa continuam.')) return;
+  db.settings.employees=(db.settings.employees||[]).filter(x=>x.id!==eeDraft.id);
+  Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Funcionário removido');
+});
+$('cancelEmp').addEventListener('click', closeSheets);
+
 let empDetailName='';
 function openEmpDetail(name){
   empDetailName=name; const sum=arr=>arr.reduce((s,m)=>s+(m.amount||0),0);
@@ -2573,7 +2733,8 @@ function openEmpDetail(name){
   $('empPayList').innerHTML=items.length? items.map(m=>cashRow(m,{due:true})).join('') : '<div class="empty" style="padding:20px 16px"><p>Sem pagamentos ainda.</p></div>';
   openSheet(empDetail);
 }
-$('empList').addEventListener('click', e=>{ const row=e.target.closest('[data-emp]'); if(!row) return; openEmpDetail(row.getAttribute('data-emp')); });
+$('empList').addEventListener('click', e=>{ const row=e.target.closest('[data-empedit]'); if(!row) return; openEmpEdit(row.getAttribute('data-empedit')); });
+$('addEmpBtn').addEventListener('click', ()=>openEmpEdit(null));
 $('empPayList').addEventListener('click', e=>{
   const pay=e.target.closest('[data-pay]'); if(pay){ e.stopPropagation(); markPaid(pay.getAttribute('data-pay')); openEmpDetail(empDetailName); return; }
   const row=e.target.closest('[data-cash]'); if(!row) return; const m=db.cashflow.find(x=>x.id===row.getAttribute('data-cash')); if(!m) return; closeSheets(); setTimeout(()=>openCash(m),140);
