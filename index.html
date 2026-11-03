@@ -452,6 +452,55 @@ main{padding-top:18px}
 .pay-ln .pzero{flex:none;font-size:11.5px;font-weight:700;color:var(--ink-faint)}
 /* ===== Squads / organograma / fluxo ===== */
 .sq-lead{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 14px;line-height:1.4}
+/* visão geral (KPIs) */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;box-shadow:var(--shadow)}
+.kpi .kic{font-size:16px;line-height:1}
+.kpi .kv{font-size:25px;font-weight:850;letter-spacing:-.5px;color:var(--ink);margin-top:6px;line-height:1}
+.kpi .kv small{font-size:13px;font-weight:800;color:var(--ink-soft)}
+.kpi .kl{font-size:11.5px;font-weight:800;color:var(--ink);margin-top:4px}
+.kpi .ks{font-size:10.5px;font-weight:650;color:var(--ink-faint);margin-top:1px}
+.kpi.alert{background:linear-gradient(135deg,#FFF2EA,#FFE6D7);border-color:var(--green-tint-2)}
+.kpi.alert .kv{color:var(--green-900)}
+.kpi.good{background:linear-gradient(135deg,#ECF7EF,#DFF1E5);border-color:#CBE7D4}
+.kpi.good .kv{color:#1E6B34}
+.vg-open{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.vg-h{padding:11px 14px;font-size:12.5px;font-weight:850;color:var(--ink);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px}
+.vg-h .n{margin-left:auto;background:var(--green-tint);color:var(--green-700);font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px}
+.vg-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.vg-row:active{background:#FAF8F3}
+.vg-row .vgs{font-size:10.5px;font-weight:800;color:#fff;padding:3px 9px;border-radius:999px;white-space:nowrap;flex:none}
+.vg-row .vgf{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-row .vgt{font-size:10.5px;font-weight:700;color:var(--ink-faint);flex:none}
+.vg-row .vgc{color:var(--ink-faint);width:16px;height:16px;flex:none}
+.vg-empty{background:linear-gradient(135deg,#ECF7EF,#DFF1E5);border:1px solid #CBE7D4;border-radius:14px;padding:16px;text-align:center;font-weight:750;color:#1E6B34;font-size:13px;margin-top:10px}
+/* organograma top-down (árvore com conectores) */
+.otree-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 6px}
+.otree{display:inline-block;min-width:100%;box-sizing:border-box}
+.otree ul{display:flex;justify-content:center;padding-top:18px;position:relative;margin:0;list-style:none}
+.otree>ul{padding-top:0}
+.otree li{list-style:none;position:relative;padding:18px 9px 0;display:flex;flex-direction:column;align-items:center}
+.otree li::before,.otree li::after{content:'';position:absolute;top:0;right:50%;border-top:2px solid var(--green-tint-2);width:50%;height:18px}
+.otree li::after{right:auto;left:50%;border-left:2px solid var(--green-tint-2)}
+.otree li:only-child::before,.otree li:only-child::after{display:none}
+.otree li:only-child{padding-top:18px}
+.otree>ul>li:only-child{padding-top:0}
+.otree li:first-child::before,.otree li:last-child::after{border:0 none}
+.otree li:last-child::before{border-right:2px solid var(--green-tint-2);border-radius:0 7px 0 0}
+.otree li:first-child::after{border-radius:7px 0 0 0}
+.otree ul ul::before{content:'';position:absolute;top:0;left:50%;border-left:2px solid var(--green-tint-2);width:0;height:18px}
+.otn{display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 13px 9px 9px;box-shadow:var(--shadow);white-space:nowrap}
+.otn .oav{width:34px;height:34px;border-radius:999px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff}
+.otn .otx{text-align:left;line-height:1.15}
+.otn .onm{font-weight:800;font-size:13px;color:var(--ink)}
+.otn .osub{font-size:10.5px;font-weight:650;color:var(--ink-soft);margin-top:1px}
+.otn .ocst{font-size:11px;font-weight:800;color:var(--green-700);margin-left:4px}
+.otn.ceo{background:var(--grad);border:0;box-shadow:0 8px 20px rgba(242,107,58,.28)}
+.otn.ceo .onm{color:#fff}.otn.ceo .osub{color:rgba(255,255,255,.92)}
+.otn.ceo .oav{background:rgba(255,255,255,.22)}
+.otn.sup{background:var(--green-tint);border-color:var(--green-tint-2)}
+.otn.leaf{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.otn.leaf:active{transform:scale(.98)}
 /* organograma (árvore) */
 .org-root{margin-bottom:2px}
 .onode{display:flex;align-items:center;gap:11px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
@@ -863,9 +912,12 @@ main{padding-top:18px}
 
  <div id="viewSquads" class="hide">
 
-  <div class="section-title">Organograma</div>
+  <div class="section-title">Visão geral <span class="st-side">bater o olho e saber o que fazer</span></div>
+  <div id="sqOverview"></div>
+
+  <div class="section-title" style="margin-top:22px">Organograma</div>
   <p class="sq-lead">Estrutura da operação — liderança e squads por loja.</p>
-  <div id="orgChart"></div>
+  <div id="orgChart" class="otree-scroll"></div>
 
   <div class="section-title" style="margin-top:22px">Squads <span class="st-side" id="sqCount"></span></div>
   <div id="squadCards"></div>
@@ -1255,7 +1307,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v7.9 · vagas vinculadas à folha'
+const APP_VERSION='v8.0 · organograma + visão geral'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -2793,21 +2845,32 @@ function squadTotals(s){
 }
 function renderSquads(){
   const SQ=squadsData();
-  const oav=(ic,c)=>'<div class="oav" style="background:'+c+'">'+ic+'</div>';
-  // ---- organograma ----
-  const ceo=LIDERANCA[0], others=LIDERANCA.slice(1);
-  let org='<div class="org-root"><div class="onode ceo">'+oav(ceo.ic,ceo.c)+'<div class="oinfo"><div class="onm">'+ceo.who+'</div><div class="orl">'+ceo.role+'</div></div></div></div><ul class="tree">';
-  others.forEach(p=>{
-    org+='<li class="tli"><div class="onode mini">'+oav(p.ic,p.c)+'<div class="oinfo"><div class="onm">'+p.who+'</div><div class="osub">'+p.role+'</div></div>'+(p.cost?'<div class="ocost">'+money(p.cost)+'</div>':'')+'</div>';
-    if(p.who==='Ingrid'){
-      org+='<ul class="tree">'+SQ.map(s=>{ const t=squadTotals(s);
-        return '<li class="tli"><div class="onode mini sq" data-sqjump="'+s.id+'"><div class="oav" style="background:'+s.c+'">'+s.ic+'</div><div class="oinfo"><div class="onm">'+s.name+'</div><div class="osub">'+t.people+' pessoa'+(t.people!==1?'s':'')+' · '+money(t.fixo)+(t.freelaDia>0?' + freela':'')+'</div></div></div></li>';
-      }).join('')+'</ul>';
-    }
-    org+='</li>';
-  });
-  org+='</ul>';
-  $('orgChart').innerHTML=org;
+  // ---- organograma (top-down) ----
+  const otn=(cls,avc,av,nm,sub,cost,jump)=>'<div class="otn '+cls+'"'+(jump?' data-sqjump="'+jump+'"':'')+'><div class="oav" style="background:'+avc+'">'+av+'</div><div class="otx"><div class="onm">'+nm+'</div>'+(sub?'<div class="osub">'+sub+'</div>':'')+'</div>'+(cost?'<div class="ocst">'+cost+'</div>':'')+'</div>';
+  const K=LIDERANCA[0], B=LIDERANCA[1], I=LIDERANCA[2];
+  const leaves=SQ.map(s=>{ const t=squadTotals(s); return '<li>'+otn('leaf',s.c,s.ic,s.name,t.filled+'/'+t.people+' vagas'+(t.freelas?' +freela':''),'',s.id)+'</li>'; }).join('');
+  $('orgChart').innerHTML='<div class="otree"><ul><li>'+otn('ceo',K.c,K.ic,K.who,K.role)
+    +'<ul><li>'+otn('',B.c,B.ic,B.who,B.role)+'</li>'
+    +'<li>'+otn('sup',I.c,I.ic,I.who,I.role,money(I.cost))+'<ul>'+leaves+'</ul></li></ul></li></ul></div>';
+  // ---- visão geral (KPIs) ----
+  const emps=activeEmployees();
+  const leadExtra=LIDERANCA.filter(p=>!emps.some(e=>(e.name||'').toLowerCase().includes((p.who||'').toLowerCase()))).length;
+  const headcount=emps.length+leadExtra;
+  let peopleTot=0, filledTot=0, freelaCnt=0, fixoTot=0; const openList=[];
+  SQ.forEach(s=>{ s.roles.forEach(r=>{ if(r.tipo==='freela'){ freelaCnt++; } else { peopleTot++; const e=r.empId&&empById(r.empId); if(e){ filledTot++; } else { openList.push({s,r}); } } }); fixoTot+=squadTotals(s).fixo; });
+  const openCnt=openList.length;
+  $('sqOverview').innerHTML=
+    '<div class="kpi-grid">'
+    +'<div class="kpi"><div class="kic">👥</div><div class="kv">'+headcount+'</div><div class="kl">Pessoas na empresa</div><div class="ks">'+emps.length+' na folha + '+leadExtra+' direção</div></div>'
+    +'<div class="kpi '+(openCnt>0?'alert':'good')+'"><div class="kic">🪑</div><div class="kv">'+openCnt+'</div><div class="kl">Vagas em aberto</div><div class="ks">'+(openCnt>0?'fixas · para contratar':'tudo preenchido 🎉')+'</div></div>'
+    +'<div class="kpi good"><div class="kic">✅</div><div class="kv">'+filledTot+'<small>/'+peopleTot+'</small></div><div class="kl">Quadro fixo</div><div class="ks">vagas preenchidas</div></div>'
+    +'<div class="kpi"><div class="kic">💸</div><div class="kv" style="font-size:20px">'+money(fixoTot)+'</div><div class="kl">Custo fixo / mês</div><div class="ks">'+freelaCnt+' freelas à parte</div></div>'
+    +'</div>'
+    + (openCnt>0
+        ? '<div class="vg-open"><div class="vg-h">🔎 A preencher <span class="n">'+openCnt+'</span></div>'
+          + openList.map(o=>'<div class="vg-row" data-role="'+o.s.id+':'+o.r.id+'"><span class="vgs" style="background:'+o.s.c+'">'+o.s.name+'</span><span class="vgf">'+o.r.fn+'</span><span class="vgt">'+money(roleCost(o.r,viewMonth))+'</span><svg class="vgc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>').join('')
+          + '</div>'
+        : '<div class="vg-empty">✅ Todas as vagas fixas estão preenchidas.</div>');
   // ---- squad cards ----
   $('sqCount').textContent=SQ.length+' squads';
   $('squadCards').innerHTML=SQ.map(s=>{
@@ -2839,11 +2902,10 @@ function renderSquads(){
   ];
   $('opFlow').innerHTML=steps.map((st,i)=>'<div class="flow-step"><div class="fi" style="background:'+st.c+'">'+st.ic+'</div><div class="ft"><div class="ftt">'+st.t+'</div><div class="fts">'+st.s+'</div></div></div>'+(i<steps.length-1?arrow:'')).join('');
   // ---- resumo ----
-  let fixoTot=0, people=0, filledTot=0, freelaCnt=0, freelaDiaTot=0;
-  SQ.forEach(s=>{ const t=squadTotals(s); fixoTot+=t.fixo; people+=t.people; filledTot+=t.filled; freelaCnt+=t.freelas; freelaDiaTot+=t.freelaDia; });
+  let freelaDiaTot=0; SQ.forEach(s=>{ freelaDiaTot+=squadTotals(s).freelaDia; });
   const leadTot=LIDERANCA.reduce((a,p)=>a+(p.cost||0),0);
   $('squadResumo').innerHTML=
-     '<div class="ss"><div class="ssv">'+filledTot+'/'+people+'</div><div class="ssl">vagas fixas preenchidas</div></div>'
+     '<div class="ss"><div class="ssv">'+filledTot+'/'+peopleTot+'</div><div class="ssl">vagas fixas preenchidas</div></div>'
     +'<div class="ss"><div class="ssv">'+freelaCnt+'</div><div class="ssl">posições freela</div></div>'
     +'<div class="ss hi wide"><div class="ssv">'+money(fixoTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">custo fixo das squads (salários)</div></div>'
     +'<div class="ss"><div class="ssv">'+money(leadTot)+'</div><div class="ssl">liderança (Ingrid)</div></div>'
@@ -2851,6 +2913,7 @@ function renderSquads(){
     +'<div class="ss wide"><div class="ssv">'+money(fixoTot+leadTot)+'<span style="font-size:12px;font-weight:700"> /mês</span></div><div class="ssl">total fixo mensal (squads + liderança) — sem freelas</div></div>';
 }
 $('orgChart').addEventListener('click', e=>{ const n=e.target.closest('[data-sqjump]'); if(!n) return; const c=$('sqcard-'+n.getAttribute('data-sqjump')); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); });
+$('sqOverview').addEventListener('click', e=>{ const row=e.target.closest('[data-role]'); if(!row) return; const [sid,rid]=row.getAttribute('data-role').split(':'); openRoleEdit(sid,rid); });
 
 /* ---- editar vaga da squad (vincula à folha) ---- */
 let roleDraft=null, roleSquadId=null, roleIsNew=false;
