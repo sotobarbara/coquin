@@ -509,6 +509,7 @@ main{padding-top:18px}
 <div class="tabs">
   <button id="tabVendas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Vendas</button>
   <button id="tabEstoque"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Estoque</button>
+  <button id="tabCaixa"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6M3 6l2-3h14l2 3M9 11a3 3 0 0 0 6 0"/></svg>Despesas</button>
   <button id="tabDados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Dados</button>
 </div>
 
@@ -641,12 +642,6 @@ main{padding-top:18px}
   <div class="section-title">Vendas por loja <span class="st-side">cartão/Pix da Stone</span></div>
   <div id="storeSales"></div>
 
-  <button type="button" class="import-btn" id="bankBtn" style="margin-top:12px">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    Importar extrato do banco (saídas)
-  </button>
-  <input type="file" id="bankFile" accept=".csv,text/csv" style="display:none">
-
   <div class="section-title">Faturamento por dia <span class="st-side">toque nas barras</span></div>
   <div class="card chart-card"><div class="chart" id="chFat"></div><div class="charttip" id="tipFat"></div></div>
 
@@ -680,7 +675,7 @@ main{padding-top:18px}
 
  <div id="viewCaixa" class="hide">
 
-  <div class="section-title">Caixa do mês</div>
+  <div class="section-title">Despesas do mês</div>
   <div class="card meta">
     <div class="meta-lab">Resultado do caixa</div>
     <div class="meta-nums"><span class="big" id="cashSaldo">R$ 0</span></div>
@@ -691,6 +686,12 @@ main{padding-top:18px}
       <div><span class="cs-lab">↓ Saídas pagas</span><span class="cs-v" id="cashOut">R$ 0</span></div>
     </div>
   </div>
+
+  <button type="button" class="import-btn" id="bankBtn" style="margin-top:12px">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Importar extrato do banco (saídas)
+  </button>
+  <input type="file" id="bankFile" accept=".csv,text/csv" style="display:none">
 
   <div id="dueAlert"></div>
 
@@ -1026,7 +1027,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v6.7 · gelatos no card';
+const APP_VERSION='v6.8 · aba Despesas';
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1941,6 +1942,7 @@ function switchView(v){
 }
 document.getElementById('tabVendas').addEventListener('click',()=>switchView('vendas'));
 document.getElementById('tabEstoque').addEventListener('click',()=>switchView('estoque'));
+document.getElementById('tabCaixa').addEventListener('click',()=>switchView('caixa'));
 document.getElementById('tabDados').addEventListener('click',()=>switchView('dados'));
 
 /* ---- fechar o dia ---- */
