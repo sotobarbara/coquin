@@ -34,17 +34,21 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 
 ## Painel (`admin.html`)
 
-**Candidatos**
-- Cards resumo: inscritos · **A Priorizar** · **B Avaliar** · **C Baixa aderência** · **Eliminados**
-  (toque para filtrar). Filtro por vaga, status, busca e ordenação (score, data, sua nota).
-- Cada candidato mostra o **score 0–100**, o nível e os pontos fortes.
-- Detalhe: **por que esse score** (pontos por pergunta), eliminatórias, texto com as
-  palavras-chave destacadas, **ver currículo** (link temporário de 10 min), botões de
-  **WhatsApp** com mensagem pronta (chamar pra conversa / agradecer), **status**
-  (Novo → Triagem → Entrevista → Aprovado / Não seguiu), **nota em estrelas** e **anotações**.
-- Abrir um candidato novo muda o status para *Triagem* sozinho.
-- **Exportar CSV** (abre no Excel/Sheets) e **excluir candidatura + CV** (pedido LGPD).
-- Candidatura nova aparece na hora (realtime) com aviso 🔔.
+**Pipeline (quadro estilo Trello, pensado para o computador)**
+- Barra lateral com as vagas (e quantos inscritos cada uma tem). Em cima, os números da vaga:
+  inscritos, nível A, score médio e quantos chegaram nas últimas 24h.
+- **Colunas**: Aplicações → Em validação → Entrevista → Aprovados → **Não qualificados**.
+  Quem chega com **nível C ou eliminado** já cai sozinho em *Não qualificados* (marcado como
+  "auto"); quem chega com A/B entra em *Aplicações*. **Arraste os cards** entre as colunas.
+- Card: iniciais, nome, bairro, **score + nível**, barra de aderência, pontos fortes ou
+  motivo da eliminação, há quanto tempo se inscreveu, estrelas, CV e anotação.
+- Filtro por nível (A/B/C/Eliminados), busca e ordenação (score, data, sua nota).
+- **Painel lateral do candidato**: score com o porquê de cada ponto, **ver currículo** (link
+  temporário de 10 min), **WhatsApp** com mensagem pronta (chamar pra conversa / agradecer),
+  etapa, **nota em estrelas**, contato, texto com as palavras-chave destacadas e **anotações**.
+- **Exportar CSV** (Excel/Sheets) e **excluir candidatura + CV** (pedido LGPD).
+- Candidatura nova aparece na hora (realtime).
+- Em tela pequena vira uma coluna por vez, com rolagem para o lado.
 
 **Vagas & regras**
 - Criar / editar vaga: título, loja, tipo, salário, descrição, benefícios.
