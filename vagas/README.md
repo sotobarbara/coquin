@@ -24,15 +24,17 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 | `index.html` | `/?v=<id-da-vaga>` (sem `?v` lista as vagas abertas) | candidato (público) |
 | `admin.html` | `/admin` | equipe (login) |
 
-## Formulário do candidato (`index.html`): rápido, 1 minuto
+## Portal de Vagas Coquin (`index.html`): o que o candidato vê
 
-O candidato toca no link da bio ou na figurinha do story, e a página abre direto no navegador
-do Instagram (sem login nem app). Ele preenche **nome**, **e-mail** e **currículo** (PDF, Word ou
-foto, até 5 MB), marca o aceite da LGPD e envia. Os detalhes da vaga ficam num "Sobre a vaga"
-recolhido, logo abaixo.
-
-Perguntas extras são **opcionais por vaga** (no editor). Se a vaga tiver perguntas, elas
-aparecem no mesmo formulário.
+- **Página inicial** (link da bio): "Portal de Vagas Coquin", com hero "Vem fazer parte do nosso
+  time!", busca, a lista de **vagas disponíveis** (local, escala, tipo e um resumo), o quadro
+  **Como funciona?** e as seções **Nossa cultura**, **Benefícios** e **Dúvidas**.
+- **Página da vaga** (`?v=id`): título, local, escala, horário, salário e nº de vagas no topo; à
+  esquerda o formulário **Candidate-se** (nome, e-mail e currículo, em 1 minuto); à direita
+  **Sobre a vaga** (com títulos e listas), **Benefícios e condições** e o banner.
+- Usa a **logo oficial** (`logo-coquin-oficial.png`) e a foto do gelato (`hero-gelato.webp`).
+  Cores: areia + verde oliva da logo (`#3D5842`). Fonte: Outfit.
+- Perguntas extras aparecem no formulário só se a vaga tiver.
 
 ## Painel (`admin.html`)
 
