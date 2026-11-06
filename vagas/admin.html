@@ -293,6 +293,21 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 
 .why{background:var(--tX-s);color:#8E2F29;border-radius:12px;padding:14px 16px;font-size:13.5px}
 .why>b{display:block;margin-bottom:6px;color:var(--tX)}
+.why.ok{background:var(--tA-s);color:#1F5B43}
+.why.ok>b{color:var(--tA)}
+.why p{margin:0 0 10px}
+.kw-h{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:12px 0 6px}
+.kw-chips{display:flex;flex-wrap:wrap;gap:6px}
+.kw-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #BFE0CF;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:500;color:#1F5B43}
+.kw-chip i{font-style:normal;font-size:11.5px;color:var(--tA);font-weight:600}
+.kw-chip em{font-style:normal;font-size:11px;color:var(--muted)}
+.kw-snips{margin:0;padding-left:16px;display:grid;gap:6px;font-size:13px;color:var(--ink-2)}
+.kw-snips mark{background:#C9EBD8;color:#14432F;border-radius:3px;padding:0 1px}
+.kw-miss{margin-top:12px;font-size:12.5px;color:var(--muted)}
+.chip.ok{background:var(--tA-s);color:#1F5B43}
+.more{width:100%;border:1px dashed var(--line-2);background:transparent;border-radius:10px;padding:9px;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer}
+.more:hover{border-color:var(--accent);color:var(--accent)}
+.prog{display:inline-block;vertical-align:middle;margin-left:10px;font-size:12px;font-weight:500;color:var(--tB);background:var(--tB-s);border-radius:999px;padding:3px 10px}
 .why ul{margin:0;padding-left:18px;display:grid;gap:4px}
 .why.q{background:var(--sunken);color:var(--ink-2)} .why.q>b{color:var(--ink)}
 .why-tip{margin-top:10px;font-size:12.5px;color:var(--ink-2)}
@@ -391,7 +406,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
       <div class="kpis" id="kpis"></div>
       <div class="panel">
         <div class="panel-h">
-          <div><h2 id="pTitle">Pipeline de seleção</h2><p id="pMeta">Acompanhe o andamento dos candidatos em cada etapa</p></div>
+          <div><h2 id="pTitle">Pipeline de seleção <span class="prog hide" id="cvProg"></span></h2><p id="pMeta">Acompanhe o andamento dos candidatos em cada etapa</p></div>
           <div class="acts">
             <select class="sm" id="vagaPick"></select>
             <button class="btn ghost hide" id="pShare"><svg class="i"><use href="#i-mega"/></svg>Divulgar</button>
@@ -599,8 +614,22 @@ function scoreCand(c){
     if(c.cv_path && c.cv_text==null && !c._cvErr) tier='P';
     else if(!norm((c.about||'')+(c.cv_text||'')).trim()) tier='Q';
   }
-  return {pct,got,max,tier,parts,kos,highlights,kw:kwInfo,th:{a:+th.a||75,b:+th.b||50}};
+  return {pct,got,max,tier,parts,kos,highlights,kw:kwInfo,th:{a:+th.a||75,b:+th.b||50},ev:kwInfo&&kwInfo.hit.length?kwEvidence(c,kwInfo.hit):[]};
 }
+/* mesma quantidade de letras do original: sem acento e minúsculo (para achar a posição no texto) */
+function foldKeep(t){ let o=''; for(let i=0;i<t.length;i++){ const ch=t[i]; const d=ch.normalize('NFD')[0]; o+=((d&&d.length===1)?d:ch).toLowerCase()[0]||ch; } return o; }
+/* para cada palavra-chave encontrada: a palavra real do currículo, quantas vezes aparece e um trecho */
+function kwEvidence(c,hits){
+  const text=String((c.about||'')+'\n'+(c.cv_text||'')), f=foldKeep(text), isL=ch=>/[\p{L}\p{N}]/u.test(ch);
+  return hits.map(k=>{ const kn=norm(k.w); let idx=f.indexOf(kn); if(idx<0) return {w:k.w,pts:+k.pts||0,word:k.w,n:0,before:'',match:k.w,after:''};
+    let a=idx,b=idx+kn.length; while(a>0&&isL(text[a-1])) a--; while(b<text.length&&isL(text[b])) b++;
+    let s0=Math.max(0,a-55), s1=Math.min(text.length,b+65); while(s0>0&&isL(text[s0-1])) s0--; while(s1<text.length&&isL(text[s1])) s1++;
+    const n=f.split(kn).length-1;
+    return {w:k.w,pts:+k.pts||0,word:text.slice(a,b),n,before:(s0>0?'…':'')+text.slice(s0,a).replace(/\s+/g,' '),match:text.slice(a,b),after:text.slice(b,s1).replace(/\s+/g,' ')+(s1<text.length?'…':'')};
+  }).sort((x,y)=>y.pts-x.pts);
+}
+function evChips(ev,max){ return ev.slice(0,max||99).map(e=>'<span class="kw-chip">'+esc(e.word.toLowerCase())+'<i>+'+e.pts+'</i>'+(e.n>1?'<em>'+e.n+'x</em>':'')+'</span>').join(''); }
+function evSnips(ev,max){ return '<ul class="kw-snips">'+ev.slice(0,max||5).map(e=>'<li>'+esc(e.before)+'<mark>'+esc(e.match)+'</mark>'+esc(e.after)+'</li>').join('')+'</ul>'; }
 /* sinais de que o texto é um currículo (seções típicas, e-mail, telefone) */
 function looksLikeCv(t){
   const n=norm(t); let sig=0;
@@ -616,7 +645,7 @@ function whyNQ(c){
   s.kos.forEach(k=>out.push(k.indexOf(' → ')>0?'Resposta eliminatória: '+k:k+'.'));
   if(!s.kos.length && s.tier==='C'){
     out.push('Score '+s.pct+' de 100: abaixo do mínimo para Nível B ('+s.th.b+').');
-    if(s.kw){ out.push(s.kw.hit.length?'Achou no currículo: '+s.kw.hit.map(k=>k.w+' (+'+k.pts+')').join(', ')+' = '+s.kw.got+' de '+s.kw.cap+' pontos.':'Nenhuma das palavras-chave da vaga apareceu no currículo.');
+    if(s.kw){ out.push(s.kw.hit.length?'Achou no currículo: '+s.ev.map(e=>e.word.toLowerCase()+' (+'+e.pts+')').join(', ')+' = '+s.kw.got+' de '+s.kw.cap+' pontos.':'Nenhuma das palavras-chave da vaga apareceu no currículo.');
       if(s.kw.miss.length) out.push('Não achou: '+s.kw.miss.slice(0,8).map(k=>k.w).join(', ')+(s.kw.miss.length>8?'…':'.')); }
   }
   const len=String(c.cv_text||'').trim().length;
@@ -626,11 +655,16 @@ function whyNQ(c){
 
 /* ---------- dados ---------- */
 async function load(){
-  const [{data:v,error:e1},{data:c,error:e2}]=await Promise.all([
-    sb.from('vagas').select('*').order('created_at',{ascending:false}),
-    sb.from('candidaturas').select('*').order('created_at',{ascending:false})]);
-  if(e1||e2) throw (e1||e2);
-  vagas=v||[]; cands=(c||[]).map(x=>Object.assign(x,{_s:null}));
+  const {data:v,error:e1}=await sb.from('vagas').select('*').order('created_at',{ascending:false});
+  if(e1) throw e1;
+  // a API devolve no máximo 1000 linhas por vez: busca em páginas até acabar
+  const all=[]; const PAGE=1000;
+  for(let from=0;;from+=PAGE){
+    const {data,error}=await sb.from('candidaturas').select('*').order('created_at',{ascending:false}).order('id').range(from,from+PAGE-1);
+    if(error) throw error;
+    all.push(...(data||[])); if(!data || data.length<PAGE) break;
+  }
+  vagas=v||[]; cands=all.map(x=>Object.assign(x,{_s:null}));
   render(); CVQ.add();
 }
 function sc(c){ if(!c._s) c._s=scoreCand(c); return c._s; }
@@ -704,8 +738,8 @@ const wantsPhoto=c=>c.cv_photo===null && /^(pdf|docx)$/.test(cvExt(c)) && !c._ph
 const CVQ={q:[],busy:false,
   add(){ cands.forEach(c=>{ const old=c.cv_text==='' && /\.(png|jpe?g|webp|pdf)$/i.test(c.cv_path||'');
     if(c.cv_path && (c.cv_text==null||old||wantsPhoto(c)) && !c._cvErr && !c._cvQ){ c._cvQ=true; if(old) c.cv_text=null; this.q.push(c); } }); this.run(); },
-  async run(){ if(this.busy) return; this.busy=true;
-    while(this.q.length){ const c=this.q.shift(); let buf=null;
+  async run(){ if(this.busy) return; this.busy=true; this.total=this.q.length; this.done=0; cvProgress();
+    while(this.q.length){ const c=this.q.shift(); let buf=null; this.done++; cvProgress();
       try{ buf=await fetchCv(c);
         if(c.cv_text==null){ c.cv_text=await readCv(c,buf); c._s=null; await sb.from('candidaturas').update({cv_text:c.cv_text}).eq('id',c.id); } }
       catch(e){ c._cvErr=true; c._s=null; }
@@ -713,8 +747,10 @@ const CVQ={q:[],busy:false,
         try{ const ph=await cvPhoto(cvExt(c),buf); const {error}=await sb.from('candidaturas').update({cv_photo:ph||''}).eq('id',c.id); if(error) throw error; c.cv_photo=ph||''; }
         catch(e){ c._phErr=true; } }
       softRender(c.id); }
-    this.busy=false; }
+    this.busy=false; cvProgress(); }
 };
+function cvProgress(){ const el=$('cvProg'); if(!el) return; const on=CVQ.busy && CVQ.total>1;
+  el.classList.toggle('hide',!on); if(on) el.textContent='Lendo currículos: '+Math.min(CVQ.done,CVQ.total)+' de '+CVQ.total+'…'; }
 
 /* acha a foto 3x4 dentro do currículo: imagem com formato de retrato e tons de pele (descarta logos e ícones) */
 async function cvPhoto(ext,buf){
@@ -830,13 +866,16 @@ function renderCand(){
     +['A','B','C','X'].map(t=>'<button data-t="'+t+'" class="'+(UI.tier===t?'sel':'')+'"><span class="tdot" style="background:'+TIERC[t]+'"></span>'+(t==='X'?'Eliminados':'Nível '+t)+' <span style="color:var(--muted)">'+cnt[t]+'</span></button>').join('');
   $('fSort').value=UI.sort;
   const list=filtered(base);
+  dupNames=new Map(); cands.forEach(c=>{ const k=c.vaga_id+'|'+norm(c.name).trim(); dupNames.set(k,(dupNames.get(k)||0)+1); });
   $('board').innerHTML=STATUS.map(s=>{
     const items=sortList(list.filter(c=>colOf(c)===s.k));
+    const lim=UI.more&&UI.more[s.k]||60, shown=items.slice(0,lim), rest=items.length-shown.length;
     const hint={novo:'chegaram com nível A/B',reprovado:'nível C, eliminados e descartados'}[s.k]||'';
     return '<div class="col" data-col="'+s.k+'" title="'+hint+'"><div class="col-h"><span class="cd" style="background:'+s.c+'"></span><span class="ct"><span class="num">0'+(STATUS.indexOf(s)+1)+'.</span> '+s.l+'</span><span class="cn">'+items.length+'</span>'+(hint?'<span class="cs">'+hint+'</span>':'')+'</div>'
-      +'<div class="col-b">'+(items.length?items.map(card).join(''):'<div class="col-e">'+(cands.length?'Arraste um card para cá':(vagas.length?'Nenhuma candidatura ainda':'Crie uma vaga para começar'))+'</div>')+'</div></div>';
+      +'<div class="col-b">'+(items.length?shown.map(card).join('')+(rest>0?'<button class="more" data-more="'+s.k+'">Mostrar mais '+Math.min(60,rest)+' de '+rest+'</button>':''):'<div class="col-e">'+(cands.length?'Arraste um card para cá':(vagas.length?'Nenhuma candidatura ainda':'Crie uma vaga para começar'))+'</div>')+'</div></div>';
   }).join('');
 }
+let dupNames=new Map();
 function renderKpis(base,today,avg){
   const open=vagas.filter(v=>v.active), pos=open.reduce((s,v)=>s+(+v.openings||1),0);
   const week=base.filter(c=>Date.now()-new Date(c.created_at)<7*864e5).length;
@@ -868,8 +907,9 @@ function card(c){
   const chips=[];
   if(s.kos.length) chips.push('<span class="chip ko">'+esc(s.kos[0].split(' → ')[0].replace(/\?$/,''))+'</span>');
   else if(autoNQ(c)) chips.push('<span class="chip auto">score '+s.pct+' · mínimo '+s.th.b+'</span>');
-  if(cands.some(o=>o!==c && o.vaga_id===c.vaga_id && norm(o.name).trim()===norm(c.name).trim())) chips.push('<span class="chip ko">nome repetido</span>');
-  s.highlights.slice(0,2).forEach(h=>chips.push('<span class="chip">'+esc(h.replace(/\?$/,'').slice(0,40))+'</span>'));
+  if((dupNames.get(c.vaga_id+'|'+norm(c.name).trim())||0)>1) chips.push('<span class="chip ko">nome repetido</span>');
+  if(s.ev.length && !s.kos.length) s.ev.slice(0,3).forEach(e=>chips.push('<span class="chip ok">✓ '+esc(e.word.toLowerCase().slice(0,22))+'</span>'));
+  else s.highlights.slice(0,2).forEach(h=>chips.push('<span class="chip">'+esc(h.replace(/\?$/,'').slice(0,40))+'</span>'));
   return '<div class="kc'+(openId===c.id?' sel':'')+'" draggable="true" data-id="'+c.id+'">'+(c.status==='novo'?'<span class="unread"></span>':'')
     +'<div class="kc-top">'+avatar(c.name,'',c.cv_photo)+'<div class="kc-n"><b>'+esc(c.name)+'</b>'+(c.city?'<span>'+ic('pin')+esc(c.city)+'</span>':'<span>'+ic('mail')+esc(c.email||'—')+'</span>')+'</div>'
     +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
@@ -890,7 +930,8 @@ function moveTo(c,k){
   if(colOf(c)===k) return;
   patch(c,{status:stFor(c,k)},true).then(()=>toast(c.name.split(' ')[0]+' → '+(STATUS.find(s=>s.k===k)||{}).l));
 }
-$('board').addEventListener('click',e=>{ const k=e.target.closest('.kc'); if(k) openCand(k.dataset.id); });
+$('board').addEventListener('click',e=>{ const m=e.target.closest('[data-more]'); if(m){ UI.more=UI.more||{}; UI.more[m.dataset.more]=(UI.more[m.dataset.more]||60)+60; renderCand(); return; }
+  const k=e.target.closest('.kc'); if(k) openCand(k.dataset.id); });
 
 /* ---------- painel do candidato ---------- */
 let openId=null;
@@ -910,6 +951,12 @@ function openCand(id){
   $('cBody').innerHTML=
     '<div class="blk"><div class="ph">'+avatar(c.name,'',c.cv_photo)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||c.email||'')+' · inscrito há '+ago(c.created_at)+'</p>'
       +(c.cv_photo?'<a class="ph-del" id="phDel">Não é a pessoa? Remover foto</a>':'')+'</div></div></div>'
+    +((s.tier==='A'||s.tier==='B') && colOf(c)!=='reprovado'?'<div class="blk"><div class="why ok"><b>Por que foi qualificado</b>'
+      +'<p>Score <strong>'+s.pct+'</strong> de 100: acima do mínimo para <strong>Nível '+s.tier+'</strong> ('+(s.tier==='A'?s.th.a:s.th.b)+')'+(s.kw?', com '+s.kw.got+' de '+s.kw.cap+' pontos em palavras-chave':'')+'.</p>'
+      +(s.ev.length?'<div class="kw-h">Palavras encontradas no currículo</div><div class="kw-chips">'+evChips(s.ev)+'</div><div class="kw-h">Onde aparecem</div>'+evSnips(s.ev,5):'')
+      +(s.highlights.length&&!s.ev.length?'<ul>'+s.highlights.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul>':'')
+      +(s.kw&&s.kw.miss.length?'<div class="kw-miss">Não apareceram: '+esc(s.kw.miss.slice(0,8).map(k=>k.w).join(', '))+(s.kw.miss.length>8?'…':'')+'</div>':'')
+      +'</div></div>':'')
     +(colOf(c)==='reprovado'?'<div class="blk"><div class="why"><b>Por que está em Não qualificados</b><ul>'+whyNQ(c).map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>'
       +'<div class="why-tip">Discorda? Mova para outra etapa abaixo, ou ajuste as palavras-chave em <b>Vagas & regras → Regras</b>.</div></div></div>':'')
     +(s.tier==='Q'?'<div class="blk"><div class="why q"><b>Por que está como Manual</b><ul><li>Não consegui ler nenhum texto do arquivo (pode ser foto muito escura, desenho ou formato não suportado).</li><li>Abra o currículo e decida você mesma.</li></ul></div></div>':'')
