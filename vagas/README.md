@@ -52,6 +52,12 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
   etapa, **nota em estrelas**, contato, texto com as palavras-chave destacadas e **anotações**.
 - **Exportar CSV** (Excel/Sheets) e **excluir candidatura + CV** (pedido LGPD).
 - Candidatura nova aparece na hora (realtime).
+- **Por que foi qualificado:** no card, as palavras que pontuaram (✓ sorveteria, ✓ atendimento…);
+  no painel do candidato, um quadro verde com o score x mínimo, cada palavra encontrada com os
+  pontos, **o trecho do currículo onde ela aparece** e o que não apareceu.
+- **Volume:** carrega as candidaturas em páginas de 1.000 (limite da API do Supabase), mostra 60
+  cards por coluna com **"Mostrar mais"** e um aviso "Lendo currículos: X de Y" enquanto lê os novos.
+  Testado com 1.500 candidaturas.
 - **Foto do candidato:** se o currículo (PDF ou Word) tiver foto 3x4, ela vira o avatar do card.
   O painel escolhe a imagem com formato de retrato e tons de pele (descarta logos e ícones) e
   guarda uma miniatura em `cv_photo`. Sem foto, fica o avatar com as iniciais. Pegou a imagem

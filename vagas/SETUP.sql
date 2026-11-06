@@ -63,6 +63,8 @@ alter table public.vagas add column if not exists banner_path text;          -- 
 alter table public.vagas add column if not exists openings integer default 1; -- nº de posições
 
 create index if not exists candidaturas_vaga_idx on public.candidaturas (vaga_id, created_at desc);
+-- deixa rápida a checagem de candidatura repetida (mesmo com milhares de inscrições)
+create index if not exists candidaturas_vaga_email_idx on public.candidaturas (vaga_id, lower(trim(email)));
 
 -- ============ 1 candidatura por e-mail em cada vaga ============
 -- (trigger em vez de índice único: funciona mesmo se já existirem repetidas de testes)
