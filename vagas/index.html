@@ -206,6 +206,10 @@ async function boot(){
     if(error) throw error;
     if(!data){ $('vTitle').textContent='Vaga encerrada'; $('vList').innerHTML='<p class="sub" style="margin:0">Essa vaga não está mais aberta. <a href="./">Ver outras vagas</a>.</p>'; show('listCard'); return; }
     vaga=data; renderVaga(); show('vagaWrap');
+    let ja=false; try{ ja=localStorage.getItem('coquin-candidatou-'+vaga.id)==='1'; }catch(_){}
+    if(ja){ $('doneName').textContent=''; $('doneCard').querySelector('h2').textContent='Você já se candidatou';
+      $('doneCard').querySelector('p').innerHTML='Recebemos sua candidatura para esta vaga. Vamos analisar seu perfil e, se combinar, entramos em contato.<br><br><a href="#" id="outroEmail" style="color:var(--muted);font-size:13px">Sou outra pessoa e quero me candidatar</a>'; show('doneCard');
+      $('outroEmail').onclick=e=>{ e.preventDefault(); try{ localStorage.removeItem('coquin-candidatou-'+vaga.id); }catch(_){} location.reload(); }; }
   }catch(e){
     $('loading').innerHTML='<div class="loading">Não foi possível carregar a vaga. Verifique sua internet e tente de novo.</div>';
   }
@@ -265,6 +269,8 @@ $('form').addEventListener('submit',async e=>{
   if(!$('fConsent').checked) return fail('Marque a autorização de uso dos dados.');
 
   const btn=$('sendBtn'); btn.disabled=true; btn.textContent='Enviando…';
+  // 1 candidatura por e-mail em cada vaga (o banco também barra)
+  try{ const {data:ja,error:je}=await sb.rpc('ja_candidatou',{p_vaga:vaga.id,p_email:email}); if(!je && ja){ btn.disabled=false; btn.textContent='Enviar candidatura'; return fail('Você já se candidatou a esta vaga com este e-mail. Não precisa enviar de novo: vamos analisar seu currículo.'); } }catch(_){}
   const id=uuid(); let cv_path=null, cv_name=null;
   try{
     if(cvFile){
@@ -277,7 +283,8 @@ $('form').addEventListener('submit',async e=>{
     btn.textContent='Enviando…';
     const row={id,vaga_id:vaga.id,name,email,answers,cv_path,cv_name,consent:true,status:'novo'};
     const {error}=await sb.from('candidaturas').insert(row);
-    if(error) throw error;
+    if(error){ if(error.code==='23505'||/ja_candidatou|duplicad/i.test(error.message||'')){ btn.disabled=false; btn.textContent='Enviar candidatura'; return fail('Você já se candidatou a esta vaga com este e-mail. Não precisa enviar de novo: vamos analisar seu currículo.'); } throw error; }
+    try{ localStorage.setItem('coquin-candidatou-'+vaga.id,'1'); }catch(_){}
     $('doneName').textContent=name.split(' ')[0];
     $('vMeta').innerHTML=''; $('kick').textContent=vaga.title;  $('vTitle').textContent='Tudo certo!';
     show('doneCard'); window.scrollTo({top:0,behavior:'smooth'});

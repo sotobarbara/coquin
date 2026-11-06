@@ -248,6 +248,12 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .note.ai-err{background:var(--tX-s);color:var(--tX);border-radius:8px;padding:8px 10px;margin-bottom:10px}
 #eAi{border-color:#E9C9BC;color:var(--accent-2)}
 
+.why{background:var(--tX-s);color:#8E2F29;border-radius:12px;padding:14px 16px;font-size:13.5px}
+.why>b{display:block;margin-bottom:6px;color:var(--tX)}
+.why ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.why.q{background:var(--sunken);color:var(--ink-2)} .why.q>b{color:var(--ink)}
+.why-tip{margin-top:10px;font-size:12.5px;color:var(--ink-2)}
+
 /* ---------- login + toast ---------- */
 .authgate{position:fixed;inset:0;z-index:60;background:var(--side);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -468,7 +474,7 @@ function scoreCand(c){
   const v=vagas.find(x=>x.id===c.vaga_id)||{};
   const qs=Array.isArray(v.questions)?v.questions:[];
   const ans=c.answers||{};
-  let got=0,max=0; const parts=[], kos=[], highlights=[];
+  let got=0,max=0, kwInfo=null; const parts=[], kos=[], highlights=[];
   qs.forEach(q=>{
     const opts=q.options||[]; let qmax=0,qgot=0; const picked=[]; let ko=false;
     if(q.type==='multi'){
@@ -496,7 +502,10 @@ function scoreCand(c){
     const kg=Math.min(cap,hit.reduce((s,k)=>s+Math.max(0,+k.pts||0),0));
     got+=kg; max+=cap;
     parts.push({label:'Palavras-chave no currículo',ans:hit.length?hit.map(k=>k.w).join(', '):'nenhuma',got:kg,max:cap,ko:false,kw:true});
+    kwInfo={hit,miss:kws.filter(k=>!hit.includes(k)).sort((a,b)=>(+b.pts||0)-(+a.pts||0)),got:kg,cap};
   }
+  const cvt=String(c.cv_text||'').trim();
+  if(c.cv_path && cvt.length>20 && !looksLikeCv(cvt)) kos.push('O arquivo não parece um currículo: não tem experiência, formação nem contato');
   const pct=max?Math.round(got/max*100):0;
   const th=v.thresholds||{a:75,b:50};
   let tier=kos.length?'X':pct>=(+th.a||75)?'A':pct>=(+th.b||50)?'B':'C';
@@ -505,7 +514,29 @@ function scoreCand(c){
     if(c.cv_path && c.cv_text==null && !c._cvErr) tier='P';
     else if(!norm((c.about||'')+(c.cv_text||'')).trim()) tier='Q';
   }
-  return {pct,got,max,tier,parts,kos,highlights};
+  return {pct,got,max,tier,parts,kos,highlights,kw:kwInfo,th:{a:+th.a||75,b:+th.b||50}};
+}
+/* sinais de que o texto é um currículo (seções típicas, e-mail, telefone) */
+function looksLikeCv(t){
+  const n=norm(t); let sig=0;
+  ['experiencia','formacao','escolaridade','curriculo','objetivo','habilidades','cursos','qualificac','ensino','idiomas','competencias','perfil profissional','resumo profissional','dados pessoais','historico profissional','empresa','cargo','periodo','atividades','referencias'].forEach(w=>{ if(n.includes(w)) sig++; });
+  if(/[a-z0-9._-]+@[a-z0-9-]+\.[a-z.]{2,}/.test(n)) sig++;
+  if(/\(?\b\d{2}\)?\s?9?\s?\d{4}[-\s.]?\d{4}\b/.test(t)) sig++;
+  return sig>=2;
+}
+/* por que o candidato está em "Não qualificados" (lista de motivos, em português simples) */
+function whyNQ(c){
+  const s=sc(c), out=[];
+  if(c.status==='reprovado') out.push('Foi movido para cá manualmente pela equipe.');
+  s.kos.forEach(k=>out.push(k.indexOf(' → ')>0?'Resposta eliminatória: '+k:k+'.'));
+  if(!s.kos.length && s.tier==='C'){
+    out.push('Score '+s.pct+' de 100: abaixo do mínimo para Nível B ('+s.th.b+').');
+    if(s.kw){ out.push(s.kw.hit.length?'Achou no currículo: '+s.kw.hit.map(k=>k.w+' (+'+k.pts+')').join(', ')+' = '+s.kw.got+' de '+s.kw.cap+' pontos.':'Nenhuma das palavras-chave da vaga apareceu no currículo.');
+      if(s.kw.miss.length) out.push('Não achou: '+s.kw.miss.slice(0,8).map(k=>k.w).join(', ')+(s.kw.miss.length>8?'…':'.')); }
+  }
+  const len=String(c.cv_text||'').trim().length;
+  if(c.cv_path && len<150 && len>0) out.push('Pouco texto lido do arquivo ('+len+' caracteres). Abra o currículo para conferir.');
+  return out;
 }
 
 /* ---------- dados ---------- */
@@ -549,6 +580,18 @@ async function zipEntry(buf,name){
   }
   return null;
 }
+async function ocrBlob(blob){
+  const img=await fileToImg(blob); const w=await loadTess();
+  const sc=Math.min(2,2400/Math.max(img.width,img.height));
+  return (await w.recognize(prepCanvas(img,sc,0,1))).data.text;
+}
+async function pdfOcr(buf){   // PDF escaneado (só imagem): renderiza as páginas e lê com OCR
+  const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf)}).promise; const w=await loadTess(); let out='';
+  for(let i=1;i<=Math.min(doc.numPages,2);i++){ const pg=await doc.getPage(i); const vp=pg.getViewport({scale:2});
+    const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+    out+=(await w.recognize(c)).data.text+'\n'; }
+  return out;
+}
 async function docxText(buf){
   const xml=await zipEntry(buf,'word/document.xml'); if(!xml) return '';
   const t=xml.replace(/<\/w:p>/g,'\n').replace(/<w:tab\/>/g,' ').replace(/<[^>]+>/g,'');
@@ -556,15 +599,21 @@ async function docxText(buf){
 }
 async function readCv(c){
   const ext=(c.cv_path.split('.').pop()||'').toLowerCase();
-  if(ext!=='pdf' && ext!=='docx') return '';
+  const isImg=/^(png|jpe?g|webp)$/.test(ext);
+  if(ext!=='pdf' && ext!=='docx' && !isImg) return ' ';
   const {data,error}=await sb.storage.from('cvs').createSignedUrl(c.cv_path,120); if(error||!data) throw error||new Error('url');
   const r=await fetch(data.signedUrl); if(!r.ok) throw new Error('http '+r.status);
   const buf=await r.arrayBuffer();
-  const txt=ext==='pdf'?await pdfText(buf):await docxText(buf);
+  let txt='';
+  if(isImg){ txt=await ocrBlob(new Blob([buf])); }
+  else if(ext==='pdf'){ txt=await pdfText(buf); if(txt.trim().length<60) txt=await pdfOcr(buf); }
+  else txt=await docxText(buf);
+  if(!txt.trim()) return ' ';   // tentou e não achou texto (fica "Manual"), não tenta de novo
   return txt.replace(/[ \t]+/g,' ').replace(/\n\s*\n+/g,'\n').trim().slice(0,20000);
 }
 const CVQ={q:[],busy:false,
-  add(){ cands.forEach(c=>{ if(c.cv_path && c.cv_text==null && !c._cvErr && !c._cvQ){ c._cvQ=true; this.q.push(c); } }); this.run(); },
+  add(){ cands.forEach(c=>{ const old=c.cv_text==='' && /\.(png|jpe?g|webp|pdf)$/i.test(c.cv_path||'');
+    if(c.cv_path && (c.cv_text==null||old) && !c._cvErr && !c._cvQ){ c._cvQ=true; if(old) c.cv_text=null; this.q.push(c); } }); this.run(); },
   async run(){ if(this.busy) return; this.busy=true;
     while(this.q.length){ const c=this.q.shift();
       try{ c.cv_text=await readCv(c); c._s=null; await sb.from('candidaturas').update({cv_text:c.cv_text}).eq('id',c.id); }
@@ -593,7 +642,7 @@ function avatar(name,cls){
 }
 function ago(iso){ const m=(Date.now()-new Date(iso))/60000; if(m<60) return Math.max(1,Math.round(m))+' min'; const h=m/60; if(h<24) return Math.round(h)+' h'; const d=h/24; if(d<30) return Math.round(d)+' d'; return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}); }
 /* coluna do quadro: quem chega com nível C ou eliminado já cai em "Não qualificados" */
-function colOf(c){ if(c.status==='reprovado') return 'reprovado'; if(c.status==='novo' && (sc(c).tier==='C'||sc(c).tier==='X')) return 'reprovado'; return STATUS.some(s=>s.k===c.status)?c.status:'novo'; }
+function colOf(c){ if(c.status==='novo_ok') return 'novo'; if(c.status==='reprovado') return 'reprovado'; if(c.status==='novo' && (sc(c).tier==='C'||sc(c).tier==='X')) return 'reprovado'; return STATUS.some(s=>s.k===c.status)?c.status:'novo'; }
 function autoNQ(c){ return c.status==='novo' && colOf(c)==='reprovado'; }
 function filtered(base){
   return base.filter(c=>{
@@ -646,7 +695,8 @@ function card(c){
   const s=sc(c); const v=vagas.find(x=>x.id===c.vaga_id)||{};
   const chips=[];
   if(s.kos.length) chips.push('<span class="chip ko">'+esc(s.kos[0].split(' → ')[0].replace(/\?$/,''))+'</span>');
-  else if(autoNQ(c)) chips.push('<span class="chip auto">auto · nível '+s.tier+'</span>');
+  else if(autoNQ(c)) chips.push('<span class="chip auto">score '+s.pct+' · mínimo '+s.th.b+'</span>');
+  if(cands.some(o=>o!==c && o.vaga_id===c.vaga_id && norm(o.name).trim()===norm(c.name).trim())) chips.push('<span class="chip ko">nome repetido</span>');
   s.highlights.slice(0,2).forEach(h=>chips.push('<span class="chip">'+esc(h.replace(/\?$/,'').slice(0,40))+'</span>'));
   return '<div class="kc'+(openId===c.id?' sel':'')+'" draggable="true" data-id="'+c.id+'">'+(c.status==='novo'?'<span class="unread"></span>':'')
     +'<div class="kc-top">'+avatar(c.name)+'<div class="kc-n"><b>'+esc(c.name)+'</b>'+(c.city?'<span>'+ic('pin')+esc(c.city)+'</span>':'<span>'+ic('mail')+esc(c.email||'—')+'</span>')+'</div>'
@@ -663,9 +713,10 @@ $('board').addEventListener('dragend',e=>{ const k=e.target.closest('.kc'); if(k
 $('board').addEventListener('dragover',e=>{ const col=e.target.closest('.col'); if(!col||!dragId) return; e.preventDefault(); document.querySelectorAll('.col.over').forEach(x=>{ if(x!==col) x.classList.remove('over'); }); col.classList.add('over'); });
 $('board').addEventListener('drop',e=>{ const col=e.target.closest('.col'); if(!col||!dragId) return; e.preventDefault(); col.classList.remove('over');
   const c=cands.find(x=>x.id===dragId); dragId=null; if(!c) return; moveTo(c,col.dataset.col); });
+function stFor(c,k){ return (k==='novo' && (sc(c).tier==='C'||sc(c).tier==='X'))?'novo_ok':k; }
 function moveTo(c,k){
-  if(colOf(c)===k && c.status===k) return;
-  patch(c,{status:k},true).then(()=>toast(c.name.split(' ')[0]+' → '+(STATUS.find(s=>s.k===k)||{}).l));
+  if(colOf(c)===k) return;
+  patch(c,{status:stFor(c,k)},true).then(()=>toast(c.name.split(' ')[0]+' → '+(STATUS.find(s=>s.k===k)||{}).l));
 }
 $('board').addEventListener('click',e=>{ const k=e.target.closest('.kc'); if(k) openCand(k.dataset.id); });
 
@@ -686,17 +737,20 @@ function openCand(id){
   $('cTitle').textContent=(v.title||'Candidatura')+(v.store?' · '+v.store:'');
   $('cBody').innerHTML=
     '<div class="blk"><div class="ph">'+avatar(c.name)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||c.email||'')+' · inscrito há '+ago(c.created_at)+'</p></div></div></div>'
+    +(colOf(c)==='reprovado'?'<div class="blk"><div class="why"><b>Por que está em Não qualificados</b><ul>'+whyNQ(c).map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>'
+      +'<div class="why-tip">Discorda? Mova para outra etapa abaixo, ou ajuste as palavras-chave em <b>Vagas & regras → Regras</b>.</div></div></div>':'')
+    +(s.tier==='Q'?'<div class="blk"><div class="why q"><b>Por que está como Manual</b><ul><li>Não consegui ler nenhum texto do arquivo (pode ser foto muito escura, desenho ou formato não suportado).</li><li>Abra o currículo e decida você mesma.</li></ul></div></div>':'')
     +'<div class="blk"><div class="scorebox"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="#ECE8E1" stroke-width="6"/><circle cx="38" cy="38" r="32" fill="none" stroke="'+TIERC[s.tier]+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct/100))+'"/></svg><b style="color:'+TIERC[s.tier]+'">'+(noNum(s.tier)?'—':s.pct)+'</b></div>'
     +'<div><div class="tl">'+tl+'</div><div class="ts">'+ts+'</div></div></div>'
-    +(s.kos.length?'<div class="alert" style="margin-top:10px"><b>Eliminatória</b><br>'+s.kos.map(esc).join('<br>')+'</div>':'')
+    +(s.kos.length && colOf(c)!=='reprovado'?'<div class="alert" style="margin-top:10px"><b>Eliminatória</b><br>'+s.kos.map(esc).join('<br>')+'</div>':'')
     +'<div class="acts" style="margin-top:14px">'
       +(c.cv_path?'<button class="btn accent" id="cvOpen">'+ic('file')+'Ver currículo</button>':'<span class="chip">sem currículo</span>')
       +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgInv)+'">'+ic('chat')+'Chamar no WhatsApp</a>':'')
       +(c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgInv)+'">'+ic('mail')+(ph?'E-mail':'Convidar por e-mail')+'</a>':'')
       +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgNo)+'">Agradecer</a>':c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgNo)+'">Agradecer</a>':'')
     +'</div></div>'
-    +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(c.status===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+x.l+'</button>').join('')+'</div>'
-    +(autoNQ(c)?'<div class="note" style="margin-top:8px">Está em <b>Não qualificados</b> automaticamente pelo score. Mova para outra etapa se quiser dar uma chance.</div>':'')
+    +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(colOf(c)===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+x.l+'</button>').join('')+'</div>'
+
     +'<h4 style="margin-top:18px">Sua nota</h4><div class="starsel" id="starSel">'+[1,2,3,4,5].map(n=>'<button data-n="'+n+'" class="'+((c.stars||0)>=n?'on':'')+'">★</button>').join('')+'</div></div>'
     +'<div class="blk"><h4>Contato</h4><dl class="kv">'
       +(ph?'<dt>WhatsApp</dt><dd><a target="_blank" rel="noopener" href="https://wa.me/'+waNumber(ph)+'">'+esc(ph)+'</a>'+(c.phone?'':' <span class="note">(do currículo)</span>')+'</dd>':'')
@@ -711,7 +765,7 @@ function openCand(id){
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
-  $('stSel').onclick=e=>{ const b=e.target.closest('[data-st]'); if(b){ patch(c,{status:b.dataset.st},true); renderOpenMarks(); } };
+  $('stSel').onclick=e=>{ const b=e.target.closest('[data-st]'); if(b && colOf(c)!==b.dataset.st){ patch(c,{status:stFor(c,b.dataset.st)},true).then(()=>openCand(c.id)); } };
   $('starSel').onclick=e=>{ const b=e.target.closest('[data-n]'); if(!b) return; const n=+b.dataset.n; patch(c,{stars:(c.stars===n?0:n)},true).then(()=>document.querySelectorAll('#starSel button').forEach(x=>x.classList.toggle('on',(c.stars||0)>=+x.dataset.n))); };
   const nt=$('cNotes'); nt.oninput=()=>{ clearTimeout(nt._h); nt._h=setTimeout(()=>patch(c,{notes:nt.value},true),700); };
   $('cDel').onclick=()=>delCand(c);
@@ -738,7 +792,7 @@ async function patch(c,fields,quiet){
   if(error){ toast('⚠︎ Não salvou: '+error.message); return; }
   renderCand();
   if(!quiet){ if(openId===c.id) openCand(c.id); toast('Salvo ✓'); }
-  else if(openId===c.id && fields.status){ const b=document.querySelectorAll('#stSel button'); b.forEach(x=>x.classList.toggle('sel',x.dataset.st===c.status)); }
+  else if(openId===c.id && fields.status){ const b=document.querySelectorAll('#stSel button'); b.forEach(x=>x.classList.toggle('sel',x.dataset.st===colOf(c))); }
 }
 async function delCand(c){
   if(!confirm('Excluir a candidatura de '+c.name+' e o currículo? Não dá pra desfazer.')) return;
@@ -755,7 +809,7 @@ $('csvBtn').onclick=()=>{
   const head=['Nome','WhatsApp','E-mail','Bairro/cidade','Vaga','Score','Nível','Eliminatória','Status','Nota','Inscrito em'].concat(qset.map(q=>q.label),['Sobre','Anotações']);
   const rows=base.map(c=>{ const s=sc(c); const v=vagas.find(x=>x.id===c.vaga_id)||{};
     const qa=qset.map(q=>{ const p=s.parts.find(p=>p.label===q.label); return p?p.ans:''; });
-    return [c.name,phoneOf(c),c.email,c.city,v.title||c.vaga_id,s.pct,s.tier,s.kos.join(' | '),(STATUS.find(x=>x.k===c.status)||{}).l||c.status,c.stars||0,new Date(c.created_at).toLocaleString('pt-BR')].concat(qa,[c.about,c.notes]); });
+    return [c.name,phoneOf(c),c.email,c.city,v.title||c.vaga_id,s.pct,s.tier,s.kos.join(' | '),(STATUS.find(x=>x.k===colOf(c))||{}).l||c.status,c.stars||0,new Date(c.created_at).toLocaleString('pt-BR')].concat(qa,[c.about,c.notes]); });
   const csv=[head].concat(rows).map(r=>r.map(x=>{ x=String(x==null?'':x); if(/^[=+\-@]/.test(x)) x="'"+x; return '"'+x.replace(/"/g,'""')+'"'; }).join(';')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
   a.download='candidatos-coquin-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
@@ -1101,7 +1155,7 @@ function prepCanvas(img,sc,y0,y1){ // amplia, recorta e passa para tons de cinza
   const d=x.getImageData(0,0,c.width,c.height), a=d.data; for(let i=0;i<a.length;i+=4){ const g=.299*a[i]+.587*a[i+1]+.114*a[i+2]; a[i]=a[i+1]=a[i+2]=g; }
   x.putImageData(d,0,0); return c;
 }
-function fileToImg(f){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(f); }); }
+function fileToImg(f){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(f); }); } // File ou Blob
 function imgHash(img){ const c=document.createElement('canvas'); c.width=48; c.height=72; const x=c.getContext('2d'); x.drawImage(img,0,0,48,72);
   const a=x.getImageData(0,0,48,72).data; let s=''; for(let i=0;i<a.length;i+=4) s+=((a[i]+a[i+1]+a[i+2])/48|0).toString(16); return s; }
 

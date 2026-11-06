@@ -91,6 +91,20 @@ A chave da IA **fica no Supabase** (nunca no site). Configuração, uma vez:
 
 Só a equipe logada consegue chamar a função. Cada vaga melhorada custa poucos centavos.
 
+## Por que alguém foi para "Não qualificados"
+
+Abrindo o card, o quadro vermelho no topo explica o motivo: score abaixo do mínimo (com as
+palavras que **achou** e as que **faltaram** no currículo), resposta eliminatória, ou arquivo que
+**não parece um currículo** (print de tela, foto qualquer, sem experiência, formação ou contato).
+Discordou? Mova para **Aplicações**: a pessoa fica lá e não volta sozinha para Não qualificados.
+
+Currículo em **foto** ou **PDF escaneado** também é lido (OCR). Se não der para ler nada, o card
+fica como **MANUAL** em Aplicações.
+
+**Uma candidatura por e-mail em cada vaga:** o formulário avisa "você já se candidatou" e o banco
+também barra (trigger `candidaturas_unica`). No mesmo celular, a página já abre avisando. Card com
+**nome repetido** na mesma vaga ganha uma etiqueta, para pegar quem usou outro e-mail.
+
 ## Como funciona o score
 
 O painel **lê o currículo** (PDF e Word, direto no navegador da equipe) e salva o texto em

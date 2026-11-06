@@ -63,6 +63,29 @@ alter table public.vagas add column if not exists openings integer default 1; --
 
 create index if not exists candidaturas_vaga_idx on public.candidaturas (vaga_id, created_at desc);
 
+-- ============ 1 candidatura por e-mail em cada vaga ============
+-- (trigger em vez de índice único: funciona mesmo se já existirem repetidas de testes)
+create or replace function public.candidaturas_unica() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if exists (select 1 from public.candidaturas c
+             where c.vaga_id = new.vaga_id and lower(trim(c.email)) = lower(trim(new.email)) and c.id <> new.id) then
+    raise exception 'ja_candidatou' using errcode = '23505';
+  end if;
+  return new;
+end $$;
+drop trigger if exists candidaturas_unica on public.candidaturas;
+create trigger candidaturas_unica before insert on public.candidaturas
+  for each row execute function public.candidaturas_unica();
+
+-- o formulário pergunta antes de subir o CV (responde só sim/não, não expõe dados)
+create or replace function public.ja_candidatou(p_vaga text, p_email text) returns boolean
+language sql security definer set search_path = public stable as $$
+  select exists (select 1 from public.candidaturas
+                 where vaga_id = p_vaga and lower(trim(email)) = lower(trim(p_email)));
+$$;
+grant execute on function public.ja_candidatou(text, text) to anon, authenticated;
+
 -- ============ Segurança (RLS) ============
 alter table public.vagas        enable row level security;
 alter table public.candidaturas enable row level security;
