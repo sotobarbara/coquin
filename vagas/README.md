@@ -32,7 +32,7 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 - **Página da vaga** (`?v=id`): título, local, escala, horário, salário e nº de vagas no topo; à
   esquerda o formulário **Candidate-se** (nome, e-mail e currículo, em 1 minuto); à direita
   **Sobre a vaga** (com títulos e listas), **Benefícios e condições** e o banner.
-- Usa a **logo oficial** (`logo-coquin-oficial.png`) e a foto do gelato (`hero-gelato.webp`; a foto real entra depois).
+- Usa a **logo oficial** (`logo-coquin-oficial.png`) e a foto da capa (`capa-foto.webp`, da arte "Faça parte do nosso time!").
   Cores: areia + verde oliva da logo (`#3D5842`). Fonte: Outfit.
 - Perguntas extras aparecem no formulário só se a vaga tiver.
 
