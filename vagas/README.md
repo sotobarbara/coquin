@@ -24,15 +24,17 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 | `index.html` | `/?v=<id-da-vaga>` (sem `?v` lista as vagas abertas) | candidato (público) |
 | `admin.html` | `/admin` | equipe (login) |
 
-## Formulário do candidato (`index.html`): rápido, 1 minuto
+## Portal de Vagas Coquin (`index.html`): o que o candidato vê
 
-O candidato toca no link da bio ou na figurinha do story, e a página abre direto no navegador
-do Instagram (sem login nem app). Ele preenche **nome**, **e-mail** e **currículo** (PDF, Word ou
-foto, até 5 MB), marca o aceite da LGPD e envia. Os detalhes da vaga ficam num "Sobre a vaga"
-recolhido, logo abaixo.
-
-Perguntas extras são **opcionais por vaga** (no editor). Se a vaga tiver perguntas, elas
-aparecem no mesmo formulário.
+- **Página inicial** (link da bio): "Portal de Vagas Coquin", com hero "Vem fazer parte do nosso
+  time!", busca, a lista de **vagas disponíveis** (local, escala, tipo e um resumo), o quadro
+  **Como funciona?** e as seções **Nossa cultura**, **Benefícios** e **Dúvidas**.
+- **Página da vaga** (`?v=id`): título, local, escala, horário, salário e nº de vagas no topo; à
+  esquerda o formulário **Candidate-se** (nome, e-mail e currículo, em 1 minuto); à direita
+  **Sobre a vaga** (com títulos e listas), **Benefícios e condições** e o banner.
+- Usa a **logo oficial** (`logo-coquin-oficial.png`) e a foto do gelato (`hero-gelato.webp`).
+  Cores: areia + verde oliva da logo (`#3D5842`). Fonte: Outfit.
+- Perguntas extras aparecem no formulário só se a vaga tiver.
 
 ## Painel (`admin.html`)
 
@@ -72,6 +74,38 @@ cargo, local, salário, vale-alimentação/transporte, escala, horário, ativida
   (ligada por padrão) troca o rodapé "envie seu currículo para o e-mail" por **"Inscreva-se pelo
   link na bio"**, na mesma cor do rodapé. O story ganha espaço para a figurinha de link.
 - O banner também aparece no formulário do candidato, em "Sobre a vaga".
+
+## ✨ Melhorar com IA (anúncio de vaga profissional)
+
+Na conferência dos banners (por vaga, ou **Melhorar todas com IA**) e no editor da vaga, o botão
+**✨ Melhorar com IA** manda o **banner + os campos** para o Claude, que devolve um anúncio
+completo: resumo, responsabilidades, requisitos, diferenciais, benefícios, jornada e as
+**palavras-chave do currículo** dessa função. A IA não inventa salário, benefício nem horário, e
+não usa critérios discriminatórios. Você revisa antes de salvar.
+
+A chave da IA **fica no Supabase** (nunca no site). Configuração, uma vez:
+
+1. Crie uma chave em **console.anthropic.com → API Keys** (com créditos em Billing).
+2. Supabase → **Edge Functions → Deploy a new function → Via Editor**, com o nome **`vagas-ia`**.
+   Cole o conteúdo de [`supabase/functions/vagas-ia/index.ts`](../supabase/functions/vagas-ia/index.ts)
+   e clique em **Deploy**. Deixe "Verify JWT" ligado.
+3. Supabase → **Edge Functions → Secrets → Add new secret**: nome `ANTHROPIC_API_KEY`, valor = a chave.
+
+Só a equipe logada consegue chamar a função. Cada vaga melhorada custa poucos centavos.
+
+## Por que alguém foi para "Não qualificados"
+
+Abrindo o card, o quadro vermelho no topo explica o motivo: score abaixo do mínimo (com as
+palavras que **achou** e as que **faltaram** no currículo), resposta eliminatória, ou arquivo que
+**não parece um currículo** (print de tela, foto qualquer, sem experiência, formação ou contato).
+Discordou? Mova para **Aplicações**: a pessoa fica lá e não volta sozinha para Não qualificados.
+
+Currículo em **foto** ou **PDF escaneado** também é lido (OCR). Se não der para ler nada, o card
+fica como **MANUAL** em Aplicações.
+
+**Uma candidatura por e-mail em cada vaga:** o formulário avisa "você já se candidatou" e o banco
+também barra (trigger `candidaturas_unica`). No mesmo celular, a página já abre avisando. Card com
+**nome repetido** na mesma vaga ganha uma etiqueta, para pegar quem usou outro e-mail.
 
 ## Como funciona o score
 
