@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16130F">
+<title>Trabalhe na Coquin</title>
+<meta name="description" content="Vagas abertas na Coquin. Inscreva-se em 1 minuto.">
+<meta property="og:title" content="Trabalhe na Coquin">
+<meta property="og:description" content="Vagas abertas. Inscreva-se em 1 minuto.">
+<meta property="og:image" content="logo-coquin.png">
+<link rel="icon" href="logo-coquin.png">
+<link rel="apple-touch-icon" href="logo-coquin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   COQUIN — Candidatura (página pública do link do Instagram)
+   ============================================================ */
+:root{
+  --bg:#F6F4F0; --surface:#FFFFFF; --sunken:#F0EDE7;
+  --ink:#1A1714; --ink-2:#4A453F; --muted:#8C867E; --faint:#B5AFA6;
+  --line:#E8E3DB; --line-2:#DAD4CA;
+  --accent:#E5623D; --accent-2:#C94E2C; --accent-soft:#FCEDE7;
+  --dark:#16130F; --dark-ink:#EDE8E1; --dark-muted:#9C958C;
+  --danger:#C2413A; --danger-soft:#FBE6E3;
+  --serif:"Instrument Serif",Georgia,serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5;font-size:15px;padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+button,input,textarea{font-family:inherit}
+.wrap{max-width:600px;margin:0 auto;padding:0 18px}
+.hide{display:none!important}
+.hero{background:var(--dark);color:var(--dark-ink);padding:calc(26px + env(safe-area-inset-top)) 18px 92px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;right:-30%;top:-60%;width:90%;height:160%;background:radial-gradient(closest-side,rgba(229,98,61,.30),rgba(229,98,61,0));pointer-events:none}
+.hero .in{max-width:600px;margin:0 auto;position:relative}
+.hero img{height:22px;display:block}
+.hero .kick{margin-top:44px;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:52px;line-height:.98;letter-spacing:-.01em;margin:10px 0 18px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--dark-muted);font-size:14px}
+.hero .meta span{display:inline-flex;align-items:center;gap:6px}
+.hero .meta span::before{content:"";width:5px;height:5px;border-radius:99px;background:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px rgba(26,23,20,.04),0 10px 30px -10px rgba(26,23,20,.10);padding:26px 22px;margin-top:14px}
+.card.lift{margin-top:-58px;position:relative}
+.desc{font-size:15.5px;color:var(--ink-2);white-space:pre-line;line-height:1.6}
+.perks{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px;border-top:1px solid var(--line);padding-top:18px}
+.perks li{display:flex;gap:12px;font-size:14.5px;font-weight:500;align-items:center}
+.perks li::before{content:"";width:18px;height:18px;border-radius:99px;flex:none;background:var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E5623D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/11px no-repeat}
+h2{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.05;margin:0 0 6px}
+.sub{font-size:14px;color:var(--muted);margin:0 0 22px}
+.field{margin-bottom:18px}
+.field>label,.q>.ql{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.req{color:var(--accent)}
+.hint{font-size:12.5px;color:var(--muted);font-weight:400;margin-top:-4px;margin-bottom:9px}
+input[type=text],input[type=email],input[type=tel],textarea{width:100%;border:1px solid var(--line-2);border-radius:11px;padding:13px 14px;font-size:16px;color:var(--ink);background:var(--surface);transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,23,20,.06)}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt span{display:inline-block;border:1px solid var(--line-2);border-radius:10px;padding:10px 15px;font-size:14.5px;font-weight:500;cursor:pointer;background:var(--surface);transition:.12s;user-select:none}
+.opt span:hover{border-color:var(--faint)}
+.opt input:checked+span{background:var(--ink);border-color:var(--ink);color:#fff}
+.opt input:focus-visible+span{box-shadow:0 0 0 3px var(--accent-soft)}
+.q{padding:20px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0;padding-top:0}
+.q.err .ql{color:var(--danger)}
+.field>label.drop,.drop{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line-2);background:var(--bg);border-radius:13px;padding:16px;cursor:pointer;transition:.15s}
+.drop:hover{border-color:var(--accent)}
+.drop .ic{width:42px;height:42px;border-radius:11px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.drop .ic svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.drop b{display:block;font-size:14.5px;font-weight:600}
+.drop small{color:var(--muted);font-size:12.5px}
+.field>label.drop.has,.drop.has{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
+.consent{display:flex;gap:12px;align-items:flex-start;font-size:13px;color:var(--ink-2);cursor:pointer;line-height:1.5}
+.consent input{width:18px;height:18px;accent-color:var(--ink);flex:none;margin-top:2px}
+.btn{width:100%;border:0;background:var(--accent);color:#fff;font-size:16px;font-weight:600;padding:17px;border-radius:12px;cursor:pointer;margin-top:6px;transition:background .15s}
+.btn:hover{background:var(--accent-2)}
+.btn:disabled{opacity:.6}
+.err-box{background:var(--danger-soft);color:var(--danger);border-radius:11px;padding:12px 14px;font-size:13.5px;font-weight:500;margin-bottom:12px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.done{text-align:center;padding:30px 10px}
+.done .big{width:64px;height:64px;border-radius:99px;background:var(--accent-soft);display:grid;place-items:center;margin:0 auto 18px}
+.done .big svg{width:28px;height:28px;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.done h2{font-size:36px;margin:0 0 10px}
+.done p{color:var(--ink-2);margin:0}
+.vlist a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 2px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.vlist a:last-child{border-bottom:0}
+.vlist b{font-size:16px;font-weight:600}
+.vlist small{display:block;color:var(--muted);font-size:13px}
+.vlist .go{color:var(--accent);font-size:20px}
+.foot{margin:26px 4px 0;text-align:center;color:var(--faint);font-size:12px}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+details.about{padding:0}
+details.about summary{list-style:none;cursor:pointer;padding:18px 22px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+details.about summary::-webkit-details-marker{display:none}
+details.about summary::after{content:"+";font-size:20px;font-weight:400;color:var(--muted)}
+details.about[open] summary::after{content:"–"}
+details.about .desc,details.about .perks{margin-left:22px;margin-right:22px}
+details.about[open]{padding-bottom:22px}
+details.about .perks{margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="hero"><div class="in">
+  <img src="logo-coquin-coral.png" alt="Coquin">
+  <div class="kick" id="kick">Trabalhe com a gente</div>
+  <h1 id="vTitle">Vagas abertas</h1>
+  <div class="meta" id="vMeta"></div>
+</div></div>
+
+<main class="wrap">
+  <div class="card lift" id="loading"><div class="loading">Carregando…</div></div>
+
+  <!-- lista de vagas (sem ?v=) -->
+  <div class="card lift hide" id="listCard">
+    <h2>Escolha a vaga</h2>
+    <p class="sub">Toque na vaga que você quer se candidatar.</p>
+    <div class="vlist" id="vList"></div>
+  </div>
+
+  <!-- vaga + formulário -->
+  <div id="vagaWrap" class="hide">
+    <form id="form" novalidate>
+      <div class="card lift">
+        <h2>Candidate-se</h2>
+        <p class="sub">Leva 1 minuto: nome, e-mail e currículo.</p>
+        <div class="field"><label for="fName">Nome completo</label>
+          <input id="fName" type="text" autocomplete="name" maxlength="120" required></div>
+        <div class="field"><label for="fEmail">E-mail</label>
+          <input id="fEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="160" required></div>
+        <div class="field">
+          <label>Currículo</label>
+          <label class="drop" id="drop" for="fCv">
+            <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
+            <span><b id="cvLbl">Enviar currículo</b><small id="cvSub">PDF, Word ou foto · até 5 MB</small></span>
+          </label>
+          <input id="fCv" type="file" class="hide" accept=".pdf,.doc,.docx,image/*">
+        </div>
+        <div id="qWrap" class="hide" style="margin-top:4px"><div id="qs"></div></div>
+        <div class="hp" aria-hidden="true"><label>Não preencha <input id="fWeb" type="text" tabindex="-1" autocomplete="off"></label></div>
+        <label class="consent"><input type="checkbox" id="fConsent">
+          <span>Autorizo a Coquin a usar meus dados e currículo <b>somente para este processo seletivo</b> (LGPD).</span></label>
+        <div style="height:16px"></div>
+        <div class="err-box hide" id="errBox"></div>
+        <button class="btn" id="sendBtn" type="submit">Enviar candidatura</button>
+      </div>
+    </form>
+
+    <details class="card about" id="aboutCard">
+      <summary>Sobre a vaga</summary>
+      <div class="desc" id="vDesc"></div>
+      <ul class="perks" id="vPerks"></ul>
+    </details>
+  </div>
+
+  <div class="card lift hide" id="doneCard"><div class="done">
+    <div class="big"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h2>Candidatura enviada!</h2>
+    <p>Obrigado, <b id="doneName"></b>. Vamos analisar seu perfil e, se combinar com a vaga, entramos em contato.</p>
+  </div></div>
+
+  <div class="foot">Coquin · seus dados ficam protegidos e só a equipe de contratação tem acesso.</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+'use strict';
+const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
+const MAX_CV=5*1024*1024;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:false}});
+let vaga=null, cvFile=null;
+
+function slugFromUrl(){
+  const p=new URLSearchParams(location.search).get('v');
+  if(p) return p.trim();
+  const m=location.pathname.match(/\/v\/([^\/?#]+)/);
+  return m?decodeURIComponent(m[1]):'';
+}
+function uuid(){
+  if(crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]&15;return (c==='x'?r:(r&3|8)).toString(16);});
+}
+function show(id){ ['loading','listCard','vagaWrap','doneCard'].forEach(x=>$(x).classList.toggle('hide',x!==id)); }
+
+async function boot(){
+  const slug=slugFromUrl();
+  try{
+    if(!slug){
+      const {data,error}=await sb.from('vagas').select('id,title,store,kind').eq('active',true).order('created_at',{ascending:false});
+      if(error) throw error;
+      if(data && data.length===1){ location.replace('?v='+encodeURIComponent(data[0].id)); return; }
+      $('vList').innerHTML=(data&&data.length)? data.map(v=>'<a href="?v='+encodeURIComponent(v.id)+'"><span><b>'+esc(v.title)+'</b><small>'+esc([v.store,v.kind].filter(Boolean).join(' · '))+'</small></span><span class="go">›</span></a>').join('')
+        : '<p class="sub" style="margin:0">Nenhuma vaga aberta agora. Volte em breve! 🥥</p>';
+      show('listCard'); return;
+    }
+    const {data,error}=await sb.from('vagas').select('*').eq('id',slug).eq('active',true).maybeSingle();
+    if(error) throw error;
+    if(!data){ $('vTitle').textContent='Vaga encerrada'; $('vList').innerHTML='<p class="sub" style="margin:0">Essa vaga não está mais aberta. <a href="./">Ver outras vagas</a>.</p>'; show('listCard'); return; }
+    vaga=data; renderVaga(); show('vagaWrap');
+  }catch(e){
+    $('loading').innerHTML='<div class="loading">Não foi possível carregar a vaga. Verifique sua internet e tente de novo.</div>';
+  }
+}
+
+function renderVaga(){
+  document.title=vaga.title+' · Coquin';
+  $('kick').textContent='Estamos contratando';
+  $('vTitle').textContent=vaga.title;
+  $('vMeta').innerHTML=[vaga.store,vaga.kind,vaga.salary].filter(Boolean).map(t=>'<span>'+esc(t)+'</span>').join('');
+  $('vDesc').textContent=vaga.description||'';
+  const perks=String(vaga.perks||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  $('vPerks').innerHTML=perks.map(p=>'<li>'+esc(p)+'</li>').join('');
+  if(!vaga.description && !perks.length) $('aboutCard').classList.add('hide');
+  if(!vaga.cv_required) $('cvSub').textContent='Opcional · PDF, Word ou foto · até 5 MB';
+  /* perguntas extras: só aparecem se a vaga tiver (por padrão não tem) */
+  const qs=Array.isArray(vaga.questions)?vaga.questions:[];
+  $('qWrap').classList.toggle('hide',!qs.length);
+  $('qs').innerHTML=qs.map((q,i)=>{
+    const multi=q.type==='multi';
+    const opts=(q.options||[]).map(o=>'<label class="opt"><input type="'+(multi?'checkbox':'radio')+'" name="q'+i+'" value="'+esc(o.v)+'"><span>'+esc(o.l)+'</span></label>').join('');
+    return '<div class="q" data-i="'+i+'"><span class="ql">'+esc(q.label)+'</span>'
+      +(q.hint?'<div class="hint">'+esc(q.hint)+'</div>':'')
+      +'<div class="opts">'+opts+'</div></div>';
+  }).join('');
+}
+
+$('fCv').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];
+  if(!f){ return; }
+  if(f.size>MAX_CV){ cvFile=null; e.target.value=''; $('cvLbl').textContent='Arquivo muito grande'; $('cvSub').textContent='Máximo 5 MB. Tente um PDF ou uma foto menor'; $('drop').classList.remove('has'); return; }
+  cvFile=f; $('drop').classList.add('has'); $('cvLbl').textContent=f.name; $('cvSub').textContent=(f.size<1048576?Math.max(1,Math.round(f.size/1024))+' KB':(f.size/1048576).toFixed(1)+' MB')+' · toque para trocar';
+});
+
+function collect(){
+  const qs=vaga.questions||[]; const answers={}; const missing=[];
+  document.querySelectorAll('.q').forEach(el=>el.classList.remove('err'));
+  qs.forEach((q,i)=>{
+    const sel=[...document.querySelectorAll('input[name="q'+i+'"]:checked')].map(x=>x.value);
+    if(q.type==='multi') answers[q.k]=sel; else answers[q.k]=sel[0]||'';
+    if(q.required!==false && !sel.length){ missing.push(q.label); const el=document.querySelector('.q[data-i="'+i+'"]'); if(el) el.classList.add('err'); }
+  });
+  return {answers,missing};
+}
+function fail(msg){ const b=$('errBox'); b.textContent=msg; b.classList.remove('hide'); b.scrollIntoView({behavior:'smooth',block:'center'}); }
+
+$('form').addEventListener('submit',async e=>{
+  e.preventDefault(); $('errBox').classList.add('hide');
+  if($('fWeb').value) return;                                   // robô (honeypot)
+  const name=$('fName').value.trim(), email=$('fEmail').value.trim();
+  if(name.length<2) return fail('Preencha seu nome.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail('Confira seu e-mail.');
+  if(vaga.cv_required && !cvFile) return fail('Envie seu currículo.');
+  const {answers,missing}=collect();
+  if(missing.length) return fail('Responda: '+missing[0]);
+  if(!$('fConsent').checked) return fail('Marque a autorização de uso dos dados.');
+
+  const btn=$('sendBtn'); btn.disabled=true; btn.textContent='Enviando…';
+  const id=uuid(); let cv_path=null, cv_name=null;
+  try{
+    if(cvFile){
+      const ext=(cvFile.name.split('.').pop()||'pdf').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'pdf';
+      cv_path=vaga.id+'/'+id+'.'+ext; cv_name=cvFile.name.slice(0,140);
+      btn.textContent='Enviando currículo…';
+      const {error:upErr}=await sb.storage.from('cvs').upload(cv_path,cvFile,{contentType:cvFile.type||'application/octet-stream',upsert:false});
+      if(upErr) throw upErr;
+    }
+    btn.textContent='Enviando…';
+    const row={id,vaga_id:vaga.id,name,email,answers,cv_path,cv_name,consent:true,status:'novo'};
+    const {error}=await sb.from('candidaturas').insert(row);
+    if(error) throw error;
+    $('doneName').textContent=name.split(' ')[0];
+    $('vMeta').innerHTML=''; $('kick').textContent=vaga.title;  $('vTitle').textContent='Tudo certo!';
+    show('doneCard'); window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    const m=String((err&&(err.message||err.error))||'');
+    fail(/mime|type/i.test(m)?'Formato de arquivo não aceito. Envie PDF, foto (JPG/PNG) ou Word.'
+      :/size|large/i.test(m)?'Arquivo muito grande (máximo 5 MB).'
+      :'Não conseguimos enviar agora. Confira sua internet e tente de novo.');
+    btn.disabled=false; btn.textContent='Enviar candidatura';
+  }
+});
+
+boot();
+</script>
+</body>
+</html>
