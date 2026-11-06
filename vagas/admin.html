@@ -71,6 +71,7 @@ select:focus,input:focus,textarea:focus{outline:0;border-color:var(--green)}
 .t.A .v{color:var(--tA)} .t.B .v{color:var(--tB)} .t.C .v{color:var(--tC)} .t.X .v{color:var(--tX)}
 /* lista */
 .list{display:grid;gap:10px;margin-top:12px}
+.list>*{min-width:0}
 @media(min-width:760px){.list{grid-template-columns:1fr 1fr}}
 .cand{display:flex;gap:13px;align-items:center;padding:14px;cursor:pointer;position:relative}
 .cand:active{opacity:.8}
@@ -523,7 +524,7 @@ function maxPoints(d){
 function openVaga(id){
   const v=id&&vagas.find(x=>x.id===id);
   draftNew=!v;
-  draft=v?JSON.parse(JSON.stringify(v)):Object.assign({id:'',title:'Atendente de gelato',store:'',kind:'CLT',salary:'',description:'Buscamos pessoas simpáticas, que gostam de gente e de deixar o dia de alguém mais doce. Você vai atender clientes, bolear gelato, operar o caixa e cuidar da organização da loja.',perks:'Salário fixo\nVale-transporte\nTreinamento completo\nAmbiente leve e equipe jovem',active:true,cv_required:true},templateAtendente());
+  draft=v?JSON.parse(JSON.stringify(v)):Object.assign({id:'',title:'Atendente de gelato',store:'',kind:'CLT',salary:'',description:'Buscamos pessoas simpáticas, que gostam de gente e de deixar o dia de alguém mais doce. Você vai atender clientes, bolear gelato, operar o caixa e cuidar da organização da loja.',perks:'Salário fixo\nVale-transporte\nTreinamento completo\nAmbiente leve e equipe parceira',active:true,cv_required:true},templateAtendente());
   $('vTitle').textContent=draftNew?'Nova vaga':'Editar vaga';
   renderEditor(); openSheet('vagaSheet');
 }
@@ -649,14 +650,14 @@ async function drawArt(v,fmt){
   let y=fmt==='story'?200:110;
   const lg=await loadLogo(); if(lg){ const lh=78, lw=lg.width/lg.height*lh; x.drawImage(lg,P,y,lw,lh); } y+=170;
   x.font='800 34px '+F; const kick='ESTAMOS CONTRATANDO'; const kw=x.measureText(kick).width+56;
-  x.fillStyle='#C79A3E'; x.beginPath(); x.roundRect(P,y,kw,70,35); x.fill(); x.fillStyle='#fff'; x.textBaseline='middle'; x.fillText(kick,P+28,y+37); y+=130;
+  x.fillStyle='#C79A3E'; x.beginPath(); x.roundRect(P,y,kw,70,35); x.fill(); x.fillStyle='#fff'; x.textBaseline='middle'; x.fillText(kick,P+28,y+37); y+=fmt==='story'?130:105;
   x.textBaseline='alphabetic'; x.fillStyle='#fff'; x.font='850 104px '+F;
   wrapText(x,v.title,W-P*2).slice(0,3).forEach(l=>{ y+=104; x.fillText(l,P,y); }); y+=40;
   x.font='650 40px '+F; x.fillStyle='rgba(255,255,255,.85)';
-  [v.store&&('📍 '+v.store),[v.kind,v.salary].filter(Boolean).join(' · ')].filter(Boolean).forEach(l=>{ y+=60; x.fillText(l,P,y); }); y+=50;
+  [v.store&&('📍 '+v.store),[v.kind,v.salary].filter(Boolean).join(' · ')].filter(Boolean).forEach(l=>{ y+=56; x.fillText(l,P,y); }); y+=fmt==='story'?50:30;
   const perks=String(v.perks||'').split('\n').map(s=>s.trim()).filter(Boolean).slice(0,fmt==='story'?5:4);
   x.font='700 40px '+F;
-  perks.forEach(p=>{ y+=72; x.fillStyle='#fff'; x.beginPath(); x.arc(P+20,y-14,20,0,Math.PI*2); x.fill(); x.fillStyle='#35503A'; x.font='900 24px '+F; x.fillText('✓',P+10,y-5); x.fillStyle='#fff'; x.font='700 40px '+F; x.fillText(wrapText(x,p,W-P*2-70)[0],P+60,y); });
+  const step=fmt==='story'?72:62; perks.forEach(p=>{ y+=step; x.fillStyle='#fff'; x.beginPath(); x.arc(P+20,y-14,20,0,Math.PI*2); x.fill(); x.fillStyle='#35503A'; x.font='900 24px '+F; x.fillText('✓',P+10,y-5); x.fillStyle='#fff'; x.font='700 40px '+F; x.fillText(wrapText(x,p,W-P*2-70)[0],P+60,y); });
   const by=fmt==='story'?H-420:H-210;
   x.fillStyle='#fff'; x.beginPath(); x.roundRect(P,by,W-P*2,120,60); x.fill();
   x.fillStyle='#35503A'; x.font='850 44px '+F; x.textAlign='center'; x.textBaseline='middle';
