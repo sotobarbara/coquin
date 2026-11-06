@@ -35,13 +35,14 @@ create table if not exists public.candidaturas (
   id         uuid primary key default gen_random_uuid(),
   vaga_id    text not null references public.vagas(id) on delete cascade,
   name       text not null check (char_length(name) between 2 and 120),
-  phone      text not null check (char_length(phone) between 8 and 30),
+  phone      text default '',                  -- opcional (o formulário pede só nome, e-mail e CV)
   email      text default '' check (char_length(email) <= 160),
   city       text default '' check (char_length(city) <= 120),
   about      text default '' check (char_length(about) <= 3000),
   answers    jsonb not null default '{}'::jsonb,
   cv_path    text,
   cv_name    text,
+  cv_text    text,                             -- texto lido do CV pelo painel (usado no score)
   consent    boolean not null default false,
   status     text not null default 'novo',     -- novo | triagem | entrevista | aprovado | reprovado
   stars      integer default 0,                -- sua nota manual (0..5)
@@ -49,6 +50,13 @@ create table if not exists public.candidaturas (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+-- atualização: formulário rápido (nome, e-mail, CV) + leitura do currículo
+alter table public.candidaturas alter column phone drop not null;
+alter table public.candidaturas alter column phone set default '';
+alter table public.candidaturas drop constraint if exists candidaturas_phone_check;
+alter table public.candidaturas add constraint candidaturas_phone_check check (char_length(coalesce(phone,'')) <= 30);
+alter table public.candidaturas add column if not exists cv_text text;
+
 create index if not exists candidaturas_vaga_idx on public.candidaturas (vaga_id, created_at desc);
 
 -- ============ Segurança (RLS) ============
@@ -72,6 +80,8 @@ create policy "equipe vagas" on public.vagas for all to authenticated
 create policy "publico se candidata" on public.candidaturas for insert to anon, authenticated
   with check (
     consent
+    and char_length(email) between 5 and 160
+    and cv_text is null
     and status = 'novo' and coalesce(stars,0) = 0 and coalesce(notes,'') = ''
     and exists (select 1 from public.vagas v where v.id = vaga_id and v.active)
   );

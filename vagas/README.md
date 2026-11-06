@@ -24,13 +24,15 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 | `index.html` | `/?v=<id-da-vaga>` (sem `?v` lista as vagas abertas) | candidato (público) |
 | `admin.html` | `/admin` | equipe (login) |
 
-## Formulário do candidato (`index.html`)
+## Formulário do candidato (`index.html`): rápido, 1 minuto
 
-- Nome, **WhatsApp** (máscara BR), e-mail, bairro/cidade.
-- **Currículo**: PDF, foto ou Word, até 5 MB (obrigatório ou opcional, você escolhe na vaga).
-- **Perguntas da vaga** (botões de toque, rápido no celular), definidas no painel.
-- "Conte sobre você" (texto livre, onde entram as palavras-chave).
-- Consentimento **LGPD** obrigatório + campo-isca anti-robô.
+O candidato toca no link da bio ou na figurinha do story, e a página abre direto no navegador
+do Instagram (sem login nem app). Ele preenche **nome**, **e-mail** e **currículo** (PDF, Word ou
+foto, até 5 MB), marca o aceite da LGPD e envia. Os detalhes da vaga ficam num "Sobre a vaga"
+recolhido, logo abaixo.
+
+Perguntas extras são **opcionais por vaga** (no editor). Se a vaga tiver perguntas, elas
+aparecem no mesmo formulário.
 
 ## Painel (`admin.html`)
 
@@ -58,23 +60,22 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 
 ## Como funciona o score
 
-Cada vaga tem as próprias regras, editáveis no painel:
+O painel **lê o currículo** (PDF e Word, direto no navegador da equipe) e salva o texto em
+`cv_text`, uma vez só. Em cima desse texto:
 
-1. **Perguntas com pontos por resposta.** Ex.: "Experiência com atendimento": nunca = 0,
-   menos de 6 meses = 2, 6m a 2 anos = 4, mais de 2 anos = 5.
-   Perguntas de várias escolhas somam os pontos marcados, até um **teto**.
-2. **Eliminatórias ⛔**: respostas que tiram o candidato da disputa (ex.: não topa escala com
-   fim de semana). Ele continua visível, mas como **Eliminado**, no fim da lista.
-3. **Palavras-chave** no texto livre (ex.: `sorvet`, `acai`, `cafeteria`, `atendimento`),
-   com teto de pontos. Acento não importa, e o começo da palavra pega as variações.
-4. **Score = pontos obtidos ÷ pontos possíveis × 100.**
-   **A** ≥ 75 · **B** ≥ 50 · **C** abaixo (os cortes podem ser ajustados por vaga).
+1. **Palavras-chave com pontos** (ex.: `sorvet` 4, `gelat` 4, `cafeteria` 3, `atendimento` 3,
+   `caixa` 2…), até um **teto** (padrão 20). Acento não importa, e o começo da palavra pega as
+   variações. No painel, o texto do CV aparece com as palavras encontradas destacadas.
+2. **Score = pontos ÷ teto × 100**. **A** ≥ 70 · **B** ≥ 40 · **C** abaixo (ajustável por vaga).
+3. Se a vaga tiver **perguntas extras**, cada resposta também vale pontos, e respostas ⛔
+   eliminam.
+4. Enquanto lê, o card mostra **LENDO**. Currículo em **foto/escaneado** não tem texto: fica como
+   **MANUAL** em *Aplicações*, para alguém abrir e avaliar.
+5. O **telefone** é puxado do próprio currículo para o botão de WhatsApp. Sem telefone, os
+   botões viram **e-mail** com a mensagem pronta.
 
-O score é calculado **no painel**, não no envio. Então mudar uma regra **recalcula todo
-mundo**, inclusive quem já se inscreveu, e o candidato não tem como forjar o próprio score.
-
-A vaga nova já vem com o **modelo Coquin – atendente de gelato** (dias e turnos, experiência
-com atendimento e com food, caixa, escala 6x1, distância, início, 18+). É só ajustar.
+O score é calculado **no painel**: mudou a regra, todo mundo é recalculado, e o candidato não
+consegue forjar o próprio score.
 
 > ⚖️ Pontue só o que tem a ver com o trabalho. Idade, gênero, aparência, religião, estado
 > civil etc. não podem ser critério: é discriminação proibida por lei.
@@ -84,7 +85,7 @@ com atendimento e com food, caixa, escala 6x1, distância, início, 18+). É só
 Rode o [`SETUP.sql`](SETUP.sql) **uma vez** no SQL Editor (é idempotente). Ele cria:
 
 - `vagas`: vagas + regras (`questions`, `keywords`, `kw_max`, `thresholds`).
-- `candidaturas`: respostas, CV, status, nota e anotações.
+- `candidaturas`: nome, e-mail, CV (+ texto lido), respostas opcionais, status, nota e anotações.
 - bucket **privado** `cvs` (5 MB, PDF / imagem / Word).
 - **RLS**: o público só lê vagas ativas, só **insere** candidatura (já como `novo`, sem nota)
   e só **sobe** arquivo na pasta de uma vaga ativa. Ler, avaliar, baixar CV e apagar fica

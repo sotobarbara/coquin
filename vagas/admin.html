@@ -188,7 +188,10 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .brow .bb>i{display:block;height:100%;background:var(--ink);border-radius:99px}
 .brow.ko .bh{color:var(--tX)} .brow.ko .bb>i{background:var(--tX)}
 .about{font-size:14px;white-space:pre-wrap;color:var(--ink-2);line-height:1.6}
-.about mark{background:var(--accent-soft);color:var(--accent-2);border-radius:3px;padding:0 2px}
+.cvt summary{cursor:pointer;color:var(--ink-2);font-size:13px;font-weight:500;margin-bottom:10px}
+.cvt .about{max-height:360px;overflow:auto;background:var(--hover);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px}
+.sc.P,.sc.Q{background:var(--sunken);color:var(--muted)}
+.about mark{background:var(--accent-soft);color:var(--accent-2);border-radius:3px;padding:0}
 .alert{background:var(--tX-s);color:var(--tX);border-radius:10px;padding:12px 14px;font-size:13px}
 textarea{width:100%;min-height:96px;resize:vertical;border:1px solid var(--line-2);border-radius:10px;padding:11px 12px;background:var(--surface);line-height:1.5}
 textarea:focus,input:focus,select:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,23,20,.06)}
@@ -290,7 +293,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
         </div>
       </div>
       <div class="bar">
-        <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="fSearch" type="search" placeholder="Buscar por nome, bairro, telefone…"></label>
+        <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="fSearch" type="search" placeholder="Buscar por nome ou e-mail…"></label>
         <div class="seg" id="tierSeg"></div>
         <span class="spacer"></span>
         <select class="sm" id="fSort"><option value="score">Ordenar: maior score</option><option value="date">Ordenar: mais recentes</option><option value="stars">Ordenar: minha nota</option></select>
@@ -367,9 +370,25 @@ const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const STATUS=[
   {k:'novo',l:'Aplicações',c:'#3B6FD8'},{k:'triagem',l:'Em validação',c:'#C08A1E'},{k:'entrevista',l:'Entrevista',c:'#7C4DCC'},
   {k:'aprovado',l:'Aprovados',c:'#1E7F5C'},{k:'reprovado',l:'Não qualificados',c:'#9A948C'}];
-const TIERS={A:'Priorizar',B:'Avaliar',C:'Baixa aderência',X:'Eliminado'};
-const TIERC={A:'#1E7F5C',B:'#C08A1E',C:'#9A948C',X:'#C2413A'};
-/* ---------- modelo padrão de regras (atendente de gelato) ----------
+const TIERS={A:'Priorizar',B:'Avaliar',C:'Baixa aderência',X:'Eliminado',P:'Lendo currículo',Q:'Avaliar manualmente'};
+const TIERC={A:'#1E7F5C',B:'#C08A1E',C:'#9A948C',X:'#C2413A',P:'#B5AFA6',Q:'#8C867E'};
+const TLAB={X:'ELIM',P:'LENDO',Q:'MANUAL'};
+const noNum=t=>t==='X'||t==='P'||t==='Q';
+/* ---------- modelo padrão: formulário rápido (nome, e-mail, CV) ----------
+   O painel lê o currículo e soma os pontos das palavras-chave encontradas (até o teto).
+   Score = pontos ÷ teto × 100. A ≥ 70 · B ≥ 40 · C abaixo. */
+function templateCV(){
+  return {
+    questions:[],
+    keywords:[
+      {w:'sorvet',pts:4},{w:'gelat',pts:4},{w:'acai',pts:3},{w:'cafeteria',pts:3},{w:'barista',pts:3},
+      {w:'confeitaria',pts:2},{w:'doceria',pts:2},{w:'padaria',pts:2},{w:'lanchonete',pts:2},{w:'restaurante',pts:2},{w:'fast food',pts:2},
+      {w:'atendimento',pts:3},{w:'atendente',pts:3},{w:'caixa',pts:2},{w:'vendas',pts:2},{w:'vendedor',pts:1},
+      {w:'cliente',pts:1},{w:'varejo',pts:1},{w:'shopping',pts:1},{w:'manipulacao de alimentos',pts:2}],
+    kw_max:20, thresholds:{a:70,b:40}
+  };
+}
+/* ---------- perguntas opcionais (modelo atendente de gelato) ----------
    Cada resposta vale pontos. "ko" = eliminatória (marca o candidato como Eliminado).
    Score = pontos obtidos ÷ pontos possíveis × 100. A ≥ 75 · B ≥ 50 · C abaixo. */
 function templateAtendente(){
@@ -444,17 +463,22 @@ function scoreCand(c){
   // palavras-chave no texto livre
   const kws=(Array.isArray(v.keywords)?v.keywords:[]).filter(k=>k&&k.w);
   if(kws.length){
-    const text=norm(c.about);
+    const text=norm((c.about||'')+' '+(c.cv_text||''));
     const hit=kws.filter(k=>text.includes(norm(k.w)));
     const all=kws.reduce((s,k)=>s+Math.max(0,+k.pts||0),0);
     const cap=(+v.kw_max>0)?Math.min(+v.kw_max,all):all;
     const kg=Math.min(cap,hit.reduce((s,k)=>s+Math.max(0,+k.pts||0),0));
     got+=kg; max+=cap;
-    parts.push({label:'Palavras-chave no texto',ans:hit.length?hit.map(k=>k.w).join(', '):'nenhuma',got:kg,max:cap,ko:false,kw:true});
+    parts.push({label:'Palavras-chave no currículo',ans:hit.length?hit.map(k=>k.w).join(', '):'nenhuma',got:kg,max:cap,ko:false,kw:true});
   }
   const pct=max?Math.round(got/max*100):0;
   const th=v.thresholds||{a:75,b:50};
-  const tier=kos.length?'X':pct>=(+th.a||75)?'A':pct>=(+th.b||50)?'B':'C';
+  let tier=kos.length?'X':pct>=(+th.a||75)?'A':pct>=(+th.b||50)?'B':'C';
+  // sem perguntas, o score depende do texto do CV: enquanto lê, ou se não deu pra ler, não classifica
+  if(!kos.length && !qs.length){
+    if(c.cv_path && c.cv_text==null && !c._cvErr) tier='P';
+    else if(!norm((c.about||'')+(c.cv_text||'')).trim()) tier='Q';
+  }
   return {pct,got,max,tier,parts,kos,highlights};
 }
 
@@ -465,9 +489,70 @@ async function load(){
     sb.from('candidaturas').select('*').order('created_at',{ascending:false})]);
   if(e1||e2) throw (e1||e2);
   vagas=v||[]; cands=(c||[]).map(x=>Object.assign(x,{_s:null}));
-  render();
+  render(); CVQ.add();
 }
 function sc(c){ if(!c._s) c._s=scoreCand(c); return c._s; }
+
+/* ---------- leitura do currículo (PDF e Word) ----------
+   Baixa o arquivo com link temporário, extrai o texto aqui no navegador e salva em cv_text
+   (uma vez só). Foto/escaneado não tem texto: fica como "Avaliar manualmente". */
+let pdfjsP=null;
+function loadPdfJs(){
+  if(!pdfjsP) pdfjsP=new Promise((res,rej)=>{ const sc=document.createElement('script');
+    sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    sc.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); };
+    sc.onerror=rej; document.head.appendChild(sc); });
+  return pdfjsP;
+}
+async function pdfText(buf){
+  const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf)}).promise; let out='';
+  for(let i=1;i<=Math.min(doc.numPages,6);i++){ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); out+=tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join('')+'\n'; }
+  return out;
+}
+async function zipEntry(buf,name){
+  const dv=new DataView(buf); let i=buf.byteLength-22;
+  while(i>=0 && dv.getUint32(i,true)!==0x06054b50) i--; if(i<0) return null;
+  let p=dv.getUint32(i+16,true); const n=dv.getUint16(i+10,true);
+  for(let k=0;k<n;k++){
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), fl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), lo=dv.getUint32(p+42,true);
+    const fn=new TextDecoder().decode(new Uint8Array(buf,p+46,fl));
+    if(fn===name){ const data=new Uint8Array(buf,lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),csize);
+      if(method===0) return new TextDecoder().decode(data);
+      return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text(); }
+    p+=46+fl+el+cl;
+  }
+  return null;
+}
+async function docxText(buf){
+  const xml=await zipEntry(buf,'word/document.xml'); if(!xml) return '';
+  const t=xml.replace(/<\/w:p>/g,'\n').replace(/<w:tab\/>/g,' ').replace(/<[^>]+>/g,'');
+  const d=document.createElement('textarea'); d.innerHTML=t; return d.value;
+}
+async function readCv(c){
+  const ext=(c.cv_path.split('.').pop()||'').toLowerCase();
+  if(ext!=='pdf' && ext!=='docx') return '';
+  const {data,error}=await sb.storage.from('cvs').createSignedUrl(c.cv_path,120); if(error||!data) throw error||new Error('url');
+  const r=await fetch(data.signedUrl); if(!r.ok) throw new Error('http '+r.status);
+  const buf=await r.arrayBuffer();
+  const txt=ext==='pdf'?await pdfText(buf):await docxText(buf);
+  return txt.replace(/[ \t]+/g,' ').replace(/\n\s*\n+/g,'\n').trim().slice(0,20000);
+}
+const CVQ={q:[],busy:false,
+  add(){ cands.forEach(c=>{ if(c.cv_path && c.cv_text==null && !c._cvErr && !c._cvQ){ c._cvQ=true; this.q.push(c); } }); this.run(); },
+  async run(){ if(this.busy) return; this.busy=true;
+    while(this.q.length){ const c=this.q.shift();
+      try{ c.cv_text=await readCv(c); c._s=null; await sb.from('candidaturas').update({cv_text:c.cv_text}).eq('id',c.id); }
+      catch(e){ c._cvErr=true; c._s=null; }
+      softRender(c.id); }
+    this.busy=false; }
+};
+let _rt=null;
+function softRender(id){ clearTimeout(_rt); _rt=setTimeout(()=>{ render(); if(openId && openId===id) openCand(id); },120); }
+function phoneFromCv(t){
+  const m=String(t||'').match(/(?:\+?55[\s.-]?)?\(?\b(\d{2})\)?[\s.-]?(9[\s.]?\d{4}|\d{4})[\s.-]?(\d{4})\b/);
+  return m?'('+m[1]+') '+m[2].replace(/\D/g,'')+'-'+m[3]:'';
+}
+function phoneOf(c){ return c.phone||phoneFromCv(c.cv_text); }
 function rescore(){ cands.forEach(c=>c._s=null); }
 
 /* ---------- visual ---------- */
@@ -513,13 +598,13 @@ function renderCand(){
   $('pTitle').textContent=v?v.title:'Todas as vagas';
   $('pShare').classList.toggle('hide',!v);
   const base=cands.filter(c=>UI.vaga==='all'||c.vaga_id===UI.vaga);
-  const ok=base.filter(c=>sc(c).tier!=='X');
+  const ok=base.filter(c=>'ABC'.includes(sc(c).tier));
   const avg=ok.length?Math.round(ok.reduce((s,c)=>s+sc(c).pct,0)/ok.length):0;
   const today=base.filter(c=>Date.now()-new Date(c.created_at)<864e5).length;
   $('pMeta').innerHTML=(v&&v.store?'<span>'+esc(v.store)+(v.kind?' · '+esc(v.kind):'')+'</span>':'')
     +'<span><b>'+base.length+'</b> inscritos</span><span><b>'+base.filter(c=>sc(c).tier==='A').length+'</b> nível A</span>'
     +'<span>score médio <b>'+avg+'</b></span><span><b>'+today+'</b> nas últimas 24h</span>';
-  const cnt={A:0,B:0,C:0,X:0}; base.forEach(c=>cnt[sc(c).tier]++);
+  const cnt={A:0,B:0,C:0,X:0,P:0,Q:0}; base.forEach(c=>cnt[sc(c).tier]++);
   $('tierSeg').innerHTML='<button data-t="all" class="'+(UI.tier==='all'?'sel':'')+'">Todos</button>'
     +['A','B','C','X'].map(t=>'<button data-t="'+t+'" class="'+(UI.tier===t?'sel':'')+'"><span class="tdot" style="background:'+TIERC[t]+'"></span>'+(t==='X'?'Eliminados':'Nível '+t)+' <span style="color:var(--muted)">'+cnt[t]+'</span></button>').join('');
   $('fSort').value=UI.sort;
@@ -538,9 +623,9 @@ function card(c){
   else if(autoNQ(c)) chips.push('<span class="chip auto">auto · nível '+s.tier+'</span>');
   s.highlights.slice(0,2).forEach(h=>chips.push('<span class="chip">'+esc(h.replace(/\?$/,'').slice(0,40))+'</span>'));
   return '<div class="kc'+(openId===c.id?' sel':'')+'" draggable="true" data-id="'+c.id+'">'+(c.status==='novo'?'<span class="unread"></span>':'')
-    +'<div class="kc-top">'+avatar(c.name)+'<div class="kc-n"><b>'+esc(c.name)+'</b><span>'+ic('pin')+esc(c.city||'—')+'</span></div>'
-    +'<span class="sc '+s.tier+'">'+(s.tier==='X'?'—':s.pct)+'<i>'+(s.tier==='X'?'ELIM':s.tier)+'</i></span></div>'
-    +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
+    +'<div class="kc-top">'+avatar(c.name)+'<div class="kc-n"><b>'+esc(c.name)+'</b>'+(c.city?'<span>'+ic('pin')+esc(c.city)+'</span>':'<span>'+ic('mail')+esc(c.email||'—')+'</span>')+'</div>'
+    +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
+    +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:noNum(s.tier)?0:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
     +'<div class="kc-f">'+ic('clock')+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')
     +'<span class="r">'+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
@@ -566,30 +651,37 @@ function openCand(id){
   const first=c.name.split(' ')[0];
   const msgInv='Oi '+first+'! Aqui é da Coquin 🥥 Recebemos sua candidatura para '+(v.title||'a vaga')+' e gostamos do seu perfil. Podemos marcar uma conversa rápida? Qual dia e horário ficam bons pra você?';
   const msgNo='Oi '+first+', aqui é da Coquin 🥥 Obrigado pelo interesse na vaga de '+(v.title||'')+'! Neste momento seguimos com outros perfis, mas vamos guardar seu contato para as próximas oportunidades. 💚';
-  const wa=t=>'https://wa.me/'+waNumber(c.phone)+'?text='+encodeURIComponent(t);
-  const C=201.06, pct=s.tier==='X'?0:s.pct;
+  const ph=phoneOf(c);
+  const wa=t=>'https://wa.me/'+waNumber(ph)+'?text='+encodeURIComponent(t);
+  const mail=(subj,t)=>'mailto:'+encodeURIComponent(c.email||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(t.replace(/ ?[🥥💚]/g,''));
+  const C=201.06, pct=noNum(s.tier)?0:s.pct;
+  const tl=s.tier==='X'?'Eliminado':s.tier==='P'?'Lendo o currículo…':s.tier==='Q'?'Avaliar manualmente':'Nível '+s.tier+' · '+TIERS[s.tier];
+  const ts=s.tier==='P'?'O score aparece em instantes.':s.tier==='Q'?'Currículo em foto/escaneado ou ilegível: abra o arquivo para avaliar.':s.got+' de '+s.max+' pontos nas regras da vaga';
   $('cTitle').textContent=(v.title||'Candidatura')+(v.store?' · '+v.store:'');
   $('cBody').innerHTML=
-    '<div class="blk"><div class="ph">'+avatar(c.name)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||'')+' · inscrito há '+ago(c.created_at)+'</p></div></div></div>'
-    +'<div class="blk"><div class="scorebox"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="#ECE8E1" stroke-width="6"/><circle cx="38" cy="38" r="32" fill="none" stroke="'+TIERC[s.tier]+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct/100))+'"/></svg><b style="color:'+TIERC[s.tier]+'">'+(s.tier==='X'?'—':s.pct)+'</b></div>'
-    +'<div><div class="tl">'+(s.tier==='X'?'Eliminado':'Nível '+s.tier+' · '+TIERS[s.tier])+'</div><div class="ts">'+s.got+' de '+s.max+' pontos nas regras da vaga</div></div></div>'
+    '<div class="blk"><div class="ph">'+avatar(c.name)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||c.email||'')+' · inscrito há '+ago(c.created_at)+'</p></div></div></div>'
+    +'<div class="blk"><div class="scorebox"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="#ECE8E1" stroke-width="6"/><circle cx="38" cy="38" r="32" fill="none" stroke="'+TIERC[s.tier]+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct/100))+'"/></svg><b style="color:'+TIERC[s.tier]+'">'+(noNum(s.tier)?'—':s.pct)+'</b></div>'
+    +'<div><div class="tl">'+tl+'</div><div class="ts">'+ts+'</div></div></div>'
     +(s.kos.length?'<div class="alert" style="margin-top:10px"><b>Eliminatória</b><br>'+s.kos.map(esc).join('<br>')+'</div>':'')
     +'<div class="acts" style="margin-top:14px">'
       +(c.cv_path?'<button class="btn accent" id="cvOpen">'+ic('file')+'Ver currículo</button>':'<span class="chip">sem currículo</span>')
-      +'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgInv)+'">'+ic('chat')+'Chamar no WhatsApp</a>'
-      +'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgNo)+'">Agradecer</a>'
+      +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgInv)+'">'+ic('chat')+'Chamar no WhatsApp</a>':'')
+      +(c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgInv)+'">'+ic('mail')+(ph?'E-mail':'Convidar por e-mail')+'</a>':'')
+      +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgNo)+'">Agradecer</a>':c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgNo)+'">Agradecer</a>':'')
     +'</div></div>'
     +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(c.status===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+x.l+'</button>').join('')+'</div>'
     +(autoNQ(c)?'<div class="note" style="margin-top:8px">Está em <b>Não qualificados</b> automaticamente pelo score. Mova para outra etapa se quiser dar uma chance.</div>':'')
     +'<h4 style="margin-top:18px">Sua nota</h4><div class="starsel" id="starSel">'+[1,2,3,4,5].map(n=>'<button data-n="'+n+'" class="'+((c.stars||0)>=n?'on':'')+'">★</button>').join('')+'</div></div>'
-    +'<div class="blk"><h4>Contato</h4><dl class="kv"><dt>WhatsApp</dt><dd><a target="_blank" rel="noopener" href="https://wa.me/'+waNumber(c.phone)+'">'+esc(c.phone)+'</a></dd>'
+    +'<div class="blk"><h4>Contato</h4><dl class="kv">'
+      +(ph?'<dt>WhatsApp</dt><dd><a target="_blank" rel="noopener" href="https://wa.me/'+waNumber(ph)+'">'+esc(ph)+'</a>'+(c.phone?'':' <span class="note">(do currículo)</span>')+'</dd>':'')
       +'<dt>E-mail</dt><dd>'+(c.email?'<a href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a>':'—')+'</dd>'
-      +'<dt>Mora em</dt><dd>'+esc(c.city||'—')+'</dd><dt>Inscrição</dt><dd>'+fmtDate(c.created_at)+'</dd>'
+      +(c.city?'<dt>Mora em</dt><dd>'+esc(c.city)+'</dd>':'')+'<dt>Inscrição</dt><dd>'+fmtDate(c.created_at)+'</dd>'
       +(c.cv_name?'<dt>Arquivo</dt><dd>'+esc(c.cv_name)+'</dd>':'')+'</dl></div>'
     +'<div class="blk"><h4>Por que esse score</h4><div class="brk">'+s.parts.map(p=>
       '<div class="brow'+(p.ko?' ko':'')+'"><div class="bh"><span>'+esc(p.label)+'</span><span>'+p.got+' / '+p.max+'</span></div>'
       +'<div class="ba">'+esc(p.ans)+'</div><div class="bb"><i style="width:'+(p.max?Math.round(p.got/p.max*100):0)+'%"></i></div></div>').join('')+'</div></div>'
     +(c.about?'<div class="blk"><h4>Sobre</h4><div class="about">'+highlight(c.about,(v.keywords||[]))+'</div></div>':'')
+    +(c.cv_text?'<div class="blk"><h4>Currículo · texto lido</h4><details class="cvt"><summary>Ver texto com as palavras-chave destacadas</summary><div class="about">'+highlight(c.cv_text.slice(0,6000),(v.keywords||[]))+'</div></details></div>':'')
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
@@ -637,7 +729,7 @@ $('csvBtn').onclick=()=>{
   const head=['Nome','WhatsApp','E-mail','Bairro/cidade','Vaga','Score','Nível','Eliminatória','Status','Nota','Inscrito em'].concat(qset.map(q=>q.label),['Sobre','Anotações']);
   const rows=base.map(c=>{ const s=sc(c); const v=vagas.find(x=>x.id===c.vaga_id)||{};
     const qa=qset.map(q=>{ const p=s.parts.find(p=>p.label===q.label); return p?p.ans:''; });
-    return [c.name,c.phone,c.email,c.city,v.title||c.vaga_id,s.pct,s.tier,s.kos.join(' | '),(STATUS.find(x=>x.k===c.status)||{}).l||c.status,c.stars||0,new Date(c.created_at).toLocaleString('pt-BR')].concat(qa,[c.about,c.notes]); });
+    return [c.name,phoneOf(c),c.email,c.city,v.title||c.vaga_id,s.pct,s.tier,s.kos.join(' | '),(STATUS.find(x=>x.k===c.status)||{}).l||c.status,c.stars||0,new Date(c.created_at).toLocaleString('pt-BR')].concat(qa,[c.about,c.notes]); });
   const csv=[head].concat(rows).map(r=>r.map(x=>{ x=String(x==null?'':x); if(/^[=+\-@]/.test(x)) x="'"+x; return '"'+x.replace(/"/g,'""')+'"'; }).join(';')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
   a.download='candidatos-coquin-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
@@ -655,7 +747,7 @@ function maxPoints(d){
 function openVaga(id){
   const v=id&&vagas.find(x=>x.id===id);
   draftNew=!v;
-  draft=v?JSON.parse(JSON.stringify(v)):Object.assign({id:'',title:'Atendente de gelato',store:'',kind:'CLT',salary:'',description:'Buscamos pessoas simpáticas, que gostam de gente e de deixar o dia de alguém mais doce. Você vai atender clientes, bolear gelato, operar o caixa e cuidar da organização da loja.',perks:'Salário fixo\nVale-transporte\nTreinamento completo\nAmbiente leve e equipe parceira',active:true,cv_required:true},templateAtendente());
+  draft=v?JSON.parse(JSON.stringify(v)):Object.assign({id:'',title:'Atendente de gelato',store:'',kind:'CLT',salary:'',description:'Buscamos pessoas simpáticas, que gostam de gente e de deixar o dia de alguém mais doce. Você vai atender clientes, bolear gelato, operar o caixa e cuidar da organização da loja.',perks:'Salário fixo\nVale-transporte\nTreinamento completo\nAmbiente leve e equipe parceira',active:true,cv_required:true},templateCV());
   $('vTitle').textContent=draftNew?'Nova vaga':'Editar vaga';
   renderEditor(); openSheet('vagaSheet');
 }
@@ -683,15 +775,15 @@ function renderEditor(){
     +'<div class="f"><label>Link da vaga</label><input type="text" id="eSlug" value="'+esc(d.id)+'" placeholder="gerado do título"'+(draftNew?'':' disabled')+'>'
     +'<div class="note" style="margin-top:4px">'+(draftNew?'Fica no fim do link: …/?v=<b>'+esc(d.id||slugify(d.title+' '+d.store))+'</b>':'O link não muda depois de criado (já pode estar no Instagram).')+'</div></div>'
     +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:700"><input type="checkbox" id="eCv"'+(d.cv_required?' checked':'')+'> Currículo obrigatório</label></div>'
-    +'<div class="blk"><h4>Perguntas e pontuação</h4>'
-    +'<div class="note" style="margin-bottom:10px">Cada resposta vale pontos — quanto mais alinhado ao que vocês buscam, mais pontos. Marque <b style="color:var(--tX)">⛔</b> nas respostas que eliminam (ex.: não pode fim de semana). '
-    +'Em perguntas de várias escolhas, o <b>teto</b> limita o máximo somado.</div>'
-    +'<div id="qList">'+qhtml+'</div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="qAdd">+ Pergunta</button><button class="btn ghost sm" id="qTpl">↺ Usar modelo Coquin (atendente)</button></div></div>'
-    +'<div class="blk"><h4>Palavras-chave no "Conte sobre você"</h4>'
-    +'<div class="note" style="margin-bottom:10px">Se o texto do candidato tiver a palavra, soma os pontos. Use o começo da palavra para pegar variações (<b>sorvet</b> pega sorvete, sorveteria). Acentos não importam.</div>'
+    +'<div class="blk"><h4>Palavras-chave no currículo</h4>'
+    +'<div class="note" style="margin-bottom:10px">O painel lê o currículo (PDF ou Word) e soma os pontos de cada palavra encontrada, até o teto. Use o começo da palavra para pegar variações (<b>sorvet</b> pega sorvete, sorveteria). Acentos não importam.</div>'
     +'<div id="kwList">'+kwhtml+'</div>'
     +'<div class="qmeta"><button class="btn ghost sm" id="kwAdd">+ Palavra</button><span>Teto <input type="number" id="eKwMax" value="'+(+d.kw_max||0)+'" min="0"></span></div></div>'
+    +'<div class="blk"><h4>Perguntas extras (opcional)</h4>'
+    +'<div class="note" style="margin-bottom:10px">O formulário pede só <b>nome, e-mail e currículo</b>. Se precisar, adicione perguntas: elas aparecem no formulário (que fica mais longo) e cada resposta vale pontos. Marque <b style="color:var(--tX)">⛔</b> nas respostas que eliminam. '
+    +'Em perguntas de várias escolhas, o <b>teto</b> limita o máximo somado.</div>'
+    +'<div id="qList">'+qhtml+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="qAdd">+ Pergunta</button><button class="btn ghost sm" id="qTpl">Usar perguntas modelo (atendente)</button></div></div>'
     +'<div class="blk"><h4>Classificação</h4><div class="row2">'
     +'<div class="f"><label>Nível A (priorizar) a partir de</label><input type="number" id="eThA" value="'+((d.thresholds||{}).a||75)+'" min="0" max="100"></div>'
     +'<div class="f"><label>Nível B (avaliar) a partir de</label><input type="number" id="eThB" value="'+((d.thresholds||{}).b||50)+'" min="0" max="100"></div></div>'
@@ -729,7 +821,7 @@ function bindEditor(){
     else if(b.dataset.o==='del'){ syncHeader(); draft.questions[qi].options.splice(+b.closest('[data-oj]').dataset.oj,1); renderEditor(); }
     else if(b.dataset.k==='del'){ syncHeader(); draft.keywords.splice(+b.closest('[data-ki]').dataset.ki,1); renderEditor(); }
     else if(b.id==='qAdd'){ syncHeader(); draft.questions.push({k:'q'+Date.now().toString(36),label:'',type:'single',required:true,options:[{v:'sim',l:'Sim',pts:2},{v:'nao',l:'Não',pts:0}]}); renderEditor(); }
-    else if(b.id==='qTpl'){ if(confirm('Substituir perguntas e palavras-chave pelo modelo de atendente?')){ syncHeader(); Object.assign(draft,templateAtendente()); renderEditor(); } }
+    else if(b.id==='qTpl'){ if(confirm('Colocar as 9 perguntas do modelo de atendente no formulário? (deixa a inscrição mais longa)')){ syncHeader(); draft.questions=templateAtendente().questions; renderEditor(); } }
     else if(b.id==='kwAdd'){ syncHeader(); draft.keywords=draft.keywords||[]; draft.keywords.push({w:'',pts:1}); renderEditor(); }
     else if(b.id==='vSave') saveVaga();
     else if(b.id==='vDel') delVaga();
@@ -883,7 +975,7 @@ async function onLoggedIn(sess){
   showGate(false); const em=sess.user.email||''; $('meEm').textContent=em; $('meAv').textContent=(em[0]||'·').toUpperCase();
   try{ await load(); }catch(e){ toast('Falha ao carregar: '+(e.message||e)+' (rodou o SETUP.sql?)'); }
   try{ sb.channel('coquin-vagas-rt')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'candidaturas'},p=>{ if(p.new && !cands.some(c=>c.id===p.new.id)){ cands.unshift(Object.assign(p.new,{_s:null})); render(); toast('Nova candidatura: '+p.new.name); } })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'candidaturas'},p=>{ if(p.new && !cands.some(c=>c.id===p.new.id)){ cands.unshift(Object.assign(p.new,{_s:null})); render(); CVQ.add(); toast('Nova candidatura: '+p.new.name); } })
     .on('postgres_changes',{event:'*',schema:'public',table:'vagas'},()=>load().catch(()=>{}))
     .subscribe(); }catch(e){}
 }

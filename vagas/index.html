@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#16130F">
 <title>Trabalhe na Coquin</title>
-<meta name="description" content="Vagas abertas na Coquin — inscreva-se em 2 minutos.">
+<meta name="description" content="Vagas abertas na Coquin. Inscreva-se em 1 minuto.">
 <meta property="og:title" content="Trabalhe na Coquin">
-<meta property="og:description" content="Vagas abertas — inscreva-se em 2 minutos.">
+<meta property="og:description" content="Vagas abertas. Inscreva-se em 1 minuto.">
 <meta property="og:image" content="logo-coquin.png">
 <link rel="icon" href="logo-coquin.png">
 <link rel="apple-touch-icon" href="logo-coquin.png">
@@ -66,13 +66,13 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .q{padding:20px 0;border-top:1px solid var(--line)}
 .q:first-child{border-top:0;padding-top:0}
 .q.err .ql{color:var(--danger)}
-.drop{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line-2);background:var(--bg);border-radius:13px;padding:16px;cursor:pointer;transition:.15s}
+.field>label.drop,.drop{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line-2);background:var(--bg);border-radius:13px;padding:16px;cursor:pointer;transition:.15s}
 .drop:hover{border-color:var(--accent)}
 .drop .ic{width:42px;height:42px;border-radius:11px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none}
 .drop .ic svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .drop b{display:block;font-size:14.5px;font-weight:600}
 .drop small{color:var(--muted);font-size:12.5px}
-.drop.has{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
+.field>label.drop.has,.drop.has{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
 .consent{display:flex;gap:12px;align-items:flex-start;font-size:13px;color:var(--ink-2);cursor:pointer;line-height:1.5}
 .consent input{width:18px;height:18px;accent-color:var(--ink);flex:none;margin-top:2px}
 .btn{width:100%;border:0;background:var(--accent);color:#fff;font-size:16px;font-weight:600;padding:17px;border-radius:12px;cursor:pointer;margin-top:6px;transition:background .15s}
@@ -92,6 +92,14 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .vlist .go{color:var(--accent);font-size:20px}
 .foot{margin:26px 4px 0;text-align:center;color:var(--faint);font-size:12px}
 .loading{padding:40px;text-align:center;color:var(--muted)}
+details.about{padding:0}
+details.about summary{list-style:none;cursor:pointer;padding:18px 22px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+details.about summary::-webkit-details-marker{display:none}
+details.about summary::after{content:"+";font-size:20px;font-weight:400;color:var(--muted)}
+details.about[open] summary::after{content:"–"}
+details.about .desc,details.about .perks{margin-left:22px;margin-right:22px}
+details.about[open]{padding-bottom:22px}
+details.about .perks{margin-top:14px}
 </style>
 </head>
 <body>
@@ -115,58 +123,43 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 
   <!-- vaga + formulário -->
   <div id="vagaWrap" class="hide">
-    <div class="card lift" id="aboutCard">
-      <div class="desc" id="vDesc"></div>
-      <ul class="perks" id="vPerks"></ul>
-    </div>
-
     <form id="form" novalidate>
-      <div class="card">
-        <h2>Seus dados</h2>
-        <p class="sub">Leva uns 2 minutos. A gente responde pelo WhatsApp.</p>
-        <div class="field"><label for="fName">Nome completo <span class="req">*</span></label>
+      <div class="card lift">
+        <h2>Candidate-se</h2>
+        <p class="sub">Leva 1 minuto: nome, e-mail e currículo.</p>
+        <div class="field"><label for="fName">Nome completo</label>
           <input id="fName" type="text" autocomplete="name" maxlength="120" required></div>
-        <div class="field"><label for="fPhone">WhatsApp <span class="req">*</span></label>
-          <input id="fPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20" required></div>
         <div class="field"><label for="fEmail">E-mail</label>
-          <input id="fEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" maxlength="160"></div>
-        <div class="field"><label for="fCity">Bairro / cidade onde mora <span class="req">*</span></label>
-          <input id="fCity" type="text" autocomplete="address-level2" maxlength="120" placeholder="Ex.: Vila Mariana, São Paulo" required></div>
-        <div class="field" style="margin-bottom:0">
-          <label>Currículo <span class="req" id="cvReq">*</span></label>
-          <div class="hint">PDF, foto ou Word · até 5 MB</div>
+          <input id="fEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="160" required></div>
+        <div class="field">
+          <label>Currículo</label>
           <label class="drop" id="drop" for="fCv">
             <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
-            <span><b id="cvLbl">Enviar meu currículo</b><small id="cvSub">Toque para escolher o arquivo</small></span>
+            <span><b id="cvLbl">Enviar currículo</b><small id="cvSub">PDF, Word ou foto · até 5 MB</small></span>
           </label>
           <input id="fCv" type="file" class="hide" accept=".pdf,.doc,.docx,image/*">
         </div>
-      </div>
-
-      <div class="card" id="qCard">
-        <h2>Sobre a vaga</h2>
-        <p class="sub">Responda com sinceridade — não existe resposta errada.</p>
-        <div id="qs"></div>
-      </div>
-
-      <div class="card">
-        <div class="field"><label for="fAbout">Conte um pouco sobre você e suas experiências</label>
-          <div class="hint">Onde já trabalhou, o que fazia, o que gosta de fazer.</div>
-          <textarea id="fAbout" maxlength="3000"></textarea></div>
+        <div id="qWrap" class="hide" style="margin-top:4px"><div id="qs"></div></div>
         <div class="hp" aria-hidden="true"><label>Não preencha <input id="fWeb" type="text" tabindex="-1" autocomplete="off"></label></div>
         <label class="consent"><input type="checkbox" id="fConsent">
-          <span>Autorizo a Coquin a usar meus dados e currículo <b>somente para este processo seletivo</b>, conforme a LGPD. Posso pedir a exclusão a qualquer momento.</span></label>
+          <span>Autorizo a Coquin a usar meus dados e currículo <b>somente para este processo seletivo</b> (LGPD).</span></label>
         <div style="height:16px"></div>
         <div class="err-box hide" id="errBox"></div>
         <button class="btn" id="sendBtn" type="submit">Enviar candidatura</button>
       </div>
     </form>
+
+    <details class="card about" id="aboutCard">
+      <summary>Sobre a vaga</summary>
+      <div class="desc" id="vDesc"></div>
+      <ul class="perks" id="vPerks"></ul>
+    </details>
   </div>
 
   <div class="card lift hide" id="doneCard"><div class="done">
     <div class="big"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
     <h2>Candidatura enviada!</h2>
-    <p>Obrigado, <b id="doneName"></b>. Vamos analisar seu perfil e, se combinar com a vaga, chamamos você no WhatsApp.</p>
+    <p>Obrigado, <b id="doneName"></b>. Vamos analisar seu perfil e, se combinar com a vaga, entramos em contato.</p>
   </div></div>
 
   <div class="foot">Coquin · seus dados ficam protegidos e só a equipe de contratação tem acesso.</div>
@@ -225,32 +218,24 @@ function renderVaga(){
   const perks=String(vaga.perks||'').split('\n').map(s=>s.trim()).filter(Boolean);
   $('vPerks').innerHTML=perks.map(p=>'<li>'+esc(p)+'</li>').join('');
   if(!vaga.description && !perks.length) $('aboutCard').classList.add('hide');
-  $('cvReq').classList.toggle('hide',!vaga.cv_required);
+  if(!vaga.cv_required) $('cvSub').textContent='Opcional · PDF, Word ou foto · até 5 MB';
+  /* perguntas extras: só aparecem se a vaga tiver (por padrão não tem) */
   const qs=Array.isArray(vaga.questions)?vaga.questions:[];
-  if(!qs.length) $('qCard').classList.add('hide');
+  $('qWrap').classList.toggle('hide',!qs.length);
   $('qs').innerHTML=qs.map((q,i)=>{
     const multi=q.type==='multi';
-    const opts=(q.options||[]).map((o,j)=>'<label class="opt"><input type="'+(multi?'checkbox':'radio')+'" name="q'+i+'" value="'+esc(o.v)+'"><span>'+esc(o.l)+'</span></label>').join('');
-    return '<div class="q" data-i="'+i+'"><span class="ql">'+esc(q.label)+(q.required!==false?' <span class="req">*</span>':'')+'</span>'
+    const opts=(q.options||[]).map(o=>'<label class="opt"><input type="'+(multi?'checkbox':'radio')+'" name="q'+i+'" value="'+esc(o.v)+'"><span>'+esc(o.l)+'</span></label>').join('');
+    return '<div class="q" data-i="'+i+'"><span class="ql">'+esc(q.label)+'</span>'
       +(q.hint?'<div class="hint">'+esc(q.hint)+'</div>':'')
-      +(multi?'<div class="hint">Pode marcar mais de uma.</div>':'')
       +'<div class="opts">'+opts+'</div></div>';
   }).join('');
 }
 
-/* máscara de telefone BR */
-$('fPhone').addEventListener('input',e=>{
-  let d=e.target.value.replace(/\D/g,'').slice(0,11);
-  let out=d;
-  if(d.length>2) out='('+d.slice(0,2)+') '+d.slice(2);
-  if(d.length>7) out='('+d.slice(0,2)+') '+d.slice(2,d.length-4)+'-'+d.slice(-4);
-  e.target.value=out;
-});
 $('fCv').addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0];
   if(!f){ return; }
-  if(f.size>MAX_CV){ cvFile=null; e.target.value=''; $('cvLbl').textContent='Arquivo muito grande'; $('cvSub').textContent='Máximo 5 MB — tente um PDF ou foto menor'; $('drop').classList.remove('has'); return; }
-  cvFile=f; $('drop').classList.add('has'); $('cvLbl').textContent=f.name; $('cvSub').textContent=(f.size/1024/1024).toFixed(1)+' MB · toque para trocar';
+  if(f.size>MAX_CV){ cvFile=null; e.target.value=''; $('cvLbl').textContent='Arquivo muito grande'; $('cvSub').textContent='Máximo 5 MB. Tente um PDF ou uma foto menor'; $('drop').classList.remove('has'); return; }
+  cvFile=f; $('drop').classList.add('has'); $('cvLbl').textContent=f.name; $('cvSub').textContent=(f.size<1048576?Math.max(1,Math.round(f.size/1024))+' KB':(f.size/1048576).toFixed(1)+' MB')+' · toque para trocar';
 });
 
 function collect(){
@@ -268,15 +253,13 @@ function fail(msg){ const b=$('errBox'); b.textContent=msg; b.classList.remove('
 $('form').addEventListener('submit',async e=>{
   e.preventDefault(); $('errBox').classList.add('hide');
   if($('fWeb').value) return;                                   // robô (honeypot)
-  const name=$('fName').value.trim(), phone=$('fPhone').value.trim(), email=$('fEmail').value.trim(), city=$('fCity').value.trim();
-  if(name.length<2) return fail('Preencha seu nome completo.');
-  if(phone.replace(/\D/g,'').length<10) return fail('Preencha seu WhatsApp com DDD.');
-  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('O e-mail parece incompleto.');
-  if(!city) return fail('Conte onde você mora (bairro / cidade).');
-  if(vaga.cv_required && !cvFile) return fail('Envie seu currículo (PDF ou foto).');
+  const name=$('fName').value.trim(), email=$('fEmail').value.trim();
+  if(name.length<2) return fail('Preencha seu nome.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail('Confira seu e-mail.');
+  if(vaga.cv_required && !cvFile) return fail('Envie seu currículo.');
   const {answers,missing}=collect();
-  if(missing.length) return fail('Responda: '+missing[0]+(missing.length>1?' (+'+(missing.length-1)+')':''));
-  if(!$('fConsent').checked) return fail('Marque a autorização de uso dos dados para enviar.');
+  if(missing.length) return fail('Responda: '+missing[0]);
+  if(!$('fConsent').checked) return fail('Marque a autorização de uso dos dados.');
 
   const btn=$('sendBtn'); btn.disabled=true; btn.textContent='Enviando…';
   const id=uuid(); let cv_path=null, cv_name=null;
@@ -289,7 +272,7 @@ $('form').addEventListener('submit',async e=>{
       if(upErr) throw upErr;
     }
     btn.textContent='Enviando…';
-    const row={id,vaga_id:vaga.id,name,phone,email,city,about:$('fAbout').value.trim().slice(0,3000),answers,cv_path,cv_name,consent:true,status:'novo'};
+    const row={id,vaga_id:vaga.id,name,email,answers,cv_path,cv_name,consent:true,status:'novo'};
     const {error}=await sb.from('candidaturas').insert(row);
     if(error) throw error;
     $('doneName').textContent=name.split(' ')[0];
