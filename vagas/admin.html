@@ -143,7 +143,7 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .kc-top{display:flex;gap:10px;align-items:flex-start}
 .av-ph{overflow:hidden;background:var(--sunken)!important;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line-2)}
 .av-ph img{width:100%;height:100%;object-fit:cover;display:block}
-.ph-del{display:inline-block;margin-top:6px;font-size:12.5px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ph-del{display:inline-block;margin-top:6px;margin-right:2px;font-size:12.5px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .av{width:34px;height:34px;border-radius:99px;display:grid;place-items:center;font-weight:600;font-size:12.5px;flex:none;letter-spacing:.02em}
 .kc-n{flex:1;min-width:0}
 .kc-n b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -734,7 +734,7 @@ async function readCv(c,buf){
   return txt.replace(/[ \t]+/g,' ').replace(/\n\s*\n+/g,'\n').trim().slice(0,20000);
 }
 /* foto do candidato: só PDF/Word, e só se o banco já tem a coluna cv_photo (null = ainda não procurou) */
-const wantsPhoto=c=>c.cv_photo===null && /^(pdf|docx)$/.test(cvExt(c)) && !c._phErr;
+const wantsPhoto=c=>(c.cv_photo===null||c.cv_photo==='') && /^(pdf|docx)$/.test(cvExt(c)) && !c._phErr;
 const CVQ={q:[],busy:false,
   add(){ cands.forEach(c=>{ const old=c.cv_text==='' && /\.(png|jpe?g|webp|pdf)$/i.test(c.cv_path||'');
     if(c.cv_path && (c.cv_text==null||old||wantsPhoto(c)) && !c._cvErr && !c._cvQ){ c._cvQ=true; if(old) c.cv_text=null; this.q.push(c); } }); this.run(); },
@@ -744,7 +744,7 @@ const CVQ={q:[],busy:false,
         if(c.cv_text==null){ c.cv_text=await readCv(c,buf); c._s=null; await sb.from('candidaturas').update({cv_text:c.cv_text}).eq('id',c.id); } }
       catch(e){ c._cvErr=true; c._s=null; }
       if(buf && wantsPhoto(c)){
-        try{ const ph=await cvPhoto(cvExt(c),buf); const {error}=await sb.from('candidaturas').update({cv_photo:ph||''}).eq('id',c.id); if(error) throw error; c.cv_photo=ph||''; }
+        try{ const ph=await cvPhoto(cvExt(c),buf); const {error}=await sb.from('candidaturas').update({cv_photo:ph||'-'}).eq('id',c.id); if(error) throw error; c.cv_photo=ph||'-'; }
         catch(e){ c._phErr=true; } }
       softRender(c.id); }
     this.busy=false; cvProgress(); }
@@ -756,24 +756,50 @@ function cvProgress(){ const el=$('cvProg'); if(!el) return; const on=CVQ.busy &
 async function cvPhoto(ext,buf){
   const imgs=[];
   if(ext==='pdf'){
-    const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise;
-    const pg=await doc.getPage(1); const ops=await pg.getOperatorList(); const O=lib.OPS;
-    for(let i=0;i<ops.fnArray.length && imgs.length<12;i++){
-      const f=ops.fnArray[i]; if(f!==O.paintImageXObject && f!==O.paintJpegXObject) continue;
-      const name=ops.argsArray[i][0]; const store=String(name).startsWith('g_')?pg.commonObjs:pg.objs;
-      const im=await new Promise(r=>{ try{ store.get(name,r); }catch(e){ r(null); } setTimeout(()=>r(null),3000); });
-      const cv=im&&pdfImgCanvas(im); if(cv) imgs.push(cv); }
+    const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise; const O=lib.OPS;
+    for(let pn=1;pn<=Math.min(2,doc.numPages) && imgs.length<16;pn++){
+      const pg=await doc.getPage(pn); const ops=await pg.getOperatorList();
+      for(let i=0;i<ops.fnArray.length && imgs.length<16;i++){
+        const f=ops.fnArray[i]; let im=null;
+        if(f===O.paintInlineImageXObject) im=ops.argsArray[i][0];
+        else if(f===O.paintImageXObject || f===O.paintJpegXObject || f===O.paintImageXObjectRepeat){
+          const name=ops.argsArray[i][0]; const store=String(name).startsWith('g_')?pg.commonObjs:pg.objs;
+          im=await new Promise(r=>{ try{ if(store.has&&store.has(name)) r(store.get(name)); else store.get(name,r); }catch(e){ r(null); } setTimeout(()=>r(null),3000); });
+        } else continue;
+        const cv=im&&pdfImgCanvas(im); if(cv) imgs.push(cv); }
+      if(imgs.some(c=>photoScore(c)>0)) break;
+    }
   } else if(ext==='docx'){
-    for(const e of zipList(buf).filter(e=>/^word\/media\/.+\.(png|jpe?g)$/i.test(e.name)).slice(0,12)){
+    for(const e of zipList(buf).filter(e=>/^word\/media\/.+\.(png|jpe?g)$/i.test(e.name)).slice(0,16)){
       try{ const data=await zipData(buf,e); const img=await fileToImg(new Blob([data])); const c=document.createElement('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); imgs.push(c); }catch(_){} }
   }
-  let best=null,bs=0;
-  imgs.forEach(cv=>{ const w=cv.width,h=cv.height; if(w<70||h<70) return; const ar=w/h; if(ar<.55||ar>1.45) return;
-    const sk=skinRatio(cv); if(sk<.1) return; const sc=sk*Math.min(1,(w*h)/(220*220)); if(sc>bs){ bs=sc; best=cv; } });
-  if(!best) return '';
-  const side=Math.min(best.width,best.height), sx=(best.width-side)/2, sy=best.height>best.width?(best.height-side)*.3:0;
+  let best=null,bs=0; imgs.forEach(cv=>{ const sc=photoScore(cv); if(sc>bs){ bs=sc; best=cv; } });
+  return best?squarePhoto(best):'';
+}
+/* nota da imagem como "foto de pessoa": tamanho razoável, não muito esticada, e com área de pele
+   (faixa ampla, vale para todos os tons de pele e luz fraca); logos/ícones/linhas ficam com 0 */
+function photoScore(cv){
+  const w=cv.width,h=cv.height; if(w<60||h<60) return 0; const ar=w/h; if(ar<.4||ar>2.2) return 0;
+  const m=skinMap(cv); if(m.ratio<.04 || m.ratio>.92) return 0;
+  if(m.colors<24) return 0;                                   // desenho/logo de poucas cores
+  return m.ratio*Math.min(1,(w*h)/(200*200))*(ar>.6&&ar<1.6?1:.7);
+}
+function skinMap(cv){
+  const N=48, t=document.createElement('canvas'); t.width=t.height=N; const x=t.getContext('2d',{willReadFrequently:true});
+  x.drawImage(cv,0,0,N,N); const d=x.getImageData(0,0,N,N).data; let n=0,sx=0,sy=0; const pal=new Set();
+  for(let i=0,p=0;i<d.length;i+=4,p++){ const r=d[i],g=d[i+1],b=d[i+2],a=d[i+3]; if(a<128) continue;
+    pal.add((r>>4)<<8|(g>>4)<<4|(b>>4));
+    const cb=128-.168736*r-.331264*g+.5*b, cr=128+.5*r-.418688*g-.081312*b;
+    if(cb>=70&&cb<=132&&cr>=130&&cr<=180&&r>=g&&r>b&&r>28&&(r-b)>8){ n++; sx+=p%N; sy+=(p/N|0); } }
+  return {ratio:n/(N*N),cx:n?sx/n/N:.5,cy:n?sy/n/N:.4,colors:pal.size};
+}
+/* recorte quadrado centrado no rosto (centro da área de pele, um pouco acima) */
+function squarePhoto(cv){
+  const w=cv.width,h=cv.height,m=skinMap(cv); const side=Math.min(w,h);
+  let cx=m.cx*w, cy=m.cy*h-side*.08;
+  const sx=Math.max(0,Math.min(w-side,cx-side/2)), sy=Math.max(0,Math.min(h-side,cy-side/2));
   const o=document.createElement('canvas'); o.width=o.height=128; const x=o.getContext('2d'); x.imageSmoothingQuality='high';
-  x.drawImage(best,sx,sy,side,side,0,0,128,128); return o.toDataURL('image/jpeg',.82);
+  x.drawImage(cv,sx,sy,side,side,0,0,128,128); return o.toDataURL('image/jpeg',.82);
 }
 function pdfImgCanvas(im){
   const w=im.width,h=im.height; if(!w||!h) return null; const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d');
@@ -781,16 +807,9 @@ function pdfImgCanvas(im){
   if(!im.data) return null; const id=x.createImageData(w,h), d=id.data, s=im.data;
   if(im.kind===3) d.set(s.subarray(0,d.length));
   else if(im.kind===2){ for(let i=0,j=0;i<d.length;i+=4,j+=3){ d[i]=s[j]; d[i+1]=s[j+1]; d[i+2]=s[j+2]; d[i+3]=255; } }
+  else if(im.kind===1){ const rb=(w+7)>>3; for(let y=0;y<h;y++) for(let xx=0;xx<w;xx++){ const v=(s[y*rb+(xx>>3)]>>(7-(xx&7)))&1?255:0, i=(y*w+xx)*4; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } }
   else return null;
   x.putImageData(id,0,0); return c;
-}
-function skinRatio(cv){
-  const t=document.createElement('canvas'); t.width=t.height=40; const x=t.getContext('2d');
-  x.drawImage(cv,cv.width*.15,cv.height*.1,cv.width*.7,cv.height*.75,0,0,40,40);
-  const d=x.getImageData(0,0,40,40).data; let n=0;
-  for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; const cb=128-.168736*r-.331264*g+.5*b, cr=128+.5*r-.418688*g-.081312*b;
-    if(cb>=77&&cb<=127&&cr>=133&&cr<=173&&r>60) n++; }
-  return n/1600;
 }
 function zipList(buf){
   const dv=new DataView(buf); let i=buf.byteLength-22; while(i>=0 && dv.getUint32(i,true)!==0x06054b50) i--; if(i<0) return [];
@@ -950,7 +969,10 @@ function openCand(id){
   $('cTitle').textContent=(v.title||'Candidatura')+(v.store?' · '+v.store:'');
   $('cBody').innerHTML=
     '<div class="blk"><div class="ph">'+avatar(c.name,'',c.cv_photo)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||c.email||'')+' · inscrito há '+ago(c.created_at)+'</p>'
-      +(c.cv_photo?'<a class="ph-del" id="phDel">Não é a pessoa? Remover foto</a>':'')+'</div></div></div>'
+      +(/^data:image/.test(c.cv_photo||'')?'<a class="ph-del" id="phDel">Não é a pessoa? Remover foto</a> · ':'')
+      +'<label class="ph-del">'+(/^data:image/.test(c.cv_photo||'')?'Trocar foto':'Adicionar foto')+'<input type="file" accept="image/*" id="phAdd" class="hide"></label>'
+      +(/^(pdf|docx)$/.test(cvExt(c))&&!/^data:image/.test(c.cv_photo||'')&&c.cv_photo!==undefined?' · <a class="ph-del" id="phFind">Procurar no currículo</a>':'')
+      +'</div></div></div>'
     +((s.tier==='A'||s.tier==='B') && colOf(c)!=='reprovado'?'<div class="blk"><div class="why ok"><b>Por que foi qualificado</b>'
       +'<p>Score <strong>'+s.pct+'</strong> de 100: acima do mínimo para <strong>Nível '+s.tier+'</strong> ('+(s.tier==='A'?s.th.a:s.th.b)+')'+(s.kw?', com '+s.kw.got+' de '+s.kw.cap+' pontos em palavras-chave':'')+'.</p>'
       +(s.ev.length?'<div class="kw-h">Palavras encontradas no currículo</div><div class="kw-chips">'+evChips(s.ev)+'</div><div class="kw-h">Onde aparecem</div>'+evSnips(s.ev,5):'')
@@ -985,7 +1007,13 @@ function openCand(id){
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
-  if($('phDel')) $('phDel').onclick=()=>patch(c,{cv_photo:''},true).then(()=>openCand(c.id));
+  if($('phDel')) $('phDel').onclick=()=>patch(c,{cv_photo:'-'},true).then(()=>openCand(c.id));
+  if($('phAdd')) $('phAdd').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+    try{ const img=await fileToImg(f); const cv=document.createElement('canvas'); cv.width=img.width; cv.height=img.height; cv.getContext('2d').drawImage(img,0,0);
+      await patch(c,{cv_photo:squarePhoto(cv)},true); openCand(c.id); toast('Foto salva'); }catch(_){ toast('Não consegui abrir essa imagem'); } };
+  if($('phFind')) $('phFind').onclick=async()=>{ toast('Procurando a foto no currículo…');
+    try{ const ph=await cvPhoto(cvExt(c),await fetchCv(c)); await patch(c,{cv_photo:ph||'-'},true); openCand(c.id); toast(ph?'Foto encontrada':'Não achei foto nesse currículo. Use "Adicionar foto".'); }
+    catch(_){ toast('Não consegui ler o currículo agora'); } };
   $('stSel').onclick=e=>{ const b=e.target.closest('[data-st]'); if(b && colOf(c)!==b.dataset.st){ patch(c,{status:stFor(c,b.dataset.st)},true).then(()=>openCand(c.id)); } };
   $('starSel').onclick=e=>{ const b=e.target.closest('[data-n]'); if(!b) return; const n=+b.dataset.n; patch(c,{stars:(c.stars===n?0:n)},true).then(()=>document.querySelectorAll('#starSel button').forEach(x=>x.classList.toggle('on',(c.stars||0)>=+x.dataset.n))); };
   const nt=$('cNotes'); nt.oninput=()=>{ clearTimeout(nt._h); nt._h=setTimeout(()=>patch(c,{notes:nt.value},true),700); };
@@ -1017,7 +1045,8 @@ async function patch(c,fields,quiet){
 }
 async function delCand(c){
   if(!confirm('Excluir a candidatura de '+c.name+' e o currículo? Não dá pra desfazer.')) return;
-  if(c.cv_path){ await sb.storage.from('cvs').remove([c.cv_path]); }
+  if(c.cv_path){ const {data:rm,error:re}=await sb.storage.from('cvs').remove([c.cv_path]);
+    if(re||!rm||!rm.length){ if(!confirm('Não consegui apagar o arquivo do currículo (ele pode já ter sido apagado). Excluir a candidatura mesmo assim?')) return; } }
   const {error}=await sb.from('candidaturas').delete().eq('id',c.id);
   if(error){ toast('⚠︎ '+error.message); return; }
   cands=cands.filter(x=>x.id!==c.id); closeSheets(); renderCand(); toast('Candidatura excluída');
