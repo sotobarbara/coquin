@@ -24,7 +24,7 @@
 <link rel="icon" href="logo-coquin.png">
 <link rel="apple-touch-icon" href="logo-coquin.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    COQUIN — Portal de Vagas (página pública dos candidatos)
@@ -32,10 +32,10 @@
    ============================================================ */
 :root{
   --bg:#F6EEE4; --bg-2:#FBF7F1; --card:#FFFCF8; --sand:#EFE4D6; --sage:#E7E5D7;
-  --olive:#3D5842; --olive-2:#2F4734; --olive-soft:#E3E8DD;
+  --olive:#4E6B50; --olive-2:#3E5841; --olive-soft:#E4EADF;
   --ink:#2F3329; --ink-2:#565A4D; --muted:#837D70; --faint:#B3AC9F;
   --line:#EADFD1; --line-2:#DDD1C1;
-  --brown:#8A5A33; --danger:#B4473C; --danger-soft:#F7E2DD;
+  --brown:#8B5E34; --round:Nunito,Outfit,sans-serif; --danger:#B4473C; --danger-soft:#F7E2DD;
   --sh:0 1px 2px rgba(60,50,30,.04),0 10px 30px -12px rgba(60,50,30,.16);
   --r:20px;
 }
@@ -62,18 +62,22 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .pill-btn:hover{background:var(--olive);color:#fff}
 
 /* ---------- hero ---------- */
-.hero{position:relative;overflow:hidden;background:linear-gradient(100deg,#F6EDE2 0%,#F6E8D7 55%,#F8E5CF 100%)}
-.hero>.leaf{display:none}
-.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;min-height:420px;padding-top:6px;padding-bottom:26px}
+.hero{position:relative;overflow:hidden;background:linear-gradient(100deg,#F7EEE2 0%,#F6E6D2 45%,#F5E0C7 72%)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(180deg,rgba(246,238,228,0),var(--bg));pointer-events:none;z-index:1}
+/* sombras de palmeira no fundo, como na foto: dão continuidade à cena */
+.shade{position:absolute;pointer-events:none;color:#6B4E2A;opacity:.11;filter:blur(5px);z-index:0}
+.shade svg{width:100%;height:100%;display:block}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;min-height:540px;padding-top:6px;padding-bottom:40px;z-index:2}
 .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--olive);font-weight:500;background:rgba(61,88,66,.08);border-radius:999px;padding:6px 13px}
-.hero h1{font-weight:500;font-size:58px;line-height:1.02;letter-spacing:-.02em;color:var(--olive);margin:18px 0 16px}
+.hero h1{font-weight:800;font-size:58px;line-height:1.02;letter-spacing:-.02em;color:var(--olive);margin:18px 0 16px}
 .hero p{font-size:18px;color:var(--ink-2);max-width:500px;margin:0}
 .squiggle{display:block;margin-top:18px;width:96px;height:12px;stroke:var(--brown);fill:none;stroke-width:2;stroke-linecap:round}
-.hero-photo{position:relative;justify-self:end;width:560px;max-width:calc(100% + 40px);margin:-10px -40px -26px 0}
-/* foto da arte: bordas se dissolvem no fundo (esquerda, direita, em cima e embaixo) */
-.hero-photo img{width:100%;display:block;
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 8%,#000 84%,transparent 100%);-webkit-mask-composite:source-in;
-  mask-image:linear-gradient(90deg,transparent 0,#000 22%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 8%,#000 84%,transparent 100%);mask-composite:intersect}
+.hero-photo{position:absolute;top:0;right:0;bottom:0;width:min(50vw,760px);z-index:0;overflow:hidden}
+/* a foto encosta no topo e na lateral da tela (continua para fora) e só se dissolve à esquerda */
+.hero-photo img{position:absolute;inset:-14px;width:calc(100% + 28px);height:calc(100% + 28px);object-fit:cover;object-position:50% 30%;display:block;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.55) 14%,#000 34%);mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.55) 14%,#000 34%)}
+.kicker .sym{width:16px;height:16px;display:block}
+.hero h1{font-family:var(--round)}
 .leaf{position:absolute;pointer-events:none;color:#6E7F55;opacity:.38}
 .leaf svg{width:100%;height:100%;display:block}
 
@@ -90,14 +94,14 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .btn:disabled{opacity:.6;cursor:default}
 .search .btn svg{color:#fff}
 .list-h{display:flex;justify-content:space-between;align-items:baseline;margin:30px 2px 14px}
-.list-h h2{font-size:30px;font-weight:500;letter-spacing:-.01em;margin:0}
+.list-h h2{font-family:var(--round);font-size:30px;font-weight:800;letter-spacing:-.01em;margin:0}
 .list-h span{color:var(--muted);font-size:15px}
 .jobs{display:grid;gap:14px}
 .job{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 24px;box-shadow:var(--sh);text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
 .job:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(60,50,30,.05),0 18px 40px -14px rgba(60,50,30,.22)}
 .job-ic{width:76px;height:76px;border-radius:999px;background:var(--sand);display:grid;place-items:center;color:var(--olive)}
 .job-ic svg{width:40px;height:40px;stroke-width:1.5}
-.job h3{font-size:22px;font-weight:500;margin:0 0 6px;letter-spacing:-.01em}
+.job h3{font-family:var(--round);font-size:22px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
 .meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink-2)}
 .meta span{display:inline-flex;align-items:center;gap:6px}
 .meta svg{width:15px;height:15px;color:var(--olive)}
@@ -108,14 +112,14 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 
 /* como funciona */
 .how{overflow:hidden;background:var(--sage);border-radius:24px;padding:34px 32px 30px;position:sticky;top:20px}
-.how h2{font-size:32px;font-weight:500;margin:0 0 26px;letter-spacing:-.01em;position:relative}
+.how h2{font-family:var(--round);font-size:32px;font-weight:800;margin:0 0 26px;letter-spacing:-.01em;position:relative}
 .steps{position:relative;display:grid;gap:30px}
 .steps::before{content:"";position:absolute;left:19px;top:30px;bottom:30px;width:1px;background:#B9BCA6}
 .step{position:relative;display:grid;grid-template-columns:40px 1fr;gap:18px}
 .step b{width:40px;height:40px;border-radius:999px;background:var(--olive);color:#fff;display:grid;place-items:center;font-weight:500;font-size:16px}
 .step h4{margin:2px 0 4px;font-size:18px;font-weight:500;color:var(--olive)}
 .step p{margin:0;color:var(--ink-2);font-size:15px}
-.how .heart{position:absolute;right:28px;bottom:24px;width:44px;height:44px;color:var(--olive);opacity:.75}
+.how .heart{position:absolute;right:30px;top:38px;width:34px;height:34px;opacity:.9}
 
 /* faixa de valores */
 .values{display:flex;align-items:center;gap:28px;background:var(--bg-2);border:1px solid var(--line);border-radius:24px;padding:22px 34px;margin-bottom:56px;flex-wrap:wrap}
@@ -128,7 +132,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 
 /* seções */
 .sec{padding:10px 0 56px}
-.sec h2{font-size:34px;font-weight:500;margin:0 0 8px;letter-spacing:-.01em}
+.sec h2{font-family:var(--round);font-size:34px;font-weight:800;margin:0 0 8px;letter-spacing:-.01em}
 .sec .lead{color:var(--ink-2);margin:0 0 26px;font-size:17px;max-width:640px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
@@ -142,22 +146,32 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .faq summary::after{content:"+";color:var(--olive);font-size:22px;line-height:1}
 .faq details[open] summary::after{content:"–"}
 .faq details p{margin:0 0 18px;color:var(--ink-2)}
-footer{border-top:1px solid var(--line);padding:26px 0 34px;color:var(--muted);font-size:14px}
-footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
-footer img{height:20px;opacity:.85}
+/* faixas com os padrões do manual da marca */
+.band{height:84px;overflow:hidden}
+.band svg{display:block}
+.band-brown{background:var(--brown);color:#F3E3CF}
+footer{position:relative;overflow:hidden;background:var(--olive);color:#E8EFE6;padding:44px 0 46px;font-size:14px}
+.foot-waves{position:absolute;inset:0;color:#fff;opacity:.09;pointer-events:none}
+footer .wrap{position:relative;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+.foot-brand{display:flex;flex-direction:column;align-items:center;gap:6px}
+.foot-brand img{height:34px}
+.foot-brand span{font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;opacity:.9}
+.foot-txt{max-width:560px;text-align:right}
+.foot-txt b{display:block;font-family:var(--round);font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
+@media (max-width:760px){ .foot-txt{text-align:left} .band{height:64px} }
 
 /* ---------- página da vaga ---------- */
 .vhero{position:relative;overflow:hidden;background:linear-gradient(100deg,#F5EBDF 0%,#F0E2D0 100%)}
 .vhero .wrap{position:relative;padding-top:8px;padding-bottom:36px}
 .crumb{font-size:14px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .crumb:hover{color:var(--olive)}
-.vhero h1{font-size:48px;font-weight:500;letter-spacing:-.02em;line-height:1.05;color:var(--olive);margin:16px 0 14px}
+.vhero h1{font-family:var(--round);font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:var(--olive);margin:16px 0 14px}
 .vhero .meta{font-size:15px;gap:8px 20px}
 .vhero .meta svg{width:17px;height:17px}
 .vmain{display:grid;grid-template-columns:420px 1fr;gap:30px;padding-top:30px;padding-bottom:56px;align-items:start}
 .card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--sh);padding:28px}
 .formcard{position:sticky;top:20px}
-.formcard h2{font-size:28px;font-weight:500;margin:0 0 4px;letter-spacing:-.01em}
+.formcard h2{font-family:var(--round);font-size:28px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
 .sub{font-size:15px;color:var(--muted);margin:0 0 22px}
 .field{margin-bottom:18px}
 .field>label,.q>.ql{display:block;font-size:14.5px;font-weight:500;margin-bottom:8px}
@@ -263,7 +277,10 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
   .hero .wrap{grid-template-columns:1fr;min-height:0;padding-bottom:10px}
   .hero h1{font-size:40px;margin:14px 0 12px}
   .hero p{font-size:16.5px}
-  .hero-photo{justify-self:stretch;width:auto;max-width:none;margin:6px -18px -12px}
+  .hero-photo{position:relative;width:auto;height:380px;margin:4px -18px 0}
+  .hero-photo img{object-position:55% 40%;-webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.6) 22%,#000 48%);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.6) 22%,#000 48%)}
+  .hero-photo{margin-top:-60px}
+  .hero .wrap{min-height:0;padding-bottom:0}
   .main{padding-top:22px}
   .list-h h2{font-size:24px}
   .job{grid-template-columns:auto 1fr;gap:14px;padding:16px}
@@ -296,9 +313,17 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></symbol>
   <symbol id="r-store" viewBox="0 0 48 48"><path d="M7 20h34v20a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><path d="M5 20l4-11h30l4 11"/><path d="M5 20c0 2.8 2.2 5 5 5s5-2.2 5-5c0 2.8 2.2 5 4.5 5S24 22.8 24 20c0 2.8 2.2 5 4.5 5S33 22.8 33 20c0 2.8 2.2 5 5 5s5-2.2 5-5"/><path d="M15 9l-2 11M24 9v11M33 9l2 11"/><rect x="13" y="30" width="10" height="12"/><rect x="28" y="30" width="8" height="7" rx="1"/></symbol>
-  <symbol id="r-coco" viewBox="0 0 48 48"><ellipse cx="24" cy="25" rx="17" ry="14" transform="rotate(-25 24 25)"/><ellipse cx="27" cy="22" rx="10" ry="7.5" transform="rotate(-25 27 22)"/><path d="M12 32c4 3 11 4 17 1"/></symbol>
+  <symbol id="r-coco" viewBox="0 0 48 48"><path d="M12.5 15.5a15 15 0 0 1 23 0"/><path d="M6 24c3-3.4 6-3.4 9 0s6 3.4 9 0 6-3.4 9 0 6 3.4 9 0"/><path d="M6.5 27.5a17.5 17.5 0 0 0 35 0"/></symbol>
+  <symbol id="i-coco" viewBox="0 0 24 24"><path d="M6.6 7.6a7.6 7.6 0 0 1 10.8 0"/><path d="M3 12c1.5-1.7 3-1.7 4.5 0s3 1.7 4.5 0 3-1.7 4.5 0 3 1.7 4.5 0"/><path d="M3.3 13.8a8.7 8.7 0 0 0 17.4 0"/></symbol>
+  <symbol id="i-palm" viewBox="0 0 24 24"><path d="M12 22c0-5 .4-9 1.5-13"/><path d="M13.5 9c-1.5-3-5-4-8.5-2.5 3 0 5 1 6.5 3.5"/><path d="M13.5 9c1-3.5 4.5-5 8-4-3 .5-5 2-6 4.5"/><path d="M13.5 9c-3-.5-6 1.5-7.5 4.5 2-2 4.5-3 7-3"/><path d="M13.5 9c3 0 5.5 2 6.5 5-2-1.5-4-2.5-6-2.5"/><path d="M9 22h7"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 17c2.5-5.5 6.5-8.5 10.5-6.3 2.3 1.3 1.2 4.5-1.1 3.9-1.6-.4-1.6-2.6 0-3.4 3.4-1.7 6.8.5 10.6 5.8"/></symbol>
   <symbol id="r-box" viewBox="0 0 48 48"><path d="M24 5 41 14v20L24 43 7 34V14z"/><path d="M7 14l17 9 17-9M24 23v20M15.5 9.5l17 9"/></symbol>
   <symbol id="r-palm" viewBox="0 0 48 48"><path d="M24 44c0-10 1-18 3-26"/><path d="M27 18c-3-6-10-8-17-5 6 0 10 2 13 7"/><path d="M27 18c2-7 9-10 16-8-6 1-10 4-12 9"/><path d="M27 18c-6-1-12 3-15 9 4-4 9-6 14-6"/><path d="M27 18c6 0 11 4 13 10-4-3-8-5-12-5"/><path d="M27 18c0-6-3-11-8-13 3 3 5 7 5 11"/><path d="M18 44h14"/></symbol>
+  <pattern id="pat-waves" width="64" height="26" patternUnits="userSpaceOnUse"><path d="M2 18c6-8 12-8 18 0s12 8 18 0 12-8 18 0 6 4 8 2" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></pattern>
+  <pattern id="pat-icons" width="240" height="84" patternUnits="userSpaceOnUse">
+    <g fill="none" stroke="#F6E6D2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".7">
+      <use href="#i-coco" x="14" y="28" width="28" height="28"/><use href="#i-wave" x="74" y="28" width="28" height="28"/>
+      <use href="#i-palm" x="134" y="26" width="30" height="30"/><use href="#i-wave" x="194" y="28" width="28" height="28"/></g></pattern>
   <symbol id="frond" viewBox="0 0 200 200"><path d="M10 190 Q90 110 190 20" fill="none" stroke="currentColor" stroke-width="3"/>
     <g fill="currentColor"><path d="M40 160 Q20 130 5 128 Q30 150 40 160z"/><path d="M40 160 Q60 175 70 200 Q55 175 40 160z"/><path d="M62 138 Q40 105 22 100 Q45 125 62 138z"/><path d="M62 138 Q88 152 100 180 Q80 152 62 138z"/><path d="M86 115 Q66 80 48 72 Q70 100 86 115z"/><path d="M86 115 Q115 125 130 155 Q105 128 86 115z"/><path d="M110 92 Q94 58 78 46 Q96 76 110 92z"/><path d="M110 92 Q140 98 160 126 Q132 102 110 92z"/><path d="M134 68 Q122 38 110 24 Q124 52 134 68z"/><path d="M134 68 Q162 70 184 94 Q156 74 134 68z"/><path d="M158 46 Q152 22 144 8 Q152 30 158 46z"/><path d="M158 46 Q180 46 198 62 Q176 50 158 46z"/></g></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19c3-4 6-7 10-9"/></symbol>
@@ -327,17 +352,18 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
 <!-- =============== PORTAL (lista de vagas) =============== -->
 <div id="portal" class="hide">
   <section class="hero">
-    <div class="leaf" style="right:-40px;top:-60px;width:300px;height:300px;transform:rotate(15deg)"><svg><use href="#frond"/></svg></div>
-    <div class="leaf" style="left:44%;bottom:-100px;width:220px;height:220px;transform:rotate(200deg);opacity:.16"><svg><use href="#frond"/></svg></div>
+    <div class="shade" style="left:-120px;top:-160px;width:620px;height:620px;transform:rotate(-8deg)"><svg><use href="#frond"/></svg></div>
+    <div class="shade" style="left:30%;top:-220px;width:520px;height:520px;transform:rotate(38deg) scaleX(-1);opacity:.08"><svg><use href="#frond"/></svg></div>
+    <div class="shade" style="left:2%;bottom:-260px;width:480px;height:480px;transform:rotate(160deg);opacity:.07"><svg><use href="#frond"/></svg></div>
     <div class="wrap">
       <div>
-        <span class="kicker">Portal de Vagas Coquin</span>
+        <span class="kicker"><img class="sym" src="simbolo-coquin.png" alt="">Portal de Vagas Coquin</span>
         <h1><span class="ln"><span>Vem fazer parte</span></span><span class="ln"><span>do nosso time!</span></span></h1>
         <p>Na Coquin, acreditamos em pessoas que compartilham do nosso propósito: espalhar leveza, qualidade e alegria em cada coco.</p>
         <svg class="squiggle" viewBox="0 0 96 12"><path d="M2 8c10-6 20-6 30 0s20 6 30 0 20-6 32-1"/></svg>
       </div>
-      <div class="hero-photo" id="heroPhoto"><img src="capa-foto.webp" alt="Gelato tailandês Coquin servido no coco, com folhas de palmeira"></div>
-    </div>
+      </div>
+    <div class="hero-photo" id="heroPhoto"><img src="capa-cena.webp" alt="Gelato tailandês Coquin servido no coco, com folhas de palmeira"></div>
   </section>
 
   <div class="wrap main" id="vagas">
@@ -354,15 +380,15 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
         <div class="step"><b>2</b><div><h4>Análise do perfil</h4><p>Nosso time lê seu currículo com carinho.</p></div></div>
         <div class="step"><b>3</b><div><h4>Contato</h4><p>Se combinar com a vaga, chamamos você por e-mail ou WhatsApp para uma conversa.</p></div></div>
       </div>
-      <svg class="heart i" viewBox="0 0 24 24"><use href="#i-heart"/></svg>
+      <img class="heart" src="simbolo-coquin.png" alt="">
     </aside>
   </div>
 
   <div class="wrap">
     <div class="values">
-      <div class="val"><svg class="i"><use href="#i-leaf"/></svg>Ambiente leve<br>e colaborativo</div>
-      <div class="val"><svg class="i"><use href="#i-grow"/></svg>Desenvolvimento<br>contínuo</div>
-      <div class="val"><svg class="i"><use href="#i-star"/></svg>Benefícios<br>completos</div>
+      <div class="val"><svg class="i"><use href="#i-wave"/></svg>Ambiente leve<br>e colaborativo</div>
+      <div class="val"><svg class="i"><use href="#i-palm"/></svg>Desenvolvimento<br>contínuo</div>
+      <div class="val"><svg class="i"><use href="#i-coco"/></svg>Benefícios<br>completos</div>
       <span class="sep"></span>
       <div class="sig"><img src="logo-coquin-oficial.png" alt="Coquin"><span>Gente boa faz acontecer.</span></div>
     </div>
@@ -372,9 +398,9 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
     <h2>Nossa cultura</h2>
     <p class="lead">Somos uma marca de gelato tailandês servido no coco, nascida em Fortaleza. Por trás de cada coco tem um time que gosta de gente e de fazer bem feito.</p>
     <div class="grid3">
-      <div class="box"><svg class="i"><use href="#i-smile"/></svg><h3>Leveza</h3><p>A gente trabalha sério, mas sem perder o bom humor. O cliente sente isso no balcão.</p></div>
-      <div class="box"><svg class="i"><use href="#i-star"/></svg><h3>Qualidade</h3><p>Do preparo do coco ao último topping: capricho em cada detalhe, todos os dias.</p></div>
-      <div class="box"><svg class="i"><use href="#i-heart"/></svg><h3>Gente boa</h3><p>Respeito, parceria e espaço para aprender e crescer junto com a Coquin.</p></div>
+      <div class="box"><svg class="i"><use href="#i-wave"/></svg><h3>Leveza</h3><p>A gente trabalha sério, mas sem perder o bom humor. O cliente sente isso no balcão.</p></div>
+      <div class="box"><svg class="i"><use href="#i-coco"/></svg><h3>Qualidade</h3><p>Do preparo do coco ao último topping: capricho em cada detalhe, todos os dias.</p></div>
+      <div class="box"><svg class="i"><use href="#i-palm"/></svg><h3>Gente boa</h3><p>Respeito, parceria e espaço para aprender e crescer junto com a Coquin.</p></div>
     </div>
   </div></section>
 
@@ -450,10 +476,12 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
 
 <div id="loading" class="loading">Carregando…</div>
 
+<div class="band band-brown" aria-hidden="true"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#pat-icons)"/></svg></div>
 <footer>
+  <svg class="foot-waves" width="100%" height="100%" aria-hidden="true"><rect width="100%" height="100%" fill="url(#pat-waves)"/></svg>
   <div class="wrap">
-    <img src="logo-coquin-oficial.png" alt="Coquin">
-    <span>Portal de Vagas Coquin · Fortaleza/CE · seus dados ficam protegidos e só a equipe de contratação tem acesso.</span>
+    <div class="foot-brand"><img src="logo-coquin-oficial-branca.png" alt="Coquin"><span>Sorvete no coco</span></div>
+    <div class="foot-txt"><b>Gente boa faz acontecer.</b><span>Portal de Vagas Coquin · Fortaleza/CE · seus dados ficam protegidos e só a equipe de contratação tem acesso.</span></div>
   </div>
 </footer>
 
@@ -666,7 +694,7 @@ function reveal(root){
     const sib=el.parentElement?[...el.parentElement.children].filter(x=>x.classList.contains(el.classList[0])):[];
     el.style.setProperty('--d',Math.min(6,Math.max(0,sib.indexOf(el)))*90+'ms'); el.classList.add('rv'); io.observe(el); });
 }
-(function(){ const ph=$('heroPhoto'); if(!ph||calm||!matchMedia('(pointer:fine)').matches) return;
+(function(){ const ph=$('heroPhoto')&&$('heroPhoto').querySelector('img'); if(!ph||calm||!matchMedia('(pointer:fine)').matches) return;
   let tx=0,ty=0,x=0,y=0,raf=0;
   addEventListener('mousemove',e=>{ tx=(e.clientX/innerWidth-.5)*16; ty=(e.clientY/innerHeight-.5)*12; if(!raf) raf=requestAnimationFrame(step); });
   function step(){ x+=(tx-x)*.08; y+=(ty-y)*.08; ph.style.translate=x.toFixed(2)+'px '+y.toFixed(2)+'px'; raf=(Math.abs(tx-x)+Math.abs(ty-y)>.05)?requestAnimationFrame(step):0; }
