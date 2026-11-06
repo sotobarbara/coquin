@@ -52,6 +52,10 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
   etapa, **nota em estrelas**, contato, texto com as palavras-chave destacadas e **anotações**.
 - **Exportar CSV** (Excel/Sheets) e **excluir candidatura + CV** (pedido LGPD).
 - Candidatura nova aparece na hora (realtime).
+- **Foto do candidato:** se o currículo (PDF ou Word) tiver foto 3x4, ela vira o avatar do card.
+  O painel escolhe a imagem com formato de retrato e tons de pele (descarta logos e ícones) e
+  guarda uma miniatura em `cv_photo`. Sem foto, fica o avatar com as iniciais. Pegou a imagem
+  errada? No painel do candidato tem **"Remover foto"**.
 - Em tela pequena vira uma coluna por vez, com rolagem para o lado.
 
 **Vagas & regras**

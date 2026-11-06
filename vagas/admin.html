@@ -141,6 +141,9 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .kc.dragging{opacity:.4}
 .kc.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
 .kc-top{display:flex;gap:10px;align-items:flex-start}
+.av-ph{overflow:hidden;background:var(--sunken)!important;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line-2)}
+.av-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-del{display:inline-block;margin-top:6px;font-size:12.5px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .av{width:34px;height:34px;border-radius:99px;display:grid;place-items:center;font-weight:600;font-size:12.5px;flex:none;letter-spacing:.02em}
 .kc-n{flex:1;min-width:0}
 .kc-n b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -644,7 +647,7 @@ function loadPdfJs(){
   return pdfjsP;
 }
 async function pdfText(buf){
-  const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf)}).promise; let out='';
+  const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise; let out='';
   for(let i=1;i<=Math.min(doc.numPages,6);i++){ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); out+=tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join('')+'\n'; }
   return out;
 }
@@ -668,7 +671,7 @@ async function ocrBlob(blob){
   return (await w.recognize(prepCanvas(img,sc,0,1))).data.text;
 }
 async function pdfOcr(buf){   // PDF escaneado (só imagem): renderiza as páginas e lê com OCR
-  const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf)}).promise; const w=await loadTess(); let out='';
+  const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise; const w=await loadTess(); let out='';
   for(let i=1;i<=Math.min(doc.numPages,2);i++){ const pg=await doc.getPage(i); const vp=pg.getViewport({scale:2});
     const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
     out+=(await w.recognize(c)).data.text+'\n'; }
@@ -679,13 +682,16 @@ async function docxText(buf){
   const t=xml.replace(/<\/w:p>/g,'\n').replace(/<w:tab\/>/g,' ').replace(/<[^>]+>/g,'');
   const d=document.createElement('textarea'); d.innerHTML=t; return d.value;
 }
-async function readCv(c){
-  const ext=(c.cv_path.split('.').pop()||'').toLowerCase();
-  const isImg=/^(png|jpe?g|webp)$/.test(ext);
-  if(ext!=='pdf' && ext!=='docx' && !isImg) return ' ';
+async function fetchCv(c){
   const {data,error}=await sb.storage.from('cvs').createSignedUrl(c.cv_path,120); if(error||!data) throw error||new Error('url');
   const r=await fetch(data.signedUrl); if(!r.ok) throw new Error('http '+r.status);
-  const buf=await r.arrayBuffer();
+  return await r.arrayBuffer();
+}
+const cvExt=c=>(String(c.cv_path||'').split('.').pop()||'').toLowerCase();
+async function readCv(c,buf){
+  const ext=cvExt(c);
+  const isImg=/^(png|jpe?g|webp)$/.test(ext);
+  if(ext!=='pdf' && ext!=='docx' && !isImg) return ' ';
   let txt='';
   if(isImg){ txt=await ocrBlob(new Blob([buf])); }
   else if(ext==='pdf'){ txt=await pdfText(buf); if(txt.trim().length<60) txt=await pdfOcr(buf); }
@@ -693,16 +699,75 @@ async function readCv(c){
   if(!txt.trim()) return ' ';   // tentou e não achou texto (fica "Manual"), não tenta de novo
   return txt.replace(/[ \t]+/g,' ').replace(/\n\s*\n+/g,'\n').trim().slice(0,20000);
 }
+/* foto do candidato: só PDF/Word, e só se o banco já tem a coluna cv_photo (null = ainda não procurou) */
+const wantsPhoto=c=>c.cv_photo===null && /^(pdf|docx)$/.test(cvExt(c)) && !c._phErr;
 const CVQ={q:[],busy:false,
   add(){ cands.forEach(c=>{ const old=c.cv_text==='' && /\.(png|jpe?g|webp|pdf)$/i.test(c.cv_path||'');
-    if(c.cv_path && (c.cv_text==null||old) && !c._cvErr && !c._cvQ){ c._cvQ=true; if(old) c.cv_text=null; this.q.push(c); } }); this.run(); },
+    if(c.cv_path && (c.cv_text==null||old||wantsPhoto(c)) && !c._cvErr && !c._cvQ){ c._cvQ=true; if(old) c.cv_text=null; this.q.push(c); } }); this.run(); },
   async run(){ if(this.busy) return; this.busy=true;
-    while(this.q.length){ const c=this.q.shift();
-      try{ c.cv_text=await readCv(c); c._s=null; await sb.from('candidaturas').update({cv_text:c.cv_text}).eq('id',c.id); }
+    while(this.q.length){ const c=this.q.shift(); let buf=null;
+      try{ buf=await fetchCv(c);
+        if(c.cv_text==null){ c.cv_text=await readCv(c,buf); c._s=null; await sb.from('candidaturas').update({cv_text:c.cv_text}).eq('id',c.id); } }
       catch(e){ c._cvErr=true; c._s=null; }
+      if(buf && wantsPhoto(c)){
+        try{ const ph=await cvPhoto(cvExt(c),buf); const {error}=await sb.from('candidaturas').update({cv_photo:ph||''}).eq('id',c.id); if(error) throw error; c.cv_photo=ph||''; }
+        catch(e){ c._phErr=true; } }
       softRender(c.id); }
     this.busy=false; }
 };
+
+/* acha a foto 3x4 dentro do currículo: imagem com formato de retrato e tons de pele (descarta logos e ícones) */
+async function cvPhoto(ext,buf){
+  const imgs=[];
+  if(ext==='pdf'){
+    const lib=await loadPdfJs(); const doc=await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise;
+    const pg=await doc.getPage(1); const ops=await pg.getOperatorList(); const O=lib.OPS;
+    for(let i=0;i<ops.fnArray.length && imgs.length<12;i++){
+      const f=ops.fnArray[i]; if(f!==O.paintImageXObject && f!==O.paintJpegXObject) continue;
+      const name=ops.argsArray[i][0]; const store=String(name).startsWith('g_')?pg.commonObjs:pg.objs;
+      const im=await new Promise(r=>{ try{ store.get(name,r); }catch(e){ r(null); } setTimeout(()=>r(null),3000); });
+      const cv=im&&pdfImgCanvas(im); if(cv) imgs.push(cv); }
+  } else if(ext==='docx'){
+    for(const e of zipList(buf).filter(e=>/^word\/media\/.+\.(png|jpe?g)$/i.test(e.name)).slice(0,12)){
+      try{ const data=await zipData(buf,e); const img=await fileToImg(new Blob([data])); const c=document.createElement('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); imgs.push(c); }catch(_){} }
+  }
+  let best=null,bs=0;
+  imgs.forEach(cv=>{ const w=cv.width,h=cv.height; if(w<70||h<70) return; const ar=w/h; if(ar<.55||ar>1.45) return;
+    const sk=skinRatio(cv); if(sk<.1) return; const sc=sk*Math.min(1,(w*h)/(220*220)); if(sc>bs){ bs=sc; best=cv; } });
+  if(!best) return '';
+  const side=Math.min(best.width,best.height), sx=(best.width-side)/2, sy=best.height>best.width?(best.height-side)*.3:0;
+  const o=document.createElement('canvas'); o.width=o.height=128; const x=o.getContext('2d'); x.imageSmoothingQuality='high';
+  x.drawImage(best,sx,sy,side,side,0,0,128,128); return o.toDataURL('image/jpeg',.82);
+}
+function pdfImgCanvas(im){
+  const w=im.width,h=im.height; if(!w||!h) return null; const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d');
+  if(im.bitmap){ x.drawImage(im.bitmap,0,0); return c; }
+  if(!im.data) return null; const id=x.createImageData(w,h), d=id.data, s=im.data;
+  if(im.kind===3) d.set(s.subarray(0,d.length));
+  else if(im.kind===2){ for(let i=0,j=0;i<d.length;i+=4,j+=3){ d[i]=s[j]; d[i+1]=s[j+1]; d[i+2]=s[j+2]; d[i+3]=255; } }
+  else return null;
+  x.putImageData(id,0,0); return c;
+}
+function skinRatio(cv){
+  const t=document.createElement('canvas'); t.width=t.height=40; const x=t.getContext('2d');
+  x.drawImage(cv,cv.width*.15,cv.height*.1,cv.width*.7,cv.height*.75,0,0,40,40);
+  const d=x.getImageData(0,0,40,40).data; let n=0;
+  for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; const cb=128-.168736*r-.331264*g+.5*b, cr=128+.5*r-.418688*g-.081312*b;
+    if(cb>=77&&cb<=127&&cr>=133&&cr<=173&&r>60) n++; }
+  return n/1600;
+}
+function zipList(buf){
+  const dv=new DataView(buf); let i=buf.byteLength-22; while(i>=0 && dv.getUint32(i,true)!==0x06054b50) i--; if(i<0) return [];
+  let p=dv.getUint32(i+16,true); const n=dv.getUint16(i+10,true), out=[];
+  for(let k=0;k<n;k++){ const fl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true);
+    out.push({name:new TextDecoder().decode(new Uint8Array(buf,p+46,fl)),method:dv.getUint16(p+10,true),csize:dv.getUint32(p+20,true),lo:dv.getUint32(p+42,true)}); p+=46+fl+el+cl; }
+  return out;
+}
+async function zipData(buf,e){
+  const dv=new DataView(buf); const data=new Uint8Array(buf,e.lo+30+dv.getUint16(e.lo+26,true)+dv.getUint16(e.lo+28,true),e.csize);
+  if(e.method===0) return data;
+  return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+}
 let _rt=null;
 function softRender(id){ clearTimeout(_rt); _rt=setTimeout(()=>{ render(); if(openId && openId===id) openCand(id); },120); }
 function phoneFromCv(t){
@@ -715,7 +780,8 @@ function rescore(){ cands.forEach(c=>c._s=null); }
 /* ---------- visual ---------- */
 const ic=n=>'<svg class="i"><use href="#i-'+n+'"/></svg>';
 const AVC=[['#FCE3D9','#B4471F'],['#E0ECF9','#2E5C99'],['#E2F1E8','#1E6B4C'],['#F1E6F7','#6B3C8C'],['#FAEFD7','#8A5E10'],['#ECEAE6','#4A453F']];
-function avatar(name,cls){
+function avatar(name,cls,photo){
+  if(photo && /^data:image\/(jpeg|png);base64,/.test(photo)) return '<span class="av av-ph '+(cls||'')+'"><img src="'+photo+'" alt=""></span>';
   const p=String(name||'?').trim().split(/\s+/).filter(Boolean);
   const t=((p[0]||'?')[0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();
   let h=0; for(const ch of String(name)) h=(h*31+ch.charCodeAt(0))>>>0;
@@ -805,7 +871,7 @@ function card(c){
   if(cands.some(o=>o!==c && o.vaga_id===c.vaga_id && norm(o.name).trim()===norm(c.name).trim())) chips.push('<span class="chip ko">nome repetido</span>');
   s.highlights.slice(0,2).forEach(h=>chips.push('<span class="chip">'+esc(h.replace(/\?$/,'').slice(0,40))+'</span>'));
   return '<div class="kc'+(openId===c.id?' sel':'')+'" draggable="true" data-id="'+c.id+'">'+(c.status==='novo'?'<span class="unread"></span>':'')
-    +'<div class="kc-top">'+avatar(c.name)+'<div class="kc-n"><b>'+esc(c.name)+'</b>'+(c.city?'<span>'+ic('pin')+esc(c.city)+'</span>':'<span>'+ic('mail')+esc(c.email||'—')+'</span>')+'</div>'
+    +'<div class="kc-top">'+avatar(c.name,'',c.cv_photo)+'<div class="kc-n"><b>'+esc(c.name)+'</b>'+(c.city?'<span>'+ic('pin')+esc(c.city)+'</span>':'<span>'+ic('mail')+esc(c.email||'—')+'</span>')+'</div>'
     +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
     +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:noNum(s.tier)?0:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
@@ -842,7 +908,8 @@ function openCand(id){
   const ts=s.tier==='P'?'O score aparece em instantes.':s.tier==='Q'?'Currículo em foto/escaneado ou ilegível: abra o arquivo para avaliar.':s.got+' de '+s.max+' pontos nas regras da vaga';
   $('cTitle').textContent=(v.title||'Candidatura')+(v.store?' · '+v.store:'');
   $('cBody').innerHTML=
-    '<div class="blk"><div class="ph">'+avatar(c.name)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||c.email||'')+' · inscrito há '+ago(c.created_at)+'</p></div></div></div>'
+    '<div class="blk"><div class="ph">'+avatar(c.name,'',c.cv_photo)+'<div><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||c.email||'')+' · inscrito há '+ago(c.created_at)+'</p>'
+      +(c.cv_photo?'<a class="ph-del" id="phDel">Não é a pessoa? Remover foto</a>':'')+'</div></div></div>'
     +(colOf(c)==='reprovado'?'<div class="blk"><div class="why"><b>Por que está em Não qualificados</b><ul>'+whyNQ(c).map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>'
       +'<div class="why-tip">Discorda? Mova para outra etapa abaixo, ou ajuste as palavras-chave em <b>Vagas & regras → Regras</b>.</div></div></div>':'')
     +(s.tier==='Q'?'<div class="blk"><div class="why q"><b>Por que está como Manual</b><ul><li>Não consegui ler nenhum texto do arquivo (pode ser foto muito escura, desenho ou formato não suportado).</li><li>Abra o currículo e decida você mesma.</li></ul></div></div>':'')
@@ -871,6 +938,7 @@ function openCand(id){
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
+  if($('phDel')) $('phDel').onclick=()=>patch(c,{cv_photo:''},true).then(()=>openCand(c.id));
   $('stSel').onclick=e=>{ const b=e.target.closest('[data-st]'); if(b && colOf(c)!==b.dataset.st){ patch(c,{status:stFor(c,b.dataset.st)},true).then(()=>openCand(c.id)); } };
   $('starSel').onclick=e=>{ const b=e.target.closest('[data-n]'); if(!b) return; const n=+b.dataset.n; patch(c,{stars:(c.stars===n?0:n)},true).then(()=>document.querySelectorAll('#starSel button').forEach(x=>x.classList.toggle('on',(c.stars||0)>=+x.dataset.n))); };
   const nt=$('cNotes'); nt.oninput=()=>{ clearTimeout(nt._h); nt._h=setTimeout(()=>patch(c,{notes:nt.value},true),700); };
