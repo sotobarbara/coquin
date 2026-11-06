@@ -71,7 +71,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--olive);font-weight:500;background:rgba(61,88,66,.08);border-radius:999px;padding:6px 13px}
 .hero h1{font-weight:800;font-size:58px;line-height:1.02;letter-spacing:-.02em;color:var(--olive);margin:18px 0 16px}
 .hero p{font-size:18px;color:var(--ink-2);max-width:500px;margin:0}
-.squiggle{display:block;margin-top:20px;width:84px;height:34px;stroke:var(--brown);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.squiggle{display:block;margin-top:20px;width:78px;height:41px;stroke:var(--brown);fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
 .hero-photo{position:absolute;top:0;right:0;bottom:0;width:min(50vw,760px);z-index:0;overflow:hidden}
 /* a foto encosta no topo e na lateral da tela (continua para fora) e só se dissolve à esquerda */
 .hero-photo img{position:absolute;inset:-14px;width:calc(100% + 28px);height:calc(100% + 28px);object-fit:cover;object-position:50% 30%;display:block;
@@ -239,7 +239,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
   .hero h1 .ln:nth-child(1)>span{animation-delay:.28s}
   .hero h1 .ln:nth-child(2)>span{animation-delay:.42s}
   .hero p{animation:fxUp 1s .6s cubic-bezier(.2,.7,.2,1) both}
-  .squiggle path{stroke-dasharray:140;stroke-dashoffset:140;animation:fxDraw 1.4s 1s cubic-bezier(.6,0,.2,1) forwards}
+  .squiggle path{stroke-dasharray:420;stroke-dashoffset:420;animation:fxDraw 1.4s 1s cubic-bezier(.6,0,.2,1) forwards}
   .hero-photo{animation:fxPhoto 1.6s .25s cubic-bezier(.2,.7,.2,1) both}
   .hero-photo img{animation:fxFloat 7s 1.9s ease-in-out infinite alternate}
   .leaf svg{transform-origin:10% 95%;animation:fxSway 7s ease-in-out infinite alternate}
@@ -313,12 +313,22 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></symbol>
   <symbol id="r-store" viewBox="0 0 48 48"><path d="M7 20h34v20a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><path d="M5 20l4-11h30l4 11"/><path d="M5 20c0 2.8 2.2 5 5 5s5-2.2 5-5c0 2.8 2.2 5 4.5 5S24 22.8 24 20c0 2.8 2.2 5 4.5 5S33 22.8 33 20c0 2.8 2.2 5 5 5s5-2.2 5-5"/><path d="M15 9l-2 11M24 9v11M33 9l2 11"/><rect x="13" y="30" width="10" height="12"/><rect x="28" y="30" width="8" height="7" rx="1"/></symbol>
-  <symbol id="r-coco" viewBox="0 0 48 48"><path d="M12.5 15.5a15 15 0 0 1 23 0"/><path d="M6 24c3-3.4 6-3.4 9 0s6 3.4 9 0 6-3.4 9 0 6 3.4 9 0"/><path d="M6.5 27.5a17.5 17.5 0 0 0 35 0"/></symbol>
-  <symbol id="i-coco" viewBox="0 0 24 24"><path d="M6.6 7.6a7.6 7.6 0 0 1 10.8 0"/><path d="M3 12c1.5-1.7 3-1.7 4.5 0s3 1.7 4.5 0 3-1.7 4.5 0 3 1.7 4.5 0"/><path d="M3.3 13.8a8.7 8.7 0 0 0 17.4 0"/></symbol>
-  <symbol id="i-palm" viewBox="0 0 24 24"><path d="M12 22c0-5 .4-9 1.5-13"/><path d="M13.5 9c-1.5-3-5-4-8.5-2.5 3 0 5 1 6.5 3.5"/><path d="M13.5 9c1-3.5 4.5-5 8-4-3 .5-5 2-6 4.5"/><path d="M13.5 9c-3-.5-6 1.5-7.5 4.5 2-2 4.5-3 7-3"/><path d="M13.5 9c3 0 5.5 2 6.5 5-2-1.5-4-2.5-6-2.5"/><path d="M9 22h7"/></symbol>
-  <symbol id="i-wave" viewBox="0 -14 84 62"><path d="M2 30C12 30 18 6 36 6c11 0 17 8 13 14-3 4-10 2-9-3 1-4 7-5 12-2 7 4 10 13 30 15" stroke-width="4.5"/></symbol>
+  <symbol id="r-coco" viewBox="124 78 178 188"><g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M158 147C157 112 183 87 213.5 87C244 87 270 112 269 147"/><path d="M134 155.5H184C194 157 200 172 214 172C228 172 234 157 244 155.5H293"/><path d="M134 155.5V188C134 228 170 257 214 257C258 257 293 228 293 188V155.5"/></g></symbol>
+  <symbol id="i-coco" viewBox="124 78 178 188"><g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M158 147C157 112 183 87 213.5 87C244 87 270 112 269 147"/><path d="M134 155.5H184C194 157 200 172 214 172C228 172 234 157 244 155.5H293"/><path d="M134 155.5V188C134 228 170 257 214 257C258 257 293 228 293 188V155.5"/></g></symbol>
+  <symbol id="i-palm" viewBox="440 76 194 190"><g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M529 146C524 175 514 205 515.5 256H539C538 228 532 205 534 190C536 172 539 158 543 146"/>
+<path d="M538 134C536 110 520 86 492 86C482 86 472 89 467 94C494 96 520 112 538 134Z"/>
+<path d="M537 137C520 118 480 118 451 166C470 148 500 140 537 138Z"/>
+<path d="M541 134C545 110 565 92 598 94C607 95 613 98 616 103C596 105 568 112 541 134Z"/>
+<path d="M545 138C565 124 602 124 624 172C606 152 578 144 545 140Z"/>
+<path d="M546 145C565 150 584 170 582 205C574 186 562 166 546 147Z"/></g></symbol>
+  <symbol id="i-wave" viewBox="764 106 260 136"><g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M772 219.5C800 217 815 203 830 182C846 158 862 132 892 124.5C915 120 937 128 942 150"/><path d="M942 146C934 141 922 140 910 146C894 156 889 186 902 204C916 224 944 232 965 230C985 228 1000 220 1012 210"/></g></symbol>
   <symbol id="r-box" viewBox="0 0 48 48"><path d="M24 5 41 14v20L24 43 7 34V14z"/><path d="M7 14l17 9 17-9M24 23v20M15.5 9.5l17 9"/></symbol>
-  <symbol id="r-palm" viewBox="0 0 48 48"><path d="M24 44c0-10 1-18 3-26"/><path d="M27 18c-3-6-10-8-17-5 6 0 10 2 13 7"/><path d="M27 18c2-7 9-10 16-8-6 1-10 4-12 9"/><path d="M27 18c-6-1-12 3-15 9 4-4 9-6 14-6"/><path d="M27 18c6 0 11 4 13 10-4-3-8-5-12-5"/><path d="M27 18c0-6-3-11-8-13 3 3 5 7 5 11"/><path d="M18 44h14"/></symbol>
+  <symbol id="r-palm" viewBox="440 76 194 190"><g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M529 146C524 175 514 205 515.5 256H539C538 228 532 205 534 190C536 172 539 158 543 146"/>
+<path d="M538 134C536 110 520 86 492 86C482 86 472 89 467 94C494 96 520 112 538 134Z"/>
+<path d="M537 137C520 118 480 118 451 166C470 148 500 140 537 138Z"/>
+<path d="M541 134C545 110 565 92 598 94C607 95 613 98 616 103C596 105 568 112 541 134Z"/>
+<path d="M545 138C565 124 602 124 624 172C606 152 578 144 545 140Z"/>
+<path d="M546 145C565 150 584 170 582 205C574 186 562 166 546 147Z"/></g></symbol>
   <pattern id="pat-waves" width="64" height="26" patternUnits="userSpaceOnUse"><path d="M2 18c6-8 12-8 18 0s12 8 18 0 12-8 18 0 6 4 8 2" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></pattern>
   <pattern id="pat-icons" width="240" height="84" patternUnits="userSpaceOnUse">
     <g fill="none" stroke="#F6E6D2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".7">
@@ -360,7 +370,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
         <span class="kicker"><img class="sym" src="simbolo-coquin.png" alt="">Portal de Vagas Coquin</span>
         <h1><span class="ln"><span>Vem fazer parte</span></span><span class="ln"><span>do nosso time!</span></span></h1>
         <p>Na Coquin, acreditamos em pessoas que compartilham do nosso propósito: espalhar leveza, qualidade e alegria em cada coco.</p>
-        <svg class="squiggle" viewBox="0 0 84 34" aria-hidden="true"><path d="M2 30C12 30 18 6 36 6c11 0 17 8 13 14-3 4-10 2-9-3 1-4 7-5 12-2 7 4 10 13 30 15"/></svg>
+        <svg class="squiggle" viewBox="764 106 260 136" aria-hidden="true"><g stroke-width="7"><path d="M772 219.5C800 217 815 203 830 182C846 158 862 132 892 124.5C915 120 937 128 942 150"/><path d="M942 146C934 141 922 140 910 146C894 156 889 186 902 204C916 224 944 232 965 230C985 228 1000 220 1012 210"/></g></svg>
       </div>
       </div>
     <div class="hero-photo" id="heroPhoto"><img src="capa-cena.webp" alt="Gelato tailandês Coquin servido no coco, com folhas de palmeira"></div>
