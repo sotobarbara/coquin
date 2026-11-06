@@ -58,6 +58,21 @@ aparecem no mesmo formulário.
 - **Divulgar no Instagram**: gera a **arte do feed (4:5)** e do **story (9:16)** com a marca,
   a **legenda pronta** e o **link** pra bio / figurinha de link.
 
+## Criar vagas a partir dos banners
+
+Em **Vagas & regras → Criar a partir de banners**, suba as artes das vagas (uma ou várias).
+O painel **lê o texto da imagem** (OCR com Tesseract.js, no próprio navegador) e preenche:
+cargo, local, salário, vale-alimentação/transporte, escala, horário, atividades e diferencial.
+
+- Você **confere e corrige** cada campo antes de criar (a leitura pode errar).
+- **Banner repetido** (mesma vaga) vira **+1 posição** na mesma vaga, em vez de duplicar.
+- As **palavras-chave do currículo** são escolhidas pela função (atendimento, operacional,
+  preparo/cozinha) e dá pra ajustar depois em **Regras**.
+- Em **Divulgar**, a arte do feed (4:5) e do story (9:16) é feita **com o seu banner**. Uma opção
+  (ligada por padrão) troca o rodapé "envie seu currículo para o e-mail" por **"Inscreva-se pelo
+  link na bio"**, na mesma cor do rodapé. O story ganha espaço para a figurinha de link.
+- O banner também aparece no formulário do candidato, em "Sobre a vaga".
+
 ## Como funciona o score
 
 O painel **lê o currículo** (PDF e Word, direto no navegador da equipe) e salva o texto em
@@ -86,7 +101,7 @@ Rode o [`SETUP.sql`](SETUP.sql) **uma vez** no SQL Editor (é idempotente). Ele 
 
 - `vagas`: vagas + regras (`questions`, `keywords`, `kw_max`, `thresholds`).
 - `candidaturas`: nome, e-mail, CV (+ texto lido), respostas opcionais, status, nota e anotações.
-- bucket **privado** `cvs` (5 MB, PDF / imagem / Word).
+- bucket **privado** `cvs` (5 MB, PDF / imagem / Word) e bucket **público** `banners` (artes das vagas).
 - **RLS**: o público só lê vagas ativas, só **insere** candidatura (já como `novo`, sem nota)
   e só **sobe** arquivo na pasta de uma vaga ativa. Ler, avaliar, baixar CV e apagar fica
   restrito à equipe logada (logins de funcionário `@ponto.coquin.app` ficam de fora).

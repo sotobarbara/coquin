@@ -50,6 +50,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .vnav .dot{width:7px;height:7px;border-radius:99px;background:var(--tA);flex:none}
 .vnav .dot.off{background:#57514A}
 .vnav .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vnav .t small{display:block;font-size:11.5px;color:var(--side-muted);overflow:hidden;text-overflow:ellipsis}
 .vnav .n{font-size:12px;color:var(--side-muted);font-variant-numeric:tabular-nums}
 .side .grow{flex:1}
 .me{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--side-2);margin-top:18px}
@@ -226,6 +227,20 @@ textarea:focus,input:focus,select:focus{outline:0;border-color:var(--ink);box-sh
 .artprev{width:100%;border-radius:10px;display:block;box-shadow:var(--sh-2)}
 pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13px;font-family:inherit;margin:0;line-height:1.55}
 
+/* ---------- importar banners ---------- */
+.imp{border-bottom:1px solid var(--line);padding:18px 0}
+.imp-row{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:start}
+.imp-th{width:150px;border-radius:10px;box-shadow:var(--sh-2);display:block}
+.imp-st{display:inline-block;font-size:12px;font-weight:600;border-radius:6px;padding:3px 8px;margin-bottom:12px;background:var(--sunken);color:var(--muted)}
+.imp-st.rd{background:var(--tB-s);color:var(--tB)} .imp-st.ok{background:var(--tA-s);color:var(--tA)} .imp-st.er{background:var(--tX-s);color:var(--tX)}
+.row3{display:grid;grid-template-columns:1fr 1fr 110px;gap:12px}
+.imp-ck{display:flex;align-items:center;gap:8px;font-weight:500}
+.btn:disabled{opacity:.55;cursor:default}
+.vc-th{width:58px;height:86px;object-fit:cover;object-position:top;border-radius:8px;flex:none;box-shadow:var(--sh-1);border:1px solid var(--line)}
+.ed-banner{display:flex;gap:14px;align-items:center}
+.ed-banner img{width:84px;border-radius:8px;box-shadow:var(--sh-1)}
+@media (max-width:640px){.imp-row{grid-template-columns:1fr}.imp-th{width:120px}.row3{grid-template-columns:1fr 1fr}}
+
 /* ---------- login + toast ---------- */
 .authgate{position:fixed;inset:0;z-index:60;background:var(--side);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -305,7 +320,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
     <div id="viewVagas" class="hide" style="display:flex;flex-direction:column;min-height:0;flex:1">
       <div class="top">
         <div><h1>Vagas & regras</h1><div class="meta"><span>Cada vaga tem seu link de inscrição e suas regras de pontuação. Mudou a regra, o score de todos é recalculado.</span></div></div>
-        <div class="acts"><button class="btn accent" id="newVaga"><svg class="i"><use href="#i-plus"/></svg>Nova vaga</button></div>
+        <div class="acts"><button class="btn ghost" id="impBanners"><svg class="i"><use href="#i-file"/></svg>Criar a partir de banners</button><input type="file" id="bnFiles" class="hide" accept="image/*" multiple><button class="btn accent" id="newVaga"><svg class="i"><use href="#i-plus"/></svg>Nova vaga</button></div>
       </div>
       <div class="vgrid" id="vagaList"></div>
     </div>
@@ -320,6 +335,10 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 <aside class="sheet wide" id="vagaSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title" id="vTitle">Vaga</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
   <div class="sh-body" id="vBody"></div>
+</aside>
+<aside class="sheet wide" id="impSheet" role="dialog" aria-modal="true">
+  <div class="sh-head"><div class="sh-title">Criar vagas a partir dos banners</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="sh-body" id="impBody"></div>
 </aside>
 <aside class="sheet wide" id="shareSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title">Divulgar no Instagram</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -586,7 +605,7 @@ function sortList(list){
 /* ---------- barra lateral ---------- */
 function renderSide(){
   $('vnav').innerHTML='<button data-v="all" class="'+(UI.vaga==='all'?'sel':'')+'"><span class="dot" style="background:var(--side-muted)"></span><span class="t">Todas as vagas</span><span class="n">'+cands.length+'</span></button>'
-    +vagas.map(v=>'<button data-v="'+esc(v.id)+'" class="'+(UI.vaga===v.id?'sel':'')+'"><span class="dot'+(v.active?'':' off')+'"></span><span class="t">'+esc(v.title)+(v.store?' · '+esc(v.store):'')+'</span><span class="n">'+cands.filter(c=>c.vaga_id===v.id).length+'</span></button>').join('');
+    +vagas.map(v=>'<button data-v="'+esc(v.id)+'" class="'+(UI.vaga===v.id?'sel':'')+'"><span class="dot'+(v.active?'':' off')+'"></span><span class="t">'+esc(v.title)+(v.store?'<small>'+esc(v.store)+'</small>':'')+'</span><span class="n">'+cands.filter(c=>c.vaga_id===v.id).length+'</span></button>').join('');
   $('vagaPick').innerHTML='<option value="all">Todas as vagas</option>'+vagas.map(v=>'<option value="'+esc(v.id)+'"'+(UI.vaga===v.id?' selected':'')+'>'+esc(v.title)+(v.store?' · '+esc(v.store):'')+'</option>').join('');
 }
 
@@ -774,7 +793,9 @@ function renderEditor(){
     +'<div class="f"><label>Benefícios (um por linha)</label><textarea id="ePerks">'+esc(d.perks)+'</textarea></div>'
     +'<div class="f"><label>Link da vaga</label><input type="text" id="eSlug" value="'+esc(d.id)+'" placeholder="gerado do título"'+(draftNew?'':' disabled')+'>'
     +'<div class="note" style="margin-top:4px">'+(draftNew?'Fica no fim do link: …/?v=<b>'+esc(d.id||slugify(d.title+' '+d.store))+'</b>':'O link não muda depois de criado (já pode estar no Instagram).')+'</div></div>'
-    +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:700"><input type="checkbox" id="eCv"'+(d.cv_required?' checked':'')+'> Currículo obrigatório</label></div>'
+    +'<div class="row2"><div class="f"><label>Nº de vagas</label><input type="number" min="1" id="eOpen" value="'+(+d.openings||1)+'"></div>'
+    +'<div class="f"><label>Banner (arte do Instagram)</label><div class="ed-banner">'+(d._bUrl||bannerUrl(d)?'<img src="'+esc(d._bUrl||bannerUrl(d))+'" alt="">':'')+'<label class="btn ghost sm" style="cursor:pointer">'+(d.banner_path||d._bUrl?'Trocar':'Enviar banner')+'<input type="file" id="eBanner" accept="image/*" class="hide"></label>'+(d.banner_path||d._bUrl?'<button class="btn ghost sm" id="eBannerDel">Remover</button>':'')+'</div></div></div>'
+    +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600"><input type="checkbox" id="eCv"'+(d.cv_required?' checked':'')+'> Currículo obrigatório</label></div>'
     +'<div class="blk"><h4>Palavras-chave no currículo</h4>'
     +'<div class="note" style="margin-bottom:10px">O painel lê o currículo (PDF ou Word) e soma os pontos de cada palavra encontrada, até o teto. Use o começo da palavra para pegar variações (<b>sorvet</b> pega sorvete, sorveteria). Acentos não importam.</div>'
     +'<div id="kwList">'+kwhtml+'</div>'
@@ -796,7 +817,7 @@ function renderEditor(){
 function syncHeader(){
   const d=draft; d.title=$('eTitle').value; d.store=$('eStore').value; d.kind=$('eKind').value; d.salary=$('eSalary').value;
   d.description=$('eDesc').value; d.perks=$('ePerks').value; d.cv_required=$('eCv').checked; d.kw_max=+$('eKwMax').value||0;
-  d.thresholds={a:+$('eThA').value||75,b:+$('eThB').value||50};
+  d.thresholds={a:+$('eThA').value||75,b:+$('eThB').value||50}; d.openings=Math.max(1,+$('eOpen').value||1);
   if(draftNew) d.id=slugify($('eSlug').value||'');
 }
 function bindEditor(){
@@ -811,7 +832,7 @@ function bindEditor(){
     else syncHeader();
     $('maxPts').textContent='Pontuação máxima: '+maxPoints(draft)+' pts = 100';
   };
-  body.onchange=body.oninput;
+  body.onchange=e=>{ if(e.target.id==='eBanner'){ const f=e.target.files&&e.target.files[0]; if(f){ syncHeader(); draft._bFile=f; draft._bUrl=URL.createObjectURL(f); renderEditor(); } return; } body.oninput(e); };
   body.onclick=e=>{
     const b=e.target.closest('button'); if(!b) return;
     const qe=b.closest('[data-qi]'); const qi=qe?+qe.dataset.qi:-1;
@@ -823,6 +844,7 @@ function bindEditor(){
     else if(b.id==='qAdd'){ syncHeader(); draft.questions.push({k:'q'+Date.now().toString(36),label:'',type:'single',required:true,options:[{v:'sim',l:'Sim',pts:2},{v:'nao',l:'Não',pts:0}]}); renderEditor(); }
     else if(b.id==='qTpl'){ if(confirm('Colocar as 9 perguntas do modelo de atendente no formulário? (deixa a inscrição mais longa)')){ syncHeader(); draft.questions=templateAtendente().questions; renderEditor(); } }
     else if(b.id==='kwAdd'){ syncHeader(); draft.keywords=draft.keywords||[]; draft.keywords.push({w:'',pts:1}); renderEditor(); }
+    else if(b.id==='eBannerDel'){ syncHeader(); draft.banner_path=null; draft._bFile=null; draft._bUrl=null; renderEditor(); }
     else if(b.id==='vSave') saveVaga();
     else if(b.id==='vDel') delVaga();
   };
@@ -835,7 +857,10 @@ async function saveVaga(){
   const bad=d.questions.find(q=>!q.options.length); if(bad) return toast('A pergunta "'+bad.label+'" precisa de respostas');
   d.questions.forEach(q=>{ const seen=new Set(); q.options.forEach(o=>{ if(!o.v||seen.has(o.v)) o.v=rid(); seen.add(o.v); }); });
   d.keywords=(d.keywords||[]).filter(k=>String(k.w).trim()).map(k=>({w:k.w.trim(),pts:+k.pts||0}));
-  const row={id:d.id,title:d.title.trim(),store:d.store.trim(),kind:d.kind,salary:d.salary.trim(),description:d.description.trim(),perks:d.perks.trim(),
+  if(d._bFile){ const ext=(d._bFile.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'png'; const path=d.id+'/banner-'+Date.now()+'.'+ext;
+    const up=await sb.storage.from('banners').upload(path,d._bFile,{contentType:d._bFile.type||'image/png',upsert:false}); if(up.error) return toast('Não salvou o banner: '+up.error.message);
+    d.banner_path=path; d._bFile=null; d._bUrl=null; }
+  const row={id:d.id,title:d.title.trim(),store:d.store.trim(),kind:d.kind,salary:d.salary.trim(),description:d.description.trim(),perks:d.perks.trim(),openings:+d.openings||1,banner_path:d.banner_path||null,
     active:d.active!==false,cv_required:!!d.cv_required,questions:d.questions,keywords:d.keywords,kw_max:d.kw_max,thresholds:d.thresholds,updated_at:new Date().toISOString()};
   const {error}=await sb.from('vagas').upsert(row,{onConflict:'id'});
   if(error) return toast('⚠︎ '+error.message);
@@ -854,11 +879,11 @@ async function delVaga(){
 /* ---------- divulgação: legenda + arte (feed 4:5 e story 9:16) ---------- */
 function caption(v){
   const perks=String(v.perks||'').split('\n').map(s=>s.trim()).filter(Boolean);
-  return '🥥 ESTAMOS CONTRATANDO!\n\n'+v.title+(v.store?' — '+v.store:'')+'\n'
+  return '🥥 ESTAMOS CONTRATANDO!\n\n'+v.title+(v.store?' — '+v.store:'')+((+v.openings||1)>1?' ('+v.openings+' vagas)':'')+'\n'
     +[v.kind,v.salary].filter(Boolean).join(' · ')+'\n\n'
     +(v.description?v.description+'\n\n':'')
     +(perks.length?perks.map(p=>'✅ '+p).join('\n')+'\n\n':'')
-    +'📲 Inscreva-se pelo link na bio — leva 2 minutinhos!\n'+formUrl(v.id)+'\n\n'
+    +'📲 Inscreva-se pelo link na bio: leva 1 minuto (nome, e-mail e currículo).\n'+formUrl(v.id)+'\n\n'
     +'#vagas #emprego #trabalheconosco #vagasdeemprego #coquin #gelato';
 }
 let logoImg=null;
@@ -872,7 +897,7 @@ function renderVagas(){
   $('vagaList').innerHTML=vagas.map(v=>{
     const n=cands.filter(c=>c.vaga_id===v.id); const a=n.filter(c=>sc(c).tier==='A').length;
     const open=n.filter(c=>['novo','triagem','entrevista'].includes(colOf(c))).length;
-    return '<div class="vc" data-vid="'+esc(v.id)+'"><div class="vc-h"><div style="flex:1;min-width:0"><h3>'+esc(v.title)+'</h3><p>'+esc([v.store,v.kind,v.salary].filter(Boolean).join(' · '))+'</p></div>'
+    return '<div class="vc" data-vid="'+esc(v.id)+'"><div class="vc-h">'+(v.banner_path?'<img class="vc-th" src="'+esc(bannerUrl(v))+'" alt="">':'')+'<div style="flex:1;min-width:0"><h3>'+esc(v.title)+'</h3><p>'+esc([v.store,v.kind,v.salary,(+v.openings||1)>1?v.openings+' vagas':''].filter(Boolean).join(' · '))+'</p></div>'
       +'<label class="sw" title="Recebendo inscrições"><input type="checkbox" data-act="toggle"'+(v.active?' checked':'')+'><i></i></label></div>'
       +'<div class="vc-stats"><div><b>'+n.length+'</b><span>inscritos</span></div><div><b style="color:var(--tA)">'+a+'</b><span>nível A</span></div><div><b>'+open+'</b><span>em andamento</span></div></div>'
       +'<div class="link">'+ic('link')+'<span>'+esc(formUrl(v.id))+'</span><button data-act="copy">Copiar</button></div>'
@@ -930,15 +955,23 @@ async function drawArt(v,fmt){
   return c;
 }
 async function openShare(v){
-  const cap=caption(v);
-  $('sBody').innerHTML='<div class="blk"><h4>1 · Arte</h4><div class="row2" style="align-items:start"><div><canvas id="artFeed" class="artprev"></canvas><button class="btn ghost full" style="margin-top:10px" data-dl="feed">'+ic('down')+'Feed 4:5</button></div>'
+  const cap=caption(v); const hasB=!!v.banner_path;
+  $('sBody').innerHTML='<div class="blk"><h4>1 · Arte'+(hasB?' (seu banner)':'')+'</h4>'
+    +(hasB?'<label class="imp-ck" style="margin-bottom:12px"><input type="checkbox" id="swapCta" checked> Trocar o rodapé "envie seu currículo para o e-mail" por "Inscreva-se pelo link"</label>':'')+'<div class="row2" style="align-items:start"><div><canvas id="artFeed" class="artprev"></canvas><button class="btn ghost full" style="margin-top:10px" data-dl="feed">'+ic('down')+'Feed 4:5</button></div>'
     +'<div><canvas id="artStory" class="artprev"></canvas><button class="btn ghost full" style="margin-top:10px" data-dl="story">'+ic('down')+'Story 9:16</button></div></div>'
     +'<div class="note" style="margin-top:10px">No story, adicione a figurinha <b>Link</b> com o endereço abaixo, no espaço marcado.</div></div>'
     +'<div class="blk"><h4>2 · Legenda</h4><pre class="cap">'+esc(cap)+'</pre><button class="btn ghost" style="margin-top:10px" id="capCopy">Copiar legenda</button></div>'
     +'<div class="blk"><h4>3 · Link de inscrição (bio ou figurinha)</h4><div class="link">'+ic('link')+'<span>'+esc(formUrl(v.id))+'</span><button id="lnkCopy">Copiar</button></div></div>';
   openSheet('shareSheet');
-  const arts={feed:await drawArt(v,'feed'),story:await drawArt(v,'story')};
-  [['artFeed','feed'],['artStory','story']].forEach(([id,k])=>{ const el=$(id); el.width=arts[k].width; el.height=arts[k].height; el.getContext('2d').drawImage(arts[k],0,0); });
+  const arts={};
+  async function paint(){
+    try{
+      if(hasB){ const sw=$('swapCta').checked; arts.feed=await drawBannerArt(v,'feed',sw); arts.story=await drawBannerArt(v,'story',sw); }
+      else { arts.feed=await drawArt(v,'feed'); arts.story=await drawArt(v,'story'); }
+    }catch(e){ arts.feed=await drawArt(v,'feed'); arts.story=await drawArt(v,'story'); toast('Não consegui abrir o banner; usei a arte padrão'); }
+    [['artFeed','feed'],['artStory','story']].forEach(([id,k])=>{ const el=$(id); el.width=arts[k].width; el.height=arts[k].height; el.getContext('2d').drawImage(arts[k],0,0); });
+  }
+  await paint(); if(hasB) $('swapCta').onchange=paint;
   $('capCopy').onclick=()=>copy(cap,'Legenda copiada');
   $('lnkCopy').onclick=()=>copy(formUrl(v.id),'Link copiado');
   $('sBody').querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{
@@ -948,6 +981,244 @@ async function openShare(v){
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
     },'image/png');
   });
+}
+
+/* ---------- leitura dos campos de um banner de vaga (texto do OCR) ---------- */
+const ROLE_WORDS=['ATENDENTE','AUXILIAR','OPERACIONAL','PREPARO','COCO','CAIXA','GERENTE','SUPERVISOR','SUPERVISORA','LIDER','LÍDER','COZINHA','COZINHEIRO','COZINHEIRA','PRODUCAO','PRODUÇÃO','BARISTA','ESTOQUISTA','MOTORISTA','ENTREGADOR','LIMPEZA','SERVIÇOS','GERAIS','VENDEDOR','VENDEDORA','ESTAGIARIO','ESTAGIÁRIO','ADMINISTRATIVO','FINANCEIRO','MARKETING','LOJA','TURNO','JOVEM','APRENDIZ','PROMOTOR','PROMOTORA','SALÃO','GARÇOM','RECEPCIONISTA','MANUTENÇÃO','LOGÍSTICA','CONFEITEIRO','CONFEITEIRA','SORVETEIRO','MONTADOR','OPERADOR','OPERADORA','ANALISTA','ASSISTENTE','COORDENADOR','COORDENADORA'];
+const STOP_UP=new Set(['ESTAMOS','CONTRATANDO','GELATO','TAILANDÊS','TAILANDES','COQUIN','VAGA','VAGAS']);
+function lev(a,b){ const m=a.length,n=b.length; if(Math.abs(m-n)>2) return 9; const d=Array.from({length:m+1},(_,i)=>[i]); for(let j=1;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); return d[m][n]; }
+function fixWord(w){ if(w.length<5) return w; if(ROLE_WORDS.includes(w)) return w; let best=w,bd=3; ROLE_WORDS.forEach(r=>{ const d=lev(w,r); if(d<bd){bd=d;best=r;} }); return bd<=2?best:w; }
+function splitGlued(w){ for(const p of ['AUXILIAR','ASSISTENTE','OPERADOR','ANALISTA']){ if(w.startsWith(p)&&w.length>p.length&&/^(DE|DA|DO|E)$/.test(w.slice(p.length))) return [p,w.slice(p.length)]; } return [w]; }
+function titleCase(s){ return s.toLowerCase().split(/\s+/).map((w,i)=>(i>0&&/^(de|da|do|das|dos|e)$/.test(w))?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' '); }
+const UPW=/^[A-ZÀ-Ý]+$/;
+function upperRun(line){ // palavras em CAIXA ALTA (ignora lixo curto antes do nome)
+  const toks=line.replace(/[|]/g,' | ').split(/\s+/).filter(Boolean); const out=[]; let started=false;
+  for(const t of toks){ const w=t.replace(/[^A-Za-zÀ-ÿ]/g,'');
+    if(t==='|'){ out.length=0; started=false; continue; }
+    if(UPW.test(w) && (w.length>=4 || (started && /^(DE|DA|DO|E)$/.test(w)))){ if(!STOP_UP.has(w)){ started=true; out.push(...splitGlued(w)); } }
+    else if(started && w) break; }
+  return out;
+}
+function findTitle(texts){
+  let best='';
+  for(const t of texts){
+    const lines=t.split('\n'); 
+    for(let i=0;i<lines.length;i++){
+      if(/principais|atividades/i.test(lines[i])) break;
+      let run=upperRun(lines[i]); if(!run.length) continue;
+      let j=i+1; while(j<lines.length && j<=i+2){ const r2=upperRun(lines[j]); if(!r2.length) break; run=run.concat(r2); j++; }
+      let words=run.map(fixWord); const fi=words.findIndex(w=>ROLE_WORDS.includes(w)); let la=-1; words.forEach((w,k)=>{ if(ROLE_WORDS.includes(w)) la=k; });
+      if(fi<0) continue; words=words.slice(fi,la+1); const known=words.filter(w=>ROLE_WORDS.includes(w)).length;
+      const cand=words.join(' '); if(known && (known>((best.k)||0) || (known===(best.k||0) && cand.length>(best.s||'').length))) best={s:cand,k:known};
+    }
+  }
+  return best.s?titleCase(best.s):'';
+}
+function money(v){ v=v.replace(/\s/g,''); let n; if(/,\d{2}$/.test(v)) n=parseFloat(v.replace(/\./g,'').replace(',','.')); else n=parseFloat(v.replace(/[.,]/g,'')); if(!isFinite(n)) return ''; return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function amountAfter(text,re){ const m=text.search(re); if(m<0) return ''; const r=text.slice(m).match(/R\$\s?([\d][\d.,\s]{2,9}\d)/); return r?money(r[1]):''; }
+function cleanTimes(t){ return t.replace(/\b([0-9O]{1,2})h([0-9O]{2})?\b/g,(m)=>m.replace(/O/g,'0')); }
+function parseBanner(raw,full,crop){
+  const all=[crop,full,raw].map(cleanTimes); const J=all.join('\n');
+  const title=findTitle([full,raw]);
+  const va=amountAfter(crop,/alimenta/i)||amountAfter(full,/alimenta/i);
+  let salary=amountAfter(crop,/Sal[aá]rio/i)||amountAfter(full,/Sal[aá]rio/i)||amountAfter(raw,/Sal[aá]rio/i);
+  // conferência: o salário é o maior valor do banner (nunca o do vale)
+  const amts=[...J.matchAll(/R\$\s?([\d][\d.,\s]{2,9}\d)/g)].map(m=>money(m[1])).filter(Boolean);
+  const num=v=>parseFloat(String(v).replace(/[^\d,]/g,'').replace(',','.'))||0;
+  const top=amts.filter(a=>a!==va).sort((a,b)=>num(b)-num(a))[0]||'';
+  if(!salary || salary===va || num(top)>num(salary)) salary=top;
+  const vr=amountAfter(crop,/refei[cç]/i)||amountAfter(full,/refei[cç]/i);
+  const vt=/transporte/i.test(J);
+  const esc=(J.match(/Escala:?\s*(\d\s*[x×]\s*\d)/i)||[])[1];
+  const hor=J.match(/Hor[aá]rio:?\s*(\d{1,2}h(?:\d{2})?)\s*(?:às|as|a|-|–)\s*(\d{1,2}h(?:\d{2})?)/i);
+  let local='';
+  for(const t of all){ const ls=t.split('\n'); const i=ls.findIndex(l=>/Local:?/i.test(l)); if(i<0) continue;
+    for(const l of ls.slice(i,i+3)){ const m=l.replace(/Local:?/i,'').match(/([A-ZÀ-Ý][A-Za-zÀ-ÿ ]*?[a-zà-ÿ])\s*[-–—]\s*([A-ZÀ-Ý][a-zà-ÿ]+)\s*$/); if(m){ local=(m[1].replace(/.*Vale[- ]transporte\s*\S{0,2}\s+/i,'').replace(/^([A-Za-zÀ-ÿ]{1,2}\)?\s+)+/,'').trim()+' – '+m[2]); break; } }
+    if(local) break; }
+  // atividades: cada palavra precisa aparecer também na outra leitura (tira o "lixo" do OCR)
+  const nrm=w=>w.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const CONN=new Set(['de','da','do','das','dos','e','a','o','para','no','na','em','com']);
+  const acts=[];
+  [[raw,full],[full,raw]].forEach(([t,other])=>{
+    const oset=new Set(nrm(other+' '+crop).split(/[^a-z0-9]+/).filter(Boolean));
+    const ls=t.split('\n'); const s0=ls.findIndex(l=>/principais atividades/i.test(l)); if(s0<0) return;
+    const items=[];
+    const keep=(toks)=>{ const out=[]; toks.forEach((tk,k)=>{ const w=tk.replace(/[^A-Za-zÀ-ÿ]/g,''); if(!w||w!==tk.replace(/[.,:;!?]+$/,'')) return;
+        if(/^[A-ZÀ-Ý]$/.test(w)){ const nx=(toks[k+1]||'').replace(/[^A-Za-zÀ-ÿ]/g,''); if(/^[A-ZÀ-Ý]{2,}$/.test(nx)&&oset.has(nrm(nx))) out.push(w.toLowerCase()); return; }
+        if(/[a-zà-ÿ][A-ZÀ-Ý]/.test(w)) return;
+        if(/^[a-zà-ÿ]$/.test(w) && !CONN.has(w)) return;
+        if(CONN.has(nrm(w))||oset.has(nrm(w))||/^[a-zà-ÿ]{5,}$/.test(w)) out.push(/^[A-ZÀ-Ý]{2,}$/.test(w)?w.toLowerCase():w); });
+      return out; };
+    for(const l of ls.slice(s0+1)){
+      if(/experi[eê]ncia|sal[aá]rio|escala|coquin|gelato tail/i.test(l)) break;
+      const st=l.match(/[A-ZÀ-Ý][a-zà-ÿ]{3,}.*$/);
+      if(st){ const toks=st[0].split(/\s+/); const rest=keep(toks.slice(1)); items.push([toks[0]].concat(rest).join(' ')); continue; }
+      if(items.length){ const rest=keep(l.split(/\s+/)); if(rest.length) items[items.length-1]+=' '+rest.join(' '); }
+    }
+    const good=items.map(x=>x.replace(/\s{2,}/g,' ').trim()).filter(x=>x.length>5);
+    if(good.length>acts.length) acts.splice(0,acts.length,...good);
+  });
+  let dif=''; const dm=J.match(/Experi[eê]ncia\s+(em|com|no|na)\s+([a-zà-ÿ]+(?:\s+(?:de|da|do|e)?\s*[a-zà-ÿ]+)?)/i);
+  if(dm && /diferencial/i.test(J)) dif='Experiência '+dm[1].toLowerCase()+' '+dm[2].trim()+' será um diferencial!';
+  else if(dm && /desej[aá]vel/i.test(J)) dif='Experiência '+dm[1].toLowerCase()+' '+dm[2].trim()+' é desejável.';
+  const perks=[]; if(va) perks.push('Vale-alimentação '+va); if(vr) perks.push('Vale-refeição '+vr); if(vt) perks.push('Vale-transporte');
+  if(esc) perks.push('Escala '+esc.replace(/\s/g,'').replace('×','x')); if(hor) perks.push('Horário: '+hor[1]+' às '+hor[2]);
+  const desc=(acts.length?'Principais atividades:\n'+acts.map(a=>'• '+a).join('\n'):'')+(dif?(acts.length?'\n\n':'')+dif.replace(/\s+/g,' ').trim():'');
+  return {title,salary,store:local,perks:perks.join('\n'),description:desc,hours:hor?hor[1]+'-'+hor[2]:''};
+}
+
+const TESS='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/';
+let tessP=null;
+function loadTess(){
+  if(!tessP) tessP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=TESS+'tesseract.min.js';
+    s.onload=async()=>{ try{ res(await Tesseract.createWorker('por',1,{workerPath:TESS+'worker.min.js',corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/por@1.0.0/4.0.0_best_int'})); }catch(e){ tessP=null; rej(e); } };
+    s.onerror=e=>{ tessP=null; rej(e); }; document.head.appendChild(s); });
+  return tessP;
+}
+function prepCanvas(img,sc,y0,y1){ // amplia, recorta e passa para tons de cinza (melhora a leitura)
+  const c=document.createElement('canvas'); const h=(y1-y0)*img.height; c.width=Math.round(img.width*sc); c.height=Math.round(h*sc);
+  const x=c.getContext('2d'); x.drawImage(img,0,y0*img.height,img.width,h,0,0,c.width,c.height);
+  const d=x.getImageData(0,0,c.width,c.height), a=d.data; for(let i=0;i<a.length;i+=4){ const g=.299*a[i]+.587*a[i+1]+.114*a[i+2]; a[i]=a[i+1]=a[i+2]=g; }
+  x.putImageData(d,0,0); return c;
+}
+function fileToImg(f){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(f); }); }
+function imgHash(img){ const c=document.createElement('canvas'); c.width=48; c.height=72; const x=c.getContext('2d'); x.drawImage(img,0,0,48,72);
+  const a=x.getImageData(0,0,48,72).data; let s=''; for(let i=0;i<a.length;i+=4) s+=((a[i]+a[i+1]+a[i+2])/48|0).toString(16); return s; }
+
+/* palavras-chave do currículo por tipo de função */
+function keywordsFor(title){
+  const t=norm(title);
+  if(/coco|preparo|cozinh|produc|confeit/.test(t)) return [
+    {w:'cozinha',pts:4},{w:'auxiliar de cozinha',pts:4},{w:'preparo',pts:3},{w:'manipulacao de alimentos',pts:3},{w:'producao',pts:3},{w:'coco',pts:3},
+    {w:'hortifruti',pts:2},{w:'acougue',pts:2},{w:'corte',pts:2},{w:'embalagem',pts:2},{w:'padaria',pts:2},{w:'restaurante',pts:2},{w:'lanchonete',pts:2},{w:'industria',pts:1},{w:'alimentos',pts:1}];
+  if(/operacion|servicos gerais|limpeza|estoqu|logist|reposic/.test(t)) return [
+    {w:'servicos gerais',pts:3},{w:'limpeza',pts:3},{w:'organizacao',pts:2},{w:'reposicao',pts:3},{w:'estoque',pts:3},{w:'almoxarifado',pts:2},{w:'montagem',pts:2},
+    {w:'carga',pts:2},{w:'descarga',pts:2},{w:'logistica',pts:2},{w:'auxiliar',pts:2},{w:'evento',pts:2},{w:'food truck',pts:2},{w:'quiosque',pts:2},{w:'feira',pts:1}];
+  return templateCV().keywords;
+}
+
+/* ---------- importar vagas a partir dos banners ---------- */
+let imports=[], importing=false;
+$('impBanners').onclick=()=>$('bnFiles').click();
+$('bnFiles').onchange=e=>{ const fs=[...(e.target.files||[])].filter(f=>/^image\//.test(f.type)); e.target.value=''; if(fs.length) startImport(fs); };
+async function startImport(files){
+  imports=files.map((f,i)=>({i,file:f,url:URL.createObjectURL(f),status:'wait',d:{title:'',store:'',kind:'CLT',salary:'',openings:1,description:'',perks:''},create:true,dup:null}));
+  importing=true; renderImports(); openSheet('impSheet');
+  let w=null;
+  try{ setImpMsg('Carregando o leitor de imagens… (só na primeira vez demora um pouco)'); w=await loadTess(); }
+  catch(e){ imports.forEach(it=>it.status='err'); importing=false; renderImports(); setImpMsg('Não consegui carregar o leitor de imagens. Confira a internet. Dá para preencher os campos à mão.'); return; }
+  for(const it of imports){
+    it.status='read'; renderImpItem(it); setImpMsg('Lendo banner '+(it.i+1)+' de '+imports.length+'…');
+    try{
+      const img=await fileToImg(it.file); it.img=img; it.hash=imgHash(img);
+      const same=imports.find(o=>o.i<it.i && o.dup==null && o.file.size===it.file.size && o.hash===it.hash);
+      if(same){ markDup(it,same); continue; }
+      const sc=img.height<=1600?2:3000/img.height;
+      const r0=(await w.recognize(img)).data.text, r1=(await w.recognize(prepCanvas(img,sc,0,1))).data.text, r2=(await w.recognize(prepCanvas(img,sc,.62,.9))).data.text;
+      Object.assign(it.d,parseBanner(r0,r1,r2)); it.status='ok';
+      const key=d=>norm([d.title,d.store,d.hours,d.salary].join('|'));
+      const twin=it.d.title && imports.find(o=>o.i<it.i && o.dup==null && o.status==='ok' && key(o.d)===key(it.d));
+      if(twin){ markDup(it,twin); continue; }
+    }catch(e){ it.status='err'; }
+    renderImpItem(it);
+  }
+  importing=false; setImpMsg(''); renderImpFoot();
+}
+function markDup(it,first){ it.dup=first.i; it.status='ok'; first.d.openings=(+first.d.openings||1)+1; renderImpItem(first); renderImpItem(it); }
+function setImpMsg(t){ const m=$('impMsg'); if(m){ m.textContent=t; m.classList.toggle('hide',!t); } }
+function renderImports(){
+  $('impBody').innerHTML='<div class="note box" style="margin:18px 0 6px">A leitura é automática e pode errar. <b>Confira cada campo</b> antes de criar. O banner vira a arte da vaga para o Instagram.</div>'
+    +'<div class="note hide" id="impMsg" style="margin:8px 0"></div>'
+    +imports.map(it=>'<div class="imp" id="imp'+it.i+'"></div>').join('')
+    +'<div id="impFoot" class="blk"></div>';
+  imports.forEach(renderImpItem); renderImpFoot();
+}
+function renderImpItem(it){
+  const el=$('imp'+it.i); if(!el) return; const d=it.d;
+  if(it.dup!=null){ el.innerHTML='<div class="imp-row"><img src="'+it.url+'" class="imp-th" alt=""><div class="imp-f"><div class="imp-st ok">Banner repetido</div><div class="note">É a mesma vaga do banner '+(it.dup+1)+'. Somei como <b>+1 vaga</b> naquela vaga em vez de criar outra.</div></div></div>'; renderImpFoot(); return; }
+  const st={wait:'<div class="imp-st">Na fila</div>',read:'<div class="imp-st rd">Lendo o banner…</div>',ok:'<div class="imp-st ok">Lido · confira</div>',err:'<div class="imp-st er">Não consegui ler · preencha à mão</div>'}[it.status];
+  const dis=(it.status==='wait'||it.status==='read')?' disabled':'';
+  el.innerHTML='<div class="imp-row"><img src="'+it.url+'" class="imp-th" alt="">'
+    +'<div class="imp-f">'+st
+    +'<div class="row2"><div class="f"><label>Cargo</label><input type="text" data-f="title" value="'+esc(d.title)+'"'+dis+'></div>'
+    +'<div class="f"><label>Local / loja</label><input type="text" data-f="store" value="'+esc(d.store)+'"'+dis+'></div></div>'
+    +'<div class="row3"><div class="f"><label>Salário</label><input type="text" data-f="salary" value="'+esc(d.salary)+'"'+dis+'></div>'
+    +'<div class="f"><label>Tipo</label><select data-f="kind"'+dis+'>'+['CLT','Freela','PJ','Estágio','Temporário'].map(k=>'<option'+(d.kind===k?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
+    +'<div class="f"><label>Nº de vagas</label><input type="number" min="1" data-f="openings" value="'+(+d.openings||1)+'"'+dis+'></div></div>'
+    +'<div class="f"><label>Descrição / atividades</label><textarea data-f="description" rows="5"'+dis+'>'+esc(d.description)+'</textarea></div>'
+    +'<div class="f"><label>Benefícios e condições (um por linha)</label><textarea data-f="perks" rows="4"'+dis+'>'+esc(d.perks)+'</textarea></div>'
+    +'<label class="imp-ck"><input type="checkbox" data-f="create"'+(it.create?' checked':'')+dis+'> Criar esta vaga</label>'
+    +'</div></div>';
+  renderImpFoot();
+}
+function renderImpFoot(){
+  const f=$('impFoot'); if(!f) return;
+  const n=imports.filter(it=>it.dup==null && it.create && it.status!=='wait' && it.status!=='read').length;
+  const tot=imports.filter(it=>it.dup==null && it.create).reduce((s,it)=>s+(+it.d.openings||1),0);
+  f.innerHTML='<button class="btn accent full" id="impGo"'+(importing||!n?' disabled':'')+'>'+(importing?'Lendo os banners…':'Criar '+n+' vaga'+(n!==1?'s':'')+(tot>n?' ('+tot+' posições)':''))+'</button>';
+  $('impGo').onclick=createImports;
+}
+$('impBody').addEventListener('input',e=>{ const t=e.target, k=t.dataset.f; const box=t.closest('.imp'); if(!k||!box) return;
+  const it=imports.find(x=>'imp'+x.i===box.id); if(!it) return;
+  if(k==='create') it.create=t.checked; else if(k==='openings') it.d.openings=Math.max(1,+t.value||1); else it.d[k]=t.value;
+  if(k==='create'||k==='openings') renderImpFoot(); });
+$('impBody').addEventListener('change',e=>{ const t=e.target; if(t.dataset.f==='kind'||t.dataset.f==='create'){ const it=imports.find(x=>'imp'+x.i===t.closest('.imp').id); if(!it) return; if(t.dataset.f==='kind') it.d.kind=t.value; else it.create=t.checked; renderImpFoot(); } });
+async function createImports(){
+  const list=imports.filter(it=>it.dup==null && it.create && it.status!=='wait' && it.status!=='read');
+  const bad=list.find(it=>!it.d.title.trim()); if(bad) return toast('Falta o cargo no banner '+(bad.i+1));
+  const b=$('impGo'); b.disabled=true; let done=0;
+  for(const it of list){
+    b.textContent='Criando '+(done+1)+' de '+list.length+'…';
+    const d=it.d; let id=slugify(d.title+' '+String(d.store).split(/[–-]/)[0]); if(!id) id='vaga';
+    let k=2, base=id; while(vagas.some(v=>v.id===id)) id=base+'-'+(k++);
+    const ext=(it.file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'png';
+    const path=id+'/banner-'+Date.now()+'.'+ext;
+    const up=await sb.storage.from('banners').upload(path,it.file,{contentType:it.file.type||'image/png',upsert:false});
+    if(up.error){ toast('Não salvou o banner: '+up.error.message); b.disabled=false; renderImpFoot(); return; }
+    const tpl=templateCV();
+    const row={id,title:d.title.trim(),store:d.store.trim(),kind:d.kind,salary:d.salary.trim(),description:d.description.trim(),perks:d.perks.trim(),
+      openings:+d.openings||1,banner_path:path,active:true,cv_required:true,questions:[],keywords:keywordsFor(d.title),kw_max:tpl.kw_max,thresholds:tpl.thresholds,updated_at:new Date().toISOString()};
+    const {error}=await sb.from('vagas').upsert(row,{onConflict:'id'});
+    if(error){ toast('Erro ao criar "'+row.title+'": '+error.message); b.disabled=false; renderImpFoot(); return; }
+    vagas.unshift(row); done++;
+  }
+  closeSheets(); setView('vagas'); toast(done+' vaga'+(done!==1?'s criadas':' criada')+'. Agora é só divulgar');
+}
+
+/* ---------- arte a partir do banner (feed 4:5 e story 9:16) ---------- */
+function bannerUrl(v){ return v&&v.banner_path?sb.storage.from('banners').getPublicUrl(v.banner_path).data.publicUrl:''; }
+function loadImgUrl(u){ return new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=u; }); }
+function px(x,X,Y){ const d=x.getImageData(X,Y,1,1).data; return [d[0],d[1],d[2]]; }
+const cdist=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2]);
+/* troca o rodapé "envie seu currículo para e-mail" por "inscreva-se pelo link" (mesma cor do rodapé) */
+function bannerWithCta(img,story){
+  const W=img.width,H=img.height; const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d'); x.drawImage(img,0,0);
+  const fc=px(x,Math.round(W*.03),H-3); let top=H;
+  for(let k=1;k<120;k++){ const X=Math.round(W*k/120); let y=H-3; while(y>H*.6 && cdist(px(x,X,y),fc)<90) y--; if(y<top) top=y; }
+  const bandH=H-top; if(bandH<H*.06||bandH>H*.28) return {canvas:c,replaced:false};
+  const y0=Math.max(0,top-Math.round(H*.012)); x.fillStyle='rgb('+fc.join(',')+')'; x.fillRect(0,y0,W,H-y0);
+  const lum=(.299*fc[0]+.587*fc[1]+.114*fc[2]); const ink=lum<140?'#FFFFFF':'#16130F';
+  const cy=y0+(H-y0)*.52, f1=Math.round(Math.min((H-y0)*.30,W*.052));
+  x.fillStyle=ink; x.textAlign='center'; x.textBaseline='middle';
+  x.font='700 '+f1+'px Inter,Helvetica,Arial,sans-serif';
+  x.fillText(story?'Toque no link e inscreva-se':'Inscreva-se pelo link na bio',W/2,cy-f1*.45);
+  x.globalAlpha=.8; x.font='500 '+Math.round(f1*.55)+'px Inter,Helvetica,Arial,sans-serif';
+  x.fillText('Leva 1 minuto: nome, e-mail e currículo',W/2,cy+f1*.75); x.globalAlpha=1;
+  return {canvas:c,replaced:true};
+}
+async function drawBannerArt(v,fmt,swap){
+  try{ await document.fonts.load('700 40px Inter'); }catch(e){}
+  const img=await loadImgUrl(bannerUrl(v)); const story=fmt==='story';
+  const src=swap?bannerWithCta(img,story).canvas:img;
+  const W=1080,H=story?1920:1350; const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+  const t=document.createElement('canvas'); t.width=8; t.height=8; t.getContext('2d').drawImage(img,0,0,img.width*.04,img.height*.04,0,0,8,8);
+  const bg=px(t.getContext('2d'),2,2); x.fillStyle='rgb('+bg.join(',')+')'; x.fillRect(0,0,W,H);
+  const top=story?150:0, avail=story?H-150-360:H; const sc=Math.min(W/src.width,avail/src.height);
+  const dw=src.width*sc, dh=src.height*sc; x.drawImage(src,(W-dw)/2,top+(avail-dh)/2,dw,dh);
+  if(story){ const by=H-300; x.strokeStyle='rgba(22,19,15,.3)'; x.lineWidth=3; x.setLineDash([12,12]); x.beginPath(); x.roundRect(W/2-250,by,500,110,24); x.stroke(); x.setLineDash([]);
+    x.fillStyle='rgba(22,19,15,.45)'; x.font='500 28px Inter,Helvetica,Arial,sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('cole aqui a figurinha de link',W/2,by+55); }
+  return c;
 }
 
 /* ---------- navegação / painéis ---------- */

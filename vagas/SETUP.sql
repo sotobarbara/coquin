@@ -57,6 +57,10 @@ alter table public.candidaturas drop constraint if exists candidaturas_phone_che
 alter table public.candidaturas add constraint candidaturas_phone_check check (char_length(coalesce(phone,'')) <= 30);
 alter table public.candidaturas add column if not exists cv_text text;
 
+-- atualização: vagas criadas a partir dos banners
+alter table public.vagas add column if not exists banner_path text;          -- arte da vaga (bucket público "banners")
+alter table public.vagas add column if not exists openings integer default 1; -- nº de posições
+
 create index if not exists candidaturas_vaga_idx on public.candidaturas (vaga_id, created_at desc);
 
 -- ============ Segurança (RLS) ============
@@ -109,6 +113,18 @@ create policy "equipe le cv" on storage.objects for select to authenticated
   using (bucket_id = 'cvs' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 create policy "equipe apaga cv" on storage.objects for delete to authenticated
   using (bucket_id = 'cvs' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+
+-- ============ Storage: bucket PÚBLICO "banners" (as artes das vagas, até 10 MB) ============
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('banners', 'banners', true, 10485760, array['image/png','image/jpeg','image/webp'])
+on conflict (id) do update set public = true, file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+drop policy if exists "equipe envia banner" on storage.objects;
+drop policy if exists "equipe apaga banner" on storage.objects;
+create policy "equipe envia banner" on storage.objects for insert to authenticated
+  with check (bucket_id = 'banners' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+create policy "equipe apaga banner" on storage.objects for delete to authenticated
+  using (bucket_id = 'banners' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 
 -- ============ Tempo real (candidatura nova aparece sozinha no painel) ============
 do $$ begin alter publication supabase_realtime add table public.candidaturas; exception when duplicate_object then null; end $$;
