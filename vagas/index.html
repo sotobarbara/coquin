@@ -100,6 +100,7 @@ details.about[open] summary::after{content:"–"}
 details.about .desc,details.about .perks{margin-left:22px;margin-right:22px}
 details.about[open]{padding-bottom:22px}
 details.about .perks{margin-top:14px}
+.banner{display:block;width:calc(100% - 44px);margin:0 22px 18px;border-radius:12px;border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -151,6 +152,7 @@ details.about .perks{margin-top:14px}
 
     <details class="card about" id="aboutCard">
       <summary>Sobre a vaga</summary>
+      <img id="vBanner" class="banner hide" alt="Anúncio da vaga">
       <div class="desc" id="vDesc"></div>
       <ul class="perks" id="vPerks"></ul>
     </details>
@@ -213,11 +215,12 @@ function renderVaga(){
   document.title=vaga.title+' · Coquin';
   $('kick').textContent='Estamos contratando';
   $('vTitle').textContent=vaga.title;
-  $('vMeta').innerHTML=[vaga.store,vaga.kind,vaga.salary].filter(Boolean).map(t=>'<span>'+esc(t)+'</span>').join('');
+  $('vMeta').innerHTML=[vaga.store,vaga.kind,vaga.salary,(+vaga.openings||1)>1?vaga.openings+' vagas':''].filter(Boolean).map(t=>'<span>'+esc(t)+'</span>').join('');
   $('vDesc').textContent=vaga.description||'';
   const perks=String(vaga.perks||'').split('\n').map(s=>s.trim()).filter(Boolean);
   $('vPerks').innerHTML=perks.map(p=>'<li>'+esc(p)+'</li>').join('');
-  if(!vaga.description && !perks.length) $('aboutCard').classList.add('hide');
+  if(vaga.banner_path){ const b=$('vBanner'); b.src=sb.storage.from('banners').getPublicUrl(vaga.banner_path).data.publicUrl; b.classList.remove('hide'); }
+  if(!vaga.description && !perks.length && !vaga.banner_path) $('aboutCard').classList.add('hide');
   if(!vaga.cv_required) $('cvSub').textContent='Opcional · PDF, Word ou foto · até 5 MB';
   /* perguntas extras: só aparecem se a vaga tiver (por padrão não tem) */
   const qs=Array.isArray(vaga.questions)?vaga.questions:[];
