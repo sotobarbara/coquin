@@ -56,6 +56,7 @@ alter table public.candidaturas alter column phone set default '';
 alter table public.candidaturas drop constraint if exists candidaturas_phone_check;
 alter table public.candidaturas add constraint candidaturas_phone_check check (char_length(coalesce(phone,'')) <= 30);
 alter table public.candidaturas add column if not exists cv_text text;
+alter table public.candidaturas add column if not exists cv_photo text;   -- foto achada no CV (miniatura); '' = não tem
 
 -- atualização: vagas criadas a partir dos banners
 alter table public.vagas add column if not exists banner_path text;          -- arte da vaga (bucket público "banners")
@@ -108,7 +109,7 @@ create policy "publico se candidata" on public.candidaturas for insert to anon, 
   with check (
     consent
     and char_length(email) between 5 and 160
-    and cv_text is null
+    and cv_text is null and cv_photo is null
     and status = 'novo' and coalesce(stars,0) = 0 and coalesce(notes,'') = ''
     and exists (select 1 from public.vagas v where v.id = vaga_id and v.active)
   );
