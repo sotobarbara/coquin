@@ -241,6 +241,13 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .ed-banner img{width:84px;border-radius:8px;box-shadow:var(--sh-1)}
 @media (max-width:640px){.imp-row{grid-template-columns:1fr}.imp-th{width:120px}.row3{grid-template-columns:1fr 1fr}}
 
+.imp-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.imp-top .imp-st{margin-bottom:0}
+.ai-btn{border-color:#E9C9BC;color:var(--accent-2)}
+.note.ai-ok{background:var(--accent-soft);color:var(--accent-2);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.note.ai-err{background:var(--tX-s);color:var(--tX);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+#eAi{border-color:#E9C9BC;color:var(--accent-2)}
+
 /* ---------- login + toast ---------- */
 .authgate{position:fixed;inset:0;z-index:60;background:var(--side);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -789,7 +796,9 @@ function renderEditor(){
     +'<div class="row2"><div class="f"><label>Loja / unidade</label><input type="text" id="eStore" value="'+esc(d.store)+'" placeholder="Imprensa"></div>'
     +'<div class="f"><label>Tipo</label><select id="eKind">'+['CLT','Freela','PJ','Estágio','Temporário'].map(k=>'<option'+(d.kind===k?' selected':'')+'>'+k+'</option>').join('')+'</select></div></div>'
     +'<div class="f"><label>Salário / remuneração (aparece no post)</label><input type="text" id="eSalary" value="'+esc(d.salary)+'" placeholder="R$ 1.800 + VT"></div>'
-    +'<div class="f"><label>Descrição</label><textarea id="eDesc">'+esc(d.description)+'</textarea></div>'
+    +'<div class="f"><label style="display:flex;justify-content:space-between;align-items:center">Descrição <button class="btn ghost sm" id="eAi"'+(d._ai==='busy'?' disabled':'')+'>'+(d._ai==='busy'?'Escrevendo…':'✨ Melhorar com IA')+'</button></label>'
+    +(d._aiMsg?'<div class="note '+(d._ai==='err'?'ai-err':'ai-ok')+'">'+esc(d._aiMsg)+'</div>':'')
+    +'<textarea id="eDesc" rows="10">'+esc(d.description)+'</textarea></div>'
     +'<div class="f"><label>Benefícios (um por linha)</label><textarea id="ePerks">'+esc(d.perks)+'</textarea></div>'
     +'<div class="f"><label>Link da vaga</label><input type="text" id="eSlug" value="'+esc(d.id)+'" placeholder="gerado do título"'+(draftNew?'':' disabled')+'>'
     +'<div class="note" style="margin-top:4px">'+(draftNew?'Fica no fim do link: …/?v=<b>'+esc(d.id||slugify(d.title+' '+d.store))+'</b>':'O link não muda depois de criado (já pode estar no Instagram).')+'</div></div>'
@@ -845,9 +854,19 @@ function bindEditor(){
     else if(b.id==='qTpl'){ if(confirm('Colocar as 9 perguntas do modelo de atendente no formulário? (deixa a inscrição mais longa)')){ syncHeader(); draft.questions=templateAtendente().questions; renderEditor(); } }
     else if(b.id==='kwAdd'){ syncHeader(); draft.keywords=draft.keywords||[]; draft.keywords.push({w:'',pts:1}); renderEditor(); }
     else if(b.id==='eBannerDel'){ syncHeader(); draft.banner_path=null; draft._bFile=null; draft._bUrl=null; renderEditor(); }
+    else if(b.id==='eAi') aiEditor();
     else if(b.id==='vSave') saveVaga();
     else if(b.id==='vDel') delVaga();
   };
+}
+async function aiEditor(){
+  syncHeader(); const d=draft; d._ai='busy'; d._aiMsg=''; renderEditor();
+  try{ const j=jobToFields(await aiJob(d,d._bFile||bannerUrl(d)||null));
+    d.description=j.description; d.perks=j.perks; if(!d.salary) d.salary=j.salary; if(!d.store) d.store=j.store;
+    if(j.keywords.length){ d.keywords=j.keywords; d.kw_max=20; }
+    d._ai='done'; d._aiMsg='Descrição, benefícios e palavras-chave do currículo escritos pela IA. Revise e salve.'; }
+  catch(e){ d._ai='err'; d._aiMsg=e.message; }
+  renderEditor();
 }
 async function saveVaga(){
   syncHeader(); const d=draft;
@@ -1098,6 +1117,30 @@ function keywordsFor(title){
   return templateCV().keywords;
 }
 
+/* ---------- IA: anúncio de vaga completo (Supabase Edge Function "vagas-ia" → Claude) ---------- */
+async function imageForAI(src){
+  const img=(src instanceof File)?await fileToImg(src):await loadImgUrl(src);
+  const sc=Math.min(1,1600/Math.max(img.width,img.height)); const c=document.createElement('canvas');
+  c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc); const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height);
+  return {media_type:'image/jpeg',data:c.toDataURL('image/jpeg',.85).split(',')[1]};
+}
+async function aiJob(fields,imgSrc){
+  const image=imgSrc?await imageForAI(imgSrc).catch(()=>null):null;
+  const {data,error}=await sb.functions.invoke('vagas-ia',{body:{fields,image}});
+  if(error){ let msg=error.message||'falhou'; try{ const b=await error.context.json(); if(b&&b.error) msg=b.error; }catch(e){}
+    if(/not found|404|Failed to send/i.test(msg)) msg='A função "vagas-ia" ainda não está publicada no Supabase (veja o passo a passo no README).';
+    throw new Error(msg); }
+  if(!data||!data.job) throw new Error((data&&data.error)||'A IA não respondeu');
+  return data.job;
+}
+function jobToFields(j){
+  const sec=(t,a)=>Array.isArray(a)&&a.length?'\n\n'+t+'\n'+a.map(x=>'• '+String(x).replace(/^[•\-\s]+/,'')).join('\n'):'';
+  const description=String(j.summary||'').trim()+sec('Responsabilidades',j.responsibilities)+sec('Requisitos',j.requirements)+sec('Diferenciais',j.nice_to_have);
+  const perks=[...(j.benefits||[]),j.schedule].filter(Boolean).map(x=>String(x).trim()).join('\n');
+  const keywords=(j.keywords||[]).map(k=>({w:norm(k.w).trim(),pts:Math.max(1,Math.min(4,Math.round(+k.pts||1)))})).filter(k=>k.w);
+  return {title:String(j.title||'').trim(),store:String(j.location||'').trim(),salary:String(j.salary||'').trim(),description,perks,keywords};
+}
+
 /* ---------- importar vagas a partir dos banners ---------- */
 let imports=[], importing=false;
 $('impBanners').onclick=()=>$('bnFiles').click();
@@ -1126,6 +1169,16 @@ async function startImport(files){
   importing=false; setImpMsg(''); renderImpFoot();
 }
 function markDup(it,first){ it.dup=first.i; it.status='ok'; first.d.openings=(+first.d.openings||1)+1; renderImpItem(first); renderImpItem(it); }
+async function aiImport(it){
+  it.ai='busy'; it.aiErr=''; renderImpItem(it);
+  try{ const j=jobToFields(await aiJob(it.d,it.file));
+    it.d.description=j.description; it.d.perks=j.perks; if(j.keywords.length) it.d.keywords=j.keywords;
+    if(!it.d.title) it.d.title=j.title; if(!it.d.store) it.d.store=j.store; if(!it.d.salary) it.d.salary=j.salary;
+    it.ai='done'; }
+  catch(e){ it.ai=''; it.aiErr=e.message; }
+  renderImpItem(it);
+}
+$('impBody').addEventListener('click',e=>{ const b=e.target.closest('[data-ai]'); if(!b) return; const it=imports.find(x=>x.i===+b.dataset.ai); if(it) aiImport(it); });
 function setImpMsg(t){ const m=$('impMsg'); if(m){ m.textContent=t; m.classList.toggle('hide',!t); } }
 function renderImports(){
   $('impBody').innerHTML='<div class="note box" style="margin:18px 0 6px">A leitura é automática e pode errar. <b>Confira cada campo</b> antes de criar. O banner vira a arte da vaga para o Instagram.</div>'
@@ -1140,13 +1193,14 @@ function renderImpItem(it){
   const st={wait:'<div class="imp-st">Na fila</div>',read:'<div class="imp-st rd">Lendo o banner…</div>',ok:'<div class="imp-st ok">Lido · confira</div>',err:'<div class="imp-st er">Não consegui ler · preencha à mão</div>'}[it.status];
   const dis=(it.status==='wait'||it.status==='read')?' disabled':'';
   el.innerHTML='<div class="imp-row"><img src="'+it.url+'" class="imp-th" alt="">'
-    +'<div class="imp-f">'+st
+    +'<div class="imp-f"><div class="imp-top">'+st+(it.status==='ok'?'<button class="btn ghost sm ai-btn" data-ai="'+it.i+'"'+(it.ai==='busy'?' disabled':'')+'>'+(it.ai==='busy'?'Escrevendo…':it.ai==='done'?'✨ Refazer com IA':'✨ Melhorar com IA')+'</button>':'')+'</div>'
+    +(it.ai==='done'?'<div class="note ai-ok">Texto escrito pela IA a partir do banner. Revise antes de criar.</div>':'')+(it.aiErr?'<div class="note ai-err">'+esc(it.aiErr)+'</div>':'')
     +'<div class="row2"><div class="f"><label>Cargo</label><input type="text" data-f="title" value="'+esc(d.title)+'"'+dis+'></div>'
     +'<div class="f"><label>Local / loja</label><input type="text" data-f="store" value="'+esc(d.store)+'"'+dis+'></div></div>'
     +'<div class="row3"><div class="f"><label>Salário</label><input type="text" data-f="salary" value="'+esc(d.salary)+'"'+dis+'></div>'
     +'<div class="f"><label>Tipo</label><select data-f="kind"'+dis+'>'+['CLT','Freela','PJ','Estágio','Temporário'].map(k=>'<option'+(d.kind===k?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
     +'<div class="f"><label>Nº de vagas</label><input type="number" min="1" data-f="openings" value="'+(+d.openings||1)+'"'+dis+'></div></div>'
-    +'<div class="f"><label>Descrição / atividades</label><textarea data-f="description" rows="5"'+dis+'>'+esc(d.description)+'</textarea></div>'
+    +'<div class="f"><label>Descrição / atividades</label><textarea data-f="description" rows="9"'+dis+'>'+esc(d.description)+'</textarea></div>'
     +'<div class="f"><label>Benefícios e condições (um por linha)</label><textarea data-f="perks" rows="4"'+dis+'>'+esc(d.perks)+'</textarea></div>'
     +'<label class="imp-ck"><input type="checkbox" data-f="create"'+(it.create?' checked':'')+dis+'> Criar esta vaga</label>'
     +'</div></div>';
@@ -1156,8 +1210,10 @@ function renderImpFoot(){
   const f=$('impFoot'); if(!f) return;
   const n=imports.filter(it=>it.dup==null && it.create && it.status!=='wait' && it.status!=='read').length;
   const tot=imports.filter(it=>it.dup==null && it.create).reduce((s,it)=>s+(+it.d.openings||1),0);
-  f.innerHTML='<button class="btn accent full" id="impGo"'+(importing||!n?' disabled':'')+'>'+(importing?'Lendo os banners…':'Criar '+n+' vaga'+(n!==1?'s':'')+(tot>n?' ('+tot+' posições)':''))+'</button>';
+  const canAi=!importing && imports.some(it=>it.dup==null && it.status==='ok' && it.ai!=='busy');
+  f.innerHTML=(canAi?'<button class="btn ghost full" id="impAiAll" style="margin-bottom:10px">✨ Melhorar todas com IA</button>':'')+'<button class="btn accent full" id="impGo"'+(importing||!n?' disabled':'')+'>'+(importing?'Lendo os banners…':'Criar '+n+' vaga'+(n!==1?'s':'')+(tot>n?' ('+tot+' posições)':''))+'</button>';
   $('impGo').onclick=createImports;
+  if($('impAiAll')) $('impAiAll').onclick=async()=>{ for(const it of imports.filter(x=>x.dup==null && x.status==='ok' && x.ai!=='done')) await aiImport(it); };
 }
 $('impBody').addEventListener('input',e=>{ const t=e.target, k=t.dataset.f; const box=t.closest('.imp'); if(!k||!box) return;
   const it=imports.find(x=>'imp'+x.i===box.id); if(!it) return;
@@ -1178,7 +1234,7 @@ async function createImports(){
     if(up.error){ toast('Não salvou o banner: '+up.error.message); b.disabled=false; renderImpFoot(); return; }
     const tpl=templateCV();
     const row={id,title:d.title.trim(),store:d.store.trim(),kind:d.kind,salary:d.salary.trim(),description:d.description.trim(),perks:d.perks.trim(),
-      openings:+d.openings||1,banner_path:path,active:true,cv_required:true,questions:[],keywords:keywordsFor(d.title),kw_max:tpl.kw_max,thresholds:tpl.thresholds,updated_at:new Date().toISOString()};
+      openings:+d.openings||1,banner_path:path,active:true,cv_required:true,questions:[],keywords:(d.keywords&&d.keywords.length?d.keywords:keywordsFor(d.title)),kw_max:tpl.kw_max,thresholds:tpl.thresholds,updated_at:new Date().toISOString()};
     const {error}=await sb.from('vagas').upsert(row,{onConflict:'id'});
     if(error){ toast('Erro ao criar "'+row.title+'": '+error.message); b.disabled=false; renderImpFoot(); return; }
     vagas.unshift(row); done++;

@@ -73,6 +73,24 @@ cargo, local, salário, vale-alimentação/transporte, escala, horário, ativida
   link na bio"**, na mesma cor do rodapé. O story ganha espaço para a figurinha de link.
 - O banner também aparece no formulário do candidato, em "Sobre a vaga".
 
+## ✨ Melhorar com IA (anúncio de vaga profissional)
+
+Na conferência dos banners (por vaga, ou **Melhorar todas com IA**) e no editor da vaga, o botão
+**✨ Melhorar com IA** manda o **banner + os campos** para o Claude, que devolve um anúncio
+completo: resumo, responsabilidades, requisitos, diferenciais, benefícios, jornada e as
+**palavras-chave do currículo** dessa função. A IA não inventa salário, benefício nem horário, e
+não usa critérios discriminatórios. Você revisa antes de salvar.
+
+A chave da IA **fica no Supabase** (nunca no site). Configuração, uma vez:
+
+1. Crie uma chave em **console.anthropic.com → API Keys** (com créditos em Billing).
+2. Supabase → **Edge Functions → Deploy a new function → Via Editor**, com o nome **`vagas-ia`**.
+   Cole o conteúdo de [`supabase/functions/vagas-ia/index.ts`](../supabase/functions/vagas-ia/index.ts)
+   e clique em **Deploy**. Deixe "Verify JWT" ligado.
+3. Supabase → **Edge Functions → Secrets → Add new secret**: nome `ANTHROPIC_API_KEY`, valor = a chave.
+
+Só a equipe logada consegue chamar a função. Cada vaga melhorada custa poucos centavos.
+
 ## Como funciona o score
 
 O painel **lê o currículo** (PDF e Word, direto no navegador da equipe) e salva o texto em
