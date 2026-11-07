@@ -117,6 +117,15 @@ fica como **MANUAL** em Aplicações.
 também barra (trigger `candidaturas_unica`). No mesmo celular, a página já abre avisando. Card com
 **nome repetido** na mesma vaga ganha uma etiqueta, para pegar quem usou outro e-mail.
 
+## Divulgação: Jooble e páginas de vagas no Instagram
+
+- **Jooble (automático):** `https://vagas.coquin.com.br/jooble.xml` é um feed XML gerado na hora
+  (função `api/jooble.js` na Vercel) com **todas as vagas ativas**. Cadastre o link uma vez no
+  Jooble (Para empregadores → feed XML) e ele passa a puxar as vagas sozinho. Desligou a vaga, ela sai.
+- **Páginas de vagas no Instagram:** no **Divulgar** de cada vaga há a mensagem pronta para DM,
+  a arte para baixar e uma lista dos perfis de páginas de vagas que vocês usam, com o botão
+  **Abrir DM**. A lista fica salva no navegador de quem cadastrou.
+
 ## Como funciona o score
 
 O painel **lê o currículo** (PDF e Word, direto no navegador da equipe) e salva o texto em
