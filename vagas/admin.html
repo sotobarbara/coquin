@@ -199,6 +199,10 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .sheet.on{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.32,.72,0,1)}
 .sh-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 24px;border-bottom:1px solid var(--line);flex:none}
 .sh-title{font-weight:600;font-size:15px}
+.cnav{display:flex;align-items:center;gap:8px;margin-left:auto;margin-right:6px}
+.cnav span{font-size:13px;color:var(--ink-2);text-align:center;line-height:1.15;min-width:64px;font-variant-numeric:tabular-nums}
+.cnav span small{display:block;font-size:11px;color:var(--muted)}
+.cnav .x:disabled{opacity:.35;cursor:default}
 .x{border:1px solid var(--line);background:var(--surface);width:32px;height:32px;border-radius:8px;cursor:pointer;display:grid;place-items:center;color:var(--ink-2)}
 .x:hover{background:var(--hover)}
 .sh-body{flex:1;overflow-y:auto;padding:0 24px 28px}
@@ -331,6 +335,12 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .tp-t svg{width:15px;height:15px}
 .tp-km{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 
+.ig-add{display:flex;align-items:center;gap:6px;margin-top:14px;border:1px solid var(--line-2);border-radius:10px;padding:4px 4px 4px 12px;background:var(--surface)}
+.ig-add span{color:var(--muted)} .ig-add input{flex:1;border:0!important;outline:0;box-shadow:none!important;background:transparent;height:32px;padding:0!important;min-width:0}
+.ig-list{display:grid;gap:6px;margin-top:10px}
+.ig-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 12px}
+.ig-h{flex:1;display:flex;align-items:center;gap:8px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
 /* ---------- login + toast ---------- */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,#5A795C,#4E6B50);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -456,7 +466,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 
 <div class="scrim" id="scrim"></div>
 <aside class="sheet" id="candSheet" role="dialog" aria-modal="true">
-  <div class="sh-head"><div class="sh-title" id="cTitle">Candidato</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="sh-head"><div class="sh-title" id="cTitle">Candidato</div><div class="cnav hide" id="cNav"><button class="x" id="cPrev" title="Anterior (←)"><svg class="i"><use href="#i-back"/></svg></button><span id="cPos"></span><button class="x" id="cNext" title="Próximo (→)"><svg class="i"><use href="#i-arrow"/></svg></button></div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
   <div class="sh-body" id="cBody"></div>
 </aside>
 <aside class="sheet wide" id="vagaSheet" role="dialog" aria-modal="true">
@@ -494,6 +504,9 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
   <symbol id="i-money" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></symbol>
   <symbol id="i-bus" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M8 21v-3M16 21v-3"/><circle cx="8.5" cy="14.5" r=".8"/><circle cx="15.5" cy="14.5" r=".8"/></symbol>
   <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v2a1 1 0 0 1-1 1h-2v-3M4 19h2v-3"/><circle cx="7.5" cy="13" r=".8"/><circle cx="16.5" cy="13" r=".8"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.3" cy="6.8" r=".9" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></symbol>
   <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
@@ -976,7 +989,7 @@ function renderCand(){
   const list=filtered(base);
   dupNames=new Map(); cands.forEach(c=>{ const k=c.vaga_id+'|'+norm(c.name).trim(); dupNames.set(k,(dupNames.get(k)||0)+1); });
   $('board').innerHTML=STATUS.map(s=>{
-    const items=sortList(list.filter(c=>colOf(c)===s.k));
+    const items=sortList(list.filter(c=>colOf(c)===s.k)); colIds[s.k]=items.map(c=>c.id);
     const lim=UI.more&&UI.more[s.k]||60, shown=items.slice(0,lim), rest=items.length-shown.length;
     const hint={novo:'chegaram com nível A/B',reprovado:'nível C, eliminados e descartados'}[s.k]||'';
     return '<div class="col" data-col="'+s.k+'" title="'+hint+'"><div class="col-h"><span class="cd" style="background:'+s.c+'"></span><span class="ct"><span class="num">0'+(STATUS.indexOf(s)+1)+'.</span> '+s.l+'</span><span class="cn">'+items.length+'</span>'+(hint?'<span class="cs">'+hint+'</span>':'')+'</div>'
@@ -1044,10 +1057,21 @@ function moveTo(c,k){
   patch(c,{status:stFor(c,k)},true).then(()=>toast(c.name.split(' ')[0]+' → '+(STATUS.find(s=>s.k===k)||{}).l));
 }
 $('board').addEventListener('click',e=>{ const m=e.target.closest('[data-more]'); if(m){ UI.more=UI.more||{}; UI.more[m.dataset.more]=(UI.more[m.dataset.more]||60)+60; renderCand(); return; }
-  const k=e.target.closest('.kc'); if(k) openCand(k.dataset.id); });
+  const k=e.target.closest('.kc'); if(k){ const col=k.closest('.col'); NAV={k:col&&col.dataset.col,ids:(colIds[col&&col.dataset.col]||[]).slice()}; openCand(k.dataset.id); } });
 
 /* ---------- painel do candidato ---------- */
 let openId=null;
+/* navegação entre perfis da mesma coluna (lista guardada ao abrir: resgatar alguém não bagunça a ordem) */
+let NAV={k:null,ids:[]}; const colIds={};
+function navStep(d){ if(!openId) return; const i=NAV.ids.indexOf(openId); if(i<0) return; const j=i+d;
+  if(j<0||j>=NAV.ids.length) return toast(d>0?'Este é o último da lista':'Este é o primeiro da lista');
+  const nid=NAV.ids[j]; if(!cands.some(c=>c.id===nid)){ NAV.ids.splice(j,1); return navStep(d>0?0:d); } openCand(nid);
+  const b=document.querySelector('#candSheet .sh-body'); if(b) b.scrollTop=0; }
+function navRender(){ const i=openId?NAV.ids.indexOf(openId):-1, el=$('cNav'); if(!el) return;
+  el.classList.toggle('hide',i<0||NAV.ids.length<2); if(i<0) return;
+  const st=(STATUS.find(x=>x.k===NAV.k)||{}).l||'';
+  $('cPos').innerHTML='<b>'+(i+1)+'</b> de '+NAV.ids.length+(st?'<small>'+esc(st)+'</small>':'');
+  $('cPrev').disabled=i===0; $('cNext').disabled=i===NAV.ids.length-1; }
 function openCand(id){
   const c=cands.find(x=>x.id===id); if(!c) return; openId=id;
   const s=sc(c); const v=vagas.find(x=>x.id===c.vaga_id)||{};
@@ -1113,7 +1137,7 @@ function openCand(id){
   $('starSel').onclick=e=>{ const b=e.target.closest('[data-n]'); if(!b) return; const n=+b.dataset.n; patch(c,{stars:(c.stars===n?0:n)},true).then(()=>document.querySelectorAll('#starSel button').forEach(x=>x.classList.toggle('on',(c.stars||0)>=+x.dataset.n))); };
   const nt=$('cNotes'); nt.oninput=()=>{ clearTimeout(nt._h); nt._h=setTimeout(()=>patch(c,{notes:nt.value},true),700); };
   $('cDel').onclick=()=>delCand(c);
-  openSheet('candSheet'); renderOpenMarks();
+  openSheet('candSheet'); renderOpenMarks(); navRender();
 }
 function profileBlk(c,v){
   const a=ageOf(c), h=homeOf(c), mine=spotOfVaga(v);
@@ -1384,6 +1408,18 @@ async function drawArt(v,fmt){
   if(story){ x.strokeStyle='rgba(237,232,225,.25)'; x.setLineDash([10,10]); x.beginPath(); x.roundRect(W/2-230,by+bh+110,460,96,22); x.stroke(); x.setLineDash([]); x.fillStyle='rgba(237,232,225,.35)'; x.font='400 24px '+SANS; x.fillText('cole aqui a figurinha de link',W/2,by+bh+158); }
   return c;
 }
+function feedUrl(){ return location.origin+'/jooble.xml'; }
+function igPages(){ try{ return JSON.parse(localStorage.getItem('coquin-ig-paginas')||'[]'); }catch(_){ return []; } }
+function igSave(l){ try{ localStorage.setItem('coquin-ig-paginas',JSON.stringify(l)); }catch(_){} }
+function dmText(v){
+  const perks=String(v.perks||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  return 'Olá! Tudo bem? Somos a Coquin, gelato tailandês servido no coco aqui em Fortaleza 🥥\n\n'
+    +'Estamos contratando e adoraríamos se vocês pudessem divulgar nossa vaga:\n\n'
+    +'📌 '+v.title+(v.store?' — '+v.store:'')+((+v.openings||1)>1?' ('+v.openings+' vagas)':'')+'\n'
+    +[v.kind,v.salary].filter(Boolean).join(' · ')+'\n'
+    +(perks.length?perks.map(p=>'✅ '+p).join('\n')+'\n':'')
+    +'\n📲 Inscrição em 1 minuto (nome, e-mail e currículo): '+formUrl(v.id)+'\n\n'
+    +'Segue a arte em anexo. Muito obrigado! 💚\nInstagram: @coquingelato'; }
 async function openShare(v){
   const cap=caption(v); const hasB=!!v.banner_path;
   $('sBody').innerHTML='<div class="blk"><h4>1 · Arte'+(hasB?' (seu banner)':'')+'</h4>'
@@ -1391,7 +1427,15 @@ async function openShare(v){
     +'<div><canvas id="artStory" class="artprev"></canvas><button class="btn ghost full" style="margin-top:10px" data-dl="story">'+ic('down')+'Story 9:16</button></div></div>'
     +'<div class="note" style="margin-top:10px">No story, adicione a figurinha <b>Link</b> com o endereço abaixo, no espaço marcado.</div></div>'
     +'<div class="blk"><h4>2 · Legenda</h4><pre class="cap">'+esc(cap)+'</pre><button class="btn ghost" style="margin-top:10px" id="capCopy">Copiar legenda</button></div>'
-    +'<div class="blk"><h4>3 · Link de inscrição (bio ou figurinha)</h4><div class="link">'+ic('link')+'<span>'+esc(formUrl(v.id))+'</span><button id="lnkCopy">Copiar</button></div></div>';
+    +'<div class="blk"><h4>3 · Link de inscrição (bio ou figurinha)</h4><div class="link">'+ic('link')+'<span>'+esc(formUrl(v.id))+'</span><button id="lnkCopy">Copiar</button></div></div>'
+    +'<div class="blk"><h4>4 · Páginas de vagas no Instagram</h4>'
+    +'<div class="note" style="margin-bottom:10px">Baixe a arte (feed), toque em <b>Abrir DM</b> no perfil da página e cole a mensagem. Os perfis ficam salvos neste aparelho.</div>'
+    +'<pre class="cap" id="dmTxt">'+esc(dmText(v))+'</pre><button class="btn ghost" style="margin-top:10px" id="dmCopy">Copiar mensagem</button>'
+    +'<div class="ig-add"><span>@</span><input type="text" id="igNew" placeholder="perfil da página (ex.: vagasfortaleza)"><button class="btn sm" id="igAdd">Adicionar</button></div>'
+    +'<div class="ig-list" id="igList"></div></div>'
+    +'<div class="blk"><h4>5 · Jooble (automático)</h4>'
+    +'<div class="note" style="margin-bottom:10px">O Jooble lê este link e publica <b>todas as vagas abertas</b> sozinho; quando você desliga uma vaga, ela sai. Cadastre <b>uma vez só</b> em jooble.org → <i>Para empregadores</i> → enviar feed XML.</div>'
+    +'<div class="link">'+ic('link')+'<span>'+esc(feedUrl())+'</span><button id="feedCopy">Copiar</button></div></div>';
   openSheet('shareSheet');
   const arts={};
   async function paint(){
@@ -1404,6 +1448,16 @@ async function openShare(v){
   await paint(); if(hasB) $('swapCta').onchange=paint;
   $('capCopy').onclick=()=>copy(cap,'Legenda copiada');
   $('lnkCopy').onclick=()=>copy(formUrl(v.id),'Link copiado');
+  $('dmCopy').onclick=()=>copy(dmText(v),'Mensagem copiada');
+  $('feedCopy').onclick=()=>copy(feedUrl(),'Link do feed copiado');
+  const drawIg=()=>{ const l=igPages(); $('igList').innerHTML=l.length?l.map(h=>'<div class="ig-row"><span class="ig-h">'+ic('insta')+'@'+esc(h)+'</span>'
+      +'<a class="btn sm" target="_blank" rel="noopener" href="https://ig.me/m/'+encodeURIComponent(h)+'">Abrir DM</a><button class="ib" data-igdel="'+esc(h)+'" title="Remover">✕</button></div>').join('')
+      :'<div class="note">Nenhuma página salva ainda. Adicione os perfis de vagas de Fortaleza que vocês usam.</div>'; };
+  drawIg();
+  $('igAdd').onclick=()=>{ const h=$('igNew').value.trim().replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\//,'').replace(/[\/?#].*$/,''); if(!/^[A-Za-z0-9._]{2,30}$/.test(h)) return toast('Perfil inválido');
+    const l=igPages(); if(!l.includes(h)) l.push(h); igSave(l); $('igNew').value=''; drawIg(); };
+  $('igNew').onkeydown=e=>{ if(e.key==='Enter') $('igAdd').click(); };
+  $('igList').onclick=e=>{ const b=e.target.closest('[data-igdel]'); if(b){ igSave(igPages().filter(x=>x!==b.dataset.igdel)); drawIg(); } };
   $('sBody').querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{
     arts[b.dataset.dl].toBlob(async blob=>{
       const name='vaga-'+v.id+'-'+b.dataset.dl+'.png'; const file=new File([blob],name,{type:'image/png'});
@@ -1693,7 +1747,9 @@ function openSheet(id){ document.querySelectorAll('.sheet').forEach(s=>s.classLi
 function closeSheets(){ document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on')); $('scrim').classList.remove('on'); openId=null; renderOpenMarks(); }
 $('scrim').onclick=closeSheets;
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheets(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheets();
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft') && $('candSheet').classList.contains('on') && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||'')){ e.preventDefault(); navStep(e.key==='ArrowRight'?1:-1); } });
+$('cPrev').onclick=()=>navStep(-1); $('cNext').onclick=()=>navStep(1);
 function setView(v){ view=v; document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('sel',b.dataset.view===v));
   $('viewCand').classList.toggle('hide',v!=='cand'); $('viewVagas').classList.toggle('hide',v!=='vagas'); render(); }
 $('nav').onclick=e=>{ const b=e.target.closest('[data-view]'); if(b) setView(b.dataset.view); };
