@@ -1093,6 +1093,11 @@ main{padding-top:18px}
     <label>Maquininhas (N de série) → loja</label>
     <div id="lojaSerials"></div>
   </div>
+  <div class="field">
+    <label>Loja padrão <span class="hintlink" style="color:var(--ink-faint);cursor:default">maquininha nova / sem loja definida</span></label>
+    <select id="lojaDefault" class="txt-input" style="width:100%;padding:12px"></select>
+    <div style="font-size:11.5px;color:var(--ink-faint);font-weight:600;margin-top:6px">Toda venda cuja maquininha não estiver na lista acima conta para esta loja.</div>
+  </div>
   <button class="btn-primary" id="saveLojas">Salvar</button>
   <button type="button" class="btn-ghost" id="cancelLojas" style="margin-top:10px">Fechar</button>
 </div>
@@ -1321,7 +1326,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.2 · organograma detalhado'
+const APP_VERSION='v8.3 · loja padrao (fallback)'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1393,17 +1398,22 @@ function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.sto
   if(!Array.isArray(db.settings.employees)||!db.settings.employees.length) db.settings.employees=JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
   if(!db.settings.folhaPago||typeof db.settings.folhaPago!=='object') db.settings.folhaPago={};
   if(!Array.isArray(db.settings.squads)||!db.settings.squads.length) db.settings.squads=JSON.parse(JSON.stringify(DEFAULT_SQUADS));
+  // loja padrão: maquininha sem série mapeada conta como esta loja (ex.: Beira Mar, que concentra o fluxo)
+  if(db.settings.defaultStore===undefined) db.settings.defaultStore='beiramar';
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
   if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
   // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
   if(db.settings.serialMap['XC03020753916']==='eventos') db.settings.serialMap['XC03020753916']=[{store:'eventos',to:'2026-10-31'},{store:'beiramar',from:'2026-11-01'}]; }
 function storeName(id){ const s=(db.settings.stores||[]).find(x=>x.id===id); return s?s.name:null; }
-function serialStore(ser,date){ const v=(db.settings.serialMap||{})[ser]; if(v==null) return null;
-  if(typeof v==='string') return v||null;
+function serialStore(ser,date){ const def=db.settings.defaultStore||null;
+  const v=(db.settings.serialMap||{})[ser];
   const test=p=>{ if(!p||!p.store) return null; if(p.from&&date&&date<p.from) return null; if(p.to&&date&&date>p.to) return null; return p.store; };
-  if(Array.isArray(v)){ for(const p of v){ const r=test(p); if(r) return r; } return null; }
-  if(typeof v==='object') return test(v);
-  return null; }
+  let r=null;
+  if(v!=null){ if(typeof v==='string') r=v||null;
+    else if(Array.isArray(v)){ for(const p of v){ const x=test(p); if(x){ r=x; break; } } }
+    else if(typeof v==='object') r=test(v); }
+  return r || def;   // série não mapeada (ou período sem loja) → loja padrão
+}
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
 const QUENGAS_POR_COCO=2;   // 1 coco = 2 quengas
@@ -1470,7 +1480,7 @@ const Cloud={
       pending.forEach(x=>this.pushClosing(x));
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
-      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; } ensureStores(); }
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; if(typeof st.lojas.defaultStore==='string') db.settings.defaultStore=st.lojas.defaultStore; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1524,7 +1534,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null};
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null,defaultStore:db.settings.defaultStore||null};
     try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -2712,6 +2722,8 @@ function renderLojaSheet(){
     del.addEventListener('click',()=>{ const id=_lojaStores[i].id; _lojaStores.splice(i,1); Object.keys(_lojaMap).forEach(k=>{ if(_lojaMap[k]===id){ delete _lojaMap[k]; delete _lojaFrom[k]; } }); renderLojaSheet(); });
     row.appendChild(inp); row.appendChild(del); host.appendChild(row);
   });
+  // loja padrão (maquininha sem loja definida)
+  const dsel=$('lojaDefault'); if(dsel){ dsel.innerHTML='<option value="">(não identificar)</option>'+_lojaStores.map(s=>'<option value="'+s.id+'"'+(db.settings.defaultStore===s.id?' selected':'')+'>'+(s.name||s.id)+'</option>').join(''); }
   const sh=$('lojaSerials'); sh.innerHTML='';
   const sers=allSerials();
   if(!sers.length){ sh.innerHTML='<div style="font-size:12px;color:var(--ink-faint)">Nenhuma maquininha ainda. Importe o CSV da Stone e elas aparecem aqui.</div>'; return; }
@@ -2737,7 +2749,7 @@ $('lojaAdd').addEventListener('click', ()=>{ const v=$('lojaNew').value.trim(); 
 $('cancelLojas').addEventListener('click', closeSheets);
 $('saveLojas').addEventListener('click', ()=>{ const clean=_lojaStores.filter(s=>s.name&&s.name.trim()); db.settings.stores=clean.map(s=>({id:s.id,name:s.name.trim()}));
   const map={}; Object.keys(_lojaMap).forEach(ser=>{ const st=_lojaMap[ser]; if(!st) return; const f=_lojaFrom[ser]; map[ser]= f? {store:st,from:f} : st; });
-  db.settings.serialMap=map; ensureStores(); Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Lojas atualizadas 🏪'); });
+  db.settings.serialMap=map; db.settings.defaultStore=($('lojaDefault')?$('lojaDefault').value:db.settings.defaultStore)||''; ensureStores(); Store.save(db); Cloud.pushSettings(); closeSheets(); render(); toast('Lojas atualizadas 🏪'); });
 $('doReset').addEventListener('click', async ()=>{
   $('doReset').disabled=true;
   const cocos=parseInt2($('resetCocos').value), quengas=parseInt2($('resetQuengas').value), today=todayISO();
