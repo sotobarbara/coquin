@@ -172,7 +172,9 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .ct-ic svg{width:26px;height:26px;stroke-width:1.8}
 .ct-big small{display:block;font-size:13px;opacity:.8}
 .ct-big b{display:block;font-family:var(--round);font-size:24px;font-weight:800;letter-spacing:.01em}
-.ct-go{margin-left:auto;width:22px;height:22px;opacity:.85;transition:transform .2s}
+.ct-mail{min-width:0}
+.ct-mail b{font-size:19px;overflow-wrap:anywhere}
+.ct-go{margin-left:auto;flex:none;width:22px;height:22px;opacity:.85;transition:transform .2s}
 .ct-big:hover .ct-go{transform:translateX(4px)}
 .ct-sym{position:absolute;right:-34px;bottom:-34px;width:150px;opacity:.1;pointer-events:none}
 .ct-places{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px}
@@ -344,6 +346,9 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
   .ct-grid{grid-template-columns:1fr}
   .ct-main{padding:22px}
   .ct-big b{font-size:20px}
+  .ct-mail b{font-size:clamp(13px,4.1vw,16px);overflow-wrap:normal;white-space:nowrap}
+  .ct-big{gap:12px;padding:14px}
+  .ct-ic{width:46px;height:46px}
   .pl-go{font-size:0;gap:0}
   .pl-go svg{width:20px;height:20px}
   .vhero h1{font-size:34px}
@@ -360,6 +365,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
 <svg width="0" height="0" style="position:absolute">
   <symbol id="i-whats" viewBox="0 0 24 24"><path d="M3.5 20.5l1.3-4.2A8.6 8.6 0 1 1 8 19.3z"/><path d="M9 8.6c0-.5.4-.9.9-.9h.5c.3 0 .5.2.6.4l.6 1.6c.1.3 0 .6-.2.8l-.6.6c.6 1.2 1.6 2.2 2.8 2.8l.6-.6c.2-.2.5-.3.8-.2l1.6.6c.2.1.4.3.4.6v.5c0 .5-.4.9-.9.9A7 7 0 0 1 9 8.6z"/></symbol>
   <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.3" cy="6.8" r=".9" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
@@ -509,6 +515,10 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
         <a class="ct-big" href="https://instagram.com/coquingelato" target="_blank" rel="noopener">
           <span class="ct-ic"><svg class="i"><use href="#i-insta"/></svg></span>
           <span><small>Instagram</small><b>@coquingelato</b></span>
+          <svg class="i ct-go"><use href="#i-arrow"/></svg></a>
+        <a class="ct-big" href="mailto:coquingelato@gmail.com?subject=Contato%20pelo%20site%20Coquin">
+          <span class="ct-ic"><svg class="i"><use href="#i-mail"/></svg></span>
+          <span class="ct-mail"><small>E-mail</small><b>coquingelato@gmail.com</b></span>
           <svg class="i ct-go"><use href="#i-arrow"/></svg></a>
         <img class="ct-sym" src="simbolo-coquin-branco.png" alt="">
       </div>
