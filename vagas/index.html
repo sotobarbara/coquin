@@ -84,7 +84,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:opacity .55s ease,visibility 0s .55s}
 #splash.out{opacity:0;visibility:hidden}
 #splash.skip{display:none}
-.intro{position:relative;width:min(300px,70vw);aspect-ratio:1376/368;opacity:0;transition:opacity .35s ease}
+.intro{position:relative;width:min(300px,calc((50vw - 14px)/.87));aspect-ratio:1376/368;opacity:0;transition:opacity .35s ease}
 .intro.on{opacity:1}
 .intro-word{position:absolute;inset:0;width:100%;height:100%}
 /* o "O" ocupa exatamente o lugar dele na palavra */
@@ -610,14 +610,17 @@ setTimeout(()=>maybeOut(true),7000);   // nunca prende ninguém
     push(ms*.28,m,h,1,1,-12,'ease-in');                        // topo do pulo
     push(ms*.3,b-(b-a)*.02,.42*h,.88,1.16,-4,'ease-out');      // estica na descida (cai quase na vertical)
     push(ms*.16,b,0,land[0],land[1],0,'ease-out'); };          // amassa ao pousar
-  f.push({offset:0,transform:T(8.6,0,1,1,0)}); g.push({offset:0,opacity:.9,transform:`translateX(${L(8.6)}px)`});
-  hop(8.6,6.7,.75,520,[1.2,.8]);                                // chega pulando pela direita
-  push(90,6.7,0,1,1,0,'ease-out');
-  hop(6.7,6.0,.3,320,[1.12,.86]);                               // pulinho até perto do "n"
-  push(110,6.0,0,1,1,0,'ease-out');
-  push(260,6.0,0,1,1,-10,'ease-in-out');                        // olha para o lugar vazio
-  push(160,6.0,0,1,1,-10);
-  hop(6.0,0,2.1,900,[1.38,.6]);                                 // pulo grande por cima da palavra
+  // posições em "Os" a partir do lugar vazio; ajustadas à largura da tela (o "n" termina em ~4,95)
+  const r=O.getBoundingClientRect(), room=(innerWidth-10-r.left)/s-1;      // até onde o O cabe à direita
+  const W1=Math.max(5.35,Math.min(6.0,room-.75)), L1=Math.max(W1+.35,Math.min(6.7,room)), S0=Math.max(L1+1.6,room+1.3);
+  f.push({offset:0,transform:T(S0,0,1,1,0)}); g.push({offset:0,opacity:.9,transform:`translateX(${L(S0)}px)`});
+  hop(S0,L1,.75,520,[1.2,.8]);                                  // chega pulando pela direita
+  push(90,L1,0,1,1,0,'ease-out');
+  hop(L1,W1,.3,320,[1.12,.86]);                                 // pulinho até perto do "n"
+  push(110,W1,0,1,1,0,'ease-out');
+  push(260,W1,0,1,1,-10,'ease-in-out');                         // olha para o lugar vazio
+  push(160,W1,0,1,1,-10);
+  hop(W1,0,2.1,900,[1.38,.6]);                                  // pulo grande por cima da palavra
   push(110,0,0,.94,1.08,0,'ease-out');                           // quica
   push(110,0,0,1.04,.97,0,'ease-in-out');
   push(110,0,0,1,1,0,'ease-in-out');
