@@ -128,7 +128,7 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .stepper div::after{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:17px;height:17px;border-radius:99px;background:var(--line-2)}
 .stepper div.on::before,.stepper div.on::after{background:var(--accent)}
 .stepper div em{font-style:normal;display:block;font-weight:500;color:var(--ink);font-size:14px}
-.col{flex:1 1 0;min-width:196px;max-width:330px;background:var(--sunken);border-radius:16px;display:flex;flex-direction:column;max-height:640px;border:1px solid transparent;transition:border-color .15s,background .15s}
+.col{flex:1 1 0;min-width:180px;max-width:330px;background:var(--sunken);border-radius:16px;display:flex;flex-direction:column;max-height:640px;border:1px solid transparent;transition:border-color .15s,background .15s}
 .col.over{border-color:var(--accent);background:var(--accent-soft)}
 .col-h{display:flex;align-items:center;gap:8px;padding:14px 14px 12px;border-bottom:1px solid var(--line);margin-bottom:8px}
 .col-h .num{color:var(--muted);font-weight:400}
@@ -136,6 +136,20 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .col-h .ct{font-weight:500;font-size:15px}
 .col-h .cn{margin-left:auto;font-size:12px;color:#fff;background:#8A8070;border-radius:99px;padding:1px 9px;font-variant-numeric:tabular-nums}
 .col-h .cs{display:none}
+.col-h{position:relative}
+.col-act{position:relative;display:flex}
+.col-dots{border:0;background:none;color:var(--muted);cursor:pointer;width:24px;height:24px;border-radius:7px;font:inherit;font-size:16px;line-height:1;padding:0}
+.col-dots:hover{background:rgba(0,0,0,.06);color:var(--ink-2)}
+.col-menu{display:none;position:absolute;right:0;top:28px;z-index:20;min-width:200px;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;box-shadow:0 12px 30px rgba(40,30,15,.14);padding:5px;flex-direction:column}
+.col-menu.open{display:flex}
+.col-menu button{display:flex;align-items:center;gap:8px;border:0;background:none;text-align:left;font:inherit;font-size:13px;color:var(--ink-2);padding:8px 10px;border-radius:8px;cursor:pointer}
+.col-menu button:hover{background:var(--sunken)}
+.col-menu button.danger{color:#C2413A}
+.col-menu svg{width:13px;height:13px}
+.col-add{flex:0 0 44px;align-self:stretch;max-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1.5px dashed var(--line-2);border-radius:16px;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;transition:border-color .15s,color .15s;padding:12px 0}
+.col-add span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap}
+.col-add:hover{border-color:#3D5842;color:#3D5842}
+.col-add svg{width:16px;height:16px}
 .col-b{padding:0 8px 10px;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-height:60px;align-content:start}
 .kc{min-width:0}.chips{min-width:0}
 .col-e{border:1.5px dashed var(--line-2);border-radius:10px;padding:18px 10px;text-align:center;color:var(--faint);font-size:12.5px}
@@ -534,9 +548,14 @@ const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 
 /* etapas do pipeline. "Não qualificados" recebe sozinho quem chega com nível C ou eliminado. */
-const STATUS=[
+const BASE_ST=[
   {k:'novo',l:'Aplicações',c:'#3B6FD8'},{k:'triagem',l:'Em validação',c:'#C08A1E'},{k:'entrevista',l:'Entrevista',c:'#7C4DCC'},
-  {k:'aprovado',l:'Aprovados',c:'#1E7F5C'},{k:'reprovado',l:'Não qualificados',c:'#9A948C'}];
+  {k:'aprovado',l:'Aprovados',c:'#1E7F5C'}], NQ_ST={k:'reprovado',l:'Não qualificados',c:'#9A948C'};
+/* etapas criadas pela equipe (ex.: "Em treinamento"): ficam entre Aprovados e Não qualificados,
+   valem para todas as vagas e são salvas na tabela vagas_config (chave "etapas") */
+let EXTRA=[], STATUS=[];
+function buildStatus(){ STATUS=BASE_ST.concat(EXTRA,[NQ_ST]); }
+buildStatus();
 const TIERS={A:'Priorizar',B:'Avaliar',C:'Baixa aderência',X:'Eliminado',P:'Lendo currículo',Q:'Avaliar manualmente'};
 const TIERC={A:'#1E7F5C',B:'#C08A1E',C:'#9A948C',X:'#C2413A',P:'#B5AFA6',Q:'#8C867E'};
 const TLAB={X:'ELIM',P:'LENDO',Q:'MANUAL'};
@@ -700,9 +719,40 @@ async function load(){
     all.push(...(data||[])); if(!data || data.length<PAGE) break;
   }
   vagas=v||[]; cands=all.map(x=>Object.assign(x,{_s:null}));
+  await loadEtapas();
   render(); CVQ.add();
 }
 function sc(c){ if(!c._s) c._s=scoreCand(c); return c._s; }
+async function loadEtapas(){
+  try{ const {data,error}=await sb.from('vagas_config').select('value').eq('key','etapas').maybeSingle();
+    if(!error && data && Array.isArray(data.value))
+      EXTRA=data.value.filter(x=>x && /^x_[a-z0-9_]+$/.test(x.k) && x.l).map(x=>({k:x.k,l:String(x.l).slice(0,40),c:/^#[0-9a-f]{6}$/i.test(x.c)?x.c:'#2A8C9E',x:1}));
+  }catch(_){}
+  buildStatus();
+}
+async function saveEtapas(next){
+  const {error}=await sb.from('vagas_config').upsert({key:'etapas',value:next.map(({k,l,c})=>({k,l,c})),updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error){ toast(/vagas_config|relation|schema cache/i.test(error.message)?'⚠︎ Rode o SETUP.sql atualizado no Supabase para criar etapas':'⚠︎ '+error.message); return false; }
+  EXTRA=next; buildStatus(); render(); return true;
+}
+const ST_COLORS=['#2A8C9E','#D0632A','#B04A8A','#5E7A2E','#6B5B95','#A0522D'];
+async function addEtapa(){
+  const l=(prompt('Nome da nova etapa:','Em treinamento')||'').trim().slice(0,40); if(!l) return;
+  if(STATUS.some(s=>norm(s.l).trim()===norm(l).trim())) return toast('Já existe uma etapa com esse nome');
+  const k='x_'+(norm(l).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'etapa')+'_'+Math.random().toString(36).slice(2,6);
+  if(await saveEtapas(EXTRA.concat([{k,l,c:ST_COLORS[EXTRA.length%ST_COLORS.length],x:1}]))) toast('Etapa "'+l+'" criada ✓');
+}
+document.addEventListener('click',e=>{ if(UI.stMenu && !e.target.closest('.col-act')){ UI.stMenu=null; document.querySelectorAll('.col-menu.open').forEach(m=>m.classList.remove('open')); } });
+async function editEtapa(k,act){
+  const i=EXTRA.findIndex(s=>s.k===k); if(i<0) return; const s=EXTRA[i]; let next=EXTRA.slice();
+  if(act==='ren'){ const l=(prompt('Novo nome da etapa:',s.l)||'').trim().slice(0,40); if(!l||l===s.l) return; next[i]=Object.assign({},s,{l}); }
+  else if(act==='left'||act==='right'){ const j=i+(act==='left'?-1:1); if(j<0||j>=next.length) return; [next[i],next[j]]=[next[j],next[i]]; }
+  else if(act==='del'){ const n=cands.filter(c=>c.status===k).length;
+    if(!confirm('Remover a etapa "'+s.l+'"?'+(n?' '+n+' candidato(s) nela voltam para Aplicações.':''))) return;
+    if(n){ for(const c of cands.filter(c=>c.status===k)) await patch(c,{status:stFor(c,'novo')},true); }
+    next.splice(i,1); }
+  await saveEtapas(next);
+}
 
 /* ---------- leitura do currículo (PDF e Word) ----------
    Baixa o arquivo com link temporário, extrai o texto aqui no navegador e salva em cv_text
@@ -992,9 +1042,10 @@ function renderCand(){
     const items=sortList(list.filter(c=>colOf(c)===s.k)); colIds[s.k]=items.map(c=>c.id);
     const lim=UI.more&&UI.more[s.k]||60, shown=items.slice(0,lim), rest=items.length-shown.length;
     const hint={novo:'chegaram com nível A/B',reprovado:'nível C, eliminados e descartados'}[s.k]||'';
-    return '<div class="col" data-col="'+s.k+'" title="'+hint+'"><div class="col-h"><span class="cd" style="background:'+s.c+'"></span><span class="ct"><span class="num">0'+(STATUS.indexOf(s)+1)+'.</span> '+s.l+'</span><span class="cn">'+items.length+'</span>'+(hint?'<span class="cs">'+hint+'</span>':'')+'</div>'
+    return '<div class="col" data-col="'+s.k+'" title="'+hint+'"><div class="col-h"><span class="cd" style="background:'+s.c+'"></span><span class="ct"><span class="num">'+String(STATUS.indexOf(s)+1).padStart(2,'0')+'.</span> '+esc(s.l)+'</span><span class="cn">'+items.length+'</span>'+(hint?'<span class="cs">'+hint+'</span>':'')
+      +(s.x?'<span class="col-act"><button class="col-dots" data-st-menu="'+s.k+'" title="Opções da etapa">⋯</button><span class="col-menu'+(UI.stMenu===s.k?' open':'')+'"><button data-st-act="ren" data-k="'+s.k+'">✎ Renomear</button><button data-st-act="left" data-k="'+s.k+'">‹ Mover para a esquerda</button><button data-st-act="right" data-k="'+s.k+'">› Mover para a direita</button><button data-st-act="del" data-k="'+s.k+'" class="danger">'+ic('trash')+' Remover etapa</button></span></span>':'')+'</div>'
       +'<div class="col-b">'+(items.length?shown.map(card).join('')+(rest>0?'<button class="more" data-more="'+s.k+'">Mostrar mais '+Math.min(60,rest)+' de '+rest+'</button>':''):'<div class="col-e">'+(cands.length?'Arraste um card para cá':(vagas.length?'Nenhuma candidatura ainda':'Crie uma vaga para começar'))+'</div>')+'</div></div>';
-  }).join('');
+  }).join('')+'<button class="col-add" id="addSt" title="Nova etapa (ex.: Em treinamento)" aria-label="Nova etapa">'+ic('plus')+'<span>Nova etapa</span></button>';
 }
 let dupNames=new Map();
 function renderKpis(base,today,avg){
@@ -1056,7 +1107,10 @@ function moveTo(c,k){
   if(colOf(c)===k) return;
   patch(c,{status:stFor(c,k)},true).then(()=>toast(c.name.split(' ')[0]+' → '+(STATUS.find(s=>s.k===k)||{}).l));
 }
-$('board').addEventListener('click',e=>{ const m=e.target.closest('[data-more]'); if(m){ UI.more=UI.more||{}; UI.more[m.dataset.more]=(UI.more[m.dataset.more]||60)+60; renderCand(); return; }
+$('board').addEventListener('click',e=>{ if(e.target.closest('#addSt')) return addEtapa();
+  const mb=e.target.closest('[data-st-menu]'); if(mb){ UI.stMenu=UI.stMenu===mb.dataset.stMenu?null:mb.dataset.stMenu; document.querySelectorAll('.col-menu').forEach(m=>m.classList.toggle('open',m.previousElementSibling===mb&&!!UI.stMenu)); return; }
+  const sa=e.target.closest('[data-st-act]'); if(sa){ UI.stMenu=null; return editEtapa(sa.dataset.k,sa.dataset.stAct); }
+  const m=e.target.closest('[data-more]'); if(m){ UI.more=UI.more||{}; UI.more[m.dataset.more]=(UI.more[m.dataset.more]||60)+60; renderCand(); return; }
   const k=e.target.closest('.kc'); if(k){ const col=k.closest('.col'); NAV={k:col&&col.dataset.col,ids:(colIds[col&&col.dataset.col]||[]).slice()}; openCand(k.dataset.id); } });
 
 /* ---------- painel do candidato ---------- */
@@ -1109,7 +1163,7 @@ function openCand(id){
       +(c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgInv)+'">'+ic('mail')+(ph?'E-mail':'Convidar por e-mail')+'</a>':'')
       +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgNo)+'">Agradecer</a>':c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgNo)+'">Agradecer</a>':'')
     +'</div></div>'
-    +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(colOf(c)===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+x.l+'</button>').join('')+'</div>'
+    +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(colOf(c)===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+esc(x.l)+'</button>').join('')+'</div>'
 
     +'<h4 style="margin-top:18px">Sua nota</h4><div class="starsel" id="starSel">'+[1,2,3,4,5].map(n=>'<button data-n="'+n+'" class="'+((c.stars||0)>=n?'on':'')+'">★</button>').join('')+'</div></div>'
     +profileBlk(c,v)
@@ -1772,6 +1826,7 @@ async function onLoggedIn(sess){
   try{ sb.channel('coquin-vagas-rt')
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'candidaturas'},p=>{ if(p.new && !cands.some(c=>c.id===p.new.id)){ cands.unshift(Object.assign(p.new,{_s:null})); render(); CVQ.add(); toast('Nova candidatura: '+p.new.name); } })
     .on('postgres_changes',{event:'*',schema:'public',table:'vagas'},()=>load().catch(()=>{}))
+    .on('postgres_changes',{event:'*',schema:'public',table:'vagas_config'},()=>loadEtapas().then(render).catch(()=>{}))
     .subscribe(); }catch(e){}
 }
 async function doLogin(){

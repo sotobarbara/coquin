@@ -46,6 +46,10 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
   "auto"); quem chega com A/B entra em *Aplicações*. **Arraste os cards** entre as colunas.
 - Card: iniciais, nome, bairro, **score + nível**, barra de aderência, pontos fortes ou
   motivo da eliminação, há quanto tempo se inscreveu, estrelas, CV e anotação.
+- **Etapas novas** (ex.: *Em treinamento*): botão **+ Nova etapa** no fim do quadro. A etapa entra
+  antes de *Não qualificados* e vale para todas as vagas. No **⋯** da coluna dá para renomear, mudar
+  de lugar ou remover (quem estava nela volta para *Aplicações*). Fica salva na tabela `vagas_config`
+  (rode o `SETUP.sql` atualizado uma vez).
 - Filtro por nível (A/B/C/Eliminados), busca e ordenação (score, data, sua nota).
 - **Painel lateral do candidato**: score com o porquê de cada ponto, **ver currículo** (link
   temporário de 10 min), **WhatsApp** com mensagem pronta (chamar pra conversa / agradecer),
