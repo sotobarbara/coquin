@@ -76,7 +76,32 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 /* a foto encosta no topo e na lateral da tela (continua para fora) e só se dissolve à esquerda */
 .hero-photo img{position:absolute;inset:-14px;width:calc(100% + 28px);height:calc(100% + 28px);object-fit:cover;object-position:50% 30%;display:block;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.55) 14%,#000 34%);mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.55) 14%,#000 34%)}
-.kicker .sym{width:16px;height:16px;display:block}
+.kicker .sym{width:18px;height:18px}
+/* ---------- o "O" da Coquin animado: duas metades que se encaixam e piscam ---------- */
+.o-anim{position:relative;display:inline-block;flex:none;line-height:0}
+.o-anim img{position:absolute;inset:0;width:100%;height:100%;display:block;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.o-anim .o-top{transform-origin:50% 100%} .o-anim .o-bot{transform-origin:50% 0}
+#splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:opacity .5s ease,visibility 0s .5s}
+#splash.out{opacity:0;visibility:hidden}
+.splash-o{width:84px;height:85px}
+@media (prefers-reduced-motion:no-preference){
+  /* abertura: metades vêm de cima e de baixo e se encaixam; depois respiram até a página carregar */
+  .splash-o .o-top{animation:oInTop .8s cubic-bezier(.3,1.5,.5,1) both,oBreathTop 1.4s 1.1s ease-in-out infinite}
+  .splash-o .o-bot{animation:oInBot .8s cubic-bezier(.3,1.5,.5,1) both,oBreathBot 1.4s 1.1s ease-in-out infinite}
+  .splash-o{animation:oBlinkOnce .5s .8s ease-in-out both}
+  #splash.out .splash-o{animation:oBlinkOnce .45s ease-in-out both}
+  #splash.out{transition-delay:.25s,.75s}
+  /* piscada (como um olho) a cada ~6s e ao passar o mouse */
+  .blink{animation:oBlink 6s 2.2s ease-in-out infinite}
+  .blink:hover,.kicker:hover .blink,.how:hover .blink{animation:oBlinkOnce .5s ease-in-out}
+}
+@keyframes oInTop{from{transform:translateY(-120%) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes oInBot{from{transform:translateY(120%) rotate(25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes oBreathTop{0%,100%{transform:none}50%{transform:translateY(-9%)}}
+@keyframes oBreathBot{0%,100%{transform:none}50%{transform:translateY(9%)}}
+@keyframes oBlinkOnce{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.1)}}
+@keyframes oBlink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.12)}}
+.splash-o,.blink{transform-origin:50% 52%}
 .hero h1{font-family:var(--round)}
 .leaf{position:absolute;pointer-events:none;color:#6E7F55;opacity:.38}
 .leaf svg{width:100%;height:100%;display:block}
@@ -300,6 +325,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
 </style>
 </head>
 <body>
+<div id="splash" role="status" aria-label="Carregando"><span class="o-anim splash-o" aria-hidden="true"><img class="o-top" src="simbolo-topo.png" alt=""><img class="o-bot" src="simbolo-base.png" alt=""></span></div>
 
 <svg width="0" height="0" style="position:absolute">
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
@@ -367,7 +393,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
     <div class="shade" style="left:2%;bottom:-260px;width:480px;height:480px;transform:rotate(160deg);opacity:.07"><svg><use href="#frond"/></svg></div>
     <div class="wrap">
       <div>
-        <span class="kicker"><img class="sym" src="simbolo-coquin.png" alt="">Portal de Vagas Coquin</span>
+        <span class="kicker"><span class="o-anim sym blink" aria-hidden="true"><img class="o-top" src="simbolo-topo.png" alt=""><img class="o-bot" src="simbolo-base.png" alt=""></span>Portal de Vagas Coquin</span>
         <h1><span class="ln"><span>Vem fazer parte</span></span><span class="ln"><span>do nosso time!</span></span></h1>
         <p>Na Coquin, acreditamos em pessoas que compartilham do nosso propósito: espalhar leveza, qualidade e alegria em cada coco.</p>
         <svg class="squiggle" viewBox="764 106 260 136" aria-hidden="true"><g stroke-width="7"><path d="M772 219.5C800 217 815 203 830 182C846 158 862 132 892 124.5C915 120 937 128 942 150"/><path d="M942 146C934 141 922 140 910 146C894 156 889 186 902 204C916 224 944 232 965 230C985 228 1000 220 1012 210"/></g></svg>
@@ -390,7 +416,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
         <div class="step"><b>2</b><div><h4>Análise do perfil</h4><p>Nosso time lê seu currículo com carinho.</p></div></div>
         <div class="step"><b>3</b><div><h4>Contato</h4><p>Se combinar com a vaga, chamamos você por e-mail ou WhatsApp para uma conversa.</p></div></div>
       </div>
-      <img class="heart" src="simbolo-coquin.png" alt="">
+      <span class="o-anim heart blink" aria-hidden="true"><img class="o-top" src="simbolo-topo.png" alt=""><img class="o-bot" src="simbolo-base.png" alt=""></span>
     </aside>
   </div>
 
@@ -562,6 +588,11 @@ function renderJobs(){
 $('q').addEventListener('input',renderJobs);
 $('qBtn').addEventListener('click',()=>{ renderJobs(); $('jobs').scrollIntoView({behavior:'smooth',block:'start'}); });
 
+const T0=performance.now();
+function hideSplash(){ const el=$('splash'); if(!el||el.classList.contains('out')) return;
+  const wait=matchMedia('(prefers-reduced-motion: reduce)').matches?0:Math.max(0,1300-(performance.now()-T0));
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),1400); },wait); }
+setTimeout(hideSplash,6000);   // nunca prende a pessoa: some em no máximo 6s
 async function boot(){
   const slug=slugFromUrl();
   try{
@@ -710,7 +741,7 @@ function reveal(root){
   function step(){ x+=(tx-x)*.08; y+=(ty-y)*.08; ph.style.translate=x.toFixed(2)+'px '+y.toFixed(2)+'px'; raf=(Math.abs(tx-x)+Math.abs(ty-y)>.05)?requestAnimationFrame(step):0; }
 })();
 
-boot();
+boot().finally(hideSplash);
 </script>
 </body>
 </html>
