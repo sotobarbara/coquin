@@ -152,6 +152,19 @@ create policy "equipe envia banner" on storage.objects for insert to authenticat
 create policy "equipe apaga banner" on storage.objects for delete to authenticated
   using (bucket_id = 'banners' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 
+-- ============ Configurações do painel (ex.: etapas extras do quadro, como "Em treinamento") ============
+create table if not exists public.vagas_config (
+  key        text primary key,
+  value      jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.vagas_config enable row level security;
+drop policy if exists "equipe config" on public.vagas_config;
+create policy "equipe config" on public.vagas_config for all to authenticated
+  using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app')
+  with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+
 -- ============ Tempo real (candidatura nova aparece sozinha no painel) ============
 do $$ begin alter publication supabase_realtime add table public.candidaturas; exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.vagas;        exception when duplicate_object then null; end $$;
+do $$ begin alter publication supabase_realtime add table public.vagas_config; exception when duplicate_object then null; end $$;
