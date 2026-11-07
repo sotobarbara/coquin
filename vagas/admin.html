@@ -312,6 +312,22 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .why.q{background:var(--sunken);color:var(--ink-2)} .why.q>b{color:var(--ink)}
 .why-tip{margin-top:10px;font-size:12.5px;color:var(--ink-2)}
 
+/* ---------- onde mora / trajeto ---------- */
+.kc-home{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kc-home svg{width:13px;height:13px;flex:none}
+.kc-home b{display:inline-flex;align-items:center;gap:3px;font-weight:600;color:var(--tA);margin-left:2px}
+.kc-home.far b{color:var(--tB)}
+.h4-note{font-weight:400;letter-spacing:0;text-transform:none;color:var(--faint);font-size:12px;margin-left:6px}
+.trips{display:grid;gap:6px;margin-top:12px}
+.trip{display:grid;grid-template-columns:1fr auto auto 48px;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px}
+.trip.me{border-color:var(--accent);background:var(--accent-soft)}
+.trip.far .tp-t b{color:var(--tB)}
+.tp-n{font-weight:600} .tp-n small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.tp-tag{font-size:10.5px;font-weight:600;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.tp-t{display:flex;align-items:center;gap:5px;color:var(--ink-2);white-space:nowrap}
+.tp-t svg{width:15px;height:15px}
+.tp-km{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+
 /* ---------- login + toast ---------- */
 .authgate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,#5A795C,#4E6B50);display:none;align-items:center;justify-content:center;padding:24px}
 .authgate.on{display:flex}
@@ -416,7 +432,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
         <div class="bar">
           <div class="seg" id="tierSeg"></div>
           <span class="spacer"></span>
-          <select class="sm" id="fSort"><option value="score">Ordenar: maior score</option><option value="date">Ordenar: mais recentes</option><option value="stars">Ordenar: minha nota</option></select>
+          <select class="sm" id="fSort"><option value="score">Ordenar: maior score</option><option value="date">Ordenar: mais recentes</option><option value="stars">Ordenar: minha nota</option><option value="perto">Ordenar: mais perto da vaga</option></select>
         </div>
         <div class="board" id="board"></div>
       </div>
@@ -472,6 +488,8 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
   <symbol id="i-okc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
   <symbol id="i-money" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M8 21v-3M16 21v-3"/><circle cx="8.5" cy="14.5" r=".8"/><circle cx="15.5" cy="14.5" r=".8"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v2a1 1 0 0 1-1 1h-2v-3M4 19h2v-3"/><circle cx="7.5" cy="13" r=".8"/><circle cx="16.5" cy="13" r=".8"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></symbol>
   <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
@@ -830,6 +848,71 @@ function phoneFromCv(t){
   return m?'('+m[1]+') '+m[2].replace(/\D/g,'')+'-'+m[3]:'';
 }
 function phoneOf(c){ return c.phone||phoneFromCv(c.cv_text); }
+/* ---------- onde mora x onde é a vaga (estimativa por bairro, sem serviço pago) ---------- */
+/* coordenadas aproximadas do centro de cada bairro de Fortaleza e cidades da região metropolitana.
+   '*' = nome que também é sobrenome/palavra comum: só vale perto de "endereço", "bairro", "rua"... */
+const BAIRROS=`Aldeota|-3.7360|-38.5000;Meireles|-3.7290|-38.4960;Mucuripe|-3.7250|-38.4800;Varjota|-3.7330|-38.4860;Papicu|-3.7380|-38.4800;Coco*|-3.7480|-38.4870;Dionisio Torres|-3.7450|-38.5030;Joaquim Tavora|-3.7400|-38.5150;Fatima*|-3.7480|-38.5250;Benfica|-3.7400|-38.5380;Centro*|-3.7275|-38.5275;Praia de Iracema|-3.7220|-38.5150;Moura Brasil|-3.7230|-38.5380;Jacarecanga|-3.7240|-38.5450;Farias Brito*|-3.7330|-38.5440;Monte Castelo*|-3.7280|-38.5530;Carlito Pamplona|-3.7210|-38.5570;Alvaro Weyne|-3.7200|-38.5660;Barra do Ceara|-3.7000|-38.5850;Cristo Redentor|-3.7130|-38.5750;Pirambu|-3.7130|-38.5600;Vila Velha*|-3.7150|-38.5980;Jardim Guanabara|-3.7230|-38.5880;Quintino Cunha|-3.7360|-38.5970;Antonio Bezerra|-3.7400|-38.5840;Padre Andrade|-3.7340|-38.5730;Presidente Kennedy|-3.7330|-38.5630;Parquelandia|-3.7420|-38.5570;Amadeu Furtado|-3.7380|-38.5520;Rodolfo Teofilo*|-3.7460|-38.5480;Parque Araxa|-3.7470|-38.5540;Pici|-3.7520|-38.5720;Bela Vista*|-3.7570|-38.5610;Panamericano|-3.7570|-38.5530;Democrito Rocha|-3.7610|-38.5550;Montese|-3.7620|-38.5420;Damas*|-3.7550|-38.5370;Jardim America*|-3.7550|-38.5300;Parreao|-3.7560|-38.5230;Sao Joao do Tauape|-3.7480|-38.5130;Salinas*|-3.7560|-38.5050;Guararapes|-3.7570|-38.4930;Agua Fria|-3.7740|-38.4930;Edson Queiroz|-3.7740|-38.4780;Sapiranga|-3.7930|-38.4820;Lagoa Sapiranga|-3.7930|-38.4820;Coite|-3.7930|-38.4820;Cidade dos Funcionarios|-3.7880|-38.4960;Parque Manibura|-3.7810|-38.4900;Cambeba|-3.7980|-38.4880;Messejana|-3.8320|-38.4920;Jangurussu|-3.8400|-38.5170;Barroso*|-3.8250|-38.5250;Passare|-3.8000|-38.5330;Castelao*|-3.8070|-38.5220;Mata Galinha|-3.7950|-38.5180;Cajazeiras|-3.8030|-38.5070;Jose de Alencar*|-3.8150|-38.4850;Alagadico Novo|-3.8150|-38.4850;Curio|-3.8300|-38.4720;Lagoa Redonda|-3.8270|-38.4580;Sabiaguaba|-3.8000|-38.4400;Praia do Futuro|-3.7450|-38.4550;Vicente Pinzon|-3.7330|-38.4650;Cais do Porto|-3.7230|-38.4700;Serviluz|-3.7230|-38.4700;Dunas*|-3.7570|-38.4720;Manuel Dias Branco|-3.7650|-38.4650;De Lourdes|-3.7650|-38.4800;Luciano Cavalcante|-3.7700|-38.4950;Cidade 2000|-3.7520|-38.4780;Jardim das Oliveiras|-3.7770|-38.5050;Aerolandia|-3.7740|-38.5130;Alto da Balanca|-3.7690|-38.5150;Vila Uniao|-3.7650|-38.5240;Itaperi|-3.7930|-38.5480;Serrinha|-3.7840|-38.5410;Dende|-3.7900|-38.5500;Itaoca*|-3.7700|-38.5550;Parangaba|-3.7750|-38.5630;Vila Peri|-3.7880|-38.5630;Maraponga|-3.7980|-38.5650;Jardim Cearense|-3.8020|-38.5570;Mondubim|-3.8160|-38.5750;Conjunto Esperanca|-3.8180|-38.5880;Prefeito Jose Walter|-3.8320|-38.5530;Jose Walter|-3.8320|-38.5530;Planalto Ayrton Senna|-3.8300|-38.5400;Parque Dois Irmaos|-3.8180|-38.5460;Granja Lisboa|-3.7850|-38.6150;Granja Portugal|-3.7720|-38.6060;Bom Jardim|-3.7900|-38.6050;Siqueira*|-3.8060|-38.6130;Canindezinho|-3.8130|-38.6010;Conjunto Ceara|-3.7720|-38.6100;Genibau|-3.7700|-38.6000;Henrique Jorge|-3.7630|-38.5850;Joao XXIII|-3.7630|-38.5930;Joquei Clube|-3.7630|-38.5750;Autran Nunes|-3.7570|-38.5970;Dom Lustosa|-3.7500|-38.5880;Bonsucesso*|-3.7790|-38.5850;Manoel Satiro|-3.7900|-38.5800;Couto Fernandes*|-3.7520|-38.5410;Bom Futuro*|-3.7630|-38.5340;Vila Ellery|-3.7290|-38.5580;Sao Gerardo|-3.7350|-38.5570;Floresta*|-3.7200|-38.5800;Conjunto Palmeiras|-3.8490|-38.5190;Paupina|-3.8520|-38.4880;Ancuri|-3.8530|-38.5260;Pedras*|-3.8650|-38.5100;Coacu|-3.8550|-38.4650;Guajeru|-3.8420|-38.4680;Parque Iracema|-3.8150|-38.4900;Parque Santa Rosa|-3.8250|-38.5600;Parque Presidente Vargas|-3.8380|-38.5650;Vila Pery|-3.7880|-38.5630;Jardim Iracema|-3.7230|-38.5800;Engenheiro Luciano Cavalcante|-3.7700|-38.4950;Caucaia|-3.7360|-38.6530;Jurema|-3.7600|-38.6150;Icarai|-3.6930|-38.6640;Maracanau|-3.8760|-38.6250;Eusebio|-3.8900|-38.4500;Aquiraz|-3.9010|-38.3910;Pacatuba|-3.9840|-38.6200;Maranguape|-3.8900|-38.6850;Itaitinga|-3.9690|-38.5280;Horizonte|-4.0980|-38.4910;Pacajus|-4.1720|-38.4610;Sao Goncalo do Amarante|-3.6070|-38.9690`.split(';').map(r=>{ const [n,la,lo]=r.split('|'); return {n:n.replace('*',''),amb:n.endsWith('*'),la:+la,lo:+lo}; });
+const BAIRRO_LABEL={Coco:'Cocó',Fatima:'Fátima',Dionisio:'Dionísio'};
+/* pontos de trabalho (aproximados) */
+const SPOTS=[
+  {k:'beira',n:'Beira-Mar',d:'feirinha',la:-3.7253,lo:-38.4928,re:/beira/},
+  {k:'futuro',n:'Praia do Futuro',d:'Beach Club Santa Praia',la:-3.7560,lo:-38.4470,re:/futuro|santa praia/},
+  {k:'centro',n:'Centro',d:'preparo do coco',la:-3.7272,lo:-38.5270,re:/centro|coco|preparo/}];
+function spotOfVaga(v){ const t=norm((v&&(v.store+' '+v.title))||''); return SPOTS.find(s=>s.re.test(t))||null; }
+function km(a,b){ const R=6371,r=Math.PI/180, dla=(b.la-a.la)*r, dlo=(b.lo-a.lo)*r;
+  const h=Math.sin(dla/2)**2+Math.cos(a.la*r)*Math.cos(b.la*r)*Math.sin(dlo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function trip(from,to){ const road=km(from,to)*1.35;                     // ruas não são linha reta
+  const r5=m=>Math.max(5,Math.round(m/5)*5);
+  const vCar=Math.min(45,22+road*.6), vBus=Math.min(22,12+road*.25);   // distâncias maiores usam avenidas/BR: anda mais rápido
+  return {km:road, bus:r5(road/vBus*60+12+Math.min(8,road*.6)), car:r5(road/vCar*60+4)}; }   // ônibus inclui caminhada e espera
+const prettyBairro=n=>n.split(' ').map(w=>BAIRRO_LABEL[w]||w).join(' ').replace('Joao','João').replace('Sao','São').replace('Ceara','Ceará').replace('Alvaro','Álvaro').replace('Antonio','Antônio').replace('Teofilo','Teófilo').replace('Tavora','Távora').replace('Parquelandia','Parquelândia').replace('Araxa','Araxá').replace('Democrito','Demócrito').replace('Parreao','Parreão').replace('Agua','Água').replace('Funcionarios','Funcionários').replace('Passare','Passaré').replace('Castelao','Castelão').replace('Alagadico','Alagadiço').replace('Curio','Curió').replace('Aerolandia','Aerolândia').replace('Balanca','Balança').replace('Uniao','União').replace('Dende','Dendê').replace('Esperanca','Esperança').replace('Irmaos','Irmãos').replace('Genibau','Genibaú').replace('Joquei','Jóquei').replace('Satiro','Sátiro').replace('Coacu','Coaçu').replace('Maracanau','Maracanaú').replace('Eusebio','Eusébio').replace('Goncalo','Gonçalo').replace('Icarai','Icaraí').replace('Cearense','Cearense');
+/* acha onde a pessoa mora no texto do currículo */
+const ADDR_RE=/(endere[cç]o|end\.|bairro|residente|reside|resid[eê]ncia|mora em|moro|rua |r\. |av\. |avenida|travessa|tv\. |cep|conjunto|localiza[cç][aã]o)/i;
+function homeFromText(text){
+  const raw=String(text||''); if(!raw.trim()) return null; const t=norm(raw);
+  const ctx=[]; let m; const re=new RegExp(ADDR_RE.source,'gi');
+  while((m=re.exec(t))&&ctx.length<8) ctx.push(t.slice(m.index,m.index+160));
+  const has=(s,n)=>new RegExp('(^|[^a-z])'+n.toLowerCase()+'([^a-z]|$)').test(s);
+  const byLen=[...BAIRROS].sort((a,b)=>b.n.length-a.n.length);
+  for(const c of ctx){ const b=byLen.find(b=>has(c,b.n)); if(b) return {b,how:'texto'}; }
+  const head=t.slice(0,900); const b=byLen.find(b=>!b.amb && has(head,b.n));
+  return b?{b,how:'texto'}:null;
+}
+function cepFromText(text){ const t=String(text||''); const m=t.match(/cep[^0-9]{0,6}(\d{5})-?\s?(\d{3})/i)||t.slice(0,1200).match(/\b(6\d{4})-(\d{3})\b/); return m?m[1]+m[2]:''; }
+const cepCache={}; try{ Object.assign(cepCache,JSON.parse(localStorage.getItem('coquin-cep')||'{}')); }catch(_){}
+async function cepLookup(cep){ if(cep in cepCache) return cepCache[cep];
+  try{ const r=await fetch('https://viacep.com.br/ws/'+cep+'/json/'); const j=await r.json(); cepCache[cep]=j&&!j.erro?{bairro:j.bairro||'',cidade:j.localidade||''}:null; }
+  catch(_){ return null; }
+  try{ localStorage.setItem('coquin-cep',JSON.stringify(cepCache)); }catch(_){}
+  return cepCache[cep]; }
+function bairroByName(name){ const n=norm(name).trim(); if(!n) return null;
+  return BAIRROS.find(b=>norm(b.n)===n)||BAIRROS.find(b=>n.includes(norm(b.n))||norm(b.n).includes(n))||null; }
+/* resultado: c._home = {b, how, cep, cidade} | null ; resolvido uma vez por candidato */
+const homeQ=new Set();
+function homeOf(c){
+  const hk=(c.cv_text||'').length+'|'+(c.city||''); if(c._hk===hk && c._home!==undefined) return c._home; c._hk=hk;
+  const text=(c.city||'')+'\n'+(c.cv_text||''); let h=homeFromText(text);
+  const cep=cepFromText(c.cv_text);
+  if(cep && !homeQ.has(c.id)){ homeQ.add(c.id);
+    cepLookup(cep).then(r=>{ if(!r) return; const b=bairroByName(r.bairro)||bairroByName(r.cidade);
+      if(b){ c._home={b,how:'CEP',cep,cidade:r.cidade}; c._cepHome=c._home; softRender(c.id); } }); }
+  c._home=c._cepHome||h; return c._home;
+}
+/* idade: só para visualização (não entra no score) */
+const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function ageOf(c){
+  const ak=(c.cv_text||'').length; if(c._ak===ak && c._age!==undefined) return c._age; c._ak=ak;
+  const t=norm(c.cv_text||''); let birth=null, how='';
+  let m=t.match(/(nasc[a-z.]*|data de nasc[a-z.]*|\bd\.?\s?n\b\.?|dt\.? nasc[a-z.]*)[^0-9]{0,25}(\d{1,2})\s?[\/.\-]\s?(\d{1,2})\s?[\/.\-]\s?(\d{2,4})/);
+  if(m){ let y=+m[4]; if(y<100) y+=y>30?1900:2000; birth=new Date(y,+m[3]-1,+m[2]); how=m[2].padStart(2,'0')+'/'+m[3].padStart(2,'0')+'/'+y; }
+  if(!birth){ m=t.match(/nasc[a-z.]*[^0-9]{0,25}(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})/); const mi=m?MESES.indexOf(m[2]):-1;
+    if(mi>=0){ birth=new Date(+m[3],mi,+m[1]); how=String(m[1]).padStart(2,'0')+'/'+String(mi+1).padStart(2,'0')+'/'+m[3]; } }
+  let age=null;
+  if(birth&&!isNaN(birth)){ const n=new Date(); age=n.getFullYear()-birth.getFullYear()-((n.getMonth()<birth.getMonth()||(n.getMonth()===birth.getMonth()&&n.getDate()<birth.getDate()))?1:0); }
+  if(age==null){ m=t.match(/idade[^0-9]{0,6}(\d{2})\b/)||t.slice(0,700).match(/[,;|•\n]\s*(\d{2})\s+anos(?!\s+de\s+(experi|trabalh|atua|empresa))/); if(m){ age=+m[1]; how='"'+m[1]+' anos" no currículo'; } }
+  c._age=(age!=null&&age>=14&&age<=75)?{age,how}:null; return c._age;
+}
+
 function rescore(){ cands.forEach(c=>c._s=null); }
 
 /* ---------- visual ---------- */
@@ -858,6 +941,8 @@ function sortList(list){
   const rank=c=>(sc(c).tier==='X'?-1000:0)+sc(c).pct;
   if(UI.sort==='date') return list.sort((a,b)=>b.created_at.localeCompare(a.created_at));
   if(UI.sort==='stars') return list.sort((a,b)=>(b.stars||0)-(a.stars||0)||rank(b)-rank(a));
+  if(UI.sort==='perto'){ const d=c=>{ const h=homeOf(c), sp=spotOfVaga(vagas.find(v=>v.id===c.vaga_id)); return h&&sp?trip(h.b,sp).bus:9999; };
+    return list.sort((a,b)=>d(a)-d(b)||rank(b)-rank(a)); }
   return list.sort((a,b)=>rank(b)-rank(a)||b.created_at.localeCompare(a.created_at));
 }
 
@@ -934,6 +1019,8 @@ function card(c){
     +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
     +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:noNum(s.tier)?0:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
+    +(()=>{ const h=homeOf(c), sp=spotOfVaga(v); if(!h||!sp) return ''; const tr=trip(h.b,sp);
+        return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
     +'<div class="kc-f">'+ic('clock')+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')
     +'<span class="r">'+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
 }
@@ -994,6 +1081,7 @@ function openCand(id){
     +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(colOf(c)===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+x.l+'</button>').join('')+'</div>'
 
     +'<h4 style="margin-top:18px">Sua nota</h4><div class="starsel" id="starSel">'+[1,2,3,4,5].map(n=>'<button data-n="'+n+'" class="'+((c.stars||0)>=n?'on':'')+'">★</button>').join('')+'</div></div>'
+    +profileBlk(c,v)
     +'<div class="blk"><h4>Contato</h4><dl class="kv">'
       +(ph?'<dt>WhatsApp</dt><dd><a target="_blank" rel="noopener" href="https://wa.me/'+waNumber(ph)+'">'+esc(ph)+'</a>'+(c.phone?'':' <span class="note">(do currículo)</span>')+'</dd>':'')
       +'<dt>E-mail</dt><dd>'+(c.email?'<a href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a>':'—')+'</dd>'
@@ -1019,6 +1107,18 @@ function openCand(id){
   const nt=$('cNotes'); nt.oninput=()=>{ clearTimeout(nt._h); nt._h=setTimeout(()=>patch(c,{notes:nt.value},true),700); };
   $('cDel').onclick=()=>delCand(c);
   openSheet('candSheet'); renderOpenMarks();
+}
+function profileBlk(c,v){
+  const a=ageOf(c), h=homeOf(c), mine=spotOfVaga(v);
+  if(!a&&!h&&!c.cv_text) return '';
+  let html='<div class="blk"><h4>Onde mora e idade <span class="h4-note">lido do currículo · só para você ver</span></h4><dl class="kv">'
+    +'<dt>Idade</dt><dd>'+(a?'<b>'+a.age+' anos</b> <span class="note">('+esc(a.how)+')</span>':'<span class="note">não encontrada no currículo</span>')+'</dd>'
+    +'<dt>Mora em</dt><dd>'+(h?'<b>'+esc(prettyBairro(h.b.n))+'</b>'+(h.cidade&&norm(h.cidade)!=='fortaleza'?' · '+esc(h.cidade):'')+' <span class="note">('+(h.how==='CEP'?'pelo CEP '+esc(h.cep):'do texto')+')</span>':'<span class="note">bairro não encontrado no currículo</span>')+'</dd></dl>';
+  if(h){ html+='<div class="trips">'+SPOTS.map(sp=>{ const tr=trip(h.b,sp), me=mine&&mine.k===sp.k;
+      return '<div class="trip'+(me?' me':'')+(tr.bus>75?' far':'')+'"><div class="tp-n">'+esc(sp.n)+(me?' <span class="tp-tag">vaga</span>':'')+'<small>'+esc(sp.d)+'</small></div>'
+        +'<div class="tp-t">'+ic('bus')+'<b>~'+tr.bus+' min</b></div><div class="tp-t">'+ic('car')+'~'+tr.car+' min</div><div class="tp-km">'+tr.km.toFixed(0)+' km</div></div>'; }).join('')+'</div>'
+    +'<div class="note" style="margin-top:8px">Estimativa pela distância entre os bairros (ônibus inclui espera). Confira o trajeto no Google Maps se for decisivo.</div>'; }
+  return html+'</div>';
 }
 function renderOpenMarks(){ document.querySelectorAll('.kc').forEach(k=>k.classList.toggle('sel',k.dataset.id===openId)); }
 function highlight(text,kws){
