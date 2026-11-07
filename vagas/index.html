@@ -76,7 +76,28 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 /* a foto encosta no topo e na lateral da tela (continua para fora) e só se dissolve à esquerda */
 .hero-photo img{position:absolute;inset:-14px;width:calc(100% + 28px);height:calc(100% + 28px);object-fit:cover;object-position:50% 30%;display:block;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.55) 14%,#000 34%);mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.55) 14%,#000 34%)}
-.kicker .sym{width:16px;height:16px;display:block}
+.kicker .sym{width:18px;height:18px}
+/* ---------- o "O" da Coquin animado: duas metades que se encaixam e piscam ---------- */
+.o-anim{position:relative;display:inline-block;flex:none;line-height:0}
+.o-anim img{position:absolute;inset:0;width:100%;height:100%;display:block;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.o-anim .o-top{transform-origin:50% 100%} .o-anim .o-bot{transform-origin:50% 0}
+#splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:opacity .55s ease,visibility 0s .55s}
+#splash.out{opacity:0;visibility:hidden}
+#splash.skip{display:none}
+.intro{position:relative;width:min(300px,70vw);aspect-ratio:1376/368;opacity:0;transition:opacity .35s ease}
+.intro.on{opacity:1}
+.intro-word{position:absolute;inset:0;width:100%;height:100%}
+/* o "O" ocupa exatamente o lugar dele na palavra */
+.intro-o{position:absolute;left:18.532%;width:16.933%;top:20.652%;height:64.402%;transform-origin:50% 100%;will-change:transform}
+.intro-shadow{position:absolute;left:19.5%;width:15%;top:86%;height:7%;border-radius:50%;background:rgba(60,45,25,.18);filter:blur(2px);transform-origin:50% 50%;opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  /* piscada (como um olho) a cada ~6s e ao passar o mouse */
+  .blink{animation:oBlink 6s 2.2s ease-in-out infinite}
+  .blink:hover,.kicker:hover .blink,.how:hover .blink{animation:oBlinkOnce .5s ease-in-out}
+}
+@keyframes oBlinkOnce{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.1)}}
+@keyframes oBlink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.12)}}
+.blink{transform-origin:50% 52%}
 .hero h1{font-family:var(--round)}
 .leaf{position:absolute;pointer-events:none;color:#6E7F55;opacity:.38}
 .leaf svg{width:100%;height:100%;display:block}
@@ -300,6 +321,9 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
 </style>
 </head>
 <body>
+<div id="splash" role="status" aria-label="Carregando">
+  <div class="intro"><img class="intro-word" src="logo-sem-o.png" alt="Coquin"><img class="intro-o" id="introO" src="simbolo-coquin.png" alt=""><span class="intro-shadow" id="introSh"></span></div>
+</div>
 
 <svg width="0" height="0" style="position:absolute">
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
@@ -367,7 +391,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
     <div class="shade" style="left:2%;bottom:-260px;width:480px;height:480px;transform:rotate(160deg);opacity:.07"><svg><use href="#frond"/></svg></div>
     <div class="wrap">
       <div>
-        <span class="kicker"><img class="sym" src="simbolo-coquin.png" alt="">Portal de Vagas Coquin</span>
+        <span class="kicker"><span class="o-anim sym blink" aria-hidden="true"><img class="o-top" src="simbolo-topo.png" alt=""><img class="o-bot" src="simbolo-base.png" alt=""></span>Portal de Vagas Coquin</span>
         <h1><span class="ln"><span>Vem fazer parte</span></span><span class="ln"><span>do nosso time!</span></span></h1>
         <p>Na Coquin, acreditamos em pessoas que compartilham do nosso propósito: espalhar leveza, qualidade e alegria em cada coco.</p>
         <svg class="squiggle" viewBox="764 106 260 136" aria-hidden="true"><g stroke-width="7"><path d="M772 219.5C800 217 815 203 830 182C846 158 862 132 892 124.5C915 120 937 128 942 150"/><path d="M942 146C934 141 922 140 910 146C894 156 889 186 902 204C916 224 944 232 965 230C985 228 1000 220 1012 210"/></g></svg>
@@ -390,7 +414,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
         <div class="step"><b>2</b><div><h4>Análise do perfil</h4><p>Nosso time lê seu currículo com carinho.</p></div></div>
         <div class="step"><b>3</b><div><h4>Contato</h4><p>Se combinar com a vaga, chamamos você por e-mail ou WhatsApp para uma conversa.</p></div></div>
       </div>
-      <img class="heart" src="simbolo-coquin.png" alt="">
+      <span class="o-anim heart blink" aria-hidden="true"><img class="o-top" src="simbolo-topo.png" alt=""><img class="o-bot" src="simbolo-base.png" alt=""></span>
     </aside>
   </div>
 
@@ -562,6 +586,49 @@ function renderJobs(){
 $('q').addEventListener('input',renderJobs);
 $('qBtn').addEventListener('click',()=>{ renderJobs(); $('jobs').scrollIntoView({behavior:'smooth',block:'start'}); });
 
+/* ---------- abertura: o "O" da Coquin entra pulando e completa a logo ---------- */
+const T0=performance.now(); let introDone=false, pageReady=false;
+function hideSplash(){ pageReady=true; maybeOut(); }
+function maybeOut(force){ const el=$('splash'); if(!el||el.classList.contains('out')) return;
+  if(!force && !(introDone&&pageReady)) return;
+  el.classList.add('out'); setTimeout(()=>el.remove(),900); }
+setTimeout(()=>maybeOut(true),7000);   // nunca prende ninguém
+(function intro(){ try{
+  const el=$('splash'); if(!el) return;
+  let seen=false; try{ seen=sessionStorage.getItem('coquin-intro')==='1'; sessionStorage.setItem('coquin-intro','1'); }catch(_){}
+  if(seen || matchMedia('(prefers-reduced-motion: reduce)').matches || !el.animate){ el.classList.add('skip'); introDone=true; return; }
+  const O=$('introO'), sh=$('introSh'), box=el.querySelector('.intro');
+  requestAnimationFrame(()=>box.classList.add('on'));
+  const s=O.getBoundingClientRect().width||50;          // tamanho do "O" na tela
+  const L=x=>x*s;
+  const f=[], g=[]; let t=0;
+  const T=(x,y,sx,sy,r)=>`translate(${L(x).toFixed(1)}px,${(-L(y)).toFixed(1)}px) rotate(${r||0}deg) scale(${sx},${sy})`;
+  const push=(ms,x,y,sx,sy,r,e)=>{ t+=ms; f.push({offset:t,transform:T(x,y,sx,sy,r),easing:e||'linear'}); g.push({offset:t,opacity:Math.max(0,.9-y*.45),transform:`translateX(${L(x).toFixed(1)}px) scale(${Math.max(.3,1-y*.35)})`}); };
+  const hop=(a,b,h,ms,land)=>{ const m=(a+b)/2;
+    push(ms*.12,a,0,1.25,.74,0,'ease-out');                    // antecipa: amassa antes de pular
+    push(ms*.14,a+(b-a)*.12,.35*h,.86,1.2,-6,'ease-out');      // estica ao sair do chão
+    push(ms*.28,m,h,1,1,-12,'ease-in');                        // topo do pulo
+    push(ms*.3,b-(b-a)*.02,.42*h,.88,1.16,-4,'ease-out');      // estica na descida (cai quase na vertical)
+    push(ms*.16,b,0,land[0],land[1],0,'ease-out'); };          // amassa ao pousar
+  f.push({offset:0,transform:T(8.6,0,1,1,0)}); g.push({offset:0,opacity:.9,transform:`translateX(${L(8.6)}px)`});
+  hop(8.6,6.7,.75,520,[1.2,.8]);                                // chega pulando pela direita
+  push(90,6.7,0,1,1,0,'ease-out');
+  hop(6.7,6.0,.3,320,[1.12,.86]);                               // pulinho até perto do "n"
+  push(110,6.0,0,1,1,0,'ease-out');
+  push(260,6.0,0,1,1,-10,'ease-in-out');                        // olha para o lugar vazio
+  push(160,6.0,0,1,1,-10);
+  hop(6.0,0,2.1,900,[1.38,.6]);                                 // pulo grande por cima da palavra
+  push(110,0,0,.94,1.08,0,'ease-out');                           // quica
+  push(110,0,0,1.04,.97,0,'ease-in-out');
+  push(110,0,0,1,1,0,'ease-in-out');
+  push(220,0,0,1,1,0);                                           // pausa
+  push(90,0,.45,1.02,.12,0,'ease-in');                           // pisca (fecha no meio, como um olho)
+  push(110,0,0,1,1,0,'ease-out');
+  const dur=t; f.forEach(k=>k.offset=k.offset/dur); g.forEach(k=>k.offset=k.offset/dur);
+  const an=O.animate(f,{duration:dur,delay:350,fill:'both'}); sh.animate(g,{duration:dur,delay:350,fill:'both'});
+  an.finished.then(()=>setTimeout(()=>{ introDone=true; maybeOut(); },350));
+  }catch(e){ introDone=true; const el=$('splash'); if(el) el.classList.add('skip'); }
+})();
 async function boot(){
   const slug=slugFromUrl();
   try{
@@ -710,7 +777,7 @@ function reveal(root){
   function step(){ x+=(tx-x)*.08; y+=(ty-y)*.08; ph.style.translate=x.toFixed(2)+'px '+y.toFixed(2)+'px'; raf=(Math.abs(tx-x)+Math.abs(ty-y)>.05)?requestAnimationFrame(step):0; }
 })();
 
-boot();
+boot().finally(hideSplash);
 </script>
 </body>
 </html>
