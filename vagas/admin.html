@@ -34,7 +34,22 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* ---------- shell ---------- */
-.app{display:grid;grid-template-columns:232px minmax(0,1fr);height:100vh}
+.app{--sw:232px;position:relative;display:grid;grid-template-columns:var(--sw) minmax(0,1fr);height:100vh;transition:grid-template-columns .22s ease}
+@media (min-width:901px){.app.mini{--sw:72px}}
+/* menu lateral recolhível: o botão fica na borda do menu */
+.side-tg{position:absolute;z-index:30;top:38px;left:calc(var(--sw) - 13px);width:26px;height:26px;border-radius:99px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(40,30,15,.12);transition:left .22s ease,transform .15s;padding:0}
+.side-tg:hover{transform:scale(1.08);color:var(--accent)}
+.side-tg svg{width:14px;height:14px;transition:transform .22s}
+.app.mini .side-tg svg{transform:rotate(180deg)}
+.side .logo-mini{display:none;width:34px;height:auto;align-self:center;margin:4px 0 22px}
+@media (min-width:901px){
+.app.mini .side{padding:30px 10px 18px;overflow-x:hidden}
+.app.mini .side .logo,.app.mini .side .sub,.app.mini .side h6,.app.mini .vnav,.app.mini .side .tagline,.app.mini .side .sleaf,.app.mini .me .em{display:none}
+.app.mini .side .logo-mini{display:block}
+.app.mini .nav button{font-size:0;justify-content:center;padding:12px 0;gap:0}
+.app.mini .nav button svg{width:19px;height:19px}
+.app.mini .me{flex-direction:column;gap:8px;padding:10px 0;align-items:center}
+}
 .side{position:relative;overflow:hidden;background:linear-gradient(180deg,#5A795C 0%,#4E6B50 100%);color:var(--side-ink);display:flex;flex-direction:column;padding:30px 16px 18px;overflow-y:auto}
 .side .logo{height:30px;width:auto;align-self:center;display:block;margin:4px 0 6px}
 .side .sub{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--side-muted);margin:0 0 26px;text-align:center;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.18)}
@@ -377,7 +392,8 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 
 /* ---------- telas menores ---------- */
 @media (max-width:900px){
-  .app{grid-template-columns:1fr;height:auto}
+  .app,.app.mini{grid-template-columns:1fr;height:auto}
+  .side-tg,.side .logo-mini{display:none!important}
   .side{flex-direction:row;align-items:center;gap:10px;padding:12px 14px;overflow-x:auto;position:sticky;top:0;z-index:20}
   .side .logo{margin:0}
   .side .sub,.side h6,.vnav,.side .grow,.side .tagline,.side .sleaf{display:none}
@@ -424,10 +440,11 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
   <aside class="side">
     <svg class="sleaf"><use href="#frond"/></svg>
     <img class="logo" src="logo-coquin-oficial-branca.png" alt="Coquin">
+    <img class="logo-mini" src="simbolo-coquin-branco.png" alt="Coquin">
     <div class="sub">Contratação</div>
     <nav class="nav" id="nav">
-      <button data-view="cand" class="sel"><svg class="i"><use href="#i-board"/></svg>Pipeline</button>
-      <button data-view="vagas"><svg class="i"><use href="#i-brief"/></svg>Vagas & regras</button>
+      <button data-view="cand" class="sel" title="Pipeline"><svg class="i"><use href="#i-board"/></svg>Pipeline</button>
+      <button data-view="vagas" title="Vagas & regras"><svg class="i"><use href="#i-brief"/></svg>Vagas & regras</button>
     </nav>
     <h6>Vagas</h6>
     <div class="vnav" id="vnav"></div>
@@ -435,6 +452,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
     <div class="tagline">Gente boa<br>faz acontecer<svg viewBox="0 0 60 10"><path d="M2 6c6-4 12-4 18 0s12 4 18 0 12-4 20 0"/></svg></div>
     <div class="me"><span class="av" id="meAv">·</span><span class="em" id="meEm"></span><button id="logout" title="Sair"><svg class="i"><use href="#i-out"/></svg></button></div>
   </aside>
+  <button class="side-tg" id="sideTg" title="Recolher menu" aria-label="Recolher menu"><svg class="i"><use href="#i-back"/></svg></button>
 
   <section class="main">
     <img class="deco" src="hero-gelato.webp" alt="">
@@ -1829,6 +1847,12 @@ function render(){ if(view==='cand') renderCand(); else renderVagas(); }
 
 /* ---------- login ---------- */
 function showGate(v){ $('authGate').classList.toggle('on',v); }
+/* menu lateral recolhível (lembrado no navegador; começa recolhido em telas até 1600px) */
+(()=>{ const app=document.querySelector('.app'), tg=$('sideTg'); let v=null; try{ v=localStorage.getItem('coquin-menu'); }catch(_){}
+  const set=m=>{ app.classList.toggle('mini',m); const t=m?'Abrir menu':'Recolher menu'; tg.title=t; tg.setAttribute('aria-label',t); };
+  set(v?v==='mini':innerWidth<=1600);
+  tg.onclick=()=>{ const m=!app.classList.contains('mini'); set(m); try{ localStorage.setItem('coquin-menu',m?'mini':'open'); }catch(_){} };
+})();
 $('logout').onclick=async()=>{ if(confirm('Sair da conta?')) await sb.auth.signOut(); };
 async function onLoggedIn(sess){
   showGate(false); const em=sess.user.email||''; $('meEm').textContent=em; $('meAv').textContent=(em[0]||'·').toUpperCase();
