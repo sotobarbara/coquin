@@ -93,7 +93,10 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .btn.full{width:100%;height:42px}
 
 /* ---------- quadro ---------- */
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1120px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1400px}
+.kpi.total{background:var(--accent);border-color:var(--accent);color:#fff}
+.kpi.total svg,.kpi.total .kl,.kpi.total .kn,.kpi.total .kn small{color:#fff}
+.kpi.total .kn small{opacity:.85}
 .kpi{display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--sh-2)}
 .kpi svg{width:34px;height:34px;color:var(--accent);flex:none;stroke-width:1.6}
 .kpi .kl{font-size:14px;color:var(--ink-2)}
@@ -379,6 +382,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
   .vgrid{padding:2px 16px 24px;grid-template-columns:1fr}
   .sh-body{padding:0 16px 28px}.sh-head{padding:14px 16px}
   .kpis{grid-template-columns:1fr 1fr;padding:0 16px 16px}
+  .kpi.total{grid-column:1/-1}
   .panel{margin:0 12px 16px}
   .vsum{grid-template-columns:1fr;margin:0 12px 16px}
   .stepper{min-width:0}
@@ -983,11 +987,14 @@ let dupNames=new Map();
 function renderKpis(base,today,avg){
   const open=vagas.filter(v=>v.active), pos=open.reduce((s,v)=>s+(+v.openings||1),0);
   const week=base.filter(c=>Date.now()-new Date(c.created_at)<7*864e5).length;
-  const k=[['brief','Vagas abertas',open.length,pos+' posições'],
+  const tot=cands.length, vg=UI.vaga!=='all'?vagas.find(v=>v.id===UI.vaga):null, today_=cands.filter(c=>Date.now()-new Date(c.created_at)<864e5).length;
+  const nv=new Set(cands.map(c=>c.vaga_id)).size;
+  const k=[['file','Currículos recebidos',vg?base.length:tot,vg?'de '+tot+' no total':(today_?'+'+today_+' hoje · ':'')+'em '+nv+' vaga'+(nv!==1?'s':'')],
+    ['brief','Vagas abertas',open.length,pos+' posições'],
     ['users','Candidatos ativos',base.filter(c=>['novo','triagem','entrevista'].includes(colOf(c))).length,week?'+'+week+' na semana':''],
     ['chatb','Em entrevista',base.filter(c=>colOf(c)==='entrevista').length,''],
     ['okc','Contratações',base.filter(c=>colOf(c)==='aprovado').length,'']];
-  $('kpis').innerHTML=k.map(x=>'<div class="kpi">'+ic(x[0])+'<div><div class="kl">'+x[1]+'</div><div class="kn">'+x[2]+(x[3]?'<small>'+esc(x[3])+'</small>':'')+'</div></div></div>').join('');
+  $('kpis').innerHTML=k.map((x,i)=>'<div class="kpi'+(i===0?' total':'')+'">'+ic(x[0])+'<div><div class="kl">'+x[1]+'</div><div class="kn">'+x[2]+(x[3]?'<small>'+esc(x[3])+'</small>':'')+'</div></div></div>').join('');
 }
 function renderVsum(v,base){
   const el=$('vsum'); if(!v){ el.classList.add('hide'); return; }
