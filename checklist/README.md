@@ -78,9 +78,18 @@ aponta para o **mesmo projeto Supabase** da equipe (mesmo login, sem backend nov
 
 No celular, use *"Adicionar à Tela de Início"* para virar um app.
 
+## Personalização (direto no app)
+
+- **Editar tarefas**: botão **✏️ Editar tarefas** no card de cada turno — adicionar, renomear,
+  excluir e **reordenar** (↑ ↓). Vale para todos os dias e sincroniza entre os celulares.
+- **Gerenciar equipe**: botão **+ Gerenciar equipe** (ao lado de "Quem está fazendo") — adicionar,
+  renomear, excluir pessoas e trocar a cor. Pessoas novas ganham um avatar de inicial.
+- As listas ficam salvas na tabela `checklist_config` (Supabase); os padrões de fábrica ficam em
+  `CHECKLISTS` e `TEAM` no `<script>`, usados só na primeira vez.
+
 ## Personalização (no código)
 
-- **Equipe**: constante `TEAM` (nomes e cores dos avatares).
-- **Tarefas**: constante `CHECKLISTS` (listas de `entrada` e `saida`).
+- **Padrões de equipe**: constante `TEAM` (nomes, cores e rostos dos avatares).
+- **Padrões de tarefas**: constante `CHECKLISTS` (listas de `entrada`, `saida` e `deposito`).
 - **Supabase**: `SUPABASE_URL` / `SUPABASE_ANON` no topo do `<script>`.
 - **Cores da marca**: variáveis CSS no início do `<style>` (`--green`, etc.).
