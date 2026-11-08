@@ -576,7 +576,9 @@ const BASE_ST=[
 /* etapas criadas pela equipe (ex.: "Em treinamento"): ficam entre Aprovados e Não qualificados,
    valem para todas as vagas e são salvas na tabela vagas_config (chave "etapas") */
 let EXTRA=[], STATUS=[];
-function buildStatus(){ STATUS=BASE_ST.concat(EXTRA,[NQ_ST]); }
+/* cada etapa extra guarda depois de qual etapa fixa ela fica (after); padrão: depois de Aprovados */
+const afterOf=x=>BASE_ST.some(b=>b.k===x.after)?x.after:'aprovado';
+function buildStatus(){ STATUS=[]; BASE_ST.forEach(b=>{ STATUS.push(b); EXTRA.filter(x=>afterOf(x)===b.k).forEach(x=>STATUS.push(x)); }); STATUS.push(NQ_ST); }
 buildStatus();
 const TIERS={A:'Priorizar',B:'Avaliar',C:'Baixa aderência',X:'Eliminado',P:'Lendo currículo',Q:'Avaliar manualmente'};
 const TIERC={A:'#1E7F5C',B:'#C08A1E',C:'#9A948C',X:'#C2413A',P:'#B5AFA6',Q:'#8C867E'};
@@ -748,12 +750,12 @@ function sc(c){ if(!c._s) c._s=scoreCand(c); return c._s; }
 async function loadEtapas(){
   try{ const {data,error}=await sb.from('vagas_config').select('value').eq('key','etapas').maybeSingle();
     if(!error && data && Array.isArray(data.value))
-      EXTRA=data.value.filter(x=>x && /^x_[a-z0-9_]+$/.test(x.k) && x.l).map(x=>({k:x.k,l:String(x.l).slice(0,40),c:/^#[0-9a-f]{6}$/i.test(x.c)?x.c:'#2A8C9E',x:1}));
+      EXTRA=data.value.filter(x=>x && /^x_[a-z0-9_]+$/.test(x.k) && x.l).map(x=>({k:x.k,l:String(x.l).slice(0,40),c:/^#[0-9a-f]{6}$/i.test(x.c)?x.c:'#2A8C9E',after:BASE_ST.some(b=>b.k===x.after)?x.after:'aprovado',x:1}));
   }catch(_){}
   buildStatus();
 }
 async function saveEtapas(next){
-  const {error}=await sb.from('vagas_config').upsert({key:'etapas',value:next.map(({k,l,c})=>({k,l,c})),updated_at:new Date().toISOString()},{onConflict:'key'});
+  const {error}=await sb.from('vagas_config').upsert({key:'etapas',value:next.map(({k,l,c,after})=>({k,l,c,after:after||'aprovado'})),updated_at:new Date().toISOString()},{onConflict:'key'});
   if(error){ toast(/vagas_config|relation|schema cache/i.test(error.message)?'⚠︎ Rode o SETUP.sql atualizado no Supabase para criar etapas':'⚠︎ '+error.message); return false; }
   EXTRA=next; buildStatus(); render(); return true;
 }
@@ -762,13 +764,24 @@ async function addEtapa(){
   const l=(prompt('Nome da nova etapa:','Em treinamento')||'').trim().slice(0,40); if(!l) return;
   if(STATUS.some(s=>norm(s.l).trim()===norm(l).trim())) return toast('Já existe uma etapa com esse nome');
   const k='x_'+(norm(l).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'etapa')+'_'+Math.random().toString(36).slice(2,6);
-  if(await saveEtapas(EXTRA.concat([{k,l,c:ST_COLORS[EXTRA.length%ST_COLORS.length],x:1}]))) toast('Etapa "'+l+'" criada ✓');
+  if(await saveEtapas(EXTRA.concat([{k,l,c:ST_COLORS[EXTRA.length%ST_COLORS.length],after:'aprovado',x:1}]))) toast('Etapa "'+l+'" criada ✓');
 }
 document.addEventListener('click',e=>{ if(UI.stMenu && !e.target.closest('.col-act')){ UI.stMenu=null; document.querySelectorAll('.col-menu.open').forEach(m=>m.classList.remove('open')); } });
 async function editEtapa(k,act){
   const i=EXTRA.findIndex(s=>s.k===k); if(i<0) return; const s=EXTRA[i]; let next=EXTRA.slice();
   if(act==='ren'){ const l=(prompt('Novo nome da etapa:',s.l)||'').trim().slice(0,40); if(!l||l===s.l) return; next[i]=Object.assign({},s,{l}); }
-  else if(act==='left'||act==='right'){ const j=i+(act==='left'?-1:1); if(j<0||j>=next.length) return; [next[i],next[j]]=[next[j],next[i]]; }
+  else if(act==='left'||act==='right'){
+    // anda uma casa no quadro: passa por cima da etapa vizinha, seja ela fixa ou criada
+    const cur=Object.assign({},s,{after:afterOf(s)}); next[i]=cur;
+    const pos=STATUS.findIndex(x=>x.k===k), nb=STATUS[pos+(act==='left'?-1:1)];
+    if(!nb || nb.k==='reprovado') return toast('Já fica logo antes de Não qualificados');
+    if(act==='left' && nb.k==='novo') return toast('Já fica logo depois de Aplicações');
+    if(nb.x){ const j=next.findIndex(x=>x.k===nb.k); [next[i],next[j]]=[next[j],next[i]]; }
+    else{ const bi=BASE_ST.findIndex(b=>b.k===nb.k);
+      next.splice(i,1);
+      if(act==='left'){ cur.after=BASE_ST[bi-1].k; const last=next.map(x=>afterOf(x)).lastIndexOf(cur.after); next.splice(last+1,0,cur); }
+      else{ cur.after=nb.k; const first=next.findIndex(x=>afterOf(x)===nb.k); next.splice(first<0?next.length:first,0,cur); } }
+  }
   else if(act==='del'){ const n=cands.filter(c=>c.status===k).length;
     if(!confirm('Remover a etapa "'+s.l+'"?'+(n?' '+n+' candidato(s) nela voltam para Aplicações.':''))) return;
     if(n){ for(const c of cands.filter(c=>c.status===k)) await patch(c,{status:stFor(c,'novo')},true); }
