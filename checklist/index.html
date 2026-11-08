@@ -71,17 +71,17 @@ header{
 .hide{display:none!important}
 
 /* ---------- status tiles ---------- */
-.ck-status{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.ck-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 14px 13px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.ck-status{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.ck-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 10px 11px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .ck-tile.done{border-color:var(--green);background:linear-gradient(160deg,#F1F6F0,#E9EFE9)}
-.ck-tile .ck-tk{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.2px}
+.ck-tile .ck-tk{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.1px}
 .ck-tile.done .ck-tk{color:var(--green-700)}
-.ck-tile .ck-ring{margin:10px 0 6px}
-.ck-tile .ck-frac{font-size:23px;font-weight:850;letter-spacing:-.5px;color:var(--ink)}
+.ck-tile .ck-ring{margin:9px 0 5px}
+.ck-tile .ck-frac{font-size:21px;font-weight:850;letter-spacing:-.5px;color:var(--ink)}
 .ck-tile.done .ck-frac{color:var(--green-700)}
-.ck-tile .ck-frac small{font-size:12px;font-weight:700;color:var(--ink-faint);letter-spacing:0}
-.ck-tile .ck-by{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-top:6px;display:flex;align-items:center;gap:6px;min-height:20px}
-.ck-tile .ck-by .av{width:19px;height:19px;font-size:9.5px}
+.ck-tile .ck-frac small{font-size:11px;font-weight:700;color:var(--ink-faint);letter-spacing:0}
+.ck-tile .ck-by{font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-top:6px;display:flex;align-items:center;gap:5px;min-height:19px;line-height:1.25}
+.ck-tile .ck-by .av{width:17px;height:17px;font-size:9px}
 .ck-tile .ck-time{color:var(--ink-faint);font-weight:650}
 .ck-tile .ck-pending{color:var(--ink-faint);font-weight:650}
 .ring{transform:rotate(-90deg)}
@@ -89,8 +89,8 @@ header{
 .ring .fg{stroke:var(--green);transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1);stroke-linecap:round}
 
 /* ---------- seletor entrada|saída ---------- */
-.seg{display:flex;gap:8px;margin-top:16px}
-.seg button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:15px;font-weight:750;padding:12px;border-radius:12px;cursor:pointer;font-family:inherit;transition:.15s}
+.seg{display:flex;gap:6px;margin-top:16px}
+.seg button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:13px;font-weight:750;padding:11px 4px;border-radius:12px;cursor:pointer;font-family:inherit;transition:.15s}
 .seg button:active{transform:scale(.98)}
 .seg button.sel{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 5px 14px rgba(52,80,58,.24)}
 
@@ -302,6 +302,7 @@ header{
   <div class="seg" id="ckSeg">
     <button data-kind="entrada">🌅 Entrada</button>
     <button data-kind="saida">🌙 Saída</button>
+    <button data-kind="deposito">📦 Depósito</button>
   </div>
 
   <div class="whowrap">
@@ -445,8 +446,21 @@ const CHECKLISTS={
     {k:'armazen',  t:'Verificar armazenamento dos cocos e acompanhamentos'},
     {k:'bateria',  t:'Verificar bateria das maquinetas'},
   ]},
+  deposito:{ label:'Depósito', emoji:'📦', items:[
+    {k:'lavar_dia', t:'Lavar todos os utensílios usados no dia anterior'},
+    {k:'coco_queim', t:'Coco queimado'},
+    {k:'potes_caldas', t:'Encher os potes de caldas'},
+    {k:'repor_amendoim', t:'Repor amendoim'},
+    {k:'repor_coco_q', t:'Repor coco queimado'},
+    {k:'carregar_maq', t:'Carregar maquininhas'},
+    {k:'embalar_cocos', t:'Embalar cocos partidos'},
+    {k:'garrafas_agua', t:'Encher garrafas com água de coco'},
+    {k:'mat_bm', t:'Organizar materiais para BM'},
+    {k:'mat_imprensa', t:'Organizar materiais para imprensa'},
+  ]},
 };
-const CK_KINDS=['entrada','saida'];
+const CK_KINDS=['entrada','saida','deposito'];
+const KIND_SUB={entrada:'abertura',saida:'fechamento',deposito:'depósito'};
 
 /* ---------- helpers ---------- */
 function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
@@ -599,7 +613,7 @@ function renderTiles(){
     else by='<span class="ck-by ck-pending">'+(done?'em andamento':'não iniciado')+'</span>';
     return '<div class="ck-tile'+(fin?' done':'')+'">'
       +'<div class="ck-tk">'+meta.emoji+' '+meta.label.toUpperCase()+'</div>'
-      +'<div class="ck-ring">'+ckRing(done,tot,54)+'</div>'
+      +'<div class="ck-ring">'+ckRing(done,tot,46)+'</div>'
       +'<div class="ck-frac">'+done+'<small>/'+tot+'</small></div>'
       +by+'</div>';
   }).join('');
@@ -694,7 +708,7 @@ function refreshLive(){
   const today=todayISO(), cur=checklistFor(today,checkKind), meta=CHECKLISTS[checkKind];
   const tot=ckTotal(checkKind), done=ckDone(cur), pct=tot?Math.round(done/tot*100):0;
   $('ckBar').style.width=pct+'%';
-  $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
+  $('ckProgTxt').textContent=done+' de '+tot+' tarefas · '+KIND_SUB[checkKind];
   meta.items.forEach(it=>{
     const row=$q('.ck-item[data-item="'+it.k+'"]'); if(!row) return;
     row.classList.toggle('on', itemDone(cur,it));
@@ -715,7 +729,7 @@ function renderChecklist(){
       +avatar(p.name)+'<span class="nm">'+p.name+'</span></button>';
   }).join('');
   const meta=CHECKLISTS[checkKind], tot=ckTotal(checkKind), done=ckDone(cur), pct=tot?Math.round(done/tot*100):0;
-  $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
+  $('ckProgTxt').textContent=done+' de '+tot+' tarefas · '+KIND_SUB[checkKind];
   $('ckBar').style.width=pct+'%';
   renderItems();
   $('ckBanner').innerHTML=bannerHTML(cur,meta);
@@ -778,7 +792,7 @@ function closeDetail(){ $('scrim').classList.remove('on'); $('detail').classList
 
 /* ---------- ANÁLISE ---------- */
 function avgTime(arr){ if(!arr.length) return null; const m=Math.round(arr.reduce((a,b)=>a+b,0)/arr.length); return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
-function dayQualifies(ds){ const e=checklistFor(ds,'entrada'), s=checklistFor(ds,'saida'); return ckFinal(e)||ckFinal(s); }
+function dayQualifies(ds){ return CK_KINDS.some(k=>ckFinal(checklistFor(ds,k))); }
 function currentStreak(){
   let streak=0, d=new Date();
   if(!dayQualifies(isoOf(d))) d.setDate(d.getDate()-1);   // se hoje ainda não fez, mede até ontem
@@ -894,7 +908,7 @@ function thermoDragMove(e){
   paintThermo(dragTh.el,c,dragTh.it);
   const tot=ckTotal(checkKind), done=ckDone(c), pct=tot?Math.round(done/tot*100):0;
   $('ckBar').style.width=pct+'%';   // barra tem altura fixa — não empurra a régua
-  $('ckProgTxt').textContent=done+' de '+tot+' tarefas'+(checkKind==='entrada'?' · abertura':' · fechamento');
+  $('ckProgTxt').textContent=done+' de '+tot+' tarefas · '+KIND_SUB[checkKind];
   // NÃO mexe no #ckBanner aqui: mudar a altura dele faria a régua "fugir" do dedo. Atualiza ao soltar.
   if(e.cancelable) e.preventDefault();
 }
