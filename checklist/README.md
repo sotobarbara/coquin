@@ -7,10 +7,10 @@ funciona local no aparelho.
 
 ## O que faz
 
-Checklist **por dia**, com dois turnos independentes:
+Checklist **por dia**, com três turnos independentes:
 
-- **🌅 Entrada** (abertura) e **🌙 Saída** (fechamento). A tela já abre no turno certo pela
-  **hora do dia** (antes das 15h = entrada).
+- **🌅 Entrada** (abertura), **🌙 Saída** (fechamento) e **📦 Depósito** (operacional do depósito).
+  A tela já abre no turno certo da loja pela **hora do dia** (antes das 15h = entrada).
 - **Responsável do dia**: quem for fazer **escolhe o próprio nome** (Ingrid ou Paulo),
   cada um com seu **avatar de desenho** (SVG paramétrico) que aparece no seletor, cartões,
   histórico e análise. Traços ajustáveis em `TEAM[].face` (pele, cabelo, estilo, óculos, barba,
