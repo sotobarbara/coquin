@@ -1335,7 +1335,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.5 · bebidas separadas do gelato'
+const APP_VERSION='v8.6 · total do dia (cartao + dinheiro)'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1942,10 +1942,11 @@ function drawRevSpark(list){
 /* relatório completo de uma loja (dia a dia + 2/3 bolas) */
 function storeDailyBreakdown(storeId, key){
   const out=[];
-  closingsOf(key).forEach(c=>{ if(!c.bySerial||typeof c.bySerial!=='object') return;
-    let rev=0,tx=0,g30=0,g35=0,has=false;
-    Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,c.date)===storeId){ const s=c.bySerial[ser]||{}; rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); tx+=s.tx||0; g30+=s.g30||0; g35+=s.g35||0; has=true; } });
-    if(has) out.push({date:c.date,rev,tx,g30:Math.round(g30),g35:Math.round(g35)});
+  closingsOf(key).forEach(c=>{
+    let rev=0,tx=0,g30=0,g35=0,agua=0,refri=0,has=false;
+    if(c.bySerial&&typeof c.bySerial==='object') Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,c.date)===storeId){ const s=c.bySerial[ser]||{}; rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); tx+=s.tx||0; g30+=s.g30||0; g35+=s.g35||0; agua+=s.agua||0; refri+=s.refri||0; has=true; } });
+    const cash=(c.cashByStore&&+c.cashByStore[storeId])||0;   // dinheiro lançado pra essa loja no dia
+    if(has || cash>0) out.push({date:c.date,rev,cash,tx,g30:Math.round(g30),g35:Math.round(g35),agua:Math.round(agua),refri:Math.round(refri)});
   });
   return out.sort((a,b)=>b.date.localeCompare(a.date));
 }
@@ -1981,10 +1982,13 @@ function openStoreDetail(storeId){
   const days=storeDailyBreakdown(storeId,key);
   html+='<div class="section-title" style="margin:6px 4px 8px">Dia a dia <span class="st-side">'+days.length+' dia'+(days.length!==1?'s':'')+'</span></div>';
   if(days.length){ html+='<div class="card sales" style="padding:4px 2px">'+days.map(d=>{
-      const [Y,M,D]=d.date.split('-'); const gg=d.g30+d.g35;
+      const [Y,M,D]=d.date.split('-');
+      const cardGel=d.g30+d.g35, cashGel=price()>0?Math.round((d.cash||0)/price()):0, totGel=cardGel+cashGel, totRev=(d.rev||0)+(d.cash||0);
+      const sub=(cashGel>0) ? ('<small style="opacity:.65">'+cardGel+' cartão + '+cashGel+' dinheiro</small>') : ('<small style="opacity:.65">'+d.g35+'×3b · '+d.g30+'×2b</small>');
+      const beb=(d.agua||d.refri)?' <small style="opacity:.6">· 🥤 '+[d.agua?d.agua+' água':'',d.refri?d.refri+' refri':''].filter(Boolean).join(' + ')+'</small>':'';
       return '<div class="lrow" style="padding:11px 14px"><div class="ld">'+D+'/'+M+'</div>'
-        +'<div class="lmid">'+NUM.format(d.tx)+' vendas · '+gg+' gelatos <small style="opacity:.65">('+d.g35+'×3b · '+d.g30+'×2b)</small></div>'
-        +'<div class="lbal">'+money(d.rev)+'</div></div>';
+        +'<div class="lmid">'+NUM.format(d.tx)+' vendas · <b>'+totGel+' gelatos</b> '+sub+beb+'</div>'
+        +'<div class="lbal">'+money(totRev)+'</div></div>';
     }).join('')+'</div>'; }
   else html+='<div class="store-empty">Sem vendas desta loja no mês.</div>';
   $('sdBody').innerHTML=html;
