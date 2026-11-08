@@ -1335,7 +1335,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.4 · maquininha do evento por dia'
+const APP_VERSION='v8.5 · bebidas separadas do gelato'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1411,6 +1411,9 @@ function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.sto
   if(db.settings.defaultStore===undefined) db.settings.defaultStore='beiramar';
   // exceções por dia: {data:{serie:lojaId}} — ex.: uma maquininha da Beira Mar foi pro evento num dia
   if(!db.settings.serialDayMap||typeof db.settings.serialDayMap!=='object') db.settings.serialDayMap={};
+  // preços de bebida (eventos) — usados pra separar do gelato pelo valor
+  if(db.settings.priceAgua===undefined) db.settings.priceAgua=4;
+  if(db.settings.priceRefri===undefined) db.settings.priceRefri=7;
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
   if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
   // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
@@ -1494,7 +1497,7 @@ const Cloud={
       pending.forEach(x=>this.pushClosing(x));
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
-      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; if(typeof st.lojas.defaultStore==='string') db.settings.defaultStore=st.lojas.defaultStore; if(st.lojas.serialDayMap&&typeof st.lojas.serialDayMap==='object') db.settings.serialDayMap=st.lojas.serialDayMap; } ensureStores(); }
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; if(typeof st.lojas.defaultStore==='string') db.settings.defaultStore=st.lojas.defaultStore; if(st.lojas.serialDayMap&&typeof st.lojas.serialDayMap==='object') db.settings.serialDayMap=st.lojas.serialDayMap; if(+st.lojas.priceAgua>0) db.settings.priceAgua=+st.lojas.priceAgua; if(+st.lojas.priceRefri>0) db.settings.priceRefri=+st.lojas.priceRefri; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1548,7 +1551,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null,defaultStore:db.settings.defaultStore||null,serialDayMap:db.settings.serialDayMap||null};
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null,defaultStore:db.settings.defaultStore||null,serialDayMap:db.settings.serialDayMap||null,priceAgua:db.settings.priceAgua,priceRefri:db.settings.priceRefri};
     try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -1606,20 +1609,27 @@ const NUM=new Intl.NumberFormat('pt-BR');
 function money(v){ return BRL.format(v||0); }
 function price(){ return db.settings.price||DEFAULT_PRICE; }
 function price2(){ return db.settings.price2>0?db.settings.price2:DEFAULT_PRICE2; }   // sorvete 2 bolas
+function priceAgua(){ return db.settings.priceAgua>0?db.settings.priceAgua:4; }   // água (eventos)
+function priceRefri(){ return db.settings.priceRefri>0?db.settings.priceRefri:7; } // refrigerante (eventos)
 /* classifica o valor de uma transação em gelatos de 3 bolas (P) e 2 bolas (P2) */
-function classifyBolas(v){
-  const P=price(), P2=price2(); const g={g30:0,g35:0};
-  if(v<=0) return g;
+function classifyBolas(v){ const r=classifyTx(v); return {g30:r.g30,g35:r.g35}; }
+/* classifica o valor: gelato (3/2 bolas) OU bebida de evento (refri R$7 / água R$4, que nunca são preço de gelato) */
+function classifyTx(v){
+  const g={g30:0,g35:0,agua:0,refri:0}; if(v<=0) return g;
+  const P=price(), P2=price2(), A=priceAgua(), R=priceRefri();
   const near=(a,b)=>Math.abs(a-b)<0.02;
   const n35=v/P, n30=v/P2;
-  if(near(n35,Math.round(n35)) && Math.round(n35)>=1) g.g35=Math.round(n35);        // múltiplo de 35 (3 bolas)
-  else if(near(n30,Math.round(n30)) && Math.round(n30)>=1) g.g30=Math.round(n30);   // múltiplo de 30 (2 bolas)
-  else if(near(v,P/2)) g.g35=0.5;         // split: metade de uma 3 bolas (ex.: 17,50)
-  else if(near(v,P2/2)) g.g30=0.5;        // split: metade de uma 2 bolas (ex.: 15,00)
-  else if(near(v,P+P2)) { g.g35=1; g.g30=1; }   // combo misto (ex.: 65 = 35+30)
-  else g.g35=v/P;                          // fallback: estima como 3 bolas pelo valor
-  return g;
+  if(near(n35,Math.round(n35)) && Math.round(n35)>=1){ g.g35=Math.round(n35); return g; }        // múltiplo de 35 (3 bolas)
+  if(near(n30,Math.round(n30)) && Math.round(n30)>=1){ g.g30=Math.round(n30); return g; }         // múltiplo de 30 (2 bolas)
+  if(near(v,P/2)){ g.g35=0.5; return g; }         // metade de uma 3 bolas (ex.: 17,50)
+  if(near(v,P2/2)){ g.g30=0.5; return g; }        // metade de uma 2 bolas (ex.: 15,00)
+  if(near(v,P+P2)){ g.g35=1; g.g30=1; return g; } // combo misto (ex.: 65 = 35+30)
+  const nR=v/R; if(R>0 && near(nR,Math.round(nR)) && Math.round(nR)>=1){ g.refri=Math.round(nR); return g; }  // refri (7, 14, 21…)
+  const nA=v/A; if(A>0 && near(nA,Math.round(nA)) && Math.round(nA)>=1){ g.agua=Math.round(nA); return g; }    // água (4, 8, 12…)
+  g.g35=v/P; return g;                             // fallback: estima como 3 bolas pelo valor
 }
+/* total de bebidas (água/refri) de um fechamento, somando as maquininhas (by_serial) */
+function bebidasOf(c){ let a=0,r=0; const bs=c&&c.bySerial; if(bs&&typeof bs==='object') Object.keys(bs).forEach(k=>{ a+=bs[k].agua||0; r+=bs[k].refri||0; }); return {agua:Math.round(a), refri:Math.round(r)}; }
 function weekdayGoalsSet(){ const w=db.settings.weekdayGoals; return w && Object.keys(w).some(k=>+w[k]>0); }
 function monthGoalFor(key){
   if(weekdayGoalsSet()){ const [y,m]=key.split('-').map(Number), dim=new Date(y,m,0).getDate(); let g=0; for(let d=1;d<=dim;d++) g+=(+db.settings.weekdayGoals[new Date(y,m-1,d).getDay()]||0); return g; }
@@ -1651,13 +1661,17 @@ function dayLabel(dstr){
 function reconcile(c){
   const stone=(c.pix||0)+(c.debito||0)+(c.credito||0);
   const dinheiro=(c.revenue||0)-stone;
-  const n=c.gelatos||0, rev=c.revenue||0;
+  const n=c.gelatos||0;
+  // tira a receita de bebida (água/refri) antes de conferir a faixa do gelato
+  const beb = c.bySerial ? bebidasOf(c) : ((stoneParsed.find(x=>x.date===c.date)&&{agua:Math.round(stoneParsed.find(x=>x.date===c.date).agua||0),refri:Math.round(stoneParsed.find(x=>x.date===c.date).refri||0)}) || bebidasOf(db.closings.find(x=>x.date===c.date)));
+  const bebRev=(beb.agua||0)*priceAgua()+(beb.refri||0)*priceRefri();
+  const rev=(c.revenue||0)-bebRev;                       // faturamento só de gelato
   const Phi=Math.max(price(),price2()), Plo=Math.min(price(),price2());
   const lo=n*Plo, hi=n*Phi;                              // faixa válida: tudo 2 bolas … tudo 3 bolas
   const issues=[];
   if(dinheiro < -0.5) issues.push('A Stone ('+money(stone)+') passou do faturamento lançado — confira os valores.');
-  if(n>0 && (rev < lo-0.5 || rev > hi+0.5)) issues.push('Valor fora da faixa de '+n+' gelatos ('+money(Plo)+' a '+money(Phi)+' cada = '+money(lo)+'–'+money(hi)+'). Combo, desconto ou erro?');
-  return {stone,dinheiro,expected:hi,valueDiff:rev-hi,issues,ok:issues.length===0};
+  if(n>0 && (rev < lo-0.5 || rev > hi+0.5)) issues.push('Valor fora da faixa de '+n+' gelatos ('+money(Plo)+' a '+money(Phi)+' cada = '+money(lo)+'–'+money(hi)+')'+(bebRev>0?', já tirando '+money(bebRev)+' de bebida':'')+'. Combo, desconto ou erro?');
+  return {stone,dinheiro,bebRev,expected:hi,valueDiff:rev-hi,issues,ok:issues.length===0};
 }
 
 /* ---------- estoque (por produto) ---------- */
@@ -1851,14 +1865,14 @@ function initChartTips(){
   });
 }
 /* agrega vendas por loja a partir do bySerial dos fechamentos (cartão/Pix da Stone) */
-function blankStoreAgg(){ return {rev:0,tx:0,g30:0,g35:0,pix:0,debito:0,credito:0,cash:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),serials:new Set(),days:new Set()}; }
+function blankStoreAgg(){ return {rev:0,tx:0,g30:0,g35:0,agua:0,refri:0,pix:0,debito:0,credito:0,cash:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),serials:new Set(),days:new Set()}; }
 function storeAggregate(list){
   const by={}, un=blankStoreAgg(); let anyData=false;
   (db.settings.stores||[]).forEach(s=>{ by[s.id]=blankStoreAgg(); });
   list.forEach(c=>{ const bs=c.bySerial;
     if(bs&&typeof bs==='object') Object.keys(bs).forEach(ser=>{ const s=bs[ser]||{}; anyData=true;
       const sid=serialStore(ser,c.date); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser); g.days.add(c.date);
-      g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=s.g30||0; g.g35+=s.g35||0;
+      g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=s.g30||0; g.g35+=s.g35||0; g.agua+=s.agua||0; g.refri+=s.refri||0;
       g.pix+=s.pix||0; g.debito+=s.debito||0; g.credito+=s.credito||0;
       if(Array.isArray(s.hours)) s.hours.forEach((n,h)=>g.hours[h]+=(n||0));
       if(Array.isArray(s.hoursRev)) s.hoursRev.forEach((v,h)=>g.hoursRev[h]+=(+v||0));
@@ -1948,6 +1962,7 @@ function openStoreDetail(storeId){
     +'<div class="chk-row"><span>Cartão/Pix</span><span>'+money(g.rev-(g.cash||0))+' · <b>'+NUM.format(g.tx)+'</b> vendas</span></div>'
     +((g.cash||0)>0?'<div class="chk-row"><span>💵 Dinheiro</span><span>'+money(g.cash)+' · ~'+cashGel+' gelatos</span></div>':'')
     +'<div class="chk-row"><span>Gelatos (total)</span><span><b>'+NUM.format(gel)+'</b></span></div>'
+    +((Math.round(g.agua)||Math.round(g.refri))?'<div class="chk-row"><span>🥤 Bebidas <span style="opacity:.55">(fora dos gelatos)</span></span><span>'+[Math.round(g.agua)?Math.round(g.agua)+' água':'',Math.round(g.refri)?Math.round(g.refri)+' refri':''].filter(Boolean).join(' · ')+'</span></div>':'')
     +'<div class="chk-row"><span>Ticket médio</span><span>'+(gel>0?money(g.rev/gel):'—')+'</span></div>'
     +'<div class="chk-row"><span>Dias de operação</span><span>'+nd+' · '+(nd>0?money(g.rev/nd)+'/dia':'—')+'</span></div>'
     +(pk!=null?'<div class="chk-row"><span>Hora de pico</span><span>'+pk+'h–'+((pk+1)%24)+'h</span></div>':'')
@@ -2411,9 +2426,13 @@ function renderRecon(){
   const cashGel=price()>0?Math.max(0,Math.round(r.dinheiro/price())):0;
   const cardGel=Math.max(0,(c.gelatos||0)-cashGel);
   const split=c.gelatos>0?`<div class="recon-row"><span>🍨 ${c.gelatos} gelatos</span><b>${cardGel} cartão/Pix + ${cashGel} dinheiro</b></div>`:'';
+  const dt=$('cDate').value; const spB=stoneParsed.find(x=>x.date===dt);
+  const beb=spB?{agua:Math.round(spB.agua||0),refri:Math.round(spB.refri||0)}:bebidasOf(db.closings.find(x=>x.date===dt));
+  const bebLine=(beb.agua||beb.refri)?`<div class="recon-row"><span>🥤 Bebidas <span style="color:var(--ink-faint);font-weight:600">(fora dos gelatos)</span></span><b>${beb.agua?beb.agua+' água':''}${beb.agua&&beb.refri?' · ':''}${beb.refri?beb.refri+' refri':''}</b></div>`:'';
   let html=`<div class="recon-row"><span>Faturamento</span><b>${money(c.revenue)}</b></div>
     <div class="recon-row"><span>Recebido Stone</span><b>${money(r.stone)}</b></div>
     ${split}
+    ${bebLine}
     <div class="recon-row big"><span class="lbl">💵 Dinheiro no caixa</span><span class="dinheiro">${money(r.dinheiro)}</span></div>`;
   if(r.issues.length){ r.issues.forEach(m=>{ html+=`<div class="recon-alert"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>${m}</span></div>`; }); }
   else if(c.gelatos>0){ html+=`<div class="recon-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tudo bate certinho</div>`; }
@@ -2444,7 +2463,7 @@ function parseStoneCSV(text){
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
     const liq=iLiq>=0?parseMoney(r[iLiq]):val;   // valor líquido (após taxa Stone)
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),bySerial:{}});
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,agua:0,refri:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),bySerial:{}});
     let kind=null;
     if(prod.indexOf('pix')>=0){ d.pix+=val; kind='pix'; }
     else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0){ d.debito+=val; kind='debito'; }
@@ -2452,13 +2471,13 @@ function parseStoneCSV(text){
     else continue;
     const tx=Math.max(0, val-liq);   // taxa da Stone dessa venda
     d.taxa += tx; d.tx++;
-    const cb=classifyBolas(val); d.g30+=cb.g30; d.g35+=cb.g35;   // 2 bolas (30) x 3 bolas (35)
+    const cb=classifyTx(val); d.g30+=cb.g30; d.g35+=cb.g35; d.agua+=cb.agua; d.refri+=cb.refri;   // gelato 2/3 bolas + bebidas
     const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; const okH=(hh>=0&&hh<24);
     if(okH){ d.hours[hh]++; d.hoursRev[hh]+=val; }   // receita bruta por hora
     // por maquininha (N DE SERIE) → permite separar por loja depois
     const ser=(iSer>=0 && r[iSer]!=null ? String(r[iSer]).trim() : '')||'—';
-    const s=d.bySerial[ser]||(d.bySerial[ser]={pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
-    s[kind]+=val; s.taxa+=tx; s.tx++; s.g30+=cb.g30; s.g35+=cb.g35;
+    const s=d.bySerial[ser]||(d.bySerial[ser]={pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,agua:0,refri:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
+    s[kind]+=val; s.taxa+=tx; s.tx++; s.g30+=cb.g30; s.g35+=cb.g35; s.agua+=cb.agua; s.refri+=cb.refri;
     if(okH){ s.hours[hh]++; s.hoursRev[hh]+=val; }
   }
   return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
@@ -2482,7 +2501,9 @@ function applyStoneDay(d){
   else renderCashStores({});
   recompute();
   const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0);
-  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+cardGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas). Conte o <b>dinheiro</b> pra fechar o total.';
+  const bA=Math.round(d.agua||0), bR=Math.round(d.refri||0);
+  const bebTxt=(bA||bR)?(' · 🥤 '+[bA?bA+' água':'',bR?bR+' refri':''].filter(Boolean).join(' + ')+' <span style="color:var(--ink-faint)">(fora dos gelatos)</span>'):'';
+  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+cardGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas)'+bebTxt+'. Conte o <b>dinheiro</b> pra fechar o total.';
   showStoneChips(d.date);
   renderDaySerials(d.date);
   const novos=stoneParsed.filter(x=>!db.closings.some(c=>c.date===x.date)).length;
