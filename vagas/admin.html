@@ -197,6 +197,8 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .kc-f{display:flex;align-items:center;gap:10px;margin-top:10px;color:var(--muted);font-size:11.5px}
 .kc-f .r{margin-left:auto;display:flex;gap:8px;align-items:center}
 .kc-f svg{width:13px;height:13px}
+.kc-f .t{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kc-f .r{flex:none}
 .stars{color:var(--accent);letter-spacing:1px;font-size:11px}
 .unread{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:99px;background:var(--accent);border:2px solid var(--surface)}
 
@@ -278,6 +280,20 @@ select.sm{height:36px;border:1px solid var(--line);border-radius:9px;background:
 .about mark{background:var(--accent-soft);color:var(--accent-2);border-radius:3px;padding:0}
 .alert{background:var(--tX-s);color:var(--tX);border-radius:10px;padding:12px 14px;font-size:13px}
 textarea{width:100%;min-height:96px;resize:vertical;border:1px solid var(--line-2);border-radius:10px;padding:11px 12px;background:var(--surface);line-height:1.5}
+.col-thx{white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:7px;width:100%;border:1px dashed #C9B9A3;background:var(--surface);color:var(--accent);border-radius:12px;padding:10px;font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.col-thx:hover{border-color:var(--accent);background:var(--accent-soft)}
+.col-thx b{background:var(--accent);color:#fff;border-radius:99px;padding:0 7px;font-size:11.5px}
+.col-thx svg{width:14px;height:14px}
+.kc-thx{white-space:nowrap;display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line-2);border-radius:99px;padding:2px 9px;color:var(--accent);text-decoration:none;font-weight:500;font-size:11.5px;background:var(--surface)}
+.kc-thx:hover{border-color:var(--accent);background:var(--accent-soft)}
+.kc-thx.done{border-color:transparent;background:var(--accent-soft);color:var(--accent)}
+.thx-done{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:7px 10px}
+.thx-done svg{width:13px;height:13px}
+#thxBody h4{margin:18px 0 8px}
+#thxBody input#thxSu{width:100%;height:40px;border:1px solid var(--line-2);border-radius:10px;padding:0 12px;background:var(--surface)}
+.thx-sum{font-size:15px;margin:18px 0 6px}.thx-sum .ok{color:var(--accent)}
+.thx-inc{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-2);cursor:pointer}
+.thx-lots{display:grid;gap:8px}.thx-lots .btn{justify-content:flex-start}
 textarea:focus,input:focus,select:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,23,20,.06)}
 
 /* ---------- editor (mesmas classes do motor) ---------- */
@@ -512,6 +528,10 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 <aside class="sheet wide" id="impSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title">Criar vagas a partir dos banners</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
   <div class="sh-body" id="impBody"></div>
+</aside>
+<aside class="sheet" id="thxSheet" role="dialog" aria-modal="true">
+  <div class="sh-head"><div class="sh-title">Agradecer a participação</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="sh-body" id="thxBody"></div>
 </aside>
 <aside class="sheet wide" id="shareSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title">Divulgar no Instagram</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -1079,7 +1099,7 @@ function renderCand(){
     const hint={novo:'chegaram com nível A/B',reprovado:'nível C, eliminados e descartados'}[s.k]||'';
     return '<div class="col" data-col="'+s.k+'" title="'+hint+'"><div class="col-h"><span class="cd" style="background:'+s.c+'"></span><span class="ct"><span class="num">'+String(STATUS.indexOf(s)+1).padStart(2,'0')+'.</span> '+esc(s.l)+'</span><span class="cn">'+items.length+'</span>'+(hint?'<span class="cs">'+hint+'</span>':'')
       +(s.x?'<span class="col-act"><button class="col-dots" data-st-menu="'+s.k+'" title="Opções da etapa">⋯</button><span class="col-menu'+(UI.stMenu===s.k?' open':'')+'"><button data-st-act="ren" data-k="'+s.k+'">✎ Renomear</button><button data-st-act="left" data-k="'+s.k+'">‹ Mover para a esquerda</button><button data-st-act="right" data-k="'+s.k+'">› Mover para a direita</button><button data-st-act="del" data-k="'+s.k+'" class="danger">'+ic('trash')+' Remover etapa</button></span></span>':'')+'</div>'
-      +'<div class="col-b">'+(items.length?shown.map(card).join('')+(rest>0?'<button class="more" data-more="'+s.k+'">Mostrar mais '+Math.min(60,rest)+' de '+rest+'</button>':''):'<div class="col-e">'+(cands.length?'Arraste um card para cá':(vagas.length?'Nenhuma candidatura ainda':'Crie uma vaga para começar'))+'</div>')+'</div></div>';
+      +'<div class="col-b">'+(s.k==='reprovado'&&items.some(c=>c.email&&!c.agradecido_em)?'<button class="col-thx" id="thxAll">'+ic('mail')+'Agradecer todos <b>'+items.filter(c=>c.email&&!c.agradecido_em).length+'</b></button>':'')+(items.length?shown.map(card).join('')+(rest>0?'<button class="more" data-more="'+s.k+'">Mostrar mais '+Math.min(60,rest)+' de '+rest+'</button>':''):'<div class="col-e">'+(cands.length?'Arraste um card para cá':(vagas.length?'Nenhuma candidatura ainda':'Crie uma vaga para começar'))+'</div>')+'</div></div>';
   }).join('')+'<button class="col-add" id="addSt" title="Nova etapa (ex.: Em treinamento)" aria-label="Nova etapa">'+ic('plus')+'<span>Nova etapa</span></button>';
 }
 let dupNames=new Map();
@@ -1127,8 +1147,8 @@ function card(c){
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
     +(()=>{ const h=homeOf(c), sp=spotOfVaga(v); if(!h||!sp) return ''; const tr=trip(h.b,sp);
         return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
-    +'<div class="kc-f">'+ic('clock')+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')
-    +'<span class="r">'+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
+    +'<div class="kc-f">'+ic('clock')+'<span class="t">'+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')+'</span>'
+    +'<span class="r">'+(colOf(c)==='reprovado'?(c.agradecido_em?'<span class="kc-thx done" title="Agradecido em '+fmtDia(c.agradecido_em)+'">✓ agradecido</span>':c.email?'<a class="kc-thx" data-thank-card="'+c.id+'" target="_blank" rel="noopener" href="'+thxHref(c)+'" title="Abrir e-mail de agradecimento">'+ic('mail')+'Agradecer</a>':''):'')+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
 }
 /* arrastar o fundo do quadro rola para os lados (como no Trello) */
 (()=>{ const b=$('board'); let x0=null,s0=0;
@@ -1149,6 +1169,8 @@ function moveTo(c,k){
   patch(c,{status:stFor(c,k)},true).then(()=>toast(c.name.split(' ')[0]+' → '+(STATUS.find(s=>s.k===k)||{}).l));
 }
 $('board').addEventListener('click',e=>{ if(e.target.closest('#addSt')) return addEtapa();
+  if(e.target.closest('#thxAll')) return openThanks();
+  const tk=e.target.closest('[data-thank-card]'); if(tk){ const c=cands.find(x=>x.id===tk.dataset.thankCard); if(c) markThanked([c]); return; }
   const mb=e.target.closest('[data-st-menu]'); if(mb){ UI.stMenu=UI.stMenu===mb.dataset.stMenu?null:mb.dataset.stMenu; document.querySelectorAll('.col-menu').forEach(m=>m.classList.toggle('open',m.previousElementSibling===mb&&!!UI.stMenu)); return; }
   const sa=e.target.closest('[data-st-act]'); if(sa){ UI.stMenu=null; return editEtapa(sa.dataset.k,sa.dataset.stAct); }
   const m=e.target.closest('[data-more]'); if(m){ UI.more=UI.more||{}; UI.more[m.dataset.more]=(UI.more[m.dataset.more]||60)+60; renderCand(); return; }
@@ -1175,7 +1197,6 @@ function openCand(id){
   const msgNo='Oi '+first+', aqui é da Coquin 🥥 Obrigado pelo interesse na vaga de '+(v.title||'')+'! Neste momento seguimos com outros perfis, mas vamos guardar seu contato para as próximas oportunidades. 💚';
   const ph=phoneOf(c);
   const wa=t=>'https://wa.me/'+waNumber(ph)+'?text='+encodeURIComponent(t);
-  const mail=(subj,t)=>'mailto:'+encodeURIComponent(c.email||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(t.replace(/ ?[🥥💚]/g,''));
   const C=201.06, pct=noNum(s.tier)?0:s.pct;
   const tl=s.tier==='X'?'Eliminado':s.tier==='P'?'Lendo o currículo…':s.tier==='Q'?'Avaliar manualmente':'Nível '+s.tier+' · '+TIERS[s.tier];
   const ts=s.tier==='P'?'O score aparece em instantes.':s.tier==='Q'?'Currículo em foto/escaneado ou ilegível: abra o arquivo para avaliar.':s.got+' de '+s.max+' pontos nas regras da vaga';
@@ -1200,10 +1221,15 @@ function openCand(id){
     +(s.kos.length && colOf(c)!=='reprovado'?'<div class="alert" style="margin-top:10px"><b>Eliminatória</b><br>'+s.kos.map(esc).join('<br>')+'</div>':'')
     +'<div class="acts" style="margin-top:14px">'
       +(c.cv_path?'<button class="btn accent" id="cvOpen">'+ic('file')+'Ver currículo</button>':'<span class="chip">sem currículo</span>')
-      +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgInv)+'">'+ic('chat')+'Chamar no WhatsApp</a>':'')
-      +(c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgInv)+'">'+ic('mail')+(ph?'E-mail':'Convidar por e-mail')+'</a>':'')
-      +(ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgNo)+'">Agradecer</a>':c.email?'<a class="btn ghost" href="'+mail('Coquin · '+(v.title||'sua candidatura'),msgNo)+'">Agradecer</a>':'')
-    +'</div></div>'
+      +(colOf(c)==='reprovado'
+        ? (c.email?'<a class="btn ghost" target="_blank" rel="noopener" data-thank="'+c.id+'" href="'+thxHref(c)+'">'+ic('mail')+'Agradecer por e-mail</a>':'')
+          +(ph?'<a class="btn ghost" target="_blank" rel="noopener" data-thank="'+c.id+'" href="'+wa(msgNo)+'">'+ic('chat')+'Agradecer no WhatsApp</a>':'')
+        : (ph?'<a class="btn ghost" target="_blank" rel="noopener" href="'+wa(msgInv)+'">'+ic('chat')+'Chamar no WhatsApp</a>':'')
+          +(c.email?'<a class="btn ghost" target="_blank" rel="noopener" href="'+mailHref({to:c.email,su:'Coquin · '+(v.title||'sua candidatura'),body:msgInv})+'">'+ic('mail')+'Convidar por e-mail</a>':'')
+          +(c.email?'<a class="btn ghost" target="_blank" rel="noopener" data-thank="'+c.id+'" href="'+thxHref(c)+'">Agradecer</a>':ph?'<a class="btn ghost" target="_blank" rel="noopener" data-thank="'+c.id+'" href="'+wa(msgNo)+'">Agradecer</a>':''))
+    +'</div>'
+    +(c.agradecido_em?'<div class="thx-done">'+ic('mail')+'Agradecimento enviado em '+fmtDia(c.agradecido_em)+'</div>':'')
+    +'</div>'
     +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(colOf(c)===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+esc(x.l)+'</button>').join('')+'</div>'
 
     +'<h4 style="margin-top:18px">Sua nota</h4><div class="starsel" id="starSel">'+[1,2,3,4,5].map(n=>'<button data-n="'+n+'" class="'+((c.stars||0)>=n?'on':'')+'">★</button>').join('')+'</div></div>'
@@ -1260,6 +1286,40 @@ async function openCv(c){
   const {data,error}=await sb.storage.from('cvs').createSignedUrl(c.cv_path,600);
   if(error||!data){ if(w) w.close(); toast('Não foi possível abrir o currículo'); return; }
   if(w) w.location=data.signedUrl; else location.href=data.signedUrl;
+}
+/* ---------- e-mail de agradecimento (Não qualificados) ----------
+   Abre o Gmail (ou o app de e-mail) já com a mensagem pronta. Em massa, os endereços vão em Cco
+   (ninguém vê o dos outros), em lotes de 50. Quem já recebeu fica marcado (agradecido_em). */
+function mailApp(){ try{ return localStorage.getItem('coquin-email-app')||'gmail'; }catch(_){ return 'gmail'; } }
+function mailHref(o){ const body=(o.body||'').replace(/ ?[🥥💚]/g,''), bcc=o.bcc||[];
+  if(mailApp()==='gmail') return 'https://mail.google.com/mail/?view=cm&fs=1'+(o.to?'&to='+encodeURIComponent(o.to):'')+(bcc.length?'&bcc='+encodeURIComponent(bcc.join(',')):'')+'&su='+encodeURIComponent(o.su||'')+'&body='+encodeURIComponent(body);
+  return 'mailto:'+encodeURIComponent(o.to||'')+'?'+(bcc.length?'bcc='+encodeURIComponent(bcc.join(','))+'&':'')+'subject='+encodeURIComponent(o.su||'')+'&body='+encodeURIComponent(body); }
+const THX_SUBJ='Coquin · obrigado pela sua candidatura';
+function thxText(first,vt){ return 'Oi'+(first?' '+first:'')+', tudo bem?\n\nAqui é da Coquin. Muito obrigado por se candidatar'+(vt?' à vaga de '+vt:'')+' e pelo interesse em fazer parte do nosso time!\n\nNeste momento seguimos com outros perfis, mas o seu currículo fica guardado com a gente e podemos chamar você em novas oportunidades.\n\nDesejamos muito sucesso!\nEquipe Coquin'; }
+function thxHref(c){ const v=vagas.find(x=>x.id===c.vaga_id)||{}; return mailHref({to:c.email,su:THX_SUBJ,body:thxText(c.name.split(' ')[0],v.title)}); }
+const fmtDia=d=>new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+async function markThanked(list){ if(!list.length) return true; const now=new Date().toISOString();
+  for(let i=0;i<list.length;i+=200){ const ids=list.slice(i,i+200).map(c=>c.id);
+    const {error}=await sb.from('candidaturas').update({agradecido_em:now}).in('id',ids);
+    if(error){ toast(/agradecido_em|column|schema cache/i.test(error.message)?'⚠︎ Rode o SETUP.sql atualizado para marcar quem já foi agradecido':'⚠︎ '+error.message); return false; } }
+  list.forEach(c=>c.agradecido_em=now); renderCand(); if(openId && list.some(c=>c.id===openId)) openCand(openId); return true; }
+let THX={pool:[],sent:{}};
+function openThanks(){
+  const ids=colIds.reprovado||[]; const all=ids.map(id=>cands.find(c=>c.id===id)).filter(c=>c&&c.email);
+  const vg=UI.vaga!=='all'?vagas.find(v=>v.id===UI.vaga):null;
+  THX={all,inc:false,sent:{},su:THX_SUBJ,body:thxText('',vg&&vg.title)}; renderThanks(); openSheet('thxSheet'); }
+function renderThanks(){
+  const pool=THX.all.filter(c=>THX.inc||!c.agradecido_em); THX.pool=pool;
+  const done=THX.all.length-THX.all.filter(c=>!c.agradecido_em).length, semMail=(colIds.reprovado||[]).length-THX.all.length;
+  const lots=[]; for(let i=0;i<pool.length;i+=50) lots.push(pool.slice(i,i+50));
+  $('thxBody').innerHTML='<div class="blk"><p class="thx-sum"><b>'+pool.length+'</b> '+(pool.length===1?'pessoa vai':'pessoas vão')+' receber o agradecimento'
+      +(done?' · <span class="ok">'+done+' já '+(done===1?'foi agradecida':'foram agradecidas')+'</span>':'')+(semMail>0?' · '+semMail+' sem e-mail':'')+'</p>'
+    +(done?'<label class="thx-inc"><input type="checkbox" id="thxInc"'+(THX.inc?' checked':'')+'> Mandar de novo para quem já foi agradecido</label>':'')
+    +'<h4>Abrir em</h4><div class="seg" id="thxApp"><button data-app="gmail" class="'+(mailApp()==='gmail'?'sel':'')+'">Gmail</button><button data-app="app" class="'+(mailApp()!=='gmail'?'sel':'')+'">App de e-mail</button></div>'
+    +'<h4>Assunto</h4><input id="thxSu" value="'+esc(THX.su)+'">'
+    +'<h4>Mensagem</h4><textarea id="thxMsg" rows="9">'+esc(THX.body)+'</textarea>'
+    +'<h4>Enviar</h4>'+(lots.length?'<div class="thx-lots">'+lots.map((l,i)=>'<a class="btn '+(THX.sent[i]?'ghost':'accent')+'" data-lot="'+i+'" target="_blank" rel="noopener" href="#">'+ic('mail')+(THX.sent[i]?'✓ Lote '+(i+1)+' aberto':(lots.length>1?'Lote '+(i+1)+' · ':'')+'Abrir e-mail para '+l.length)+'</a>').join('')+'</div>':'<p class="note">Todo mundo desta coluna já foi agradecido. 💚</p>')
+    +'<p class="note" style="margin-top:12px">O e-mail abre pronto, com os endereços em <b>Cco</b> (cópia oculta): ninguém vê o e-mail dos outros. Confira e clique em <b>Enviar</b>. Lotes de 50 para não cair no spam (o Gmail aceita até 500 destinatários por dia). Ao abrir um lote, essas pessoas ficam marcadas como <b>agradecidas</b> no card.</p></div>';
 }
 async function patch(c,fields,quiet){
   Object.assign(c,fields); c.updated_at=new Date().toISOString();
@@ -1838,6 +1898,17 @@ async function drawBannerArt(v,fmt,swap){
 }
 
 /* ---------- navegação / painéis ---------- */
+/* agradecer: marca quem recebeu (painel do candidato e envio em massa) */
+$('cBody').addEventListener('click',e=>{ const a=e.target.closest('[data-thank]'); if(!a) return; const c=cands.find(x=>x.id===a.dataset.thank); if(c) markThanked([c]); });
+$('thxBody').addEventListener('input',e=>{ if(e.target.id==='thxSu') THX.su=e.target.value; if(e.target.id==='thxMsg') THX.body=e.target.value; });
+$('thxBody').addEventListener('change',e=>{ if(e.target.id==='thxInc'){ THX.inc=e.target.checked; THX.sent={}; renderThanks(); } });
+$('thxBody').addEventListener('click',e=>{
+  const ap=e.target.closest('[data-app]'); if(ap){ try{ localStorage.setItem('coquin-email-app',ap.dataset.app); }catch(_){} THX.sent={}; renderThanks(); return; }
+  const lt=e.target.closest('[data-lot]'); if(!lt) return;
+  const i=+lt.dataset.lot, lot=THX.pool.slice(i*50,i*50+50);
+  lt.href=mailHref({bcc:lot.map(c=>c.email.trim()),su:THX.su,body:THX.body});   // o navegador abre este link
+  THX.sent[i]=true; markThanked(lot).then(()=>{ lt.classList.replace('accent','ghost'); lt.innerHTML=ic('mail')+'✓ Lote '+(i+1)+' aberto'; });
+});
 function openSheet(id){ document.querySelectorAll('.sheet').forEach(s=>s.classList.toggle('on',s.id===id)); $('scrim').classList.add('on'); }
 function closeSheets(){ document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on')); $('scrim').classList.remove('on'); openId=null; renderOpenMarks(); }
 $('scrim').onclick=closeSheets;

@@ -54,6 +54,10 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
 - **Painel lateral do candidato**: score com o porquê de cada ponto, **ver currículo** (link
   temporário de 10 min), **WhatsApp** com mensagem pronta (chamar pra conversa / agradecer),
   etapa, **nota em estrelas**, contato, texto com as palavras-chave destacadas e **anotações**.
+- **Agradecer quem não passou:** em *Não qualificados*, o painel do candidato mostra **Agradecer por
+  e-mail / WhatsApp** (no lugar do convite) e cada card tem o botão **Agradecer**. No topo da coluna,
+  **Agradecer todos** abre o Gmail (ou o app de e-mail) com a mensagem pronta e os endereços em Cco,
+  em lotes de 50. Quem já recebeu fica marcado como **✓ agradecido** (`agradecido_em`).
 - **Exportar CSV** (Excel/Sheets) e **excluir candidatura + CV** (pedido LGPD).
 - Candidatura nova aparece na hora (realtime).
 - **Por que foi qualificado:** no card, as palavras que pontuaram (✓ sorveteria, ✓ atendimento…);
