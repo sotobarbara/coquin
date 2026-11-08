@@ -197,6 +197,10 @@ main{padding-top:18px}
 .stone-row .money{flex:1}
 .stone-row .money input{font-size:19px;padding:9px 0}
 .stone-row .money .cur{font-size:14px}
+.dayserial-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;margin-bottom:9px;width:100%;box-sizing:border-box}
+.dayserial-row .dss{min-width:0;font-family:ui-monospace,monospace;font-size:11.5px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dayserial-row .dss .adj{font-family:"Inter",sans-serif;color:var(--gold)}
+.dayserial-row select{width:100%;padding:10px 9px}
 
 /* card de conciliação */
 .recon{background:var(--green-tint);border-radius:var(--r-sm);padding:13px 15px;margin:2px 0 16px}
@@ -1019,6 +1023,11 @@ main{padding-top:18px}
     </div>
   </div>
 
+  <div class="field" id="daySerialsField" style="display:none">
+    <label>🏪 Loja de cada maquininha <span class="hintlink" style="color:var(--ink-faint);cursor:default">mude só a que foi pra evento/outro lugar neste dia</span></label>
+    <div id="daySerials"></div>
+  </div>
+
   <div class="field">
     <label>💵 Dinheiro por loja <span class="hintlink" style="color:var(--ink-faint);cursor:default">conte a gaveta de cada loja</span></label>
     <div id="cashStores"></div>
@@ -1326,7 +1335,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.3 · loja padrao (fallback)'
+const APP_VERSION='v8.4 · maquininha do evento por dia'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1400,12 +1409,14 @@ function ensureStores(){ if(!Array.isArray(db.settings.stores)||!db.settings.sto
   if(!Array.isArray(db.settings.squads)||!db.settings.squads.length) db.settings.squads=JSON.parse(JSON.stringify(DEFAULT_SQUADS));
   // loja padrão: maquininha sem série mapeada conta como esta loja (ex.: Beira Mar, que concentra o fluxo)
   if(db.settings.defaultStore===undefined) db.settings.defaultStore='beiramar';
+  // exceções por dia: {data:{serie:lojaId}} — ex.: uma maquininha da Beira Mar foi pro evento num dia
+  if(!db.settings.serialDayMap||typeof db.settings.serialDayMap!=='object') db.settings.serialDayMap={};
   // Beira Mar abriu 23/10: a 4AH38939D só conta como Beira Mar a partir dessa data (normaliza o de-para antigo em string)
   if(db.settings.serialMap['4AH38939D']==='beiramar') db.settings.serialMap['4AH38939D']={store:'beiramar',from:'2026-10-23'};
   // maquininha de Eventos (31/10) foi incorporada à Beira Mar a partir de 01/11
   if(db.settings.serialMap['XC03020753916']==='eventos') db.settings.serialMap['XC03020753916']=[{store:'eventos',to:'2026-10-31'},{store:'beiramar',from:'2026-11-01'}]; }
 function storeName(id){ const s=(db.settings.stores||[]).find(x=>x.id===id); return s?s.name:null; }
-function serialStore(ser,date){ const def=db.settings.defaultStore||null;
+function serialStoreBase(ser,date){ const def=db.settings.defaultStore||null;
   const v=(db.settings.serialMap||{})[ser];
   const test=p=>{ if(!p||!p.store) return null; if(p.from&&date&&date<p.from) return null; if(p.to&&date&&date>p.to) return null; return p.store; };
   let r=null;
@@ -1414,6 +1425,9 @@ function serialStore(ser,date){ const def=db.settings.defaultStore||null;
     else if(typeof v==='object') r=test(v); }
   return r || def;   // série não mapeada (ou período sem loja) → loja padrão
 }
+function serialStore(ser,date){ const dm=db.settings.serialDayMap;   // exceção do dia (ex.: máquina foi pro evento) tem prioridade
+  if(dm&&dm[date]&&dm[date][ser]) return dm[date][ser];
+  return serialStoreBase(ser,date); }
 const GEL_PER_COCO=2;   // 1 coco rende 2 gelatos (compat)
 const DEFAULT_COST=1.5; // custo planejado por coco
 const QUENGAS_POR_COCO=2;   // 1 coco = 2 quengas
@@ -1480,7 +1494,7 @@ const Cloud={
       pending.forEach(x=>this.pushClosing(x));
     }
     if(st){ db.settings={unit:st.unit||DEFAULT_UNIT,price:+st.price||DEFAULT_PRICE,price2:(+st.price2||DEFAULT_PRICE2),custoPlan:(+st.custo_plan||DEFAULT_COST),weekdayGoals:(st.wk_goals||null)}; db.goals=st.goals||{};
-      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; if(typeof st.lojas.defaultStore==='string') db.settings.defaultStore=st.lojas.defaultStore; } ensureStores(); }
+      if(st.lojas&&typeof st.lojas==='object'){ if(Array.isArray(st.lojas.stores)) db.settings.stores=st.lojas.stores; if(st.lojas.serialMap&&typeof st.lojas.serialMap==='object') db.settings.serialMap=st.lojas.serialMap; if(st.lojas.caixaInicial&&typeof st.lojas.caixaInicial==='object') db.settings.caixaInicial=st.lojas.caixaInicial; if(Array.isArray(st.lojas.employees)) db.settings.employees=st.lojas.employees; if(st.lojas.folhaPago&&typeof st.lojas.folhaPago==='object') db.settings.folhaPago=st.lojas.folhaPago; if(Array.isArray(st.lojas.squads)) db.settings.squads=st.lojas.squads; if(typeof st.lojas.defaultStore==='string') db.settings.defaultStore=st.lojas.defaultStore; if(st.lojas.serialDayMap&&typeof st.lojas.serialDayMap==='object') db.settings.serialDayMap=st.lojas.serialDayMap; } ensureStores(); }
     const {data:sk,error:eSk}=await c.from('stock').select('*').order('date',{ascending:false});
     if(!eSk && sk){ // merge stock (chave data+produto); preserva recebido/transferido locais se a nuvem voltar sem as colunas
       const locByKey={}; (db.stock||[]).forEach(x=>{ if(x&&x.date) locByKey[x.date+'|'+migProd(x.product)]=x; });
@@ -1534,7 +1548,7 @@ const Cloud={
     try{ const err=await this._upsert('cashflow',[full,mid,core],'id'); if(err) throw err; m.synced=true; Store.save(db); }
     catch(e){ toast('⚠︎ Sem conexão — salvo neste aparelho'); } },
   async delCash(id){ if(!this.on)return; try{ await this.client.from('cashflow').delete().eq('id',id);}catch(e){} },
-  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null,defaultStore:db.settings.defaultStore||null};
+  async pushSettings(){ if(!this.on)return; const base={id:1,unit:db.settings.unit,price:db.settings.price,custo_plan:db.settings.custoPlan,wk_goals:(db.settings.weekdayGoals||null),goals:db.goals}; const lojas={stores:db.settings.stores||null,serialMap:db.settings.serialMap||null,caixaInicial:db.settings.caixaInicial||null,employees:db.settings.employees||null,folhaPago:db.settings.folhaPago||null,squads:db.settings.squads||null,defaultStore:db.settings.defaultStore||null,serialDayMap:db.settings.serialDayMap||null};
     try{ let {error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2,lojas}); if(error){ ({error}=await this.client.from('app_settings').upsert({...base,price2:db.settings.price2})); if(error) await this.client.from('app_settings').upsert(base); } }catch(e){} },
   subscribe(){
     try{ this.client.channel('coquin-rt')
@@ -2355,6 +2369,28 @@ function renderCashStores(cashByStore){
 function sumCashStores(){ let tot=0; document.querySelectorAll('#cashStores [data-cashstore]').forEach(inp=>tot+=parseMoney(inp.value));
   $('cCash').value = tot>0 ? String(tot.toFixed(2)).replace('.',',') : ''; recompute(); }
 function cashByStoreFromForm(){ const o={}; document.querySelectorAll('#cashStores [data-cashstore]').forEach(inp=>{ const v=parseMoney(inp.value); if(v>0) o[inp.getAttribute('data-cashstore')]=v; }); return o; }
+/* maquininhas do dia -> loja (exceção por data, ex.: foi pro evento) */
+let _daySerialDraft={};
+function daySerialsOf(date){ const set=new Set();
+  const sp=stoneParsed.find(x=>x.date===date); if(sp&&sp.bySerial) Object.keys(sp.bySerial).forEach(s=>set.add(s));
+  const ex=db.closings.find(c=>c.date===date); if(ex&&ex.bySerial&&typeof ex.bySerial==='object') Object.keys(ex.bySerial).forEach(s=>set.add(s));
+  set.delete('—'); return [...set].sort(); }
+function renderDaySerials(date){ const field=$('daySerialsField'), host=$('daySerials'); if(!field||!host) return;
+  _daySerialDraft={}; const sers=daySerialsOf(date);
+  if(!sers.length || !(db.settings.stores||[]).length){ field.style.display='none'; host.innerHTML=''; return; }
+  field.style.display='block';
+  const opts=(sel)=>(db.settings.stores||[]).map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+s.name+'</option>').join('');
+  host.innerHTML=sers.map(ser=>{ const eff=serialStore(ser,date); _daySerialDraft[ser]=eff; const base=serialStoreBase(ser,date); const moved=eff!==base;
+    return '<div class="dayserial-row"><span class="dss">'+ser+(moved?' <span class="adj">• ajustado</span>':'')+'</span>'
+      +'<select class="date-input" data-dayserial="'+ser+'">'+opts(eff)+'</select></div>';
+  }).join('');
+  host.querySelectorAll('[data-dayserial]').forEach(sel=>sel.addEventListener('change',()=>{ _daySerialDraft[sel.getAttribute('data-dayserial')]=sel.value; }));
+}
+function saveDaySerials(date){ if(!date) return; if(!db.settings.serialDayMap) db.settings.serialDayMap={};
+  const m=db.settings.serialDayMap; Object.keys(_daySerialDraft).forEach(ser=>{ const chosen=_daySerialDraft[ser], base=serialStoreBase(ser,date);
+    if(chosen && chosen!==base){ if(!m[date]) m[date]={}; m[date][ser]=chosen; }
+    else if(m[date]){ delete m[date][ser]; } });
+  if(m[date] && !Object.keys(m[date]).length) delete m[date]; }
 function recompute(){   // dinheiro (contado) + Stone (cartão/Pix) -> total e gelatos, pelo VALOR
   const stone=parseMoney($('sPix').value)+parseMoney($('sDeb').value)+parseMoney($('sCred').value);
   const cash=parseMoney($('cCash').value);
@@ -2386,6 +2422,7 @@ function renderRecon(){
 }
 ['sPix','sDeb','sCred','cCash'].forEach(id=> $(id).addEventListener('input', recompute));
 ['cGel','cRev','cDate'].forEach(id=> $(id).addEventListener('input', renderRecon));   // cGel/cRev = ajuste manual (combo/desconto)
+$('cDate').addEventListener('change', ()=> renderDaySerials($('cDate').value));   // ao trocar o dia, recarrega as maquininhas daquele dia
 $('fillRev').addEventListener('click', ()=>{ const rev=parseMoney($('cRev').value); if(price()>0&&rev>0) $('cGel').value=Math.round(rev/price()); renderRecon(); });
 
 /* ---- import CSV da Stone ---- */
@@ -2447,6 +2484,7 @@ function applyStoneDay(d){
   const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0);
   $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+cardGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas). Conte o <b>dinheiro</b> pra fechar o total.';
   showStoneChips(d.date);
+  renderDaySerials(d.date);
   const novos=stoneParsed.filter(x=>!db.closings.some(c=>c.date===x.date)).length;
   $('bulkBtn').style.display = stoneParsed.length>1? 'block':'none';
   $('bulkBtn').textContent = novos>0
@@ -2507,12 +2545,14 @@ function openClose(existing){
     const stone=(existing.pix||0)+(existing.debito||0)+(existing.credito||0), cash=(existing.revenue||0)-stone;
     $('cCash').value = cash>0.005 ? String(cash.toFixed(2)).replace('.',',') : '';
     renderCashStores(existing.cashByStore||{});
+    renderDaySerials(existing.date);
     $('deleteClose').style.display='block';
   } else {
     $('closeTitle').textContent='Fechamento do dia';
     $('cDate').value=yesterdayISO();
     ['cGel','cRev','sPix','sDeb','sCred','cCash'].forEach(id=>$(id).value='');
     renderCashStores({});
+    renderDaySerials($('cDate').value);
     $('deleteClose').style.display='none';
   }
   renderRecon(); openSheet(closeSheet);
@@ -2534,11 +2574,12 @@ $('saveClose').addEventListener('click', ()=>{
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
   // fluxo por hora + taxa Stone vindos do CSV importado (se houver para esta data)
   const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; if(sp.bySerial) saved.bySerial=sp.bySerial; saved.taxa=sp.taxa||0; saved.gel30=Math.round(sp.g30||0); saved.gel35=Math.round(sp.g35||0); }
+  saveDaySerials(d.date);   // exceções do dia (maquininha que foi pro evento)
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
   // nuvem: se a data mudou na edição, remove a antiga
   if(oldDate && oldDate!==saved.date) Cloud.delClosing(oldDate);
-  Cloud.pushClosing(saved);
+  Cloud.pushClosing(saved); Cloud.pushSettings();
   toast('Dia fechado · '+d.gelatos+' gelatos · <b>'+money(d.revenue)+'</b>');
 });
 $('deleteClose').addEventListener('click', ()=>{
