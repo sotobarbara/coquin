@@ -51,6 +51,9 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
   de lugar ou remover (quem estava nela volta para *Aplicações*). Fica salva na tabela `vagas_config`
   (rode o `SETUP.sql` atualizado uma vez).
 - Filtro por nível (A/B/C/Eliminados), busca e ordenação (score, data, sua nota).
+- **Busca dentro dos currículos:** digite uma palavra (ex.: `coco`) e o quadro mostra só quem tem ela
+  no currículo, com o **trecho** destacado no card e todos os trechos no painel do candidato. Acento
+  não importa e o começo da palavra pega as variações (coco → cocos); várias palavras = todas precisam aparecer.
 - **Painel lateral do candidato**: score com o porquê de cada ponto, **ver currículo** (link
   temporário de 10 min), **WhatsApp** com mensagem pronta (chamar pra conversa / agradecer),
   etapa, **nota em estrelas**, contato, texto com as palavras-chave destacadas e **anotações**.
