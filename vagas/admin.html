@@ -357,6 +357,17 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .kw-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #BFE0CF;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:500;color:#1F5B43}
 .kw-chip i{font-style:normal;font-size:11.5px;color:var(--tA);font-weight:600}
 .kw-chip em{font-style:normal;font-size:11px;color:var(--muted)}
+.q-res{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);background:var(--accent-soft);border-radius:99px;padding:5px 6px 5px 12px}
+.q-res b{color:var(--accent)} .q-res .muted{color:var(--muted)}
+.q-res button{border:0;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;width:20px;height:20px;border-radius:99px;padding:0}
+.q-res button:hover{background:rgba(0,0,0,.07);color:var(--ink)} .q-res svg{width:12px;height:12px}
+.kc-hit{display:flex;gap:7px;align-items:flex-start;margin-top:9px;font-size:12px;line-height:1.45;color:var(--ink-2);background:#FFF8E6;border:1px solid #F1E2B8;border-radius:8px;padding:7px 9px}
+.kc-hit svg{width:12px;height:12px;flex:none;margin-top:2px;color:#A07A1A}
+.kc-hit span{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.kc-hit mark{background:#FFE08A;color:#4A3500;border-radius:3px;padding:0 1px}
+.kc-hit b{flex:none;font-size:11px;color:#A07A1A}
+.why.qhit{background:#FFF8E6;color:var(--ink-2)} .why.qhit b{display:flex;align-items:center;gap:6px;color:#7A5A0F} .why.qhit svg{width:13px;height:13px}
+.why.qhit .kw-snips mark{background:#FFE08A;color:#4A3500}
 .kw-snips{margin:0;padding-left:16px;display:grid;gap:6px;font-size:13px;color:var(--ink-2)}
 .kw-snips mark{background:#C9EBD8;color:#14432F;border-radius:3px;padding:0 1px}
 .kw-miss{margin-top:12px;font-size:12.5px;color:var(--muted)}
@@ -481,7 +492,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
           <div class="hello">Aqui está o nosso pipeline de recrutamento.</div>
         </div>
         <div class="acts">
-          <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="fSearch" type="search" placeholder="Buscar candidato…"></label>
+          <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="fSearch" type="search" placeholder="Nome ou palavra do currículo (ex.: coco)"></label>
           <button class="btn ghost" id="csvBtn"><svg class="i"><use href="#i-down"/></svg>Exportar</button>
         </div>
       </div>
@@ -497,6 +508,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
         </div>
         <div class="bar">
           <div class="seg" id="tierSeg"></div>
+          <span class="q-res hide" id="qRes"></span>
           <span class="spacer"></span>
           <select class="sm" id="fSort"><option value="score">Ordenar: maior score</option><option value="date">Ordenar: mais recentes</option><option value="stars">Ordenar: minha nota</option><option value="perto">Ordenar: mais perto da vaga</option></select>
         </div>
@@ -1052,10 +1064,27 @@ function ago(iso){ const m=(Date.now()-new Date(iso))/60000; if(m<60) return Mat
 /* coluna do quadro: quem chega com nível C ou eliminado já cai em "Não qualificados" */
 function colOf(c){ if(c.status==='novo_ok') return 'novo'; if(c.status==='reprovado') return 'reprovado'; if(c.status==='novo' && (sc(c).tier==='C'||sc(c).tier==='X')) return 'reprovado'; return STATUS.some(s=>s.k===c.status)?c.status:'novo'; }
 function autoNQ(c){ return c.status==='novo' && colOf(c)==='reprovado'; }
+/* ---------- busca: nome, contato e PALAVRAS DENTRO DO CURRÍCULO ----------
+   "coco" acha coco, cocos, coco-verde (começo da palavra, sem acento). Várias palavras = todas precisam aparecer. */
+const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function qTerms(){ return norm(UI.q||'').trim().split(/\s+/).filter(t=>t.length>=2); }
+function cvNorm(c){ const src=c.cv_text||''; if(c._ntSrc!==src){ c._ntSrc=src; c._ot=src.replace(/\s+/g,' '); c._nt=norm(c._ot); if(c._nt.length!==c._ot.length) c._ot=c._nt; } return c._nt; }
+function qMatch(c,ts){ ts=ts||qTerms(); if(!ts.length) return {ok:true,cv:0};
+  const meta=norm(c.name+' '+(c.city||'')+' '+(c.phone||'')+' '+(c.email||'')+' '+(c.about||'')+' '+(c.notes||'')), cv=cvNorm(c); let n=0;
+  for(const t of ts){ if(meta.includes(t)) continue; const m=cv.match(new RegExp('(?:^|[^a-z0-9])'+reEsc(t),'g')); if(!m) return {ok:false,cv:0}; n+=m.length; }
+  return {ok:true,cv:n}; }
+function qSnips(c,max){ const ts=qTerms(); if(!ts.length||!c.cv_text) return []; const cv=cvNorm(c), out=[];
+  for(const t of ts){ const re=new RegExp('(?:^|[^a-z0-9])('+reEsc(t)+')','g'); let m;
+    while((m=re.exec(cv)) && out.length<(max||5)){ const i=m.index+m[0].length-m[1].length, j=i+m[1].length;
+      let a=Math.max(0,i-60), b=Math.min(cv.length,j+70); a=cv.lastIndexOf(' ',a)+1||a; const sp=cv.indexOf(' ',b); if(sp>0&&sp-b<15) b=sp;
+      out.push({pre:(a>0?'…':'')+c._ot.slice(a,i),hit:c._ot.slice(i,j),post:c._ot.slice(j,b)+(b<cv.length?'…':'')}); } }
+  return out; }
+const snipHtml=x=>esc(x.pre)+'<mark>'+esc(x.hit)+'</mark>'+esc(x.post);
 function filtered(base){
+  const ts=qTerms(), raw=norm(UI.q||'').trim();
   return base.filter(c=>{
     if(UI.tier!=='all' && sc(c).tier!==UI.tier) return false;
-    if(UI.q){ const q=norm(UI.q); if(!norm(c.name+' '+c.city+' '+c.phone+' '+c.email).includes(q)) return false; }
+    if(raw){ if(ts.length){ if(!qMatch(c,ts).ok) return false; } else if(!norm(c.name+' '+c.email).includes(raw)) return false; }
     return true;
   });
 }
@@ -1092,6 +1121,8 @@ function renderCand(){
     +['A','B','C','X'].map(t=>'<button data-t="'+t+'" class="'+(UI.tier===t?'sel':'')+'"><span class="tdot" style="background:'+TIERC[t]+'"></span>'+(t==='X'?'Eliminados':'Nível '+t)+' <span style="color:var(--muted)">'+cnt[t]+'</span></button>').join('');
   $('fSort').value=UI.sort;
   const list=filtered(base);
+  { const ts=qTerms(), el=$('qRes'); if(el){ const lendo=base.filter(c=>c.cv_path&&c.cv_text==null).length;
+      el.innerHTML=ts.length?'<b>'+list.length+'</b> '+(list.length===1?'pessoa':'pessoas')+' com “'+esc(UI.q.trim())+'”'+(lendo?' <span class="muted">· '+lendo+' currículo'+(lendo>1?'s':'')+' ainda sendo lido'+(lendo>1?'s':'')+'</span>':'')+'<button id="qClr" title="Limpar busca">'+ic('x')+'</button>':''; el.classList.toggle('hide',!ts.length); } }
   dupNames=new Map(); cands.forEach(c=>{ const k=c.vaga_id+'|'+norm(c.name).trim(); dupNames.set(k,(dupNames.get(k)||0)+1); });
   $('board').innerHTML=STATUS.map(s=>{
     const items=sortList(list.filter(c=>colOf(c)===s.k)); colIds[s.k]=items.map(c=>c.id);
@@ -1145,6 +1176,8 @@ function card(c){
     +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
     +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:noNum(s.tier)?0:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
+    +(()=>{ const m=qTerms().length?qMatch(c):null; if(!m||!m.cv) return ''; const sn=qSnips(c,1)[0]; if(!sn) return '';
+        return '<div class="kc-hit">'+ic('search')+'<span>'+snipHtml(sn)+'</span>'+(m.cv>1?'<b>'+m.cv+'x</b>':'')+'</div>'; })()
     +(()=>{ const h=homeOf(c), sp=spotOfVaga(v); if(!h||!sp) return ''; const tr=trip(h.b,sp);
         return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
     +'<div class="kc-f">'+ic('clock')+'<span class="t">'+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')+'</span>'
@@ -1213,6 +1246,11 @@ function openCand(id){
       +(s.highlights.length&&!s.ev.length?'<ul>'+s.highlights.map(h=>'<li>'+esc(h)+'</li>').join('')+'</ul>':'')
       +(s.kw&&s.kw.miss.length?'<div class="kw-miss">Não apareceram: '+esc(s.kw.miss.slice(0,8).map(k=>k.w).join(', '))+(s.kw.miss.length>8?'…':'')+'</div>':'')
       +'</div></div>':'')
+    +(()=>{ const ts=qTerms(); if(!ts.length) return ''; const sn=qSnips(c,6), m=qMatch(c,ts);
+        return '<div class="blk"><div class="why qhit"><b>'+ic('search')+'Busca: “'+esc(UI.q.trim())+'”</b>'
+          +(sn.length?'<div class="kw-h">'+m.cv+(m.cv===1?' vez':' vezes')+' no currículo</div><ul class="kw-snips">'+sn.map(x=>'<li>'+snipHtml(x)+'</li>').join('')+'</ul>'
+            :'<p>'+(c.cv_path&&c.cv_text==null?'O currículo ainda está sendo lido.':'Encontrado no nome, contato ou anotações (não no currículo).')+'</p>')
+          +'</div></div>'; })()
     +(colOf(c)==='reprovado'?'<div class="blk"><div class="why"><b>Por que está em Não qualificados</b><ul>'+whyNQ(c).map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>'
       +'<div class="why-tip">Discorda? Mova para outra etapa abaixo, ou ajuste as palavras-chave em <b>Vagas & regras → Regras</b>.</div></div></div>':'')
     +(s.tier==='Q'?'<div class="blk"><div class="why q"><b>Por que está como Manual</b><ul><li>Não consegui ler nenhum texto do arquivo (pode ser foto muito escura, desenho ou formato não suportado).</li><li>Abra o currículo e decida você mesma.</li></ul></div></div>':'')
@@ -1925,7 +1963,8 @@ $('newVaga').onclick=()=>openVaga(null);
 $('newVagaP').onclick=()=>openVaga(null);
 $('pShare').onclick=()=>{ const v=vagas.find(x=>x.id===UI.vaga); if(v) openShare(v); };
 $('fSort').onchange=e=>{ UI.sort=e.target.value; saveUI(); renderCand(); };
-$('fSearch').oninput=e=>{ UI.q=e.target.value; renderCand(); };
+let qT=null; $('fSearch').oninput=e=>{ UI.q=e.target.value; clearTimeout(qT); qT=setTimeout(renderCand,140); };
+document.addEventListener('click',e=>{ if(e.target.closest('#qClr')){ UI.q=''; $('fSearch').value=''; renderCand(); $('fSearch').focus(); } });
 $('tierSeg').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b){ UI.tier=b.dataset.t; renderCand(); } };
 function render(){ if(view==='cand') renderCand(); else renderVagas(); }
 
