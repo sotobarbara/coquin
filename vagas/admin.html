@@ -361,17 +361,25 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .q-res b{color:var(--accent)} .q-res .muted{color:var(--muted)}
 .q-res button{border:0;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;width:20px;height:20px;border-radius:99px;padding:0}
 .q-res button:hover{background:rgba(0,0,0,.07);color:var(--ink)} .q-res svg{width:12px;height:12px}
-.mcv{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
-.mcv ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
-.mcv li{display:flex;align-items:baseline;gap:6px;font-size:12px;line-height:1.35;color:var(--ink-2);min-width:0}
-.mcv li svg{width:12px;height:12px;flex:none;color:var(--muted);transform:translateY(2px)}
-.mcv .t{flex:1;min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.mcv .d{flex:none;white-space:nowrap;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
-.mcv .d.now{color:var(--accent);font-weight:500}
-.mcv li.edu .t{color:var(--muted)}
-.mcv li.first .t{color:var(--accent);font-weight:500}
-.mcv-more{border:0;background:none;padding:4px 0 0 18px;font:inherit;font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:500}
-.mcv-more:hover{text-decoration:underline}
+.cv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.cv-top h4{margin:0}
+.cvdoc{display:grid;gap:18px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+.cvdoc mark{background:var(--accent-soft);color:var(--accent-2);border-radius:3px;padding:0 1px}
+.cv-pre{font-size:12.5px;color:var(--muted);line-height:1.6}
+.cv-sec h5{margin:0 0 8px;font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:10px}
+.cv-sec h5::after{content:'';flex:1;height:1px;background:var(--line)}
+.cv-sec p{margin:0}
+.cv-list{margin:0;padding-left:18px;display:grid;gap:3px}
+.cv-job{position:relative;padding:0 0 12px 16px;border-left:2px solid var(--line);margin-left:3px}
+.cv-job:last-child{padding-bottom:0}
+.cv-job::before{content:'';position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:99px;background:var(--surface);border:2px solid var(--accent)}
+.cv-jh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;align-items:baseline}
+.cv-jh b{color:var(--ink);font-weight:600;font-size:14px}
+.cv-jh span{font-size:12px;color:var(--muted);white-space:nowrap}
+.cv-jh em{font-style:normal;color:var(--ink-2);font-weight:500}.cv-jh em.now{color:var(--accent)}
+.cv-job ul{margin:6px 0 0;padding-left:16px;display:grid;gap:2px;font-size:13px}
+.cv-orig{display:grid;gap:10px}
+.cv-orig canvas{display:block;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--sh-1)}
+.cv-orig img{max-width:100%;border:1px solid var(--line);border-radius:12px;display:block}
 .kc-hit{display:flex;gap:7px;align-items:flex-start;margin-top:9px;font-size:12px;line-height:1.45;color:var(--ink-2);background:#FFF8E6;border:1px solid #F1E2B8;border-radius:8px;padding:7px 9px}
 .kc-hit svg{width:12px;height:12px;flex:none;margin-top:2px;color:#A07A1A}
 .kc-hit span{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -540,7 +548,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 </div>
 
 <div class="scrim" id="scrim"></div>
-<aside class="sheet" id="candSheet" role="dialog" aria-modal="true">
+<aside class="sheet wide" id="candSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title" id="cTitle">Candidato</div><div class="cnav hide" id="cNav"><button class="x" id="cPrev" title="Anterior (←)"><svg class="i"><use href="#i-back"/></svg></button><span id="cPos"></span><button class="x" id="cNext" title="Próximo (→)"><svg class="i"><use href="#i-arrow"/></svg></button></div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
   <div class="sh-body" id="cBody"></div>
 </aside>
@@ -1059,9 +1067,8 @@ function ageOf(c){
   c._age=(age!=null&&age>=14&&age<=75)?{age,how}:null; return c._age;
 }
 
-/* ---------- mini currículo: experiências (com tempo), escolaridade e idade, lidos do texto do CV ----------
-   Heurística: acha a seção de experiência, cada período (03/2022 a 08/2024, 2021 - atual, jan 2020 – fev 2021…)
-   vira uma experiência, com o texto curto ao redor como cargo/empresa. Só para visualização. */
+/* ---------- leitura de períodos do CV (03/2022 a 08/2024, 2021 - atual, jan 2020 – fev 2021…) e tempo de cada emprego ----------
+   Usado pelo currículo organizado do painel do candidato. Só para visualização (não entra no score). */
 const MES3=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 const D1='(?:(?:0?[1-9]|1[0-2])\\s?[\\/.]\\s?(?:19|20)\\d{2}|(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\\.?\\s*(?:de\\s*|\\/\\s*)?(?:19|20)\\d{2}|(?:19|20)\\d{2})';
 const RX_PER=new RegExp('('+D1+')\\s*(?:a|ate|-|–|—|à|\\bao\\b|\\/)\\s*(atualmente|atual|o momento|hoje|presente|'+D1+')');
@@ -1076,49 +1083,66 @@ function durTxt(a,b){ if(!a||!b) return ''; let mo=(b.y-a.y)*12+((b.m??(a.m??0))
   if(mo<0||mo>600) return ''; if(mo<1) mo=1; const y=Math.floor(mo/12), r=mo%12;
   if(!y) return mo+(mo===1?' mês':' meses'); if(a.m==null||b.m==null||!r) return y+(y===1?' ano':' anos'); return y+(y===1?' ano':' anos')+' e '+r+(r===1?' mês':' meses'); }
 const cleanT=t=>t.replace(/^(empresa|cargo|funcao|função|local|periodo|período)\s*:\s*/i,'').replace(/^[\s•·*\-–—|,;:()]+|[\s•·*\-–—|,;:(]+$/g,'').replace(/\s+[|—–-]\s+/g,' · ').replace(/\s*\|\s*/g,' · ').replace(/\s{2,}/g,' ').replace(/\(\s*\)/g,'').trim();
-function miniCv(c){
-  const src=c.cv_text||''; if(c._mk===src.length && c._mcv!==undefined) return c._mcv; c._mk=src.length;
-  if(src.trim().length<60){ c._mcv=null; return null; }
-  const L=src.split(/\n+/).map(x=>x.trim()).filter(Boolean), N=L.map(norm);
-  // seção de experiência
-  let a=N.findIndex(n=>RX_EXP.test(n)&&(n.length<45||/^[a-z ]+:/.test(n))), b=L.length, inl='';
-  if(a>=0){ const m=L[a].match(/:\s*(.{6,})$/); if(m) inl=m[1]; for(let i=a+1;i<L.length;i++){ if(RX_SEC.test(N[i])&&N[i].length<45){ b=i; break; } } }
-  const eduA=N.findIndex(n=>/^(formacao|escolaridade|educacao)\b/.test(n)&&n.length<45);
-  let lines=a>=0?(inl?[inl]:[]).concat(L.slice(a+1,b)):L.filter((_,i)=>!(eduA>=0&&i>eduA&&i<eduA+6));
-  // modo em linha: "Atendente na X (2021 - 2023); Auxiliar na Y (2020-2021)"
-  lines=lines.flatMap(l=>l.length>90&&/;/.test(l)?l.split(/;\s*/):[l]);
-  const exp=[]; let pend=[];
-  const isTitle=(l,n)=>l.length<=80 && !/^[•·*\-–]/.test(l) && !RX_SKIP.test(n) && !/@|\(?\d{2}\)?\s?9?\d{4}-?\d{4}/.test(l) && !(l.length>45&&/[.;]$/.test(l));
-  for(let i=0;i<lines.length;i++){ const l=lines[i], n=norm(l), m=n.match(RX_PER);
-    if(m){ const d1=dParse(m[1]), d2=dParse(m[2]); let rest=cleanT(l.slice(0,m.index)+' '+l.slice(m.index+m[0].length));
-      if(rest.length>80) rest=''; let parts=pend.slice(-2); if(rest) parts=parts.length&&rest.length<25?parts.concat([rest]):[rest].concat(parts.length&&rest.length<40?parts.slice(-1):[]);
-      if(!parts.length){ for(let j=i+1;j<lines.length&&parts.length<2;j++){ const nj=norm(lines[j]); if(RX_PER.test(nj)) break; if(isTitle(lines[j],nj)) parts.push(cleanT(lines[j])); else break; } }
-      const t=[...new Set(parts.map(cleanT).filter(x=>x.length>2))].join(' · ');
-      if(t) exp.push({t:t.length>70?t.slice(0,68)+'…':t,d:durTxt(d1,d2),now:!!(d2&&d2.now),y1:d1&&d1.y}); pend=[]; }
-    else if(isTitle(l,n)) pend.push(cleanT(l)); else pend=[];
-    if(exp.length>=8) break; }
-  if(!exp.length&&a>=0){ lines.filter(l=>isTitle(l,norm(l))).slice(0,3).forEach(l=>{ const t=cleanT(l); if(t.length>2) exp.push({t:t.length>70?t.slice(0,68)+'…':t,d:''}); }); }
-  // escolaridade (a mais alta encontrada)
-  const nt=cvNorm(c), ot=c._ot; let edu='';
-  const ER=[[/(superior|graduacao|bacharelado|licenciatura|tecnologo)[^.;\n]{0,40}?(completo|completa|concluido|concluida|incompleto|incompleta|cursando|em andamento|trancado)/,4],
-    [/(?:curso )?tecnico em [a-z ]{3,30}?(?=[,.;\-–(]|\s{2}|$| \d)/,3],
-    [/cursando (?:o )?(?:ensino )?(?:superior|graduacao)[a-z ]{0,30}/,4],
-    [/(?:ensino )?medio[^.;\n]{0,20}?(completo|incompleto|cursando|em andamento|concluido)/,2],
-    [/cursando (?:o )?(?:ensino )?medio/,2],
-    [/(?:ensino )?fundamental[^.;\n]{0,20}?(completo|incompleto|cursando)/,1]];
-  for(const [re] of ER){ const m=nt.match(re); if(m){ edu=ot.slice(m.index,m.index+m[0].length).trim(); break; } }
-  if(edu) edu=edu.charAt(0).toUpperCase()+edu.slice(1);
-  exp.sort((x,y)=>(y.now?1:0)-(x.now?1:0)||(y.y1||0)-(x.y1||0));
-  const first=!exp.length && /primeiro emprego|sem experiencia|nao possuo experiencia/.test(nt);
-  c._mcv=(exp.length||edu||first)?{exp,edu,first}:null; return c._mcv; }
-
-const MCV_OPEN=new Set();
-const durShort=d=>d.replace(/ e \d+ m[eê]s(es)?$/,'');
-function mcvRow(e){ return '<li title="'+esc(e.t+(e.d?' — '+(e.now?'atual, ':'')+e.d:''))+'">'+ic('brief')+'<span class="t">'+esc(e.t)+'</span>'+(e.d?'<span class="d'+(e.now?' now':'')+'">'+(e.now?'atual · ':'')+esc(durShort(e.d))+'</span>':'')+'</li>'; }
-function miniCvCard(c){ const m=miniCv(c); if(!m) return ''; const open=MCV_OPEN.has(c.id), shown=open?m.exp:m.exp.slice(0,2), more=m.exp.length-shown.length;
-  return '<div class="mcv"><ul>'+(m.first?'<li class="first">'+ic('brief')+'<span class="t">Primeiro emprego</span></li>':'')+shown.map(mcvRow).join('')
-    +(m.edu?'<li class="edu">'+ic('grad')+'<span class="t">'+esc(m.edu)+'</span></li>':'')+'</ul>'
-    +(more>0?'<button class="mcv-more" data-mcv="'+c.id+'">+'+more+' experiência'+(more>1?'s':'')+'</button>':open&&m.exp.length>2?'<button class="mcv-more" data-mcv="'+c.id+'">mostrar menos</button>':'')+'</div>'; }
+/* ---------- currículo organizado (painel do candidato) ----------
+   Separa o texto lido do CV em seções (Experiência, Formação, Cursos…). Na experiência, cada período
+   vira um emprego com cargo/empresa, datas, tempo e as atividades. O arquivo original fica na outra aba. */
+const RX_HEAD=/^(experiencias?|historico profissional|trajetoria profissional|vivencia profissional|atuacao profissional|objetivos?|resumo|perfil|sobre mim|formacao|formacoes|escolaridade|educacao|cursos?|qualificac|habilidades|competencias|idiomas|informacoes|referencias|dados pessoais|atividades complementares|certificac|conhecimentos|caracteristicas|disponibilidade|experiencia de trabalho)\b/;
+const capHead=t=>{ t=t.replace(/[:\-–—]+\s*$/,'').trim(); return t===t.toUpperCase()?t.charAt(0)+t.slice(1).toLowerCase():t; };
+const unBullet=t=>t.replace(/^[\s•·*▪●○◦\-–—>]+/,'').trim();
+function joinWrapped(lines){ const out=[]; lines.forEach(l=>{ const p=out[out.length-1];
+  if(p && !/[.:;!?]$/.test(p) && /^[a-zà-ú(]/.test(l) && !/^[•·*▪●\-–]/.test(l) && p.length>30) out[out.length-1]=p+' '+l; else out.push(l); }); return out; }
+function expBlocks(lines){
+  lines=lines.flatMap(l=>l.length>90&&/;/.test(l)?l.split(/;\s*/):[l]).map(x=>x.trim()).filter(Boolean);
+  const N=lines.map(norm), per=N.map(n=>n.match(RX_PER)), P=per.map((m,i)=>m?i:-1).filter(i=>i>=0);
+  if(!P.length) return null;
+  const tit=(l,n)=>l.length<=80 && !/^[•·*▪●\-–]/.test(l) && !RX_SKIP.test(n) && !/[.;]$/.test(l) && !/@|\d{4}-?\d{4}/.test(l);
+  const tS=P.map((pi,k)=>{ let st=pi, n=0; const lim=k?P[k-1]+1:0; while(st-1>=lim&&n<2&&tit(lines[st-1],N[st-1])){ st--; n++; } return st; });
+  const intro=lines.slice(0,tS[0]);
+  const jobs=P.map((pi,k)=>{ const m=per[pi], l=lines[pi];
+    const titles=lines.slice(tS[k],pi).map(cleanT).filter(Boolean);
+    const rest=cleanT(l.slice(0,m.index)+' '+l.slice(m.index+m[0].length)); if(rest&&rest.length<=90) titles.push(rest);
+    let desc=lines.slice(pi+1,k+1<P.length?tS[k+1]:lines.length);
+    if(!titles.length){ while(desc.length&&titles.length<2&&tit(desc[0],norm(desc[0]))) titles.push(cleanT(desc.shift())); }
+    const d1=dParse(m[1]), d2=dParse(m[2]);
+    return {t:[...new Set(titles)].join(' · ')||'Experiência', per:l.substr(m.index,m[0].length).replace(/\s+/g,' '), d:durTxt(d1,d2), now:!!(d2&&d2.now), desc:joinWrapped(desc).map(unBullet).filter(Boolean)}; });
+  return {intro,jobs}; }
+function cvDoc(c){
+  const src=c.cv_text||''; if(c._dk===src.length&&c._doc!==undefined) return c._doc; c._dk=src.length;
+  if(src.trim().length<40){ c._doc=null; return null; }
+  const L=src.split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const secs=[]; let cur={h:'',lines:[]};
+  L.forEach(l=>{ const n=norm(l), rem=n.replace(RX_HEAD,'').replace(/[:\-–—|]/g,' ').trim();
+    const m=RX_HEAD.test(n) && ((n.length<45 && !/\d/.test(n) && rem.split(/\s+/).filter(Boolean).length<=3) || /^[^:\d]{3,40}:\s*\S/.test(l));
+    if(m){ if(cur.h||cur.lines.length) secs.push(cur); const ix=l.indexOf(':'); const inl=ix>0&&ix<42?l.slice(ix+1).trim():'';
+      cur={h:capHead(ix>0&&ix<42?l.slice(0,ix):l),lines:inl?[inl]:[]}; }
+    else cur.lines.push(l); });
+  if(cur.h||cur.lines.length) secs.push(cur);
+  secs.forEach(x=>{ x.exp=RX_EXP.test(norm(x.h))?expBlocks(x.lines):null; if(!x.exp) x.items=joinWrapped(x.lines).map(unBullet).filter(Boolean); });
+  c._doc=secs.some(x=>x.h)?secs:[{h:'',items:joinWrapped(L)}]; return c._doc; }
+function cvDocHtml(c,v){ const doc=cvDoc(c); if(!doc) return '';
+  const kw=v.keywords||[], H=t=>highlight(t,kw);
+  return '<div class="cvdoc">'+doc.map((x,i)=>{
+    if(!x.h && i===0 && doc.length>1) return '<div class="cv-pre">'+x.items.slice(0,6).map(H).join('<br>')+'</div>';
+    let body='';
+    if(x.exp){ body=(x.exp.intro.length?'<p>'+x.exp.intro.map(H).join(' ')+'</p>':'')
+      +x.exp.jobs.map(j=>'<div class="cv-job"><div class="cv-jh"><b>'+H(j.t)+'</b><span>'+esc(j.per)+(j.d?' · <em class="'+(j.now?'now':'')+'">'+esc(j.d)+'</em>':'')+'</span></div>'
+        +(j.desc.length?'<ul>'+j.desc.map(d=>'<li>'+H(d)+'</li>').join('')+'</ul>':'')+'</div>').join(''); }
+    else body=x.items.length>1||x.items.some(t=>t.length<80)?'<ul class="cv-list">'+x.items.map(t=>'<li>'+H(t)+'</li>').join('')+'</ul>':'<p>'+x.items.map(H).join(' ')+'</p>';
+    return '<section class="cv-sec">'+(x.h?'<h5>'+esc(x.h)+'</h5>':'')+body+'</section>'; }).join('')+'</div>'; }
+async function cvOrig(c){ const box=$('cvOrig'); if(!box||box.dataset.ok) return; box.dataset.ok='1'; const ext=cvExt(c);
+  if(!/^(pdf|png|jpe?g|webp|gif)$/.test(ext)){ box.innerHTML='<p class="note">Arquivo do Word não tem prévia aqui. Use <b>Ver currículo</b> para baixar.</p>'; return; }
+  box.innerHTML='<p class="note">Carregando o arquivo…</p>';
+  try{
+    if(ext!=='pdf'){ const {data,error}=await sb.storage.from('cvs').createSignedUrl(c.cv_path,900); if(error||!data) throw error;
+      box.innerHTML='<img src="'+esc(data.signedUrl)+'" alt="Currículo">'; return; }
+    // PDF: desenha as páginas aqui mesmo (funciona em qualquer navegador, inclusive no celular)
+    const lib=await loadPdfJs(), doc=await lib.getDocument({data:new Uint8Array(await fetchCv(c))}).promise; box.innerHTML='';
+    const W=Math.max(320,box.clientWidth||640), dpr=Math.min(2,window.devicePixelRatio||1);
+    for(let i=1;i<=Math.min(doc.numPages,5);i++){ const pg=await doc.getPage(i), v0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:W/v0.width*dpr});
+      const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height; cv.style.width='100%';
+      box.appendChild(cv); await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise; }
+    if(doc.numPages>5) box.insertAdjacentHTML('beforeend','<p class="note">Mostrando 5 de '+doc.numPages+' páginas. Use <b>Ver currículo</b> para o arquivo inteiro.</p>');
+  }catch(_){ box.innerHTML='<p class="note">Não consegui abrir o arquivo agora. Tente <b>Ver currículo</b>.</p>'; delete box.dataset.ok; } }
 
 function rescore(){ cands.forEach(c=>c._s=null); }
 
@@ -1249,11 +1273,10 @@ function card(c){
     +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
     +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:noNum(s.tier)?0:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
-    +miniCvCard(c)
     +(()=>{ const m=qTerms().length?qMatch(c):null; if(!m||!m.cv) return ''; const sn=qSnips(c,1)[0]; if(!sn) return '';
         return '<div class="kc-hit">'+ic('search')+'<span>'+snipHtml(sn)+'</span>'+(m.cv>1?'<b>'+m.cv+'x</b>':'')+'</div>'; })()
     +(()=>{ const h=homeOf(c), sp=spotOfVaga(v); if(!h||!sp) return ''; const tr=trip(h.b,sp);
-        const ag=ageOf(c); return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+(ag?' · '+ag.age+' anos':'')+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
+        return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
     +'<div class="kc-f">'+ic('clock')+'<span class="t">'+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')+'</span>'
     +'<span class="r">'+(colOf(c)==='reprovado'?(c.agradecido_em?'<span class="kc-thx done" title="Agradecido em '+fmtDia(c.agradecido_em)+'">✓ agradecido</span>':c.email?'<a class="kc-thx" data-thank-card="'+c.id+'" target="_blank" rel="noopener" href="'+thxHref(c)+'" title="Abrir e-mail de agradecimento">'+ic('mail')+'Agradecer</a>':''):'')+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
 }
@@ -1277,7 +1300,6 @@ function moveTo(c,k){
 }
 $('board').addEventListener('click',e=>{ if(e.target.closest('#addSt')) return addEtapa();
   if(e.target.closest('#thxAll')) return openThanks();
-  const mcvB=e.target.closest('[data-mcv]'); if(mcvB){ const id=mcvB.dataset.mcv; MCV_OPEN.has(id)?MCV_OPEN.delete(id):MCV_OPEN.add(id); renderCand(); return; }
   const tk=e.target.closest('[data-thank-card]'); if(tk){ const c=cands.find(x=>x.id===tk.dataset.thankCard); if(c) markThanked([c]); return; }
   const mb=e.target.closest('[data-st-menu]'); if(mb){ UI.stMenu=UI.stMenu===mb.dataset.stMenu?null:mb.dataset.stMenu; document.querySelectorAll('.col-menu').forEach(m=>m.classList.toggle('open',m.previousElementSibling===mb&&!!UI.stMenu)); return; }
   const sa=e.target.closest('[data-st-act]'); if(sa){ UI.stMenu=null; return editEtapa(sa.dataset.k,sa.dataset.stAct); }
@@ -1343,6 +1365,9 @@ function openCand(id){
     +'</div>'
     +(c.agradecido_em?'<div class="thx-done">'+ic('mail')+'Agradecimento enviado em '+fmtDia(c.agradecido_em)+'</div>':'')
     +'</div>'
+    +(c.cv_path||c.cv_text?'<div class="blk cv-blk"><div class="cv-top"><h4>Currículo</h4><div class="seg" id="cvTabs"><button data-cvt="doc" class="'+(UI.cvTab!=='orig'?'sel':'')+'">Organizado</button>'+(c.cv_path?'<button data-cvt="orig" class="'+(UI.cvTab==='orig'?'sel':'')+'">Arquivo original</button>':'')+'</div></div>'
+      +'<div id="cvDoc"'+(UI.cvTab==='orig'&&c.cv_path?' class="hide"':'')+'>'+(c.cv_text?cvDocHtml(c,v):'<p class="note">'+(c.cv_text==null&&c.cv_path?'Lendo o currículo… aparece aqui em instantes.':'Não deu para ler o texto deste arquivo (foto ou escaneado). Veja o <b>Arquivo original</b>.')+'</p>')+'</div>'
+      +(c.cv_path?'<div id="cvOrig" class="cv-orig'+(UI.cvTab==='orig'?'':' hide')+'"></div>':'')+'</div>':'')
     +'<div class="blk"><h4>Etapa</h4><div class="stagesel" id="stSel">'+STATUS.map(x=>'<button data-st="'+x.k+'" class="'+(colOf(c)===x.k?'sel':'')+'"><span class="cd" style="background:'+x.c+'"></span>'+esc(x.l)+'</button>').join('')+'</div>'
 
     +'<h4 style="margin-top:18px">Sua nota</h4><div class="starsel" id="starSel">'+[1,2,3,4,5].map(n=>'<button data-n="'+n+'" class="'+((c.stars||0)>=n?'on':'')+'">★</button>').join('')+'</div></div>'
@@ -1356,10 +1381,14 @@ function openCand(id){
       '<div class="brow'+(p.ko?' ko':'')+'"><div class="bh"><span>'+esc(p.label)+'</span><span>'+p.got+' / '+p.max+'</span></div>'
       +'<div class="ba">'+esc(p.ans)+'</div><div class="bb"><i style="width:'+(p.max?Math.round(p.got/p.max*100):0)+'%"></i></div></div>').join('')+'</div></div>'
     +(c.about?'<div class="blk"><h4>Sobre</h4><div class="about">'+highlight(c.about,(v.keywords||[]))+'</div></div>':'')
-    +(c.cv_text?'<div class="blk"><h4>Currículo · texto lido</h4><details class="cvt"><summary>Ver texto com as palavras-chave destacadas</summary><div class="about">'+highlight(c.cv_text.slice(0,6000),(v.keywords||[]))+'</div></details></div>':'')
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
+  if($('cvTabs')){ $('cvTabs').onclick=e=>{ const b=e.target.closest('[data-cvt]'); if(!b) return; UI.cvTab=b.dataset.cvt;
+      document.querySelectorAll('#cvTabs button').forEach(x=>x.classList.toggle('sel',x===b)); $('cvDoc').classList.toggle('hide',UI.cvTab==='orig');
+      if($('cvOrig')){ $('cvOrig').classList.toggle('hide',UI.cvTab!=='orig'); if(UI.cvTab==='orig') cvOrig(c); } };
+    if(UI.cvTab==='orig'&&c.cv_text!==undefined&&$('cvOrig')) cvOrig(c); }
+  if(!(c.cv_text) && c.cv_path && $('cvOrig') && UI.cvTab!=='orig'){ /* sem texto: abre direto o original */ UI.cvTab='orig'; $('cvTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x.dataset.cvt==='orig')); $('cvDoc').classList.add('hide'); $('cvOrig').classList.remove('hide'); cvOrig(c); UI.cvTab='doc'; }
   if($('phDel')) $('phDel').onclick=()=>patch(c,{cv_photo:'-'},true).then(()=>openCand(c.id));
   if($('phAdd')) $('phAdd').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
     try{ const img=await fileToImg(f); const cv=document.createElement('canvas'); cv.width=img.width; cv.height=img.height; cv.getContext('2d').drawImage(img,0,0);
