@@ -1390,7 +1390,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v9.0 · Coq mascote 3D'
+const APP_VERSION='v9.1 · Coq todo o periodo'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -2429,6 +2429,9 @@ document.getElementById('tabFolha').addEventListener('click',()=>switchView('equ
 const COQ_SVG='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#39A935"/><circle cx="50" cy="50" r="47" fill="none" stroke="#2C8A26" stroke-width="2"/><ellipse cx="50" cy="53" rx="33" ry="40" fill="#F6FBF3"/><ellipse cx="29" cy="64" rx="6.5" ry="4.5" fill="#F6A6A0"/><ellipse cx="71" cy="64" rx="6.5" ry="4.5" fill="#F6A6A0"/><path d="M14 43 h8 M86 43 h-8" stroke="#15181C" stroke-width="3.2" stroke-linecap="round"/><rect x="19" y="37" width="27" height="19" rx="9.5" fill="#15181C"/><rect x="54" y="37" width="27" height="19" rx="9.5" fill="#15181C"/><path d="M45.5 43 h9" stroke="#15181C" stroke-width="4" stroke-linecap="round"/><rect x="23" y="40" width="9" height="3.6" rx="1.8" fill="#474d56"/><rect x="58" y="40" width="9" height="3.6" rx="1.8" fill="#474d56"/><path d="M37 61 Q50 66 63 61 Q61 77 50 77 Q39 77 37 61 Z" fill="#7E2030"/><path d="M40 62.6 Q50 66 60 62.6 L59 66 Q50 68.6 41 66 Z" fill="#fff"/><ellipse cx="50" cy="72.5" rx="7" ry="4" fill="#E8637A"/></svg>';
 const COQ_CM='<span class="cm"></span>';
 const COQ_WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+function coqPeriod(){ const ds=(db.closings||[]).map(c=>c&&c.date).filter(Boolean).sort(); if(!ds.length) return null; return {days:ds.length, from:ds[0], to:ds[ds.length-1], months:new Set(ds.map(d=>d.slice(0,7))).size}; }
+function coqPerTxt(){ const p=coqPeriod(); if(!p) return ''; const f=p.from.split('-'), t=p.to.split('-'); return p.days+' dia'+(p.days>1?'s':'')+' · '+f[2]+'/'+f[1]+' a '+t[2]+'/'+t[1]+(p.months>1?' · '+p.months+' meses':''); }
+function coqTip(){ return '<div class="ctip">Base: todo o histórico — '+coqPerTxt()+'.</div>'; }
 function coqWeekday(storeId){
   const wk=COQ_WD.map((n,i)=>({wd:i,name:n,days:0,gel:0,rev:0}));
   (db.closings||[]).forEach(c=>{ if(!c||!c.date) return; const [Y,M,D]=c.date.split('-').map(Number); const wd=new Date(Y,M-1,D).getDay();
@@ -2445,10 +2448,10 @@ function coqRows(list, hotN){ return list.map((w,i)=>'<div class="crow'+(hotN&&i
 function coqSemDados(){ return {title:'Poucos dados ainda', html:'Ainda tenho poucos fechamentos pra analisar. 🙏 Lança alguns dias (importa o CSV da Stone) que eu começo a te dar os padrões por dia da semana, loja e hora.'}; }
 function coqMaiorFluxo(){ const wk=coqWeekday(null).filter(w=>w.days>0); if(wk.length<2) return coqSemDados();
   const by=[...wk].sort((a,b)=>b.avgGel-a.avgGel); const top=by[0], low=by[by.length-1];
-  return {title:'Fluxo por dia da semana', html:'📈 Seu dia mais forte é <b>'+top.name+'</b> — média de <b>'+top.avgGel+' gelatos/dia</b> ('+money(top.avgRev)+'). O mais fraco é <b>'+low.name+'</b>, com <b>'+low.avgGel+'</b>.'+coqRows(by)}; }
+  return {title:'Fluxo por dia da semana', html:'📈 Seu dia mais forte é <b>'+top.name+'</b> — média de <b>'+top.avgGel+' gelatos/dia</b> ('+money(top.avgRev)+'). O mais fraco é <b>'+low.name+'</b>, com <b>'+low.avgGel+'</b>.'+coqRows(by)+coqTip()}; }
 function coqMenorFluxo(){ const wk=coqWeekday(null).filter(w=>w.days>0); if(wk.length<2) return coqSemDados();
   const by=[...wk].sort((a,b)=>a.avgGel-b.avgGel); const low=by[0];
-  return {title:'Dias mais fracos', html:'📉 Seu dia mais parado é <b>'+low.name+'</b> — média de <b>'+low.avgGel+' gelatos/dia</b> ('+money(low.avgRev)+'). Do mais fraco pro mais forte:'+coqRows(by,2)}; }
+  return {title:'Dias mais fracos', html:'📉 Seu dia mais parado é <b>'+low.name+'</b> — média de <b>'+low.avgGel+' gelatos/dia</b> ('+money(low.avgRev)+'). Do mais fraco pro mais forte:'+coqRows(by,2)+coqTip()}; }
 function coqImprensaFechar(){ const st=coqStore(/imprensa/i); if(!st) return {title:'Imprensa',html:'Não achei a loja Imprensa no cadastro.'};
   const wk=coqWeekday(st.id).filter(w=>w.days>0); const nd=wk.reduce((s,w)=>s+w.days,0);
   if(wk.length<3) return {title:'Fechar a Imprensa', html:'Ainda tenho poucos dias da <b>Imprensa</b> ('+nd+') pra recomendar com segurança. Lança mais alguns que eu refino. 🙏'};
@@ -2460,29 +2463,37 @@ function coqBeiraMar(){ const st=coqStore(/beira/i); if(!st) return {title:'Beir
   const wk=coqWeekday(st.id).filter(w=>w.days>0); if(!wk.length) return coqSemDados();
   const by=[...wk].sort((a,b)=>b.avgGel-a.avgGel); const top2=by.slice(0,2).map(w=>w.name).join(' e ');
   let pk=null; try{ const {by:agg}=storeAggregate(db.closings); const g=agg[st.id]; pk=g?storePeakHour(g):null; }catch(e){}
-  return {title:'Beira Mar — quando pega fluxo', html:'🌊 A Beira Mar bomba mais <b>'+top2+'</b>.'+(pk!=null?' No dia, o pico é por volta das <b>'+pk+'h</b>.':'')+coqRows(by)}; }
-function coqLojas(){ const key=viewMonth; const {by}=storeAggregate(closingsOf(key)); const list=(db.settings.stores||[]).map(s=>({name:s.name, gel:storeGel(by[s.id]||blankStoreAgg()), rev:(by[s.id]||{rev:0}).rev})).filter(x=>x.gel>0||x.rev>0).sort((a,b)=>b.gel-a.gel);
-  if(!list.length) return {title:'Lojas', html:'Ainda não tenho vendas por loja neste mês. Importa o CSV da Stone que eu separo. 🙏'};
+  return {title:'Beira Mar — quando pega fluxo', html:'🌊 A Beira Mar bomba mais <b>'+top2+'</b>.'+(pk!=null?' No dia, o pico é por volta das <b>'+pk+'h</b>.':'')+coqRows(by)+coqTip()}; }
+function coqLojas(){ const {by}=storeAggregate(db.closings||[]); const list=(db.settings.stores||[]).map(s=>({name:s.name, gel:storeGel(by[s.id]||blankStoreAgg()), rev:(by[s.id]||{rev:0}).rev})).filter(x=>x.gel>0||x.rev>0).sort((a,b)=>b.gel-a.gel);
+  if(!list.length) return {title:'Lojas', html:'Ainda não tenho vendas por loja. Importa o CSV da Stone que eu separo. 🙏'};
   const top=list[0];
-  return {title:'Lojas no mês', html:'🏪 A loja que mais vende em '+monthName(key)+' é <b>'+top.name+'</b> — <b>'+NUM.format(top.gel)+' gelatos</b> ('+money(top.rev)+').'+list.map(x=>'<div class="crow"><span>'+x.name+'</span><b>'+NUM.format(x.gel)+' gel · '+money(x.rev)+'</b></div>').join('')}; }
+  return {title:'Lojas — todo o período', html:'🏪 A loja que mais vende no total é <b>'+top.name+'</b> — <b>'+NUM.format(top.gel)+' gelatos</b> ('+money(top.rev)+').'+list.map(x=>'<div class="crow"><span>'+x.name+'</span><b>'+NUM.format(x.gel)+' gel · '+money(x.rev)+'</b></div>').join('')+coqTip()}; }
 function coqHora(){ let pk=null; try{ const {by}=storeAggregate(db.closings); const all=blankStoreAgg(); Object.values(by).forEach(g=>{ g.hours.forEach((n,h)=>all.hours[h]+=n); g.hoursRev.forEach((v,h)=>all.hoursRev[h]+=v); all.g30+=g.g30; all.g35+=g.g35; }); pk=storePeakHour(all); }catch(e){}
   if(pk==null) return {title:'Hora de pico', html:'Ainda não tenho o fluxo por hora (vem do CSV da Stone). Importa alguns dias que eu te mostro o horário de pico. 🙏'};
-  return {title:'Hora de pico', html:'🕒 No geral, seu pico de vendas é por volta das <b>'+pk+'h–'+((pk+1)%24)+'h</b>. Vale reforçar a equipe nesse horário.'}; }
-function coqResumo(){ const key=viewMonth; const list=closingsOf(key); if(!list.length) return {title:'Resumo', html:'Nenhum dia fechado em '+monthName(key)+' ainda.'};
-  let gel=0,rev=0; list.forEach(c=>{ gel+=c.gelatos||0; rev+=c.revenue||0; }); const goal=goalFor(key).gelatos; const pct=goal>0?Math.round(gel/goal*100):0;
-  return {title:'Resumo de '+monthName(key), html:'🍦 <b>'+NUM.format(gel)+' gelatos</b> e <b>'+money(rev)+'</b> em '+list.length+' dia'+(list.length>1?'s':'')+'.'
-    +'<div class="crow"><span>Meta do mês</span><b>'+NUM.format(goal)+' · '+pct+'%</b></div><div class="crow"><span>Ticket médio</span><b>'+(gel>0?money(rev/gel):'—')+'</b></div><div class="crow"><span>Média por dia</span><b>'+Math.round(gel/list.length)+' gelatos</b></div>'}; }
+  return {title:'Hora de pico', html:'🕒 No geral, seu pico de vendas é por volta das <b>'+pk+'h–'+((pk+1)%24)+'h</b>. Vale reforçar a equipe nesse horário.'+coqTip()}; }
+function coqResumo(){ const list=db.closings||[]; if(!list.length) return {title:'Resumo', html:'Nenhum dia fechado ainda. Importa o CSV da Stone pra eu começar. 🙏'};
+  let gel=0,rev=0,ag=0,rf=0; const byM={}; list.forEach(c=>{ gel+=c.gelatos||0; rev+=c.revenue||0; const b=bebidasOf(c); ag+=b.agua; rf+=b.refri; const k=c.date.slice(0,7); byM[k]=(byM[k]||0)+(c.gelatos||0); });
+  const {by}=storeAggregate(list); const lojas=(db.settings.stores||[]).map(s=>({name:s.name,gel:storeGel(by[s.id]||blankStoreAgg()),rev:(by[s.id]||{rev:0}).rev})).filter(x=>x.gel>0||x.rev>0).sort((a,b)=>b.gel-a.gel);
+  const bestM=Object.keys(byM).sort((a,b)=>byM[b]-byM[a])[0]; const p=coqPeriod();
+  let h='🍦 No total: <b>'+NUM.format(gel)+' gelatos</b> e <b>'+money(rev)+'</b> em <b>'+list.length+' dias</b> ('+p.months+' '+(p.months>1?'meses':'mês')+').'
+    +'<div class="crow"><span>Média por dia</span><b>'+Math.round(gel/list.length)+' gel · '+money(rev/list.length)+'</b></div>'
+    +'<div class="crow"><span>Ticket médio</span><b>'+(gel>0?money(rev/gel):'—')+'</b></div>'
+    +(bestM?'<div class="crow"><span>Melhor mês</span><b>'+monthName(bestM)+' · '+NUM.format(byM[bestM])+' gel</b></div>':'')
+    +((ag||rf)?'<div class="crow"><span>🥤 Bebidas</span><b>'+Math.round(ag)+' água · '+Math.round(rf)+' refri</b></div>':'');
+  if(lojas.length){ h+='<div class="cbig">Por loja (todo o período)</div>'+lojas.map(x=>'<div class="crow"><span>'+x.name+'</span><b>'+NUM.format(x.gel)+' gel · '+money(x.rev)+'</b></div>').join(''); }
+  h+=coqTip();
+  return {title:'Resumo geral', html:h}; }
 const COQ_SUGS=[
   {l:'📈 Dia de maior fluxo', f:coqMaiorFluxo}, {l:'📉 Dia de menor fluxo', f:coqMenorFluxo},
   {l:'🏢 Quais 2 dias fechar a Imprensa?', f:coqImprensaFechar}, {l:'🌊 Quando a Beira Mar pega fluxo?', f:coqBeiraMar},
-  {l:'🏪 Qual loja vende mais?', f:coqLojas}, {l:'🕒 Qual a hora de pico?', f:coqHora}, {l:'📊 Resumo do mês', f:coqResumo}
+  {l:'🏪 Qual loja vende mais?', f:coqLojas}, {l:'🕒 Qual a hora de pico?', f:coqHora}, {l:'📊 Resumo geral', f:coqResumo}
 ];
 function coqMatch(q){ const t=(q||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   if(/imprensa/.test(t) && /(fech|nao abrir|não abrir|folga|compensa|economi)/.test(t)) return coqImprensaFechar;
   if(/beira ?mar/.test(t)) return coqBeiraMar;
   if(/(qual loja|loja que|melhor loja|compara|lojas)/.test(t)) return coqLojas;
   if(/(hora|pico|horario|horário)/.test(t)) return coqHora;
-  if(/(resumo|balanc|como est|como vai|como vamos|meta|do mes|do mês|fechamento do mes)/.test(t)) return coqResumo;
+  if(/(resumo|balanc|como est|como vai|como vamos|total|geral|todos os mes|periodo|período|faturamento|quanto vend)/.test(t)) return coqResumo;
   if(/(menor|mais fraco|fraco|parado|pior|fechar|nao abrir|não abrir)/.test(t)) return coqMenorFluxo;
   if(/(maior|mais forte|melhor|pico|bomba|movimentad|forte)/.test(t)) return coqMaiorFluxo;
   if(/(fluxo|dia|movimento|vend)/.test(t)) return coqMaiorFluxo;
