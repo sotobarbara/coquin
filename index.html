@@ -595,7 +595,7 @@ main{padding-top:18px}
 .side-item.coq-nav.sel{background:var(--grad);color:#fff}
 #viewCoq{display:flex;flex-direction:column;min-height:calc(100vh - 150px)}
 .coq-hero{display:flex;align-items:center;gap:13px;padding:14px 2px 8px}
-.coq-hero .coq-ava{width:52px;height:52px;border-radius:999px;background:var(--grad);display:grid;place-items:center;font-size:27px;flex:none;box-shadow:0 8px 20px rgba(242,107,58,.3)}
+.coq-hero .coq-ava{width:54px;height:54px;border-radius:999px;background:#E3F2E9 center/cover no-repeat url('coq.png');flex:none;box-shadow:0 8px 20px rgba(242,107,58,.26);border:2px solid #fff}
 .coq-hi{font-size:17px;font-weight:850;color:var(--ink)}
 .coq-sub{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:2px;line-height:1.35}
 .coq-chat{display:flex;flex-direction:column;gap:12px;padding:10px 0}
@@ -603,7 +603,7 @@ main{padding-top:18px}
 .coq-msg.me{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:5px;font-weight:650}
 .coq-msg.coq{align-self:flex-start;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-bottom-left-radius:5px;color:var(--ink)}
 .coq-msg.coq .ct{font-weight:850;color:var(--green-700);display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12.5px}
-.coq-msg.coq .ct .cm{width:22px;height:22px;border-radius:999px;background:var(--grad);display:grid;place-items:center;font-size:13px;flex:none}
+.coq-msg.coq .ct .cm{width:24px;height:24px;border-radius:999px;background:#E3F2E9 center/cover no-repeat url('coq.png');flex:none;font-size:0;color:transparent;overflow:hidden}
 .coq-msg.coq b{color:var(--ink);font-weight:800}
 .coq-msg.coq .cbig{font-size:15.5px;font-weight:850;color:var(--green-900);margin:7px 0 3px}
 .coq-msg.coq .crow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--line);font-size:12.5px;margin-top:2px}
@@ -763,7 +763,7 @@ main{padding-top:18px}
 
  <div id="viewCoq" class="hide">
   <div class="coq-hero">
-    <div class="coq-ava">🥥</div>
+    <div class="coq-ava" role="img" aria-label="Coq"></div>
     <div class="coq-ht"><div class="coq-hi">Oi! Eu sou o <b>Coq</b> 🥥</div><div class="coq-sub">Pergunto aos seus dados e te trago a resposta. Toque numa pergunta ou escreva a sua.</div></div>
   </div>
   <div id="coqChat" class="coq-chat"></div>
@@ -1381,7 +1381,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.7 · Coq assistente'
+const APP_VERSION='v8.8 · Coq com mascote'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
