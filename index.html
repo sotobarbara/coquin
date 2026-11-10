@@ -589,6 +589,37 @@ main{padding-top:18px}
 .sq-sum .ss.wide{grid-column:1/3}
 .sq-sum .ss.hi{background:var(--green-tint);border-color:var(--green-tint-2)}
 .sq-sum .ss.hi .ssv{color:var(--green-900)}
+/* ===== Coq assistente ===== */
+.side-item.coq-nav{background:var(--grad);color:#fff;margin-bottom:8px;box-shadow:0 6px 16px rgba(242,107,58,.28)}
+.side-item.coq-nav .si-ic{font-size:18px}
+.side-item.coq-nav.sel{background:var(--grad);color:#fff}
+#viewCoq{display:flex;flex-direction:column;min-height:calc(100vh - 150px)}
+.coq-hero{display:flex;align-items:center;gap:13px;padding:14px 2px 8px}
+.coq-hero .coq-ava{width:52px;height:52px;border-radius:999px;background:var(--grad);display:grid;place-items:center;font-size:27px;flex:none;box-shadow:0 8px 20px rgba(242,107,58,.3)}
+.coq-hi{font-size:17px;font-weight:850;color:var(--ink)}
+.coq-sub{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:2px;line-height:1.35}
+.coq-chat{display:flex;flex-direction:column;gap:12px;padding:10px 0}
+.coq-msg{max-width:90%;padding:12px 14px;border-radius:16px;font-size:13.5px;line-height:1.5}
+.coq-msg.me{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:5px;font-weight:650}
+.coq-msg.coq{align-self:flex-start;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-bottom-left-radius:5px;color:var(--ink)}
+.coq-msg.coq .ct{font-weight:850;color:var(--green-700);display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12.5px}
+.coq-msg.coq .ct .cm{width:22px;height:22px;border-radius:999px;background:var(--grad);display:grid;place-items:center;font-size:13px;flex:none}
+.coq-msg.coq b{color:var(--ink);font-weight:800}
+.coq-msg.coq .cbig{font-size:15.5px;font-weight:850;color:var(--green-900);margin:7px 0 3px}
+.coq-msg.coq .crow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--line);font-size:12.5px;margin-top:2px}
+.coq-msg.coq .crow:first-of-type{border-top:0}
+.coq-msg.coq .crow b{color:var(--green-700);white-space:nowrap}
+.coq-msg.coq .crow.hot{color:#B0401C}
+.coq-msg.coq .ctip{margin-top:9px;font-size:11px;color:var(--ink-faint);font-weight:600;line-height:1.4}
+.coq-sugs-wrap{margin-top:auto;padding-top:12px}
+.coq-sugs-lab{font-size:11px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.coq-sugs{display:flex;gap:8px;flex-wrap:wrap}
+.coq-sug{border:1.5px solid var(--green-tint-2);background:var(--green-tint);color:var(--green-700);font-weight:750;font-size:12.5px;padding:8px 13px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit}
+.coq-sug:active{transform:scale(.97)}
+.coq-input{display:flex;gap:8px;align-items:center;position:sticky;bottom:14px;margin-top:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:5px 5px 5px 16px;box-shadow:var(--shadow-lg)}
+.coq-input input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:15px;font-family:inherit;color:var(--ink);padding:10px 0}
+.coq-input button{width:42px;height:42px;border-radius:999px;border:0;background:var(--grad);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none}
+.coq-input button svg{width:19px;height:19px}
 /* import extrato do banco */
 .bankrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .bankrow:last-child{border-bottom:0}
@@ -710,6 +741,7 @@ main{padding-top:18px}
 <aside class="sidebar" id="sidebar">
   <div class="side-head"><img class="side-logo" src="logo-coquin-coral.png" alt="Coquin"><button class="side-close" id="sideClose" aria-label="Fechar">✕</button></div>
   <nav class="side-nav" id="sideNav">
+    <button class="side-item coq-nav" data-hub="coq"><span class="si-ic">🥥</span>Coq · assistente</button>
     <div class="side-group">Seções</div>
     <button class="side-item sel" data-hub="operacoes"><span class="si-ic">⚙️</span>Operações</button>
     <button class="side-item" data-hub="financeiro"><span class="si-ic">💰</span>Financeiro</button>
@@ -728,6 +760,20 @@ main{padding-top:18px}
 </div>
 
 <main class="wrap">
+
+ <div id="viewCoq" class="hide">
+  <div class="coq-hero">
+    <div class="coq-ava">🥥</div>
+    <div class="coq-ht"><div class="coq-hi">Oi! Eu sou o <b>Coq</b> 🥥</div><div class="coq-sub">Pergunto aos seus dados e te trago a resposta. Toque numa pergunta ou escreva a sua.</div></div>
+  </div>
+  <div id="coqChat" class="coq-chat"></div>
+  <div class="coq-sugs-wrap"><div class="coq-sugs-lab">💡 Sugestões</div><div id="coqSugs" class="coq-sugs"></div></div>
+  <div class="coq-input">
+    <input id="coqQ" type="text" placeholder="Pergunte ao Coq… (ex.: dia de maior fluxo)" autocomplete="off">
+    <button id="coqSend" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+  <div class="foot"><div>O Coq responde com base nos seus fechamentos. Quanto mais dias lançados, melhores as respostas.</div></div>
+ </div><!-- /viewCoq -->
 
  <div id="viewVendas">
 
@@ -1335,7 +1381,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.6 · total do dia (cartao + dinheiro)'
+const APP_VERSION='v8.7 · Coq assistente'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -2336,11 +2382,11 @@ let currentView='vendas';
 function updateFabLabel(){ document.getElementById('fabLabel').textContent=(currentView==='estoque')?('Registrar '+prodInfo(stockProduct).name.toLowerCase()):(currentView==='caixa'?'Nova movimentação':(currentView==='equipe'?'Novo pagamento':'Fechar o dia')); }
 function switchView(v){
   currentView=v;
-  [['Vendas','vendas'],['Estoque','estoque'],['Caixa','caixa'],['Squads','squads'],['Equipe','equipe'],['Dados','dados']].forEach(([n,k])=>{
+  [['Vendas','vendas'],['Estoque','estoque'],['Caixa','caixa'],['Squads','squads'],['Equipe','equipe'],['Dados','dados'],['Coq','coq']].forEach(([n,k])=>{
     const view=document.getElementById('view'+n); if(view) view.classList.toggle('hide', v!==k);
     const tab=document.getElementById('tab'+n); if(tab) tab.classList.toggle('sel', v===k);
   });
-  const hub = (v==='caixa')?'financeiro':((v==='equipe'||v==='squads')?'pessoal':'operacoes');
+  const hub = (v==='coq')?'coq':((v==='caixa')?'financeiro':((v==='equipe'||v==='squads')?'pessoal':'operacoes'));
   if(hub==='operacoes') lastOpView=v;
   if(hub==='pessoal') lastPessoalView=v;
   document.getElementById('opTabs').style.display = (hub==='operacoes')?'flex':'none';
@@ -2348,12 +2394,13 @@ function switchView(v){
   document.getElementById('tabSquads').classList.toggle('sel', v==='squads');
   document.getElementById('tabFolha').classList.toggle('sel', v==='equipe');
   document.querySelectorAll('#sideNav .side-item').forEach(it=>it.classList.toggle('sel', it.dataset.hub===hub));
-  document.getElementById('fab').style.display = (v==='dados'||v==='squads')?'none':'flex';
+  if(v==='coq') coqInit();
+  document.getElementById('fab').style.display = (v==='dados'||v==='squads'||v==='coq')?'none':'flex';
   updateFabLabel();
   window.scrollTo(0,0);
 }
 /* menu lateral (hubs) + sub-abas de Operações */
-const HUB_FIRST={operacoes:'vendas', financeiro:'caixa', pessoal:'squads'};
+const HUB_FIRST={operacoes:'vendas', financeiro:'caixa', pessoal:'squads', coq:'coq'};
 let lastOpView='vendas', lastPessoalView='squads';
 function openSidebar(){ document.getElementById('sidebar').classList.add('on'); document.getElementById('sideScrim').classList.add('on'); }
 function closeSidebar(){ document.getElementById('sidebar').classList.remove('on'); document.getElementById('sideScrim').classList.remove('on'); }
@@ -2367,6 +2414,83 @@ document.getElementById('tabEstoque').addEventListener('click',()=>switchView('e
 document.getElementById('tabDados').addEventListener('click',()=>switchView('dados'));
 document.getElementById('tabSquads').addEventListener('click',()=>switchView('squads'));
 document.getElementById('tabFolha').addEventListener('click',()=>switchView('equipe'));
+
+/* ================= Coq — assistente local (lê os dados e responde) ================= */
+const COQ_WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+function coqWeekday(storeId){
+  const wk=COQ_WD.map((n,i)=>({wd:i,name:n,days:0,gel:0,rev:0}));
+  (db.closings||[]).forEach(c=>{ if(!c||!c.date) return; const [Y,M,D]=c.date.split('-').map(Number); const wd=new Date(Y,M-1,D).getDay();
+    let gel,rev;
+    if(storeId){ const {by}=storeAggregate([c]); const g=by[storeId]; if(!g) return; gel=storeGel(g); rev=g.rev||0; if(gel<=0&&rev<=0) return; }
+    else { gel=c.gelatos||0; rev=c.revenue||0; }
+    wk[wd].days++; wk[wd].gel+=gel; wk[wd].rev+=rev;
+  });
+  wk.forEach(w=>{ w.avgGel=w.days?Math.round(w.gel/w.days):0; w.avgRev=w.days?w.rev/w.days:0; });
+  return wk;
+}
+function coqStore(re){ return (db.settings.stores||[]).find(s=>re.test(s.name||'')); }
+function coqRows(list, hotN){ return list.map((w,i)=>'<div class="crow'+(hotN&&i<hotN?' hot':'')+'"><span>'+(hotN&&i<hotN?'🔴 ':'')+w.name+' <span style="color:var(--ink-faint);font-weight:600">('+w.days+'d)</span></span><b>'+w.avgGel+' gel · '+money(w.avgRev)+'</b></div>').join(''); }
+function coqSemDados(){ return {title:'Poucos dados ainda', html:'Ainda tenho poucos fechamentos pra analisar. 🙏 Lança alguns dias (importa o CSV da Stone) que eu começo a te dar os padrões por dia da semana, loja e hora.'}; }
+function coqMaiorFluxo(){ const wk=coqWeekday(null).filter(w=>w.days>0); if(wk.length<2) return coqSemDados();
+  const by=[...wk].sort((a,b)=>b.avgGel-a.avgGel); const top=by[0], low=by[by.length-1];
+  return {title:'Fluxo por dia da semana', html:'📈 Seu dia mais forte é <b>'+top.name+'</b> — média de <b>'+top.avgGel+' gelatos/dia</b> ('+money(top.avgRev)+'). O mais fraco é <b>'+low.name+'</b>, com <b>'+low.avgGel+'</b>.'+coqRows(by)}; }
+function coqMenorFluxo(){ const wk=coqWeekday(null).filter(w=>w.days>0); if(wk.length<2) return coqSemDados();
+  const by=[...wk].sort((a,b)=>a.avgGel-b.avgGel); const low=by[0];
+  return {title:'Dias mais fracos', html:'📉 Seu dia mais parado é <b>'+low.name+'</b> — média de <b>'+low.avgGel+' gelatos/dia</b> ('+money(low.avgRev)+'). Do mais fraco pro mais forte:'+coqRows(by,2)}; }
+function coqImprensaFechar(){ const st=coqStore(/imprensa/i); if(!st) return {title:'Imprensa',html:'Não achei a loja Imprensa no cadastro.'};
+  const wk=coqWeekday(st.id).filter(w=>w.days>0); const nd=wk.reduce((s,w)=>s+w.days,0);
+  if(wk.length<3) return {title:'Fechar a Imprensa', html:'Ainda tenho poucos dias da <b>Imprensa</b> ('+nd+') pra recomendar com segurança. Lança mais alguns que eu refino. 🙏'};
+  const by=[...wk].sort((a,b)=>a.avgGel-b.avgGel); const d1=by[0], d2=by[1]; const perda=d1.avgRev+d2.avgRev;
+  return {title:'Fechar a Imprensa 2 dias', html:'🏢 Os 2 dias mais fracos da Imprensa são <b>'+d1.name+'</b> e <b>'+d2.name+'</b>.'
+    +'<div class="cbig">Fechar '+d1.name+' e '+d2.name+'</div>Você deixaria de vender ~<b>'+money(perda)+'/semana</b> ('+d1.avgGel+' + '+d2.avgGel+' gelatos), mas economiza a operação de 2 dias fracos.'+coqRows(by,2)
+    +'<div class="ctip">Base: '+nd+' dias lançados da Imprensa. Confirme no detalhe da loja antes de decidir.</div>'}; }
+function coqBeiraMar(){ const st=coqStore(/beira/i); if(!st) return {title:'Beira Mar',html:'Não achei a loja Beira Mar.'};
+  const wk=coqWeekday(st.id).filter(w=>w.days>0); if(!wk.length) return coqSemDados();
+  const by=[...wk].sort((a,b)=>b.avgGel-a.avgGel); const top2=by.slice(0,2).map(w=>w.name).join(' e ');
+  let pk=null; try{ const {by:agg}=storeAggregate(db.closings); const g=agg[st.id]; pk=g?storePeakHour(g):null; }catch(e){}
+  return {title:'Beira Mar — quando pega fluxo', html:'🌊 A Beira Mar bomba mais <b>'+top2+'</b>.'+(pk!=null?' No dia, o pico é por volta das <b>'+pk+'h</b>.':'')+coqRows(by)}; }
+function coqLojas(){ const key=viewMonth; const {by}=storeAggregate(closingsOf(key)); const list=(db.settings.stores||[]).map(s=>({name:s.name, gel:storeGel(by[s.id]||blankStoreAgg()), rev:(by[s.id]||{rev:0}).rev})).filter(x=>x.gel>0||x.rev>0).sort((a,b)=>b.gel-a.gel);
+  if(!list.length) return {title:'Lojas', html:'Ainda não tenho vendas por loja neste mês. Importa o CSV da Stone que eu separo. 🙏'};
+  const top=list[0];
+  return {title:'Lojas no mês', html:'🏪 A loja que mais vende em '+monthName(key)+' é <b>'+top.name+'</b> — <b>'+NUM.format(top.gel)+' gelatos</b> ('+money(top.rev)+').'+list.map(x=>'<div class="crow"><span>'+x.name+'</span><b>'+NUM.format(x.gel)+' gel · '+money(x.rev)+'</b></div>').join('')}; }
+function coqHora(){ let pk=null; try{ const {by}=storeAggregate(db.closings); const all=blankStoreAgg(); Object.values(by).forEach(g=>{ g.hours.forEach((n,h)=>all.hours[h]+=n); g.hoursRev.forEach((v,h)=>all.hoursRev[h]+=v); all.g30+=g.g30; all.g35+=g.g35; }); pk=storePeakHour(all); }catch(e){}
+  if(pk==null) return {title:'Hora de pico', html:'Ainda não tenho o fluxo por hora (vem do CSV da Stone). Importa alguns dias que eu te mostro o horário de pico. 🙏'};
+  return {title:'Hora de pico', html:'🕒 No geral, seu pico de vendas é por volta das <b>'+pk+'h–'+((pk+1)%24)+'h</b>. Vale reforçar a equipe nesse horário.'}; }
+function coqResumo(){ const key=viewMonth; const list=closingsOf(key); if(!list.length) return {title:'Resumo', html:'Nenhum dia fechado em '+monthName(key)+' ainda.'};
+  let gel=0,rev=0; list.forEach(c=>{ gel+=c.gelatos||0; rev+=c.revenue||0; }); const goal=goalFor(key).gelatos; const pct=goal>0?Math.round(gel/goal*100):0;
+  return {title:'Resumo de '+monthName(key), html:'🍦 <b>'+NUM.format(gel)+' gelatos</b> e <b>'+money(rev)+'</b> em '+list.length+' dia'+(list.length>1?'s':'')+'.'
+    +'<div class="crow"><span>Meta do mês</span><b>'+NUM.format(goal)+' · '+pct+'%</b></div><div class="crow"><span>Ticket médio</span><b>'+(gel>0?money(rev/gel):'—')+'</b></div><div class="crow"><span>Média por dia</span><b>'+Math.round(gel/list.length)+' gelatos</b></div>'}; }
+const COQ_SUGS=[
+  {l:'📈 Dia de maior fluxo', f:coqMaiorFluxo}, {l:'📉 Dia de menor fluxo', f:coqMenorFluxo},
+  {l:'🏢 Quais 2 dias fechar a Imprensa?', f:coqImprensaFechar}, {l:'🌊 Quando a Beira Mar pega fluxo?', f:coqBeiraMar},
+  {l:'🏪 Qual loja vende mais?', f:coqLojas}, {l:'🕒 Qual a hora de pico?', f:coqHora}, {l:'📊 Resumo do mês', f:coqResumo}
+];
+function coqMatch(q){ const t=(q||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if(/imprensa/.test(t) && /(fech|nao abrir|não abrir|folga|compensa|economi)/.test(t)) return coqImprensaFechar;
+  if(/beira ?mar/.test(t)) return coqBeiraMar;
+  if(/(qual loja|loja que|melhor loja|compara|lojas)/.test(t)) return coqLojas;
+  if(/(hora|pico|horario|horário)/.test(t)) return coqHora;
+  if(/(resumo|balanc|como est|como vai|como vamos|meta|do mes|do mês|fechamento do mes)/.test(t)) return coqResumo;
+  if(/(menor|mais fraco|fraco|parado|pior|fechar|nao abrir|não abrir)/.test(t)) return coqMenorFluxo;
+  if(/(maior|mais forte|melhor|pico|bomba|movimentad|forte)/.test(t)) return coqMaiorFluxo;
+  if(/(fluxo|dia|movimento|vend)/.test(t)) return coqMaiorFluxo;
+  return null;
+}
+let _coqInit=false;
+function coqBubble(cls, html){ const el=document.createElement('div'); el.className='coq-msg '+cls; el.innerHTML=html; document.getElementById('coqChat').appendChild(el);
+  setTimeout(()=>{ const c=document.getElementById('coqChat'); el.scrollIntoView({behavior:'smooth',block:'end'}); window.scrollTo(0,document.body.scrollHeight); },60); }
+function coqReply(ans){ coqBubble('coq','<div class="ct"><span class="cm">🥥</span>'+ans.title+'</div>'+ans.html); }
+function coqRun(text){ const q=(text||'').trim(); if(!q) return; coqBubble('me', q.replace(/</g,'&lt;'));
+  const fn=coqMatch(q); if(fn){ const ans=fn(); coqReply(ans); }
+  else coqBubble('coq','<div class="ct"><span class="cm">🥥</span>Hmm, não peguei essa 🤔</div>Ainda sou simples e respondo sobre <b>fluxo, lojas, horários e metas</b>. Tenta uma das sugestões aqui embaixo, tipo <i>“dia de maior fluxo”</i> ou <i>“quais 2 dias fechar a Imprensa”</i>.');
+}
+function coqInit(){ renderCoqSugs(); if(_coqInit) return; _coqInit=true;
+  coqBubble('coq','<div class="ct"><span class="cm">🥥</span>E aí! 👋</div>Sou o <b>Coq</b>. Eu olho seus fechamentos e te respondo na hora: dia de maior/menor fluxo, quando fechar a Imprensa, quando a Beira Mar pega fluxo, resumo do mês… Toca numa sugestão ou escreve sua pergunta.');
+}
+function renderCoqSugs(){ const host=document.getElementById('coqSugs'); if(!host) return; host.innerHTML=COQ_SUGS.map((s,i)=>'<button type="button" class="coq-sug" data-coq="'+i+'">'+s.l+'</button>').join(''); }
+document.getElementById('coqSugs').addEventListener('click', e=>{ const b=e.target.closest('[data-coq]'); if(!b) return; const s=COQ_SUGS[+b.getAttribute('data-coq')]; coqBubble('me', s.l.replace(/^[^ ]+ /,'')); coqReply(s.f()); });
+document.getElementById('coqSend').addEventListener('click', ()=>{ const i=document.getElementById('coqQ'); coqRun(i.value); i.value=''; });
+document.getElementById('coqQ').addEventListener('keydown', e=>{ if(e.key==='Enter'){ coqRun(e.target.value); e.target.value=''; } });
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
