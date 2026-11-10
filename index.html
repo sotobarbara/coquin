@@ -1390,7 +1390,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v9.1 · Coq todo o periodo'
+const APP_VERSION='v9.2 · bebida so em evento'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1504,7 +1504,7 @@ function lojaStoreId(p){ return (typeof p==='string' && p.indexOf('loja:')===0) 
 function prodInfo(p){ const id=lojaStoreId(p); if(id!=null) return {name:(storeName(id)||'Loja'),unit:'quengas',unit1:'quenga',yield:1,emoji:'🥥',loja:true,store:id}; return PRODUCTS[p]||PRODUCTS.deposito; }
 function lojaProducts(){ return (db.settings.stores||[]).map(s=>'loja:'+s.id); }
 function stockProductOrder(){ return ['deposito', ...lojaProducts(), 'sorvete']; }
-function storeGelatosOn(date, storeId){ const c=db.closings.find(x=>x.date===date); if(!c||!c.bySerial||typeof c.bySerial!=='object') return 0; let g=0; Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,date)===storeId){ const s=c.bySerial[ser]||{}; g+=(s.g30||0)+(s.g35||0); } }); return Math.round(g); }
+function storeGelatosOn(date, storeId){ const c=db.closings.find(x=>x.date===date); if(!c||!c.bySerial||typeof c.bySerial!=='object') return 0; let g=0; Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,date)===storeId){ const e=effCounts(c.bySerial[ser],ser,date); g+=e.g30+e.g35; } }); return Math.round(g); }
 function prodYield(p){ return prodInfo(p).yield; }
 /* categorias do caixa (despesas e outras entradas) */
 const CASH_CATS={ out:['Aluguel','Salário','Adiantamento','Benefício','Vale','Comissão','Insumos','Fornecedor','Gás / Energia','Embalagem','Marketing','Manutenção','Impostos','Pessoal','Outros'], in:['Evento','Venda avulsa','Aporte','Outros'] };
@@ -1683,8 +1683,43 @@ function classifyTx(v){
   const nA=v/A; if(A>0 && near(nA,Math.round(nA)) && Math.round(nA)>=1){ g.agua=Math.round(nA); return g; }    // água (4, 8, 12…)
   g.g35=v/P; return g;                             // fallback: estima como 3 bolas pelo valor
 }
-/* total de bebidas (água/refri) de um fechamento, somando as maquininhas (by_serial) */
-function bebidasOf(c){ let a=0,r=0; const bs=c&&c.bySerial; if(bs&&typeof bs==='object') Object.keys(bs).forEach(k=>{ a+=bs[k].agua||0; r+=bs[k].refri||0; }); return {agua:Math.round(a), refri:Math.round(r)}; }
+/* classifica SÓ como gelato (nunca desvia pra bebida) — todo valor vira gelato, como no fluxo normal */
+function classifyGel(v){
+  const g={g30:0,g35:0}; if(v<=0) return g;
+  const P=price(), P2=price2(); const near=(a,b)=>Math.abs(a-b)<0.02;
+  const n35=v/P, n30=v/P2;
+  if(near(n35,Math.round(n35)) && Math.round(n35)>=1){ g.g35=Math.round(n35); return g; }
+  if(near(n30,Math.round(n30)) && Math.round(n30)>=1){ g.g30=Math.round(n30); return g; }
+  if(near(v,P/2)){ g.g35=0.5; return g; }
+  if(near(v,P2/2)){ g.g30=0.5; return g; }
+  if(near(v,P+P2)){ g.g35=1; g.g30=1; return g; }
+  g.g35=v/P; return g;
+}
+/* detecta bebida candidata pelo valor (R$7 refri / R$4 água) — só é aplicada em maquininha de evento */
+function bebCand(v){
+  const b={agua:0,refri:0}; if(v<=0) return b;
+  const P=price(), P2=price2(), A=priceAgua(), R=priceRefri(); const near=(a,b)=>Math.abs(a-b)<0.02;
+  // valores que também são preço de gelato (35/30, metades, combo) nunca são bebida
+  if((near(v/P,Math.round(v/P))&&Math.round(v/P)>=1) || (near(v/P2,Math.round(v/P2))&&Math.round(v/P2)>=1) || near(v,P/2) || near(v,P2/2) || near(v,P+P2)) return b;
+  const nR=v/R; if(R>0 && near(nR,Math.round(nR)) && Math.round(nR)>=1){ b.refri=Math.round(nR); return b; }
+  const nA=v/A; if(A>0 && near(nA,Math.round(nA)) && Math.round(nA)>=1){ b.agua=Math.round(nA); return b; }
+  return b;
+}
+/* conta EFETIVA de uma maquininha no dia: bebida só vale se a maquininha foi marcada como EVENTO;
+   senão, aquelas vendas (R$4/R$7) voltam a ser gelato (pelo valor). Reage à marcação do evento. */
+function effCounts(s, ser, date){
+  s=s||{};
+  const g30=s.g30||0, g35=s.g35||0, a=s.agua||0, r=s.refri||0;
+  if(serialStore(ser,date)==='eventos') {   // é evento: tira a parte de bebida do gelato
+    const gfall = price()>0 ? (a*priceAgua()+r*priceRefri())/price() : 0;
+    return {g30:g30, g35:Math.max(0,g35-gfall), agua:a, refri:r};
+  }
+  return {g30:g30, g35:g35, agua:0, refri:0};   // sem evento: tudo gelato, nada de bebida
+}
+/* gelatos efetivos do dia (já descontando bebida das maquininhas de evento) */
+function gelatosOf(c){ if(c&&c.bySerial&&typeof c.bySerial==='object'){ let g=0; Object.keys(c.bySerial).forEach(k=>{ const e=effCounts(c.bySerial[k],k,c.date); g+=e.g30+e.g35; }); return Math.round(g); } return c?(c.gelatos||0):0; }
+/* total de bebidas (água/refri) de um fechamento — só conta as maquininhas marcadas como EVENTO */
+function bebidasOf(c){ let a=0,r=0; const bs=c&&c.bySerial, dt=c&&c.date; if(bs&&typeof bs==='object') Object.keys(bs).forEach(k=>{ const e=effCounts(bs[k],k,dt); a+=e.agua; r+=e.refri; }); return {agua:Math.round(a), refri:Math.round(r)}; }
 function weekdayGoalsSet(){ const w=db.settings.weekdayGoals; return w && Object.keys(w).some(k=>+w[k]>0); }
 function monthGoalFor(key){
   if(weekdayGoalsSet()){ const [y,m]=key.split('-').map(Number), dim=new Date(y,m,0).getDate(); let g=0; for(let d=1;d<=dim;d++) g+=(+db.settings.weekdayGoals[new Date(y,m-1,d).getDay()]||0); return g; }
@@ -1716,9 +1751,9 @@ function dayLabel(dstr){
 function reconcile(c){
   const stone=(c.pix||0)+(c.debito||0)+(c.credito||0);
   const dinheiro=(c.revenue||0)-stone;
-  const n=c.gelatos||0;
-  // tira a receita de bebida (água/refri) antes de conferir a faixa do gelato
-  const beb = c.bySerial ? bebidasOf(c) : ((stoneParsed.find(x=>x.date===c.date)&&{agua:Math.round(stoneParsed.find(x=>x.date===c.date).agua||0),refri:Math.round(stoneParsed.find(x=>x.date===c.date).refri||0)}) || bebidasOf(db.closings.find(x=>x.date===c.date)));
+  const n=c.bySerial?gelatosOf(c):(c.gelatos||0);
+  // tira a receita de bebida (água/refri) antes de conferir a faixa do gelato — só vale em evento
+  const beb = c.bySerial ? bebidasOf(c) : {agua:0,refri:0};
   const bebRev=(beb.agua||0)*priceAgua()+(beb.refri||0)*priceRefri();
   const rev=(c.revenue||0)-bebRev;                       // faturamento só de gelato
   const Phi=Math.max(price(),price2()), Plo=Math.min(price(),price2());
@@ -1927,7 +1962,8 @@ function storeAggregate(list){
   list.forEach(c=>{ const bs=c.bySerial;
     if(bs&&typeof bs==='object') Object.keys(bs).forEach(ser=>{ const s=bs[ser]||{}; anyData=true;
       const sid=serialStore(ser,c.date); const g=(sid&&by[sid])?by[sid]:un; g.serials.add(ser); g.days.add(c.date);
-      g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=s.g30||0; g.g35+=s.g35||0; g.agua+=s.agua||0; g.refri+=s.refri||0;
+      const e=effCounts(s,ser,c.date);
+      g.rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); g.tx+=s.tx||0; g.g30+=e.g30; g.g35+=e.g35; g.agua+=e.agua; g.refri+=e.refri;
       g.pix+=s.pix||0; g.debito+=s.debito||0; g.credito+=s.credito||0;
       if(Array.isArray(s.hours)) s.hours.forEach((n,h)=>g.hours[h]+=(n||0));
       if(Array.isArray(s.hoursRev)) s.hoursRev.forEach((v,h)=>g.hoursRev[h]+=(+v||0));
@@ -1999,7 +2035,7 @@ function storeDailyBreakdown(storeId, key){
   const out=[];
   closingsOf(key).forEach(c=>{
     let rev=0,tx=0,g30=0,g35=0,agua=0,refri=0,has=false;
-    if(c.bySerial&&typeof c.bySerial==='object') Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,c.date)===storeId){ const s=c.bySerial[ser]||{}; rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); tx+=s.tx||0; g30+=s.g30||0; g35+=s.g35||0; agua+=s.agua||0; refri+=s.refri||0; has=true; } });
+    if(c.bySerial&&typeof c.bySerial==='object') Object.keys(c.bySerial).forEach(ser=>{ if(serialStore(ser,c.date)===storeId){ const s=c.bySerial[ser]||{}; const e=effCounts(s,ser,c.date); rev+=(s.pix||0)+(s.debito||0)+(s.credito||0); tx+=s.tx||0; g30+=e.g30; g35+=e.g35; agua+=e.agua; refri+=e.refri; has=true; } });
     const cash=(c.cashByStore&&+c.cashByStore[storeId])||0;   // dinheiro lançado pra essa loja no dia
     if(has || cash>0) out.push({date:c.date,rev,cash,tx,g30:Math.round(g30),g35:Math.round(g35),agua:Math.round(agua),refri:Math.round(refri)});
   });
@@ -2472,7 +2508,7 @@ function coqHora(){ let pk=null; try{ const {by}=storeAggregate(db.closings); co
   if(pk==null) return {title:'Hora de pico', html:'Ainda não tenho o fluxo por hora (vem do CSV da Stone). Importa alguns dias que eu te mostro o horário de pico. 🙏'};
   return {title:'Hora de pico', html:'🕒 No geral, seu pico de vendas é por volta das <b>'+pk+'h–'+((pk+1)%24)+'h</b>. Vale reforçar a equipe nesse horário.'+coqTip()}; }
 function coqResumo(){ const list=db.closings||[]; if(!list.length) return {title:'Resumo', html:'Nenhum dia fechado ainda. Importa o CSV da Stone pra eu começar. 🙏'};
-  let gel=0,rev=0,ag=0,rf=0; const byM={}; list.forEach(c=>{ gel+=c.gelatos||0; rev+=c.revenue||0; const b=bebidasOf(c); ag+=b.agua; rf+=b.refri; const k=c.date.slice(0,7); byM[k]=(byM[k]||0)+(c.gelatos||0); });
+  let gel=0,rev=0,ag=0,rf=0; const byM={}; list.forEach(c=>{ const gc=gelatosOf(c); gel+=gc; rev+=c.revenue||0; const b=bebidasOf(c); ag+=b.agua; rf+=b.refri; const k=c.date.slice(0,7); byM[k]=(byM[k]||0)+gc; });
   const {by}=storeAggregate(list); const lojas=(db.settings.stores||[]).map(s=>({name:s.name,gel:storeGel(by[s.id]||blankStoreAgg()),rev:(by[s.id]||{rev:0}).rev})).filter(x=>x.gel>0||x.rev>0).sort((a,b)=>b.gel-a.gel);
   const bestM=Object.keys(byM).sort((a,b)=>byM[b]-byM[a])[0]; const p=coqPeriod();
   let h='🍦 No total: <b>'+NUM.format(gel)+' gelatos</b> e <b>'+money(rev)+'</b> em <b>'+list.length+' dias</b> ('+p.months+' '+(p.months>1?'meses':'mês')+').'
@@ -2579,7 +2615,7 @@ function renderRecon(){
   const cardGel=Math.max(0,(c.gelatos||0)-cashGel);
   const split=c.gelatos>0?`<div class="recon-row"><span>🍨 ${c.gelatos} gelatos</span><b>${cardGel} cartão/Pix + ${cashGel} dinheiro</b></div>`:'';
   const dt=$('cDate').value; const spB=stoneParsed.find(x=>x.date===dt);
-  const beb=spB?{agua:Math.round(spB.agua||0),refri:Math.round(spB.refri||0)}:bebidasOf(db.closings.find(x=>x.date===dt));
+  const beb=(spB&&spB.bySerial)?bebidasOf({bySerial:spB.bySerial,date:dt}):bebidasOf(db.closings.find(x=>x.date===dt));
   const bebLine=(beb.agua||beb.refri)?`<div class="recon-row"><span>🥤 Bebidas <span style="color:var(--ink-faint);font-weight:600">(fora dos gelatos)</span></span><b>${beb.agua?beb.agua+' água':''}${beb.agua&&beb.refri?' · ':''}${beb.refri?beb.refri+' refri':''}</b></div>`:'';
   let html=`<div class="recon-row"><span>Faturamento</span><b>${money(c.revenue)}</b></div>
     <div class="recon-row"><span>Recebido Stone</span><b>${money(r.stone)}</b></div>
@@ -2623,7 +2659,9 @@ function parseStoneCSV(text){
     else continue;
     const tx=Math.max(0, val-liq);   // taxa da Stone dessa venda
     d.taxa += tx; d.tx++;
-    const cb=classifyTx(val); d.g30+=cb.g30; d.g35+=cb.g35; d.agua+=cb.agua; d.refri+=cb.refri;   // gelato 2/3 bolas + bebidas
+    // gelato sempre conta tudo (cg); bebida fica só como CANDIDATA (cbev), aplicada depois só se a maquininha for evento
+    const cg=classifyGel(val), cbev=bebCand(val); const cb={g30:cg.g30,g35:cg.g35,agua:cbev.agua,refri:cbev.refri};
+    d.g30+=cb.g30; d.g35+=cb.g35; d.agua+=cb.agua; d.refri+=cb.refri;
     const hh=tpart?parseInt(tpart.split(':')[0],10):NaN; const okH=(hh>=0&&hh<24);
     if(okH){ d.hours[hh]++; d.hoursRev[hh]+=val; }   // receita bruta por hora
     // por maquininha (N DE SERIE) → permite separar por loja depois
@@ -2652,10 +2690,11 @@ function applyStoneDay(d){
   if(existing){ const cash=(existing.revenue||0)-((existing.pix||0)+(existing.debito||0)+(existing.credito||0)); $('cCash').value = cash>0.005?String(cash.toFixed(2)).replace('.',','):''; renderCashStores(existing.cashByStore||{}); }
   else renderCashStores({});
   recompute();
-  const g30=Math.round(d.g30||0), g35=Math.round(d.g35||0);
-  const bA=Math.round(d.agua||0), bR=Math.round(d.refri||0);
+  // bebida só aparece se a maquininha estiver marcada como evento nesse dia (senão vira gelato)
+  let eg30=0,eg35=0,bA=0,bR=0; if(d.bySerial) Object.keys(d.bySerial).forEach(k=>{ const e=effCounts(d.bySerial[k],k,d.date); eg30+=e.g30; eg35+=e.g35; bA+=e.agua; bR+=e.refri; });
+  const g30=Math.round(eg30), g35=Math.round(eg35), effGel=Math.round(eg30+eg35); bA=Math.round(bA); bR=Math.round(bR);
   const bebTxt=(bA||bR)?(' · 🥤 '+[bA?bA+' água':'',bR?bR+' refri':''].filter(Boolean).join(' + ')+' <span style="color:var(--ink-faint)">(fora dos gelatos)</span>'):'';
-  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+cardGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas)'+bebTxt+'. Conte o <b>dinheiro</b> pra fechar o total.';
+  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+effGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas)'+bebTxt+'. Conte o <b>dinheiro</b> pra fechar o total.';
   showStoneChips(d.date);
   renderDaySerials(d.date);
   const novos=stoneParsed.filter(x=>!db.closings.some(c=>c.date===x.date)).length;
