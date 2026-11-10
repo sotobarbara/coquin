@@ -361,6 +361,17 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .q-res b{color:var(--accent)} .q-res .muted{color:var(--muted)}
 .q-res button{border:0;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;width:20px;height:20px;border-radius:99px;padding:0}
 .q-res button:hover{background:rgba(0,0,0,.07);color:var(--ink)} .q-res svg{width:12px;height:12px}
+.mcv{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
+.mcv ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.mcv li{display:flex;align-items:baseline;gap:6px;font-size:12px;line-height:1.35;color:var(--ink-2);min-width:0}
+.mcv li svg{width:12px;height:12px;flex:none;color:var(--muted);transform:translateY(2px)}
+.mcv .t{flex:1;min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mcv .d{flex:none;white-space:nowrap;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mcv .d.now{color:var(--accent);font-weight:500}
+.mcv li.edu .t{color:var(--muted)}
+.mcv li.first .t{color:var(--accent);font-weight:500}
+.mcv-more{border:0;background:none;padding:4px 0 0 18px;font:inherit;font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:500}
+.mcv-more:hover{text-decoration:underline}
 .kc-hit{display:flex;gap:7px;align-items:flex-start;margin-top:9px;font-size:12px;line-height:1.45;color:var(--ink-2);background:#FFF8E6;border:1px solid #F1E2B8;border-radius:8px;padding:7px 9px}
 .kc-hit svg{width:12px;height:12px;flex:none;margin-top:2px;color:#A07A1A}
 .kc-hit span{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -576,6 +587,7 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></symbol>
+  <symbol id="i-grad" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5M22 9v6"/></symbol>
   <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
@@ -1047,6 +1059,67 @@ function ageOf(c){
   c._age=(age!=null&&age>=14&&age<=75)?{age,how}:null; return c._age;
 }
 
+/* ---------- mini currículo: experiências (com tempo), escolaridade e idade, lidos do texto do CV ----------
+   Heurística: acha a seção de experiência, cada período (03/2022 a 08/2024, 2021 - atual, jan 2020 – fev 2021…)
+   vira uma experiência, com o texto curto ao redor como cargo/empresa. Só para visualização. */
+const MES3=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const D1='(?:(?:0?[1-9]|1[0-2])\\s?[\\/.]\\s?(?:19|20)\\d{2}|(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\\.?\\s*(?:de\\s*|\\/\\s*)?(?:19|20)\\d{2}|(?:19|20)\\d{2})';
+const RX_PER=new RegExp('('+D1+')\\s*(?:a|ate|-|–|—|à|\\bao\\b|\\/)\\s*(atualmente|atual|o momento|hoje|presente|'+D1+')');
+const RX_EXP=/^(experiencias?|historico profissional|trajetoria profissional|vivencia profissional|atuacao profissional)\b/;
+const RX_SEC=/^(objetivos?|resumo|perfil|formacao|formacoes|escolaridade|educacao|cursos?|qualificac|habilidades|competencias|idiomas|informacoes|referencias|dados pessoais|atividades complementares|certificac|conhecimentos|caracteristicas|disponibilidade)\b/;
+const RX_SKIP=/^(atividades|funcoes|funcao exercida|responsabilidades|principais|descricao|tarefas|atribuicoes|realizava|resultados)\b/;
+function dParse(t){ t=t.trim(); let m=t.match(/^(\d{1,2})\s?[\/.]\s?(\d{4})$/); if(m) return {y:+m[2],m:+m[1]-1};
+  m=t.match(/^([a-z]{3})[a-z]*\.?\s*(?:de\s*|\/\s*)?(\d{4})$/); if(m&&MES3.includes(m[1])) return {y:+m[2],m:MES3.indexOf(m[1])};
+  m=t.match(/^(\d{4})$/); if(m) return {y:+m[1],m:null};
+  if(/atual|momento|hoje|presente/.test(t)){ const n=new Date(); return {y:n.getFullYear(),m:n.getMonth(),now:1}; } return null; }
+function durTxt(a,b){ if(!a||!b) return ''; let mo=(b.y-a.y)*12+((b.m??(a.m??0))-(a.m??0)); if(a.m==null&&b.m==null) mo=(b.y-a.y)*12;
+  if(mo<0||mo>600) return ''; if(mo<1) mo=1; const y=Math.floor(mo/12), r=mo%12;
+  if(!y) return mo+(mo===1?' mês':' meses'); if(a.m==null||b.m==null||!r) return y+(y===1?' ano':' anos'); return y+(y===1?' ano':' anos')+' e '+r+(r===1?' mês':' meses'); }
+const cleanT=t=>t.replace(/^(empresa|cargo|funcao|função|local|periodo|período)\s*:\s*/i,'').replace(/^[\s•·*\-–—|,;:()]+|[\s•·*\-–—|,;:(]+$/g,'').replace(/\s+[|—–-]\s+/g,' · ').replace(/\s*\|\s*/g,' · ').replace(/\s{2,}/g,' ').replace(/\(\s*\)/g,'').trim();
+function miniCv(c){
+  const src=c.cv_text||''; if(c._mk===src.length && c._mcv!==undefined) return c._mcv; c._mk=src.length;
+  if(src.trim().length<60){ c._mcv=null; return null; }
+  const L=src.split(/\n+/).map(x=>x.trim()).filter(Boolean), N=L.map(norm);
+  // seção de experiência
+  let a=N.findIndex(n=>RX_EXP.test(n)&&(n.length<45||/^[a-z ]+:/.test(n))), b=L.length, inl='';
+  if(a>=0){ const m=L[a].match(/:\s*(.{6,})$/); if(m) inl=m[1]; for(let i=a+1;i<L.length;i++){ if(RX_SEC.test(N[i])&&N[i].length<45){ b=i; break; } } }
+  const eduA=N.findIndex(n=>/^(formacao|escolaridade|educacao)\b/.test(n)&&n.length<45);
+  let lines=a>=0?(inl?[inl]:[]).concat(L.slice(a+1,b)):L.filter((_,i)=>!(eduA>=0&&i>eduA&&i<eduA+6));
+  // modo em linha: "Atendente na X (2021 - 2023); Auxiliar na Y (2020-2021)"
+  lines=lines.flatMap(l=>l.length>90&&/;/.test(l)?l.split(/;\s*/):[l]);
+  const exp=[]; let pend=[];
+  const isTitle=(l,n)=>l.length<=80 && !/^[•·*\-–]/.test(l) && !RX_SKIP.test(n) && !/@|\(?\d{2}\)?\s?9?\d{4}-?\d{4}/.test(l) && !(l.length>45&&/[.;]$/.test(l));
+  for(let i=0;i<lines.length;i++){ const l=lines[i], n=norm(l), m=n.match(RX_PER);
+    if(m){ const d1=dParse(m[1]), d2=dParse(m[2]); let rest=cleanT(l.slice(0,m.index)+' '+l.slice(m.index+m[0].length));
+      if(rest.length>80) rest=''; let parts=pend.slice(-2); if(rest) parts=parts.length&&rest.length<25?parts.concat([rest]):[rest].concat(parts.length&&rest.length<40?parts.slice(-1):[]);
+      if(!parts.length){ for(let j=i+1;j<lines.length&&parts.length<2;j++){ const nj=norm(lines[j]); if(RX_PER.test(nj)) break; if(isTitle(lines[j],nj)) parts.push(cleanT(lines[j])); else break; } }
+      const t=[...new Set(parts.map(cleanT).filter(x=>x.length>2))].join(' · ');
+      if(t) exp.push({t:t.length>70?t.slice(0,68)+'…':t,d:durTxt(d1,d2),now:!!(d2&&d2.now),y1:d1&&d1.y}); pend=[]; }
+    else if(isTitle(l,n)) pend.push(cleanT(l)); else pend=[];
+    if(exp.length>=8) break; }
+  if(!exp.length&&a>=0){ lines.filter(l=>isTitle(l,norm(l))).slice(0,3).forEach(l=>{ const t=cleanT(l); if(t.length>2) exp.push({t:t.length>70?t.slice(0,68)+'…':t,d:''}); }); }
+  // escolaridade (a mais alta encontrada)
+  const nt=cvNorm(c), ot=c._ot; let edu='';
+  const ER=[[/(superior|graduacao|bacharelado|licenciatura|tecnologo)[^.;\n]{0,40}?(completo|completa|concluido|concluida|incompleto|incompleta|cursando|em andamento|trancado)/,4],
+    [/(?:curso )?tecnico em [a-z ]{3,30}?(?=[,.;\-–(]|\s{2}|$| \d)/,3],
+    [/cursando (?:o )?(?:ensino )?(?:superior|graduacao)[a-z ]{0,30}/,4],
+    [/(?:ensino )?medio[^.;\n]{0,20}?(completo|incompleto|cursando|em andamento|concluido)/,2],
+    [/cursando (?:o )?(?:ensino )?medio/,2],
+    [/(?:ensino )?fundamental[^.;\n]{0,20}?(completo|incompleto|cursando)/,1]];
+  for(const [re] of ER){ const m=nt.match(re); if(m){ edu=ot.slice(m.index,m.index+m[0].length).trim(); break; } }
+  if(edu) edu=edu.charAt(0).toUpperCase()+edu.slice(1);
+  exp.sort((x,y)=>(y.now?1:0)-(x.now?1:0)||(y.y1||0)-(x.y1||0));
+  const first=!exp.length && /primeiro emprego|sem experiencia|nao possuo experiencia/.test(nt);
+  c._mcv=(exp.length||edu||first)?{exp,edu,first}:null; return c._mcv; }
+
+const MCV_OPEN=new Set();
+const durShort=d=>d.replace(/ e \d+ m[eê]s(es)?$/,'');
+function mcvRow(e){ return '<li title="'+esc(e.t+(e.d?' — '+(e.now?'atual, ':'')+e.d:''))+'">'+ic('brief')+'<span class="t">'+esc(e.t)+'</span>'+(e.d?'<span class="d'+(e.now?' now':'')+'">'+(e.now?'atual · ':'')+esc(durShort(e.d))+'</span>':'')+'</li>'; }
+function miniCvCard(c){ const m=miniCv(c); if(!m) return ''; const open=MCV_OPEN.has(c.id), shown=open?m.exp:m.exp.slice(0,2), more=m.exp.length-shown.length;
+  return '<div class="mcv"><ul>'+(m.first?'<li class="first">'+ic('brief')+'<span class="t">Primeiro emprego</span></li>':'')+shown.map(mcvRow).join('')
+    +(m.edu?'<li class="edu">'+ic('grad')+'<span class="t">'+esc(m.edu)+'</span></li>':'')+'</ul>'
+    +(more>0?'<button class="mcv-more" data-mcv="'+c.id+'">+'+more+' experiência'+(more>1?'s':'')+'</button>':open&&m.exp.length>2?'<button class="mcv-more" data-mcv="'+c.id+'">mostrar menos</button>':'')+'</div>'; }
+
 function rescore(){ cands.forEach(c=>c._s=null); }
 
 /* ---------- visual ---------- */
@@ -1176,10 +1249,11 @@ function card(c){
     +'<span class="sc '+s.tier+'">'+(s.tier==='P'||s.tier==='Q'?'':s.tier==='X'?'—':s.pct)+'<i>'+(TLAB[s.tier]||s.tier)+'</i></span></div>'
     +'<div class="kc-bar"><i style="width:'+(s.tier==='X'?100:noNum(s.tier)?0:s.pct)+'%;background:'+TIERC[s.tier]+'"></i></div>'
     +(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')
+    +miniCvCard(c)
     +(()=>{ const m=qTerms().length?qMatch(c):null; if(!m||!m.cv) return ''; const sn=qSnips(c,1)[0]; if(!sn) return '';
         return '<div class="kc-hit">'+ic('search')+'<span>'+snipHtml(sn)+'</span>'+(m.cv>1?'<b>'+m.cv+'x</b>':'')+'</div>'; })()
     +(()=>{ const h=homeOf(c), sp=spotOfVaga(v); if(!h||!sp) return ''; const tr=trip(h.b,sp);
-        return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
+        const ag=ageOf(c); return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+(ag?' · '+ag.age+' anos':'')+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
     +'<div class="kc-f">'+ic('clock')+'<span class="t">'+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')+'</span>'
     +'<span class="r">'+(colOf(c)==='reprovado'?(c.agradecido_em?'<span class="kc-thx done" title="Agradecido em '+fmtDia(c.agradecido_em)+'">✓ agradecido</span>':c.email?'<a class="kc-thx" data-thank-card="'+c.id+'" target="_blank" rel="noopener" href="'+thxHref(c)+'" title="Abrir e-mail de agradecimento">'+ic('mail')+'Agradecer</a>':''):'')+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
 }
@@ -1203,6 +1277,7 @@ function moveTo(c,k){
 }
 $('board').addEventListener('click',e=>{ if(e.target.closest('#addSt')) return addEtapa();
   if(e.target.closest('#thxAll')) return openThanks();
+  const mcvB=e.target.closest('[data-mcv]'); if(mcvB){ const id=mcvB.dataset.mcv; MCV_OPEN.has(id)?MCV_OPEN.delete(id):MCV_OPEN.add(id); renderCand(); return; }
   const tk=e.target.closest('[data-thank-card]'); if(tk){ const c=cands.find(x=>x.id===tk.dataset.thankCard); if(c) markThanked([c]); return; }
   const mb=e.target.closest('[data-st-menu]'); if(mb){ UI.stMenu=UI.stMenu===mb.dataset.stMenu?null:mb.dataset.stMenu; document.querySelectorAll('.col-menu').forEach(m=>m.classList.toggle('open',m.previousElementSibling===mb&&!!UI.stMenu)); return; }
   const sa=e.target.closest('[data-st-act]'); if(sa){ UI.stMenu=null; return editEtapa(sa.dataset.k,sa.dataset.stAct); }

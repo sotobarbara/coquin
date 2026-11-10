@@ -51,6 +51,10 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
   de lugar ou remover (quem estava nela volta para *Aplicações*). Fica salva na tabela `vagas_config`
   (rode o `SETUP.sql` atualizado uma vez).
 - Filtro por nível (A/B/C/Eliminados), busca e ordenação (score, data, sua nota).
+- **Mini currículo no card:** sem abrir o arquivo, o card mostra as experiências (cargo · empresa e
+  tempo, com "atual" para o emprego de agora), a escolaridade, a idade e "Primeiro emprego" quando for
+  o caso. Mostra 2 experiências; "+N experiências" abre as outras ali mesmo. É lido do texto do CV
+  (pode errar em currículos fora do padrão; o arquivo continua a um clique).
 - **Busca dentro dos currículos:** digite uma palavra (ex.: `coco`) e o quadro mostra só quem tem ela
   no currículo, com o **trecho** destacado no card e todos os trechos no painel do candidato. Acento
   não importa e o começo da palavra pega as variações (coco → cocos); várias palavras = todas precisam aparecer.
