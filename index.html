@@ -595,7 +595,8 @@ main{padding-top:18px}
 .side-item.coq-nav.sel{background:var(--grad);color:#fff}
 #viewCoq{display:flex;flex-direction:column;min-height:calc(100vh - 150px)}
 .coq-hero{display:flex;align-items:center;gap:13px;padding:14px 2px 8px}
-.coq-hero .coq-ava{width:54px;height:54px;border-radius:999px;background:#E3F2E9 center/cover no-repeat url('coq.png');flex:none;box-shadow:0 8px 20px rgba(242,107,58,.26);border:2px solid #fff}
+.coq-hero .coq-ava{width:54px;height:54px;border-radius:999px;overflow:hidden;background:#E3F2E9;flex:none;box-shadow:0 8px 20px rgba(242,107,58,.26);border:2px solid #fff}
+.coq-ava svg,.coq-msg.coq .ct .cm svg,.coq-fab svg{width:100%;height:100%;display:block}
 .coq-hi{font-size:17px;font-weight:850;color:var(--ink)}
 .coq-sub{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:2px;line-height:1.35}
 .coq-chat{display:flex;flex-direction:column;gap:12px;padding:10px 0}
@@ -603,7 +604,14 @@ main{padding-top:18px}
 .coq-msg.me{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:5px;font-weight:650}
 .coq-msg.coq{align-self:flex-start;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-bottom-left-radius:5px;color:var(--ink)}
 .coq-msg.coq .ct{font-weight:850;color:var(--green-700);display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12.5px}
-.coq-msg.coq .ct .cm{width:24px;height:24px;border-radius:999px;background:#E3F2E9 center/cover no-repeat url('coq.png');flex:none;font-size:0;color:transparent;overflow:hidden}
+.coq-msg.coq .ct .cm{width:24px;height:24px;border-radius:999px;background:#E3F2E9;flex:none;font-size:0;color:transparent;overflow:hidden}
+/* Coq flutuante no rodapé (abre o assistente) */
+.coq-fab{position:fixed;right:16px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:29;width:60px;height:60px;border-radius:999px;border:2.5px solid #fff;background:#E3F2E9;overflow:hidden;box-shadow:0 10px 26px rgba(42,80,40,.32);cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;animation:coqpop .4s ease}
+.coq-fab::after{content:'';position:absolute;inset:-6px;border-radius:999px;border:2px solid var(--green);opacity:.5;animation:coqring 2.4s ease-out infinite;pointer-events:none}
+@keyframes coqring{0%{transform:scale(.9);opacity:.5}70%{transform:scale(1.25);opacity:0}100%{opacity:0}}
+@keyframes coqpop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.coq-fab:active{transform:scale(.94)}
+.coq-fab .cf-badge{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:999px;background:var(--green);border:2px solid #fff;z-index:2}
 .coq-msg.coq b{color:var(--ink);font-weight:800}
 .coq-msg.coq .cbig{font-size:15.5px;font-weight:850;color:var(--green-900);margin:7px 0 3px}
 .coq-msg.coq .crow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--line);font-size:12.5px;margin-top:2px}
@@ -763,7 +771,7 @@ main{padding-top:18px}
 
  <div id="viewCoq" class="hide">
   <div class="coq-hero">
-    <div class="coq-ava" role="img" aria-label="Coq"></div>
+    <div class="coq-ava" id="coqAva" role="img" aria-label="Coq"></div>
     <div class="coq-ht"><div class="coq-hi">Oi! Eu sou o <b>Coq</b> 🥥</div><div class="coq-sub">Pergunto aos seus dados e te trago a resposta. Toque numa pergunta ou escreva a sua.</div></div>
   </div>
   <div id="coqChat" class="coq-chat"></div>
@@ -1029,6 +1037,8 @@ main{padding-top:18px}
   <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   <span id="fabLabel">Fechar o dia</span>
 </button>
+
+<button class="coq-fab" id="coqFab" aria-label="Falar com o Coq"><span class="cf-badge"></span><span id="coqFabIc"></span></button>
 
 <!-- SHEET: fechar o dia -->
 <div class="scrim" id="scrim"></div>
@@ -1381,7 +1391,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v8.8 · Coq com mascote'
+const APP_VERSION='v8.9 · Coq desenho + rodape'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -2396,6 +2406,7 @@ function switchView(v){
   document.querySelectorAll('#sideNav .side-item').forEach(it=>it.classList.toggle('sel', it.dataset.hub===hub));
   if(v==='coq') coqInit();
   document.getElementById('fab').style.display = (v==='dados'||v==='squads'||v==='coq')?'none':'flex';
+  const cf=document.getElementById('coqFab'); if(cf) cf.style.display = (v==='coq')?'none':'block';
   updateFabLabel();
   window.scrollTo(0,0);
 }
@@ -2416,6 +2427,8 @@ document.getElementById('tabSquads').addEventListener('click',()=>switchView('sq
 document.getElementById('tabFolha').addEventListener('click',()=>switchView('equipe'));
 
 /* ================= Coq — assistente local (lê os dados e responde) ================= */
+const COQ_SVG='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#39A935"/><circle cx="50" cy="50" r="47" fill="none" stroke="#2C8A26" stroke-width="2"/><ellipse cx="50" cy="53" rx="33" ry="40" fill="#F6FBF3"/><ellipse cx="29" cy="64" rx="6.5" ry="4.5" fill="#F6A6A0"/><ellipse cx="71" cy="64" rx="6.5" ry="4.5" fill="#F6A6A0"/><path d="M14 43 h8 M86 43 h-8" stroke="#15181C" stroke-width="3.2" stroke-linecap="round"/><rect x="19" y="37" width="27" height="19" rx="9.5" fill="#15181C"/><rect x="54" y="37" width="27" height="19" rx="9.5" fill="#15181C"/><path d="M45.5 43 h9" stroke="#15181C" stroke-width="4" stroke-linecap="round"/><rect x="23" y="40" width="9" height="3.6" rx="1.8" fill="#474d56"/><rect x="58" y="40" width="9" height="3.6" rx="1.8" fill="#474d56"/><path d="M37 61 Q50 66 63 61 Q61 77 50 77 Q39 77 37 61 Z" fill="#7E2030"/><path d="M40 62.6 Q50 66 60 62.6 L59 66 Q50 68.6 41 66 Z" fill="#fff"/><ellipse cx="50" cy="72.5" rx="7" ry="4" fill="#E8637A"/></svg>';
+const COQ_CM='<span class="cm">'+COQ_SVG+'</span>';
 const COQ_WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 function coqWeekday(storeId){
   const wk=COQ_WD.map((n,i)=>({wd:i,name:n,days:0,gel:0,rev:0}));
@@ -2479,18 +2492,20 @@ function coqMatch(q){ const t=(q||'').toLowerCase().normalize('NFD').replace(/[�
 let _coqInit=false;
 function coqBubble(cls, html){ const el=document.createElement('div'); el.className='coq-msg '+cls; el.innerHTML=html; document.getElementById('coqChat').appendChild(el);
   setTimeout(()=>{ const c=document.getElementById('coqChat'); el.scrollIntoView({behavior:'smooth',block:'end'}); window.scrollTo(0,document.body.scrollHeight); },60); }
-function coqReply(ans){ coqBubble('coq','<div class="ct"><span class="cm">🥥</span>'+ans.title+'</div>'+ans.html); }
+function coqReply(ans){ coqBubble('coq','<div class="ct">'+COQ_CM+''+ans.title+'</div>'+ans.html); }
 function coqRun(text){ const q=(text||'').trim(); if(!q) return; coqBubble('me', q.replace(/</g,'&lt;'));
   const fn=coqMatch(q); if(fn){ const ans=fn(); coqReply(ans); }
-  else coqBubble('coq','<div class="ct"><span class="cm">🥥</span>Hmm, não peguei essa 🤔</div>Ainda sou simples e respondo sobre <b>fluxo, lojas, horários e metas</b>. Tenta uma das sugestões aqui embaixo, tipo <i>“dia de maior fluxo”</i> ou <i>“quais 2 dias fechar a Imprensa”</i>.');
+  else coqBubble('coq','<div class="ct">'+COQ_CM+'Hmm, não peguei essa 🤔</div>Ainda sou simples e respondo sobre <b>fluxo, lojas, horários e metas</b>. Tenta uma das sugestões aqui embaixo, tipo <i>“dia de maior fluxo”</i> ou <i>“quais 2 dias fechar a Imprensa”</i>.');
 }
 function coqInit(){ renderCoqSugs(); if(_coqInit) return; _coqInit=true;
-  coqBubble('coq','<div class="ct"><span class="cm">🥥</span>E aí! 👋</div>Sou o <b>Coq</b>. Eu olho seus fechamentos e te respondo na hora: dia de maior/menor fluxo, quando fechar a Imprensa, quando a Beira Mar pega fluxo, resumo do mês… Toca numa sugestão ou escreve sua pergunta.');
+  coqBubble('coq','<div class="ct">'+COQ_CM+'E aí! 👋</div>Sou o <b>Coq</b>. Eu olho seus fechamentos e te respondo na hora: dia de maior/menor fluxo, quando fechar a Imprensa, quando a Beira Mar pega fluxo, resumo do mês… Toca numa sugestão ou escreve sua pergunta.');
 }
 function renderCoqSugs(){ const host=document.getElementById('coqSugs'); if(!host) return; host.innerHTML=COQ_SUGS.map((s,i)=>'<button type="button" class="coq-sug" data-coq="'+i+'">'+s.l+'</button>').join(''); }
 document.getElementById('coqSugs').addEventListener('click', e=>{ const b=e.target.closest('[data-coq]'); if(!b) return; const s=COQ_SUGS[+b.getAttribute('data-coq')]; coqBubble('me', s.l.replace(/^[^ ]+ /,'')); coqReply(s.f()); });
 document.getElementById('coqSend').addEventListener('click', ()=>{ const i=document.getElementById('coqQ'); coqRun(i.value); i.value=''; });
 document.getElementById('coqQ').addEventListener('keydown', e=>{ if(e.key==='Enter'){ coqRun(e.target.value); e.target.value=''; } });
+(function coqMascote(){ const a=document.getElementById('coqAva'); if(a) a.innerHTML=COQ_SVG; const f=document.getElementById('coqFabIc'); if(f) f.innerHTML=COQ_SVG; })();
+document.getElementById('coqFab').addEventListener('click', ()=>{ switchHub('coq'); });
 
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
