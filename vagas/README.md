@@ -51,6 +51,10 @@ admin.html  ── equipe loga, vê todos já ranqueados por score,
   de lugar ou remover (quem estava nela volta para *Aplicações*). Fica salva na tabela `vagas_config`
   (rode o `SETUP.sql` atualizado uma vez).
 - Filtro por nível (A/B/C/Eliminados), busca e ordenação (score, data, sua nota).
+- **Currículo dentro do painel do candidato** (sem abrir arquivo): aba **Organizado** separa o CV em
+  seções (Objetivo, Experiência, Formação, Cursos…), com cada emprego em linha do tempo (cargo · empresa,
+  datas, **tempo de casa** e atividades) e as palavras-chave da vaga destacadas; aba **Arquivo original**
+  mostra as páginas do PDF (ou a imagem) ali mesmo. O card do quadro continua enxuto, com o tempo até a vaga.
 - **Busca dentro dos currículos:** digite uma palavra (ex.: `coco`) e o quadro mostra só quem tem ela
   no currículo, com o **trecho** destacado no card e todos os trechos no painel do candidato. Acento
   não importa e o começo da palavra pega as variações (coco → cocos); várias palavras = todas precisam aparecer.
