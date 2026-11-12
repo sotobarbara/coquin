@@ -1,0 +1,5 @@
+{
+  "_leia": "Coloque aqui os arquivos .glb (ex.: coco.glb, carrinho.glb, mascote.glb) e escreva o nome no campo da cena. null = usa o modelo provisório.",
+  "coco": null,
+  "carrinho": null
+}
