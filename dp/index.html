@@ -525,6 +525,7 @@ function renderPainel(){
   const fol=empsIn(YM).map(e=>D.payroll(S,e.id,YM)).filter(Boolean);
   const head=empsIn(YM).length;
   let h='<div class="h1">Agenda de pagamentos · '+ymLabel(YM)+'</div><p class="lead">O que sai do caixa em cada data do mês. Toque em ✓ para marcar como pago e em <b>Recibos</b> para imprimir com a logo.</p>';
+  h+='<div class="btn-row"><button class="btn btn-green" data-act="addHE">+ Hora extra</button><button class="btn btn-ghost" data-act="addEntry">+ Falta, atestado, vale…</button></div>';
   h+='<div class="grid g4" style="margin-top:14px">'
     +kpi('Sai do caixa no mês', brl(sum(ev,'total')), ev.length+' pagamentos')
     +kpi('Custo da folha ('+MONTHS[+YM.slice(5)-1].slice(0,3)+')', brl(sum(fol,'custo')), 'salários, encargos, benefícios e provisões')
@@ -677,7 +678,7 @@ function renderFolha(){
   const rows=empsIn(YM).map(e=>D.payroll(S,e.id,YM)).filter(Boolean);
   const pd=D.salaryDate(YM,S.cfg);
   let h='<div class="h1">Folha de '+ymLabel(YM)+'</div><p class="lead">Paga no <b>'+S.cfg.payBizDay+'º dia útil: '+wdName(pd)+', '+fmtD(pd)+'</b>. Lance horas extras, faltas, comissões e vales; o holerite recalcula sozinho.</p>';
-  h+='<div class="btn-row"><button class="btn btn-green" data-act="addEntry">+ Lançamento</button><button class="btn btn-ghost" data-act="otCalc">⏱ Calculadora de hora extra</button>'
+  h+='<div class="btn-row"><button class="btn btn-green" data-act="addHE">+ Hora extra</button><button class="btn btn-ghost" data-act="addEntry">+ Falta, atestado, vale…</button><button class="btn btn-ghost" data-act="otCalc">⏱ Calculadora de hora extra</button>'
     +'<button class="btn btn-ghost" data-act="printAll">🖨 Imprimir todos os holerites</button><button class="btn btn-ghost" data-act="csv">⬇ CSV da folha</button></div>';
   h+='<div class="grid g4" style="margin-top:14px">'+kpi('Proventos',brl(sum(rows,'prov')))+kpi('Descontos',brl(sum(rows,'desc')),'INSS '+brl(sum(rows,'inss'))+' · IRRF '+brl(sum(rows,r=>r.ir.v)))
     +kpi('Líquido a pagar',brl(sum(rows,'liquido')),fmtD(pd))+kpi('Custo empresa',brl(sum(rows,'custo')),'FGTS '+brl(sum(rows,'fgts'))+' + provisões')+'</div>';
@@ -693,10 +694,21 @@ function renderFolha(){
       +'<td class="r">'+(isPaid(pk)?'<span class="chip ok">pago</span>':'')+(!(+p.e.salary)?'<span class="chip warn">sem salário</span>':'')+'</td></tr>';
   });
   h+='</tbody>'+(rows.length?'<tfoot><tr><td>Total</td><td colspan="7"></td><td class="r num">'+brl(sum(rows,'liquido'))+'</td><td></td></tr></tfoot>':'')+'</table></div>';
-  /* lançamentos do mês */
-  const ents=S.entries.filter(x=>x.ym===YM).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  h+='<div class="section-title">Lançamentos do mês <span>'+ents.length+'</span></div><div class="card">';
-  if(!ents.length) h+='<div class="empty">Nenhum lançamento. Use <b>+ Lançamento</b> para hora extra, falta, atestado, comissão, vale…</div>';
+  /* horas extras do mês, dia a dia */
+  const hes=S.entries.filter(x=>x.ym===YM && (x.kind==='he50'||x.kind==='he100')).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  h+='<div class="section-title">Horas extras de '+MONTHS[+YM.slice(5)-1]+' <span>'+hm(sum(hes,'qty'))+' no mês</span></div><div class="card tbl-wrap"><table class="tbl"><thead><tr><th>Dia</th><th>Colaborador</th><th class="r">Horas</th><th class="r">Adicional</th><th class="r">Valor</th><th>Obs.</th><th></th></tr></thead><tbody>';
+  if(!hes.length) h+='<tr><td colspan="7"><div class="empty">Nenhuma hora extra lançada. Toque em <b>+ Hora extra</b>: dia, colaborador e quantas horas.</div></td></tr>';
+  hes.forEach(x=>{ const e=empById(x.emp); if(!e) return; const v=heValue(e,x);
+    h+='<tr><td>'+(x.date?'<b>'+fmtDM(x.date)+'</b> <small class="muted">'+WD[D.wd(x.date)]+'</small>':'<span class="muted">sem data</span>')+'</td><td>'+who(e,'')+'</td><td class="r num"><b>'+hm(x.qty)+'</b></td><td class="r">'+v.pct+'%</td><td class="r num">'+brl(v.v)+'</td><td class="muted" style="font-size:12px">'+esc(x.note||'')+'</td>'
+      +'<td class="r"><button class="btn btn-ghost btn-sm" data-act="delEntry" data-a="'+x.id+'">Excluir</button></td></tr>'; });
+  if(hes.length){ const byE={}; hes.forEach(x=>{ byE[x.emp]=(byE[x.emp]||0)+(+x.qty||0); });
+    h+='</tbody><tfoot><tr><td colspan="2">'+Object.keys(byE).map(id=>esc((empById(id)||{}).name||id)+' '+hm(byE[id])).join(' · ')+'</td><td class="r num">'+hm(sum(hes,'qty'))+'</td><td></td><td class="r num">'+brl(sum(hes,x=>heValue(empById(x.emp),x).v))+'</td><td colspan="2" class="muted" style="font-weight:600">+ DSR no holerite</td></tr></tfoot>'; }
+  else h+='</tbody>';
+  h+='</table></div>';
+  /* outros lançamentos do mês */
+  const ents=S.entries.filter(x=>x.ym===YM && x.kind!=='he50' && x.kind!=='he100').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  h+='<div class="section-title">Faltas, atestados e outros lançamentos <span>'+ents.length+'</span></div><div class="card">';
+  if(!ents.length) h+='<div class="empty">Nenhum lançamento. Use <b>+ Falta, atestado, vale…</b> para faltas, atestados, comissões, vales e descontos.</div>';
   ents.forEach(x=>{ const e=empById(x.emp), K=D.KINDS[x.kind]; if(!e||!K) return;
     h+='<div class="prow">'+avatar(e)+'<div class="bd"><div class="nm" style="font-size:14px">'+esc(K.label)+' · '+esc(e.name)+'</div><div class="sb">'+(x.date?fmtD(x.date)+' · ':'')+(K.unit==='h'?hm(x.qty):K.unit==='dias'?x.qty+' dia(s)':brl(x.amount))
       +(x.kind==='falta'&&x.dsr?' · perde DSR':'')+(x.note?' · '+esc(x.note):'')+'</div></div><button class="btn btn-ghost btn-sm" data-act="delEntry" data-a="'+x.id+'">Excluir</button></div>'; });
@@ -721,6 +733,52 @@ ACT.csv=()=>{
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='folha-'+YM+'.csv'; a.click();
 };
 ACT.addEntry=(empId)=>openEntry(empId);
+/* hora extra: dia X, colaborador Y, W horas — o adicional sai do dia (domingo/feriado/folga = 100%) */
+function hePctFor(e,iso){
+  if(!iso) return {pct:+S.cfg.he50, why:'dia normal'};
+  if(D.wd(iso)===0) return {pct:+S.cfg.he100, why:'domingo'};
+  const hn=D.holidayName(iso,S.cfg); if(hn) return {pct:+S.cfg.he100, why:'feriado — '+hn};
+  if((e.offDays||[0]).indexOf(D.wd(iso))>=0) return {pct:+S.cfg.he100, why:'dia de folga de '+e.name};
+  return {pct:+S.cfg.he50, why:'dia normal ('+WDL[D.wd(iso)]+')'};
+}
+function heValue(e,x){ const pj=e&&e.contract==='pj'; const pct=pj?+S.cfg.pjHePct:(x.kind==='he100'?+S.cfg.he100:+S.cfg.he50); return {pct, v:r2((+x.qty||0)*D.hourValue(e||{},S.cfg)*(1+pct/100))}; }
+ACT.addHE=()=>{
+  const emps=S.emps.filter(e=>e.status!=='desligado').sort((a,b)=>a.name.localeCompare(b.name));
+  if(!emps.length){ toast('Cadastre alguém em Equipe'); return; }
+  const today=todayISO(), def=today.slice(0,7)===YM?today:YM+'-01';
+  const body='<div class="frow"><div class="fld"><label>Dia</label><input id="hDate" type="date" value="'+def+'"></div>'
+   +'<div class="fld"><label>Colaborador</label><select id="hEmp">'+emps.map(e=>'<option value="'+e.id+'">'+esc(e.name)+'</option>').join('')+'</select></div></div>'
+   +'<div class="fld"><label>Quantas horas extras</label><input id="hQty" inputmode="decimal" placeholder="ex.: 2  ·  1:30  ·  0:45" autofocus>'
+   +'<div class="wdpick" style="margin-top:8px" id="hQuick">'+['0:30','1:00','1:30','2:00','3:00','4:00'].map(q=>'<label><span>'+q.replace(':00','h').replace(':30','h30').replace(/^0h30/,'30min')+'</span><input type="radio" name="hq" value="'+q+'"></label>').join('')+'</div></div>'
+   +'<div class="fld"><label>Adicional</label><select id="hPct"><option value="auto">Automático pelo dia</option><option value="50">'+S.cfg.he50+'% (dia normal)</option><option value="100">'+S.cfg.he100+'% (domingo, feriado ou folga)</option></select></div>'
+   +'<div class="fld"><label>Observação (opcional)</label><input id="hNote" placeholder="ex.: cobriu o Paulo · evento · inventário"></div>'
+   +'<div id="hPrev" style="margin-top:14px"></div>';
+  openSheet('Lançar hora extra', body, {foot:'<button class="btn btn-ghost" data-x>Cancelar</button><button class="btn btn-ghost" data-more>Salvar e lançar outra</button><button class="btn btn-green" data-ok>Lançar</button>', mount:(ov,close)=>{
+    const st=()=>{ const e=empById($('hEmp').value), d=$('hDate').value, q=parseHours($('hQty').value);
+      const auto=hePctFor(e,d); const pctSel=$('hPct').value; const pct=e.contract==='pj'?+S.cfg.pjHePct:(pctSel==='auto'?auto.pct:(pctSel==='100'?+S.cfg.he100:+S.cfg.he50));
+      return {e,d,q,auto,pct,kind:(pctSel==='auto'?(auto.pct>=+S.cfg.he100?'he100':'he50'):(pctSel==='100'?'he100':'he50'))}; };
+    const upd=()=>{ const o=st(); if(!o.d){ $('hPrev').innerHTML=''; return; }
+      const hr=D.hourValue(o.e,S.cfg), v=r2(o.q*hr*(1+o.pct/100));
+      const ja=S.entries.filter(x=>x.emp===o.e.id && x.date===o.d && (x.kind==='he50'||x.kind==='he100')).reduce((a,x)=>a+(+x.qty||0),0);
+      const w=[]; if(!(+o.e.salary)) w.push('<b>'+esc(o.e.name)+'</b> está sem salário no cadastro — o valor fica zerado.');
+      if(o.q+ja>2 && D.isCLT(o.e)) w.push('Passa de <b>2h extras no dia</b> (limite do art. 59 da CLT)'+(ja?' — já tinha '+hm(ja)+' lançadas neste dia':'')+'.');
+      if(o.d.slice(0,7)!==YM) w.push('Vai para a folha de <b>'+ymLabel(o.d.slice(0,7))+'</b> (mês do dia escolhido).');
+      $('hPrev').innerHTML=(w.length?'<div class="banner warn" style="margin-top:0;margin-bottom:10px"><span>'+w.join('<br>')+'</span></div>':'')
+        +'<div class="demo card pad"><div class="ln"><span>'+cap(wdName(o.d))+', '+fmtD(o.d)+'</span><b>'+(o.e.contract==='pj'?'PJ':o.auto.why)+'</b></div>'
+        +'<div class="ln"><span>Valor da hora de '+esc(o.e.name)+'</span><b class="num">'+brl(hr)+'</b></div>'
+        +'<div class="ln"><span>Hora extra com '+o.pct+'%</span><b class="num">'+brl(hr*(1+o.pct/100))+'</b></div>'
+        +'<div class="tot"><span>'+(o.q?hm(o.q):'0h')+' de extra</span><span>'+brl(v)+'</span></div>'
+        +'<div class="note" style="margin-top:8px">Entra no salário do '+S.cfg.payBizDay+'º dia útil ('+fmtD(D.salaryDate(o.d.slice(0,7),S.cfg))+'), com reflexo no DSR, INSS e FGTS.</div></div>'; };
+    $('hQuick').addEventListener('change',ev=>{ $('hQty').value=ev.target.value; upd(); });
+    ['hDate','hEmp','hQty','hPct'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+    const saveIt=()=>{ const o=st(); if(!o.d){ toast('Escolha o dia'); return false; } if(!o.q){ toast('Informe as horas'); return false; }
+      S.entries.push({id:uid(), ym:o.d.slice(0,7), emp:o.e.id, kind:o.kind, qty:o.q, date:o.d, note:$('hNote').value.trim()}); save('entries');
+      toast(o.e.name+': '+hm(o.q)+' extra em '+fmtDM(o.d)+' ('+o.pct+'%)'); return true; };
+    ov.querySelector('[data-x]').onclick=close;
+    ov.querySelector('[data-ok]').onclick=()=>{ if(saveIt()){ close(); render(); } };
+    ov.querySelector('[data-more]').onclick=()=>{ if(saveIt()){ $('hQty').value=''; $('hNote').value=''; ov.querySelectorAll('#hQuick input').forEach(i=>i.checked=false); upd(); $('hQty').focus(); render(); } };
+  }});
+};
 function openEntry(empId, kind, after){
   const emps=empsIn(YM);
   if(!emps.length){ toast('Cadastre alguém em Equipe'); return; }
@@ -751,7 +809,7 @@ function openEntry(empId, kind, after){
     ov.querySelector('[data-x]').onclick=close;
     ov.querySelector('[data-ok]').onclick=()=>{
       const K=D.KINDS[$('nKind').value]; const raw=$('nQty').value.trim(); if(!raw && K.k!=='adiant'){ toast('Informe a quantidade'); return; }
-      const x={id:uid(), ym:YM, emp:$('nEmp').value, kind:K.k, date:$('nDate').value, note:$('nNote').value.trim()};
+      const dt=$('nDate').value; const x={id:uid(), ym:dt?dt.slice(0,7):YM, emp:$('nEmp').value, kind:K.k, date:dt, note:$('nNote').value.trim()};
       if(K.unit==='R$') x.amount=parseMoney(raw); else if(K.unit==='h') x.qty=parseHours(raw); else x.qty=parseFloat(raw.replace(',','.'))||0;
       if(K.k==='falta') x.dsr=$('nDsr').checked;
       S.entries.push(x); save('entries'); close(); render(); toast('Lançado'); if(after) after();
@@ -1122,7 +1180,8 @@ function docPayslip(p){
    +linesTable(p.lines, 7)+totalsRow(p.prov,p.desc)
    +'<div class="liq"><span>Valor líquido a receber <small style="font-size:9px">· pagamento em '+fmtD(p.payDate)+'</small></span><b>R$ '+num(p.liquido)+'</b></div>'
    +'<div class="bases"><div><small>Salário base</small><b>'+num(p.sal)+'</b></div><div><small>Sal. contrib. INSS</small><b>'+(p.C.inss?num(p.baseInss):'—')+'</b></div><div><small>Base cálc. FGTS</small><b>'+(p.fgtsPct?num(p.baseInss):'—')+'</b></div><div><small>FGTS do mês</small><b>'+(p.fgtsPct?num(p.fgts):'—')+'</b></div><div><small>Base cálc. IRRF</small><b>'+(p.C.irrf?num(p.ir.base):'—')+'</b></div><div><small>Faixa IRRF</small><b>'+(p.C.irrf?(p.ir.isento?'isento':p.ir.pct+'%'):'—')+'</b></div></div>'
-   +'<div class="obs">Benefícios pagos à parte: VT '+brl(p.vt)+' e VA '+brl(p.va)+' em '+fmtD(D.benefitDate(p.ym,S.cfg))+(p.adv?' · adiantamento de '+brl(p.adv)+' pago em '+fmtD(p.advInfo.date)+' (já descontado acima)':'')+(p.diasFerias?' · '+p.diasFerias+' dias de férias pagos em recibo próprio':'')+'.</div>'
+   +'<div class="obs">Benefícios pagos à parte: VT '+brl(p.vt)+' e VA '+brl(p.va)+' em '+fmtD(D.benefitDate(p.ym,S.cfg))+(p.adv?' · adiantamento de '+brl(p.adv)+' pago em '+fmtD(p.advInfo.date)+' (já descontado acima)':'')+(p.diasFerias?' · '+p.diasFerias+' dias de férias pagos em recibo próprio':'')+'.'
+   +(function(){ const he=p.ents.filter(x=>(x.kind==='he50'||x.kind==='he100')).sort((a,b)=>(a.date||'').localeCompare(b.date||'')); return he.length?' Horas extras: '+he.map(x=>(x.date?fmtDM(x.date):'s/ data')+' '+hm(x.qty)+' ('+heValue(e,x).pct+'%)').join(', ')+'.':''; })()+'</div>'
    +'<div class="ext">Declaro ter recebido a importância líquida de <b>R$ '+num(p.liquido)+'</b> ('+esc(D.extenso(p.liquido))+'), discriminada neste recibo.</div>'
    +sigBlock(e,p.payDate);
   return '<div class="doc pb">'+twoVias(inner)+'</div>';

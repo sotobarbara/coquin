@@ -24,7 +24,9 @@ O 5º dia útil conta segunda a sábado, sem feriados (CLT art. 459 §1º). Cada
 - **Equipe** — cadastro: CPF, PIS, cargo/CBO, admissão, vínculo (CLT, aprendiz, estágio, PJ), contrato de experiência,
   salário, insalubridade/periculosidade, dependentes de IR, folga semanal (para o VT), VT/VA/adiantamento por pessoa,
   PIX/banco e saldo do FGTS. Com login, **importa a equipe do app Escala**.
-- **Folha** — competência do mês: **+ Lançamento** (HE 50%/100%, adicional noturno, comissão, bônus, falta com ou
+- **Folha** — **+ Hora extra**: *dia X, colaborador Y, W horas* — o adicional sai sozinho pelo dia (domingo, feriado
+  ou folga da pessoa = 100%, demais = 50%), avisa quando passa de 2h no dia e lista as extras do mês dia a dia
+  (os dias também saem no holerite). **+ Falta, atestado, vale…** (HE 50%/100%, adicional noturno, comissão, bônus, falta com ou
   sem DSR, atestado, atraso, vale, consumo, pensão, reembolso, ajuste de VT, adiantamento manual), **holerite**
   por pessoa, **calculadora de hora extra** (com reflexo no DSR, recibo avulso ou lançar na folha), **imprimir todos
   os holerites** e **CSV** para a contabilidade. Mostra também o custo empresa (FGTS, patronal, provisão de férias/13º).
