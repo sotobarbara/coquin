@@ -90,6 +90,8 @@ O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL E
   das regras da CLT, troca de folga com recálculo automático, ponto com comprovante,
   fechamento do mês em CSV e **folha de pagamento** (faltas, extras, INSS, VT, adiantamento do
   dia 15 e saldo do 5º dia útil — CLT e PJ).
+- [`dp/`](dp/) — **Departamento Pessoal**: folha automática, hora extra, VT/VA (dia 01), adiantamento
+  (dia 20), salário no 5º dia útil, férias, 13º, rescisão e FGTS, com **recibos com a logo** (2 vias, A4).
 - [`vagas/`](vagas/) — **Vagas & Candidaturas**: link de inscrição para o Instagram (dados +
   upload do CV), painel com **score automático** por regras da vaga (pontos por resposta,
   eliminatórias, palavras-chave), status do processo, WhatsApp pronto e arte do post/story.
