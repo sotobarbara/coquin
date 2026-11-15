@@ -1390,7 +1390,7 @@ main{padding-top:18px}
 const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
 const STORE='coquin_v2';
-const APP_VERSION='v9.2 · bebida so em evento'
+const APP_VERSION='v9.3 · alerta de venda suspeita'
 const DEFAULT_GOAL=1200, DEFAULT_UNIT='Imprensa', DEFAULT_PRICE=35, DEFAULT_PRICE2=30;   // 3 bolas / 2 bolas
 /* Lojas e de-para maquininha (N DE SERIE da Stone) → loja. Várias maquininhas podem ser da mesma loja.
    Valor do serialMap: 'storeId' (sempre) OU {store,from,to} / [{store,from,to}] (por período, datas ISO YYYY-MM-DD). */
@@ -1544,7 +1544,7 @@ const Cloud={
         const gel30=(r.gel30!=null?+r.gel30:(loc&&loc.gel30))||0, gel35=(r.gel35!=null?+r.gel35:(loc&&loc.gel35))||0;
         const bySerial=(r.by_serial&&typeof r.by_serial==='object')?r.by_serial:((loc&&loc.bySerial)||null);
         const cashByStore=(r.cash_by_store&&typeof r.cash_by_store==='object')?r.cash_by_store:((loc&&loc.cashByStore)||null);
-        return {id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa,stoneTx:r.stone_tx||0,gel30,gel35,hours,hoursRev,bySerial,cashByStore,note:r.note||'',synced:true};
+        return {id:'c'+r.date,date:r.date,gelatos:r.gelatos||0,revenue:+r.revenue||0,pix:+r.pix||0,debito:+r.debito||0,credito:+r.credito||0,taxa,stoneTx:r.stone_tx||0,gel30,gel35,hours,hoursRev,bySerial,cashByStore,suspeitas:(loc&&loc.suspeitas)||null,note:r.note||'',synced:true};
       });
       const dates=new Set(rows.map(r=>r.date));
       const pending=(db.closings||[]).filter(x=>x&&!dates.has(x.date)&&!x.synced);
@@ -1695,6 +1695,14 @@ function classifyGel(v){
   if(near(v,P+P2)){ g.g35=1; g.g30=1; return g; }
   g.g35=v/P; return g;
 }
+/* venda suspeita: valor pequeno demais pra ser um produto real — provável erro de digitação
+   (ex.: 0,30 no lugar de 30; 3,50 no lugar de 35). Devolve {guess} com o valor provável, ou null. */
+function suspeitaVenda(val){
+  if(!(val>0) || val>=4) return null;   // menor produto real é R$4 (água em evento); abaixo disso é erro
+  const factors = val<1 ? [100,10] : [10,100];   // adivinha onde a vírgula/zero deveria estar
+  let guess=0; factors.forEach(f=>{ const v=Math.round(val*f*100)/100; if(!guess && v>=15 && v<=300 && Math.abs(v/5-Math.round(v/5))<0.001) guess=v; });
+  return {guess};
+}
 /* detecta bebida candidata pelo valor (R$7 refri / R$4 água) — só é aplicada em maquininha de evento */
 function bebCand(v){
   const b={agua:0,refri:0}; if(v<=0) return b;
@@ -1759,9 +1767,12 @@ function reconcile(c){
   const Phi=Math.max(price(),price2()), Plo=Math.min(price(),price2());
   const lo=n*Plo, hi=n*Phi;                              // faixa válida: tudo 2 bolas … tudo 3 bolas
   const issues=[];
+  // vendas suspeitas (valor baixo demais — provável erro de digitação, ex. 0,30 no lugar de 30)
+  const susp=(c.suspeitas||[]).filter(s=>s&&s.val>0);
+  if(susp.length){ const list=susp.map(s=>money(s.val)+(s.guess?' (seria '+money(s.guess)+'?)':'')+(s.hora!=null?' às '+String(s.hora).padStart(2,'0')+'h':'')).join(' · '); issues.push('⚠️ '+susp.length+' venda'+(susp.length>1?'s':'')+' com valor suspeito — provável erro de cobrança: '+list+'. Confira na maquininha.'); }
   if(dinheiro < -0.5) issues.push('A Stone ('+money(stone)+') passou do faturamento lançado — confira os valores.');
   if(n>0 && (rev < lo-0.5 || rev > hi+0.5)) issues.push('Valor fora da faixa de '+n+' gelatos ('+money(Plo)+' a '+money(Phi)+' cada = '+money(lo)+'–'+money(hi)+')'+(bebRev>0?', já tirando '+money(bebRev)+' de bebida':'')+'. Combo, desconto ou erro?');
-  return {stone,dinheiro,bebRev,expected:hi,valueDiff:rev-hi,issues,ok:issues.length===0};
+  return {stone,dinheiro,bebRev,expected:hi,valueDiff:rev-hi,issues,suspeitas:susp,ok:issues.length===0};
 }
 
 /* ---------- estoque (por produto) ---------- */
@@ -2555,9 +2566,12 @@ document.getElementById('coqFab').addEventListener('click', ()=>{ switchHub('coq
 /* ---- fechar o dia ---- */
 const $=id=>document.getElementById(id);
 function draftFromForm(){
-  return { date:$('cDate').value||todayISO(), gelatos:parseInt2($('cGel').value),
+  const dt=$('cDate').value||todayISO();
+  const sp=stoneParsed.find(x=>x.date===dt); const ex=db.closings.find(c=>c.date===dt);
+  return { date:dt, gelatos:parseInt2($('cGel').value),
     revenue:parseMoney($('cRev').value), pix:parseMoney($('sPix').value),
     debito:parseMoney($('sDeb').value), credito:parseMoney($('sCred').value),
+    suspeitas:(sp&&sp.suspeitas)||(ex&&ex.suspeitas)||null,
     cashByStore:cashByStoreFromForm() };
 }
 /* dinheiro por loja: inputs por loja -> soma em #cCash */
@@ -2651,7 +2665,7 @@ function parseStoneCSV(text){
     const iso=dm[2]+'-'+dm[1].padStart(2,'0')+'-'+dm[0].padStart(2,'0');
     const prod=(r[iProd]||'').toLowerCase(); const val=parseMoney(r[iVal]);
     const liq=iLiq>=0?parseMoney(r[iLiq]):val;   // valor líquido (após taxa Stone)
-    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,agua:0,refri:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),bySerial:{}});
+    const d=days[iso]||(days[iso]={date:iso,pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,agua:0,refri:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0),bySerial:{},suspeitas:[]});
     let kind=null;
     if(prod.indexOf('pix')>=0){ d.pix+=val; kind='pix'; }
     else if(prod.indexOf('debito')>=0||prod.indexOf('débito')>=0){ d.debito+=val; kind='debito'; }
@@ -2669,6 +2683,7 @@ function parseStoneCSV(text){
     const s=d.bySerial[ser]||(d.bySerial[ser]={pix:0,debito:0,credito:0,taxa:0,tx:0,g30:0,g35:0,agua:0,refri:0,hours:new Array(24).fill(0),hoursRev:new Array(24).fill(0)});
     s[kind]+=val; s.taxa+=tx; s.tx++; s.g30+=cb.g30; s.g35+=cb.g35; s.agua+=cb.agua; s.refri+=cb.refri;
     if(okH){ s.hours[hh]++; s.hoursRev[hh]+=val; }
+    const susp=suspeitaVenda(val); if(susp) d.suspeitas.push({val,guess:susp.guess,hora:(okH?hh:null),serial:ser});
   }
   return Object.values(days).sort((a,b)=> b.date.localeCompare(a.date));
 }
@@ -2694,7 +2709,9 @@ function applyStoneDay(d){
   let eg30=0,eg35=0,bA=0,bR=0; if(d.bySerial) Object.keys(d.bySerial).forEach(k=>{ const e=effCounts(d.bySerial[k],k,d.date); eg30+=e.g30; eg35+=e.g35; bA+=e.agua; bR+=e.refri; });
   const g30=Math.round(eg30), g35=Math.round(eg35), effGel=Math.round(eg30+eg35); bA=Math.round(bA); bR=Math.round(bR);
   const bebTxt=(bA||bR)?(' · 🥤 '+[bA?bA+' água':'',bR?bR+' refri':''].filter(Boolean).join(' + ')+' <span style="color:var(--ink-faint)">(fora dos gelatos)</span>'):'';
-  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+effGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas)'+bebTxt+'. Conte o <b>dinheiro</b> pra fechar o total.';
+  const susp=(d.suspeitas||[]).filter(s=>s&&s.val>0);
+  const suspTxt=susp.length?('<div style="margin-top:6px;color:#b4232a;font-weight:700">⚠️ '+susp.length+' venda'+(susp.length>1?'s':'')+' com valor suspeito: '+susp.map(s=>money(s.val)+(s.guess?' (seria '+money(s.guess)+'?)':'')).join(' · ')+'. Confira na maquininha — pode ser erro de cobrança.</div>'):'';
+  $('importHint').innerHTML='Cartão/Pix: <b>'+money(tot)+'</b> · <b>'+effGel+' gelatos</b> ('+g35+' de 3 bolas + '+g30+' de 2 bolas)'+bebTxt+'. Conte o <b>dinheiro</b> pra fechar o total.'+suspTxt;
   showStoneChips(d.date);
   renderDaySerials(d.date);
   const novos=stoneParsed.filter(x=>!db.closings.some(c=>c.date===x.date)).length;
@@ -2785,7 +2802,7 @@ $('saveClose').addEventListener('click', ()=>{
   if(target){ Object.assign(target, d); saved=target; }
   else { saved={ id:'c'+Date.now()+Math.floor(Math.random()*1000), ...d, stoneTx:0, note:'', createdAt:new Date().toISOString() }; db.closings.push(saved); }
   // fluxo por hora + taxa Stone vindos do CSV importado (se houver para esta data)
-  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; if(sp.bySerial) saved.bySerial=sp.bySerial; saved.taxa=sp.taxa||0; saved.gel30=Math.round(sp.g30||0); saved.gel35=Math.round(sp.g35||0); }
+  const sp=stoneParsed.find(x=>x.date===d.date); if(sp){ if(sp.hours) saved.hours=sp.hours; if(sp.hoursRev) saved.hoursRev=sp.hoursRev; if(sp.bySerial) saved.bySerial=sp.bySerial; saved.taxa=sp.taxa||0; saved.gel30=Math.round(sp.g30||0); saved.gel35=Math.round(sp.g35||0); saved.suspeitas=sp.suspeitas||[]; }
   saveDaySerials(d.date);   // exceções do dia (maquininha que foi pro evento)
   Store.save(db); closeSheets();
   viewMonth=d.date.slice(0,7); render();
