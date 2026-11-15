@@ -189,6 +189,15 @@ const KINDS={
 function entriesOf(state,empId,ym){ return (state.entries||[]).filter(x=>x.emp===empId && x.ym===ym); }
 function sumK(ents,k,f){ return ents.filter(x=>x.kind===k).reduce((a,x)=>a+(+x[f||'qty']||0),0); }
 
+/* dias de VT perdidos por uma falta/atestado: com data, conta só os dias em que a pessoa trabalharia
+   (tira folga semanal e feriado); sem data, vale a quantidade lançada */
+function vtLostDays(e,x,cfg){
+  const q=Math.max(0,Math.round(+x.qty||0)); if(!q) return 0;
+  if(!x.date) return q;
+  const off=Array.isArray(e.offDays)?e.offDays:[0]; let n=0;
+  for(let i=0;i<q;i++){ const d=addDays(x.date,i); if(off.indexOf(wd(d))>=0) continue; if(cfg.vtSkipHolidays!==false && isHoliday(d,cfg)) continue; n++; }
+  return n;
+}
 /* ---------------- DIA 01: VT + VA do mês ---------------- */
 function benefits(state,empId,ym){
   const cfg=state.cfg, e=(state.emps||[]).find(x=>x.id===empId);
@@ -202,14 +211,15 @@ function benefits(state,empId,ym){
     const end=addDays(x.v.start,(+x.v.days)-1);
     ferDays+=workDaysFor(e,ym,cfg,x.v.start>ym+'-01'?x.v.start:null, end).length; });
   /* compensação: faltas + atestados do mês anterior (já pagos e não usados) */
-  const pe=entriesOf(state,empId,prevYM(ym));
-  const comp = cfg.vtCompensa!==false ? sumK(pe,'falta')+sumK(pe,'atestado') : 0;
+  const pe=entriesOf(state,empId,prevYM(ym)).filter(x=>x.kind==='falta'||x.kind==='atestado');
+  const compDet = cfg.vtCompensa!==false ? pe.map(x=>({kind:x.kind, date:x.date||'', qty:+x.qty||0, dias:vtLostDays(e,x,cfg)})).filter(x=>x.dias>0) : [];
+  const comp = compDet.reduce((a,x)=>a+x.dias,0);
   const ajuste = sumK(entriesOf(state,empId,ym),'vtAjuste');
   const vtDays = e.vt===false ? 0 : Math.max(0, days-ferDays-comp+ajuste);
   const vt = r2(vtDays*vtDia);
   let va = e.va===false ? 0 : ((e.vaValue!=null && e.vaValue!=='') ? +e.vaValue : +cfg.vaValue);
   if(va && from){ va=r2(va*(lastDay(ym)-(+from.slice(8))+1)/lastDay(ym)); }      /* admitido no meio do mês: proporcional */
-  return {e, ym, date:benefitDate(ym,cfg), vtDia, baseDays:days, ferDays, comp, ajuste, vtDays, vt, va, total:r2(vt+va)};
+  return {e, ym, date:benefitDate(ym,cfg), vtDia, baseDays:days, ferDays, comp, compDet, ajuste, vtDays, vt, va, total:r2(vt+va)};
 }
 
 /* ---------------- DIA 20: adiantamento ---------------- */
@@ -581,6 +591,6 @@ const API={MIN_WAGE, INSS_2026, IRRF_TABLE, IRRF_DEP, IRRF_SIMPL, DEFAULT_CFG, C
   easter, natHolidays, holidayName, isHoliday, isBizDay, nthBizDay, shiftDay, benefitDate, advDate, salaryDate, fgtsDate, dsrDays,
   inssCalc, irrfCalc, contractOf, isCLT, activeIn, fixedAdds, remuneracao, hourValue, workDaysFor,
   vacationDaysIn, vacationsIn, entriesOf, benefits, advance, payroll, avos13, avosPeriodo, vacationDaysByFaltas, vacationPeriods,
-  vacationCalc, thirteenth, fgtsEstimate, terminationCalc, overtime, extenso};
+  vacationCalc, vtLostDays, thirteenth, fgtsEstimate, terminationCalc, overtime, extenso};
 if(typeof module!=='undefined' && module.exports) module.exports=API; else root.DPCalc=API;
 })(typeof window!=='undefined'?window:globalThis);

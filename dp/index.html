@@ -470,7 +470,7 @@ function agenda(ym){
   const bens=empsIn(ym).map(e=>D.benefits(S,e.id,ym)).filter(b=>b&&b.total>0);
   ev.push({k:'vt', ym, date:D.benefitDate(ym,C), title:'VT + VA de '+MONTHS[+ym.slice(5)-1],
     sub:'VT '+brl(C.vtValue)+'/dia × dias de trabalho · VA '+brl(C.vaValue)+'/mês',
-    items:bens.map(b=>({e:b.e, v:b.total, det:b.vtDays+' dias × '+brl(b.vtDia)+' = '+brl(b.vt)+(b.va?' · VA '+brl(b.va):''), key:ym+'|vt|'+b.e.id}))});
+    items:bens.map(b=>({e:b.e, v:b.total, det:b.vtDays+' dias × '+brl(b.vtDia)+' = '+brl(b.vt)+(b.comp?' (já tirou '+b.comp+' dia'+(b.comp>1?'s':'')+' de faltas/atestados de '+MONTHS[+D.prevYM(b.ym).slice(5)-1]+')':'')+(b.va?' · VA '+brl(b.va):''), key:ym+'|vt|'+b.e.id}))});
   /* 5º dia útil: salário da competência anterior */
   const fol=empsIn(pc).map(e=>D.payroll(S,e.id,pc)).filter(p=>p&&!p.rescisao);
   ev.push({k:'sal', ym:pc, date:D.salaryDate(pc,C), title:'Salário de '+MONTHS[+pc.slice(5)-1]+' ('+C.payBizDay+'º dia útil)',
@@ -525,7 +525,7 @@ function renderPainel(){
   const fol=empsIn(YM).map(e=>D.payroll(S,e.id,YM)).filter(Boolean);
   const head=empsIn(YM).length;
   let h='<div class="h1">Agenda de pagamentos · '+ymLabel(YM)+'</div><p class="lead">O que sai do caixa em cada data do mês. Toque em ✓ para marcar como pago e em <b>Recibos</b> para imprimir com a logo.</p>';
-  h+='<div class="btn-row"><button class="btn btn-green" data-act="addHE">+ Hora extra</button><button class="btn btn-ghost" data-act="addEntry">+ Falta, atestado, vale…</button></div>';
+  h+='<div class="btn-row"><button class="btn btn-green" data-act="addHE">+ Hora extra</button><button class="btn btn-ghost" data-act="addAbs">+ Falta / atestado</button><button class="btn btn-ghost" data-act="addEntry">+ Outros (vale, comissão…)</button></div>';
   h+='<div class="grid g4" style="margin-top:14px">'
     +kpi('Sai do caixa no mês', brl(sum(ev,'total')), ev.length+' pagamentos')
     +kpi('Custo da folha ('+MONTHS[+YM.slice(5)-1].slice(0,3)+')', brl(sum(fol,'custo')), 'salários, encargos, benefícios e provisões')
@@ -678,7 +678,7 @@ function renderFolha(){
   const rows=empsIn(YM).map(e=>D.payroll(S,e.id,YM)).filter(Boolean);
   const pd=D.salaryDate(YM,S.cfg);
   let h='<div class="h1">Folha de '+ymLabel(YM)+'</div><p class="lead">Paga no <b>'+S.cfg.payBizDay+'º dia útil: '+wdName(pd)+', '+fmtD(pd)+'</b>. Lance horas extras, faltas, comissões e vales; o holerite recalcula sozinho.</p>';
-  h+='<div class="btn-row"><button class="btn btn-green" data-act="addHE">+ Hora extra</button><button class="btn btn-ghost" data-act="addEntry">+ Falta, atestado, vale…</button><button class="btn btn-ghost" data-act="otCalc">⏱ Calculadora de hora extra</button>'
+  h+='<div class="btn-row"><button class="btn btn-green" data-act="addHE">+ Hora extra</button><button class="btn btn-ghost" data-act="addAbs">+ Falta / atestado</button><button class="btn btn-ghost" data-act="addEntry">+ Outros (vale, comissão…)</button><button class="btn btn-ghost" data-act="otCalc">⏱ Calculadora de hora extra</button>'
     +'<button class="btn btn-ghost" data-act="printAll">🖨 Imprimir todos os holerites</button><button class="btn btn-ghost" data-act="csv">⬇ CSV da folha</button></div>';
   h+='<div class="grid g4" style="margin-top:14px">'+kpi('Proventos',brl(sum(rows,'prov')))+kpi('Descontos',brl(sum(rows,'desc')),'INSS '+brl(sum(rows,'inss'))+' · IRRF '+brl(sum(rows,r=>r.ir.v)))
     +kpi('Líquido a pagar',brl(sum(rows,'liquido')),fmtD(pd))+kpi('Custo empresa',brl(sum(rows,'custo')),'FGTS '+brl(sum(rows,'fgts'))+' + provisões')+'</div>';
@@ -705,13 +705,22 @@ function renderFolha(){
     h+='</tbody><tfoot><tr><td colspan="2">'+Object.keys(byE).map(id=>esc((empById(id)||{}).name||id)+' '+hm(byE[id])).join(' · ')+'</td><td class="r num">'+hm(sum(hes,'qty'))+'</td><td></td><td class="r num">'+brl(sum(hes,x=>heValue(empById(x.emp),x).v))+'</td><td colspan="2" class="muted" style="font-weight:600">+ DSR no holerite</td></tr></tfoot>'; }
   else h+='</tbody>';
   h+='</table></div>';
+  /* faltas/atestados deste mês -> VT do mês seguinte */
+  const nx=D.nextYM(YM), abs=S.entries.filter(x=>x.ym===YM && (x.kind==='falta'||x.kind==='atestado'));
+  if(abs.length){
+    const by={}; abs.forEach(x=>{ const e=empById(x.emp); if(!e) return; const d=S.cfg.vtCompensa!==false&&e.vt!==false?D.vtLostDays(e,x,S.cfg):0; (by[x.emp]=by[x.emp]||{e,f:0,a:0,d:0,list:[]}); by[x.emp][x.kind==='falta'?'f':'a']+=+x.qty||0; by[x.emp].d+=d; by[x.emp].list.push((x.kind==='falta'?'falta':'atestado')+(x.date?' '+fmtDM(x.date):'')+' ('+x.qty+'d)'); });
+    const rows=Object.values(by);
+    h+='<div class="section-title">Desconto no VT de '+MONTHS[+nx.slice(5)-1]+' <span>pago em '+fmtD(D.benefitDate(nx,S.cfg))+'</span></div><div class="card tbl-wrap"><table class="tbl"><thead><tr><th>Colaborador</th><th>Faltas e atestados de '+MONTHS[+YM.slice(5)-1]+'</th><th class="r">Dias de VT a menos</th><th class="r">Valor a menos</th></tr></thead><tbody>'
+      +rows.map(r=>{ const vd=(r.e.vtValue!=null&&r.e.vtValue!=='')?+r.e.vtValue:+S.cfg.vtValue; return '<tr><td>'+who(r.e,'')+'</td><td class="muted">'+esc(r.list.join(' · '))+'</td><td class="r"><b>'+r.d+'</b></td><td class="r num neg">− '+brl(r.d*vd)+'</td></tr>'; }).join('')
+      +'</tbody></table></div><div class="note" style="margin-top:8px">O VT é pago adiantado no dia '+pad(S.cfg.benefitDay)+'. Quem faltou ou teve atestado já recebeu a passagem desses dias, então ela sai do VT do mês seguinte. Contam só os dias em que a pessoa trabalharia (folga e feriado não entram).</div>';
+  }
   /* outros lançamentos do mês */
   const ents=S.entries.filter(x=>x.ym===YM && x.kind!=='he50' && x.kind!=='he100').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   h+='<div class="section-title">Faltas, atestados e outros lançamentos <span>'+ents.length+'</span></div><div class="card">';
-  if(!ents.length) h+='<div class="empty">Nenhum lançamento. Use <b>+ Falta, atestado, vale…</b> para faltas, atestados, comissões, vales e descontos.</div>';
+  if(!ents.length) h+='<div class="empty">Nenhum lançamento. Use <b>+ Falta / atestado</b> ou <b>+ Outros</b> para vales, comissões e descontos.</div>';
   ents.forEach(x=>{ const e=empById(x.emp), K=D.KINDS[x.kind]; if(!e||!K) return;
     h+='<div class="prow">'+avatar(e)+'<div class="bd"><div class="nm" style="font-size:14px">'+esc(K.label)+' · '+esc(e.name)+'</div><div class="sb">'+(x.date?fmtD(x.date)+' · ':'')+(K.unit==='h'?hm(x.qty):K.unit==='dias'?x.qty+' dia(s)':brl(x.amount))
-      +(x.kind==='falta'&&x.dsr?' · perde DSR':'')+(x.note?' · '+esc(x.note):'')+'</div></div><button class="btn btn-ghost btn-sm" data-act="delEntry" data-a="'+x.id+'">Excluir</button></div>'; });
+      +(x.kind==='falta'&&x.dsr?' · perde DSR':'')+((x.kind==='falta'||x.kind==='atestado')&&S.cfg.vtCompensa!==false&&e.vt!==false?' · −'+D.vtLostDays(e,x,S.cfg)+' dia(s) de VT em '+MONTHS[+D.nextYM(x.ym).slice(5)-1]:'')+(x.note?' · '+esc(x.note):'')+'</div></div><button class="btn btn-ghost btn-sm" data-act="delEntry" data-a="'+x.id+'">Excluir</button></div>'; });
   h+='</div>';
   /* benefícios do mês */
   const bens=empsIn(YM).map(e=>D.benefits(S,e.id,YM)).filter(Boolean);
@@ -733,6 +742,43 @@ ACT.csv=()=>{
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='folha-'+YM+'.csv'; a.click();
 };
 ACT.addEntry=(empId)=>openEntry(empId);
+ACT.addAbs=()=>{
+  const emps=S.emps.filter(e=>e.status!=='desligado').sort((a,b)=>a.name.localeCompare(b.name));
+  if(!emps.length){ toast('Cadastre alguém em Equipe'); return; }
+  const today=todayISO(), def=today.slice(0,7)===YM?today:YM+'-01';
+  const body='<div class="seg" id="aKind" style="margin-top:12px"><button data-k="falta" class="sel">Falta</button><button data-k="atestado">Atestado médico</button></div>'
+   +'<div class="frow"><div class="fld"><label>Dia (primeiro dia)</label><input id="aDate" type="date" value="'+def+'"></div>'
+   +'<div class="fld"><label>Colaborador</label><select id="aEmp">'+emps.map(e=>'<option value="'+e.id+'">'+esc(e.name)+'</option>').join('')+'</select></div></div>'
+   +'<div class="fld"><label>Quantos dias</label><input id="aQty" inputmode="numeric" value="1"><div class="hint">Atestado de 3 dias = 3. Dias de folga no meio não contam para o VT.</div></div>'
+   +'<label class="chk" id="aDsrW"><input type="checkbox" id="aDsr"> Descontar também o DSR (descanso) da semana — Lei 605/1949</label>'
+   +'<div class="fld"><label>Observação (opcional)</label><input id="aNote" placeholder="ex.: CID, motivo, sem aviso"></div>'
+   +'<div id="aPrev" style="margin-top:14px"></div>';
+  let kind='falta';
+  openSheet('Lançar falta ou atestado', body, {foot:'<button class="btn btn-ghost" data-x>Cancelar</button><button class="btn btn-ghost" data-more>Salvar e lançar outra</button><button class="btn btn-green" data-ok>Lançar</button>', mount:(ov,close)=>{
+    const upd=()=>{ const e=empById($('aEmp').value), d=$('aDate').value, q=Math.max(0,parseInt($('aQty').value,10)||0);
+      $('aDsrW').classList.toggle('hide',kind!=='falta'||!D.isCLT(e));
+      if(!d||!q){ $('aPrev').innerHTML=''; return; }
+      const x={kind,date:d,qty:q}, vtd=S.cfg.vtCompensa!==false&&e.vt!==false?D.vtLostDays(e,x,S.cfg):0;
+      const vd=(e.vtValue!=null&&e.vtValue!=='')?+e.vtValue:+S.cfg.vtValue, nx=D.nextYM(d.slice(0,7));
+      const dia=(+e.salary||0)/30, dsr=kind==='falta'&&$('aDsr').checked&&D.isCLT(e)?dia:0;
+      const fim=D.addDays(d,q-1);
+      $('aPrev').innerHTML='<div class="demo card pad"><div class="ln"><span>Período</span><b>'+fmtD(d)+(q>1?' a '+fmtD(fim):'')+' ('+q+' dia'+(q>1?'s':'')+')</b></div>'
+        +(kind==='falta'?'<div class="ln"><span>Desconto no salário de '+MONTHS[+d.slice(5,7)-1]+' <small>'+q+' × '+brl(dia)+(dsr?' + DSR':'')+'</small></span><b class="num neg">− '+brl(q*dia+dsr)+'</b></div>'
+          :'<div class="ln"><span>Salário</span><b>não desconta (falta justificada)</b></div>')
+        +'<div class="ln"><span>VT de '+MONTHS[+nx.slice(5)-1]+' (pago em '+fmtD(D.benefitDate(nx,S.cfg))+') <small>'+vtd+' dia'+(vtd!==1?'s':'')+' de trabalho × '+brl(vd)+'</small></span><b class="num neg">− '+brl(vtd*vd)+'</b></div>'
+        +(vtd<q&&e.vt!==false?'<div class="note" style="margin-top:8px">'+(q-vtd)+' dia(s) do período caem em folga ou feriado de '+esc(e.name)+' e não mexem no VT.</div>':'')
+        +(e.vt===false?'<div class="note" style="margin-top:8px">'+esc(e.name)+' não recebe VT.</div>':'')+'</div>'; };
+    $('aKind').addEventListener('click',ev=>{ const b=ev.target.closest('button'); if(!b) return; kind=b.dataset.k; [...$('aKind').children].forEach(x=>x.classList.toggle('sel',x===b)); upd(); });
+    ['aDate','aEmp','aQty','aDsr'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+    const saveIt=()=>{ const d=$('aDate').value, q=Math.max(0,parseInt($('aQty').value,10)||0); if(!d||!q){ toast('Informe o dia e os dias'); return false; }
+      const e=empById($('aEmp').value);
+      S.entries.push({id:uid(), ym:d.slice(0,7), emp:e.id, kind, qty:q, date:d, dsr:kind==='falta'&&$('aDsr').checked, note:$('aNote').value.trim()}); save('entries');
+      toast(e.name+': '+(kind==='falta'?'falta':'atestado')+' em '+fmtDM(d)+(q>1?' ('+q+' dias)':'')); return true; };
+    ov.querySelector('[data-x]').onclick=close;
+    ov.querySelector('[data-ok]').onclick=()=>{ if(saveIt()){ close(); render(); } };
+    ov.querySelector('[data-more]').onclick=()=>{ if(saveIt()){ $('aQty').value='1'; $('aNote').value=''; upd(); render(); } };
+  }});
+};
 /* hora extra: dia X, colaborador Y, W horas — o adicional sai do dia (domingo/feriado/folga = 100%) */
 function hePctFor(e,iso){
   if(!iso) return {pct:+S.cfg.he50, why:'dia normal'};
@@ -1198,7 +1244,7 @@ function docGeneric(o){
 function docBenefits(b){
   return docGeneric({title:'Recibo de VT e VA', comp:ymLabel(b.ym), e:b.e, date:b.date, ref:'referente ao vale-transporte e vale-alimentação de '+ymLabel(b.ym),
     lines:[{cod:'501',desc:'Vale-transporte ('+b.vtDays+' dias × '+num(b.vtDia)+')',ref:b.vtDays+'d',prov:b.vt,dsc:0},{cod:'502',desc:'Vale-alimentação',ref:'mês',prov:b.va,dsc:0}].filter(l=>l.prov),
-    obs:'Dias de VT: '+b.baseDays+' dias de trabalho no mês'+(b.ferDays?' − '+b.ferDays+' de férias':'')+(b.comp?' − '+b.comp+' faltas/atestados do mês anterior':'')+(b.ajuste?' '+(b.ajuste>0?'+':'−')+' '+Math.abs(b.ajuste)+' de ajuste':'')+' = '+b.vtDays+'. '
+    obs:'Dias de VT: '+b.baseDays+' dias de trabalho no mês'+(b.ferDays?' − '+b.ferDays+' de férias':'')+(b.comp?' − '+b.comp+' por faltas/atestados de '+MONTHS[+D.prevYM(b.ym).slice(5)-1]+' ('+b.compDet.map(c=>(c.kind==='falta'?'falta':'atestado')+(c.date?' '+fmtDM(c.date):'')+': '+c.dias+'d').join(', ')+')':'')+(b.ajuste?' '+(b.ajuste>0?'+':'−')+' '+Math.abs(b.ajuste)+' de ajuste':'')+' = '+b.vtDays+'. '
       +(D.isCLT(b.e)?'O VT terá desconto de até '+S.cfg.vtPct+'% do salário-base no holerite (Lei 7.418/1985). ':'')+'Benefícios sem natureza salarial.'});
 }
 function docAdvance(a){
