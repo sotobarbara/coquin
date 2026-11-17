@@ -73,10 +73,10 @@ a{color:inherit}
 
 /* OPERAÇÃO REAL */
 .real{background:var(--husk)}
-.gal{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:36px}
-.gal figure{margin:0;border-radius:18px;background-size:cover;background-position:center;min-height:320px;position:relative;overflow:hidden}
+.gal{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:36px}
+.gal figure{margin:0;border-radius:18px;background-size:cover;background-position:center;min-height:380px;position:relative;overflow:hidden}
 .gal figcaption{position:absolute;left:12px;bottom:12px;background:rgba(44,63,46,.88);color:#fff;font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:999px}
-@media (max-width:700px){.gal{grid-template-columns:1fr 1fr}.gal figure:first-child{grid-column:1/-1}.gal figure{min-height:200px}}
+@media (max-width:700px){.gal{grid-template-columns:1fr}.gal figure{min-height:220px}}
 
 /* PRODUTO */
 .prod{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
@@ -303,7 +303,6 @@ footer img{height:20px}
     <p class="lead">Fotos da nossa operação de verdade. É esse atendimento, esse produto e essa equipe que vão para o seu evento.</p>
     <div class="gal">
       <figure style="background-image:url(img/carrinho-fila.jpg)" role="img" aria-label="Carrinho COQUIN com fila de clientes ao entardecer"><figcaption>Carrinho COQUIN</figcaption></figure>
-      <figure style="background-image:url(img/gelato-vertical.jpg)" role="img" aria-label="Gelato servido na quenga de coco"><figcaption>Na quenga de coco</figcaption></figure>
       <figure style="background-image:url(img/orla-fila.jpg)" role="img" aria-label="Fila no carrinho COQUIN à noite"><figcaption>Fila de verdade</figcaption></figure>
     </div>
   </div>
@@ -355,7 +354,7 @@ const CONFIG = {
   cliente:  "A definir",
   evento:   "A definir",
   data:     "A definir",
-  validade: "02/12/2026",
+  validade: "20/11/2026",
   whatsapp: "(85) 99971-9276",
   waNumber: "5585999719276",
   instagram:"@coquingelato",
