@@ -50,7 +50,7 @@ a{color:inherit}
 
 /* HERO — sem foto: verde da marca, padrão de ondas e selo */
 .hero{position:relative;color:#fff;background-color:var(--green);overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;opacity:.1;background:url(img/el/padrao-ondas.png) 0 0/200px 100px repeat}
+.hero::before{content:"";position:absolute;inset:0;opacity:.1;background:url(img/svg/padrao-ondas.svg) 0 0/200px 100px repeat}
 .hero .wrap{position:relative;z-index:1;padding-block:72px 48px;display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center}
 .hero .brand img{width:min(360px,80%);display:block}
 .hero .brand .tl{font:700 13px/1 var(--display);letter-spacing:.42em;text-transform:uppercase;margin:16px 0 0;color:#E4ECE4}
@@ -61,7 +61,7 @@ a{color:inherit}
 .free svg{width:18px;height:18px;flex:none}
 .free svg *{stroke:var(--green)}
 .seal{width:100%;max-width:380px;justify-self:center}
-.seal>img{width:100%;height:auto;display:block}
+.seal>svg{width:100%;height:auto;display:block}
 .icons{display:flex;gap:28px;justify-content:center;margin-top:18px;opacity:.85}
 .icons img{height:44px;width:auto}
 .meta{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:16px;padding-top:20px;border-top:1px solid rgba(255,255,255,.3)}
@@ -153,7 +153,7 @@ a{color:inherit}
 .card ol,.card ul{margin:0;padding-left:20px;display:grid;gap:8px;color:var(--ink)}
 .card li::marker{color:var(--caramel);font-weight:700}
 .cta{position:relative;overflow:hidden;margin-top:24px;background:var(--caramel);color:#fff;border-radius:24px;padding:36px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between}
-.cta::before{content:"";position:absolute;inset:0;opacity:.12;background:url(img/el/padrao-icones.png) 0 0/220px 132px repeat}
+.cta::before{content:"";position:absolute;inset:0;opacity:.12;background:url(img/svg/padrao-icones.svg) 0 0/240px 140px repeat}
 .cta>*{position:relative}
 .cta h3{font-size:clamp(24px,3.5vw,34px);max-width:20ch}
 .cta p{color:#F3E4D2;margin-top:8px}
@@ -200,8 +200,9 @@ footer .sym{height:22px;margin-right:10px;vertical-align:middle}
       </div>
     </div>
     <div class="seal" aria-hidden="true">
-      <img src="img/el/selo-branco.png" alt="">
-      <div class="icons"><img src="img/el/coco-branco.png" alt=""><img src="img/el/palma-branco.png" alt=""><img src="img/el/onda-branco.png" alt=""></div>
+      <svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Selo COQUIN, sorvete no coco" viewBox="-150 -150 300 300"><defs><path id="seloT" d="M-106 0 A106 106 0 0 1 104 0"/><path id="seloB" d="M-124 0 A124 124 0 0 0 124 0"/><mask id="cutSelo" maskUnits="userSpaceOnUse" x="-60" y="-60" width="120" height="120"><rect x="-60" y="-60" width="120" height="120" fill="#fff"/><path d="M-62 1 C-55 1 -50 -5 -43 -5 C-36 -5 -32 3 -25 3 M62 1 C55 1 50 -5 43 -5 C36 -5 32 3 25 3" fill="none" stroke="#000" stroke-width="6.5" stroke-linecap="round"/></mask></defs><circle r="146" fill="none" stroke="#fff" stroke-width="2"/><g fill="#fff" font-family="Nunito,'Sofia Pro Rounded',sans-serif" font-weight="700" font-size="19" letter-spacing="5.5"><text text-anchor="middle"><textPath href="#seloT" startOffset="50%">SORVETE NO COCO</textPath></text><text text-anchor="middle"><textPath href="#seloB" startOffset="50%">SORVETE NO COCO</textPath></text></g><circle cx="-128" cy="0" r="4.5" fill="#fff"/><circle cx="128" cy="0" r="4.5" fill="#fff"/><g transform="scale(.95)"><circle r="40" fill="none" stroke="#fff" stroke-width="26" mask="url(#cutSelo)"/></g></svg>
+
+      <div class="icons"><img src="img/svg/coco.svg" alt=""><img src="img/svg/palma.svg" alt=""><img src="img/svg/onda.svg" alt=""></div>
     </div>
     <div class="meta">
       <div><small>Para</small><b data-k="cliente"></b></div>
@@ -332,7 +333,7 @@ footer .sym{height:22px;margin-right:10px;vertical-align:middle}
 </section>
 </main>
 
-<footer><div class="wrap"><span><img class="sym" src="img/el/simbolo-branco.png" alt=""><img src="img/logo-coquin-white.png" alt="COQUIN" style="vertical-align:middle"></span><span>Gelato tailandês · <span data-k="instagram"></span></span></div></footer>
+<footer><div class="wrap"><span><img class="sym" src="img/svg/simbolo.svg" alt=""><img src="img/logo-coquin-white.png" alt="COQUIN" style="vertical-align:middle"></span><span>Gelato tailandês · <span data-k="instagram"></span></span></div></footer>
 
 <script>
 /* ============================================================
