@@ -50,7 +50,7 @@ a{color:inherit}
 
 /* HERO — sem foto: verde da marca, padrão de ondas e selo */
 .hero{position:relative;color:#fff;background-color:var(--green);overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;opacity:.13;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='48' viewBox='0 0 120 48'%3E%3Cpath d='M4 30c10 0 12-12 24-12s14 12 24 12' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M64 6c10 0 12-12 24-12s14 12 24 12M64 54c10 0 12-12 24-12s14 12 24 12' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");background-size:120px 48px}
+.hero::before{content:"";position:absolute;inset:0;opacity:.13;background:url(img/el/padrao-ondas.png) 0 0/200px 100px repeat}
 .hero .wrap{position:relative;z-index:1;padding-block:72px 48px;display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center}
 .hero .brand img{width:min(360px,80%);display:block}
 .hero .brand .tl{font:700 13px/1 var(--display);letter-spacing:.42em;text-transform:uppercase;margin:16px 0 0;color:#E4ECE4}
@@ -61,9 +61,9 @@ a{color:inherit}
 .free svg{width:18px;height:18px;flex:none}
 .free svg *{stroke:var(--green)}
 .seal{width:100%;max-width:380px;justify-self:center}
-.seal svg{width:100%;height:auto;display:block}
+.seal>img{width:100%;height:auto;display:block}
 .icons{display:flex;gap:28px;justify-content:center;margin-top:18px;opacity:.85}
-.icons svg{width:44px;height:44px}
+.icons img{height:44px;width:auto}
 .meta{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:16px;padding-top:20px;border-top:1px solid rgba(255,255,255,.3)}
 .meta small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C8D6C9;margin-bottom:4px}
 .meta b{font-weight:700}
@@ -152,7 +152,9 @@ a{color:inherit}
 .card h3{font-size:22px;color:var(--green-d);margin-bottom:12px}
 .card ol,.card ul{margin:0;padding-left:20px;display:grid;gap:8px;color:var(--ink)}
 .card li::marker{color:var(--caramel);font-weight:700}
-.cta{margin-top:24px;background:var(--caramel);color:#fff;border-radius:24px;padding:36px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between}
+.cta{position:relative;overflow:hidden;margin-top:24px;background:var(--caramel);color:#fff;border-radius:24px;padding:36px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between}
+.cta::before{content:"";position:absolute;inset:0;opacity:.12;background:url(img/el/padrao-icones.png) 0 0/220px 132px repeat}
+.cta>*{position:relative}
 .cta h3{font-size:clamp(24px,3.5vw,34px);max-width:20ch}
 .cta p{color:#F3E4D2;margin-top:8px}
 .contacts{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
@@ -161,6 +163,7 @@ a{color:inherit}
 footer{background:var(--green-dd);color:#A9B8AD;font-size:13px}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-block:28px}
 footer img{height:20px}
+footer .sym{height:22px;margin-right:10px;vertical-align:middle}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -197,23 +200,8 @@ footer img{height:20px}
       </div>
     </div>
     <div class="seal" aria-hidden="true">
-      <svg viewBox="0 0 300 300">
-        <defs><path id="ring" d="M150,150 m-112,0 a112,112 0 1,1 224,0 a112,112 0 1,1 -224,0"/></defs>
-        <circle cx="150" cy="150" r="146" fill="#F7F4EE"/>
-        <circle cx="150" cy="150" r="132" fill="none" stroke="#4E6B50" stroke-width="1.5"/>
-        <circle cx="150" cy="150" r="90" fill="#4E6B50"/>
-        <text font-family="Nunito,sans-serif" font-weight="800" font-size="17" letter-spacing="3.2" fill="#4E6B50"><textPath href="#ring" startOffset="0">SEM GLÚTEN • SEM LACTOSE • SEM GORDURA HIDROGENADA •</textPath></text>
-        <g transform="translate(150 150)" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round">
-          <path d="M-38 -4 a38 38 0 0 0 76 0"/>
-          <path d="M-38 -4 h12 q6 -10 14 -2 q12 10 24 0 q8 -8 14 2 h12"/>
-          <path d="M-30 -22 a34 34 0 0 1 60 0" stroke-width="5" opacity=".6"/>
-        </g>
-      </svg>
-      <div class="icons">
-        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 24a18 16 0 0 0 36 0z"/><path d="M6 24c4-12 32-12 36 0"/><path d="M14 18q10 6 20 0"/></svg>
-        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M25 44c0-12-1-20-3-26"/><path d="M22 18c-4-6-12-6-16-2 6-1 10 0 16 2zM22 18c2-7 9-10 15-8-6 1-10 4-15 8zM22 18c-6-2-10 2-12 7 4-3 8-5 12-7zM22 18c6-1 11 2 13 7-4-3-8-5-13-7zM22 18c-1-6-4-10-8-12 3 4 5 8 8 12z"/></svg>
-        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M4 32c8 0 10-14 20-14 7 0 9 6 6 9-3 3-7 0-5-3M24 18c10 0 12 14 20 14"/></svg>
-      </div>
+      <img src="img/el/selo-branco.png" alt="">
+      <div class="icons"><img src="img/el/coco-branco.png" alt=""><img src="img/el/palma-branco.png" alt=""><img src="img/el/onda-branco.png" alt=""></div>
     </div>
     <div class="meta">
       <div><small>Para</small><b data-k="cliente"></b></div>
@@ -344,7 +332,7 @@ footer img{height:20px}
 </section>
 </main>
 
-<footer><div class="wrap"><img src="img/logo-coquin-white.png" alt="COQUIN"><span>Gelato tailandês · <span data-k="instagram"></span></span></div></footer>
+<footer><div class="wrap"><span><img class="sym" src="img/el/simbolo-branco.png" alt=""><img src="img/logo-coquin-white.png" alt="COQUIN" style="vertical-align:middle"></span><span>Gelato tailandês · <span data-k="instagram"></span></span></div></footer>
 
 <script>
 /* ============================================================
