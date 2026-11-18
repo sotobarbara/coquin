@@ -235,6 +235,21 @@ input:focus{outline:0;border-color:var(--olive);box-shadow:0 0 0 3px rgba(61,88,
 .drop b{display:block;font-size:15px;font-weight:500}
 .drop small{color:var(--muted);font-size:13px}
 .field>label.drop.has,.drop.has{border-style:solid;border-color:var(--olive);background:var(--olive-soft)}
+.pf-links{display:grid;gap:8px;margin-bottom:8px}
+.pf-row{display:flex;gap:8px;align-items:center}
+.pf-row input{flex:1;min-width:0}
+input[type=url]{width:100%;border:1px solid var(--line-2);border-radius:12px;padding:14px 15px;font-size:16px;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s}
+.pf-row input.bad{border-color:#C2413A}
+.pf-x{width:44px;height:48px;flex:none;border:1px solid var(--line-2);background:#fff;border-radius:12px;cursor:pointer;color:var(--muted);font-size:18px}
+.pf-x:hover{color:#C2413A;border-color:#C2413A}
+.pf-add{border:0;background:none;color:var(--olive);font-weight:500;font-size:14px;cursor:pointer;padding:4px 0 12px}
+.pf-add:hover{text-decoration:underline}
+.pf-files{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.pf-files li{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px}
+.pf-files li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-files li small{color:var(--muted);flex:none}
+.pf-files li button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px}
+.pf-files li button:hover{color:#C2413A}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
 .opt{position:relative}
 .opt input{position:absolute;opacity:0;pointer-events:none}
@@ -553,9 +568,21 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
     <div class="card formcard" id="formCard">
       <form id="form" novalidate>
         <h2>Candidate-se</h2>
-        <p class="sub">Leva 1 minuto: nome, e-mail e currículo.</p>
+        <p class="sub" id="formSub">Leva 1 minuto: nome, e-mail e currículo.</p>
         <div class="field"><label for="fName">Nome completo</label><input id="fName" type="text" autocomplete="name" maxlength="120" required></div>
         <div class="field"><label for="fEmail">E-mail</label><input id="fEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="160" required></div>
+        <div class="field hide" id="pfWrap">
+          <label>Portfólio <span id="pfReq" style="color:var(--muted);font-weight:400"></span></label>
+          <div class="hint" id="pfHint">Cole os links dos seus trabalhos (Instagram, Drive, YouTube, Vimeo, TikTok…). Confira se estão <b>abertos ao público</b>.</div>
+          <div class="pf-links" id="pfLinks"></div>
+          <button type="button" class="pf-add" id="pfAdd">+ Adicionar outro link</button>
+          <label class="drop" id="pfDrop" for="fPf">
+            <span class="ic"><svg class="i"><use href="#i-upload"/></svg></span>
+            <span><b id="pfLbl">Anexar arquivos (opcional)</b><small>PDF, fotos ou vídeos · até 50 MB cada · até 5 arquivos</small></span>
+          </label>
+          <input id="fPf" type="file" class="hide" multiple accept=".pdf,image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,video/webm,.mov,.mp4">
+          <ul class="pf-files" id="pfFiles"></ul>
+        </div>
         <div class="field">
           <label>Currículo</label>
           <label class="drop" id="drop" for="fCv">
@@ -566,7 +593,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;op
         </div>
         <div id="qWrap" class="hide"><div id="qs"></div></div>
         <div class="hp" aria-hidden="true"><label>Não preencha <input id="fWeb" type="text" tabindex="-1" autocomplete="off"></label></div>
-        <label class="consent"><input type="checkbox" id="fConsent"><span>Autorizo a Coquin a usar meus dados e currículo <b>somente para este processo seletivo</b> (LGPD).</span></label>
+        <label class="consent"><input type="checkbox" id="fConsent"><span>Autorizo a Coquin a usar meus dados<span id="consWhat"> e currículo</span> <b>somente para este processo seletivo</b> (LGPD).</span></label>
         <div class="err-box hide" id="errBox"></div>
         <button class="btn full" id="sendBtn" type="submit">Enviar candidatura <svg class="i"><use href="#i-arrow"/></svg></button>
       </form>
@@ -767,6 +794,13 @@ function renderVaga(){
   if(vaga.banner_path){ $('vBanner').src=sb.storage.from('banners').getPublicUrl(vaga.banner_path).data.publicUrl; $('bannerBlk').classList.remove('hide'); }
   if(!vaga.description && !p.perks.length && !vaga.banner_path) $('aboutCard').classList.add('hide');
   if(!vaga.cv_required) $('cvSub').textContent='Opcional · PDF, Word ou foto · até 5 MB';
+  /* portfólio (links + arquivos): só nas vagas que pedem */
+  const pf=vaga.portfolio==='obrigatorio'||vaga.portfolio==='opcional';
+  $('pfWrap').classList.toggle('hide',!pf);
+  if(pf){ pfFiles=[]; $('pfLinks').innerHTML=''; pfAddRow(); renderPfFiles();
+    $('pfReq').textContent=vaga.portfolio==='obrigatorio'?'· com pelo menos 1 link':'· opcional';
+    $('formSub').textContent='Leva 2 minutos: nome, e-mail, portfólio'+(vaga.cv_required?' e currículo.':' e, se tiver, currículo.');
+    $('consWhat').textContent=', currículo e portfólio'; }
   /* perguntas extras: só aparecem se a vaga tiver (por padrão não tem) */
   const qs=Array.isArray(vaga.questions)?vaga.questions:[];
   $('qWrap').classList.toggle('hide',!qs.length);
@@ -784,6 +818,52 @@ $('fCv').addEventListener('change',e=>{
   if(!f){ return; }
   if(f.size>MAX_CV){ cvFile=null; e.target.value=''; $('cvLbl').textContent='Arquivo muito grande'; $('cvSub').textContent='Máximo 5 MB. Tente um PDF ou uma foto menor'; $('drop').classList.remove('has'); return; }
   cvFile=f; $('drop').classList.add('has'); $('cvLbl').textContent=f.name; $('cvSub').textContent=(f.size<1048576?Math.max(1,Math.round(f.size/1024))+' KB':(f.size/1048576).toFixed(1)+' MB')+' · toque para trocar';
+});
+
+/* ---------- portfólio ---------- */
+const MAX_PF=50*1024*1024, PF_MAX_FILES=5, PF_MAX_LINKS=8;
+let pfFiles=[];
+function pfAddRow(val){
+  if($('pfLinks').children.length>=PF_MAX_LINKS) return;
+  const r=document.createElement('div'); r.className='pf-row';
+  r.innerHTML='<input type="url" inputmode="url" autocapitalize="none" spellcheck="false" maxlength="400" placeholder="https://instagram.com/seuperfil"><button type="button" class="pf-x" aria-label="Remover link">×</button>';
+  r.querySelector('input').value=val||''; $('pfLinks').appendChild(r);
+  $('pfAdd').classList.toggle('hide',$('pfLinks').children.length>=PF_MAX_LINKS);
+  return r.querySelector('input');
+}
+$('pfAdd').addEventListener('click',()=>{ const i=pfAddRow(); i&&i.focus(); });
+$('pfLinks').addEventListener('click',e=>{ const x=e.target.closest('.pf-x'); if(!x) return;
+  if($('pfLinks').children.length>1) x.parentElement.remove(); else x.parentElement.querySelector('input').value='';
+  $('pfAdd').classList.remove('hide'); });
+$('pfLinks').addEventListener('input',e=>e.target.classList.remove('bad'));
+/* aceita "@perfil" (vira Instagram) e link sem https:// */
+function normLink(v){
+  v=v.trim(); if(!v) return '';
+  if(/^@[\w.]{2,30}$/.test(v)) v='https://instagram.com/'+v.slice(1);
+  if(!/^https?:\/\//i.test(v)) v='https://'+v.replace(/^\/+/,'');
+  try{ const u=new URL(v); if(!/\./.test(u.hostname)||/\s/.test(v)) return null; return u.href; }catch(_){ return null; }
+}
+function pfLinks(){ const out=[], bad=[];
+  $('pfLinks').querySelectorAll('input').forEach(i=>{ if(!i.value.trim()) return; const n=normLink(i.value); if(n){ i.value=n; out.push(n); } else { i.classList.add('bad'); bad.push(i); } });
+  return {links:[...new Set(out)],bad}; }
+const fmtSize=b=>b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(1)+' MB';
+function renderPfFiles(){
+  $('pfFiles').innerHTML=pfFiles.map((f,i)=>'<li>'+ic('i-upload')+'<span>'+esc(f.name)+'</span><small>'+fmtSize(f.size)+'</small><button type="button" data-rm="'+i+'" aria-label="Remover arquivo">×</button></li>').join('');
+  $('pfDrop').classList.toggle('has',pfFiles.length>0);
+  $('pfLbl').textContent=pfFiles.length?(pfFiles.length+(pfFiles.length>1?' arquivos anexados':' arquivo anexado')+' · toque para adicionar'):'Anexar arquivos (opcional)';
+}
+$('pfFiles').addEventListener('click',e=>{ const b=e.target.closest('[data-rm]'); if(!b) return; pfFiles.splice(+b.dataset.rm,1); renderPfFiles(); });
+$('fPf').addEventListener('change',e=>{
+  const ok=/^(application\/pdf|image\/(jpeg|png|webp|heic)|video\/(mp4|quicktime|webm))$/;
+  let msg='';
+  [...(e.target.files||[])].forEach(f=>{
+    if(pfFiles.length>=PF_MAX_FILES){ msg='Máximo de '+PF_MAX_FILES+' arquivos. Para mais trabalhos, use links.'; return; }
+    if(f.size>MAX_PF){ msg='"'+f.name+'" passou de 50 MB. Envie pelo link (Drive, YouTube, Vimeo).'; return; }
+    if(f.type && !ok.test(f.type) && !/\.(mov|mp4|pdf)$/i.test(f.name)){ msg='"'+f.name+'": formato não aceito. Use PDF, foto ou vídeo (MP4/MOV).'; return; }
+    if(!pfFiles.some(x=>x.name===f.name&&x.size===f.size)) pfFiles.push(f);
+  });
+  e.target.value=''; renderPfFiles();
+  if(msg) fail(msg); else $('errBox').classList.add('hide');
 });
 
 function collect(){
@@ -806,6 +886,10 @@ $('form').addEventListener('submit',async e=>{
   const name=$('fName').value.trim(), email=$('fEmail').value.trim();
   if(name.length<2) return fail('Preencha seu nome.');
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail('Confira seu e-mail.');
+  const usePf=vaga.portfolio==='obrigatorio'||vaga.portfolio==='opcional';
+  const pfl=usePf?pfLinks():{links:[],bad:[]};
+  if(pfl.bad.length){ pfl.bad[0].focus(); return fail('Confira o link do portfólio: ele precisa ser um endereço completo (ex.: https://instagram.com/seuperfil).'); }
+  if(vaga.portfolio==='obrigatorio' && !pfl.links.length) return fail('Envie pelo menos um link do seu portfólio (Instagram, Drive, YouTube, Vimeo…).');
   if(vaga.cv_required && !cvFile) return fail('Envie seu currículo.');
   const {answers,missing}=collect();
   if(missing.length) return fail('Responda: '+missing[0]);
@@ -823,8 +907,17 @@ $('form').addEventListener('submit',async e=>{
       const {error:upErr}=await sb.storage.from('cvs').upload(cv_path,cvFile,{contentType:cvFile.type||'application/octet-stream',upsert:false});
       if(upErr) throw upErr;
     }
+    const pfUp=[];
+    for(let i=0;i<(usePf?pfFiles.length:0);i++){ const f=pfFiles[i];
+      btn.textContent='Enviando portfólio ('+(i+1)+' de '+pfFiles.length+')…';
+      const safe=(f.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w.\-]+/g,'-').replace(/-+/g,'-').slice(-80))||('arquivo-'+i);
+      const path=vaga.id+'/'+id+'/'+(i+1)+'-'+safe;
+      const {error:pe}=await sb.storage.from('portfolios').upload(path,f,{contentType:f.type||(/\.mov$/i.test(f.name)?'video/quicktime':'application/octet-stream'),upsert:false});
+      if(pe) throw pe;
+      pfUp.push({path,name:f.name.slice(0,140),size:f.size,type:f.type||''}); }
     btn.textContent='Enviando…';
     const row={id,vaga_id:vaga.id,name,email,answers,cv_path,cv_name,consent:true,status:'novo'};
+    if(usePf) row.portfolio={links:pfl.links,files:pfUp};
     const {error}=await sb.from('candidaturas').insert(row);
     if(error){ if(error.code==='23505'||/ja_candidatou|duplicad/i.test(error.message||'')){ resetBtn(); return fail(DUP_MSG); } throw error; }
     try{ localStorage.setItem('coquin-candidatou-'+vaga.id,'1'); }catch(_){}
@@ -832,8 +925,8 @@ $('form').addEventListener('submit',async e=>{
     $('formCard').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){
     const m=String((err&&(err.message||err.error))||'');
-    fail(/mime|type/i.test(m)?'Formato de arquivo não aceito. Envie PDF, foto (JPG/PNG) ou Word.'
-      :/size|large/i.test(m)?'Arquivo muito grande (máximo 5 MB).'
+    fail(/mime|type/i.test(m)?'Formato de arquivo não aceito. Currículo: PDF, foto ou Word. Portfólio: PDF, foto ou vídeo (MP4/MOV).'
+      :/size|large/i.test(m)?'Arquivo muito grande (currículo até 5 MB; portfólio até 50 MB por arquivo).'
       :'Não conseguimos enviar agora. Confira sua internet e tente de novo.');
     resetBtn();
   }

@@ -118,6 +118,18 @@ A chave da IA **fica no Supabase** (nunca no site). Configuração, uma vez:
 
 Só a equipe logada consegue chamar a função. Cada vaga melhorada custa poucos centavos.
 
+## Portfólio (filmmaker, designer, social media…)
+
+No editor da vaga, **Portfólio no formulário**: *Não pedir* · *Opcional* · *Obrigatório (pelo menos 1 link)*.
+- O candidato cola **links** (Instagram, Drive, YouTube, Vimeo, TikTok…; `@perfil` vira o link do Instagram,
+  e link sem `https://` é completado) e pode **anexar arquivos**: PDF, fotos ou vídeos (MP4/MOV), até 50 MB
+  cada e 5 arquivos (bucket privado `portfolios`).
+- No painel: o perfil mostra o **Portfólio** com cada link (nome do site) e os arquivos (abrem com link
+  temporário); o card ganha o ícone de link com a quantidade; o CSV leva os links.
+- Quem mandou portfólio **não cai sozinho em Não qualificados** por score baixo (fica como MANUAL em
+  Aplicações para alguém avaliar); só uma resposta eliminatória tira a pessoa.
+- Excluir a candidatura apaga também os arquivos do portfólio.
+
 ## Por que alguém foi para "Não qualificados"
 
 Abrindo o card, o quadro vermelho no topo explica o motivo: score abaixo do mínimo (com as

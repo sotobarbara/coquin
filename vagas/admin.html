@@ -361,6 +361,14 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .q-res b{color:var(--accent)} .q-res .muted{color:var(--muted)}
 .q-res button{border:0;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;width:20px;height:20px;border-radius:99px;padding:0}
 .q-res button:hover{background:rgba(0,0,0,.07);color:var(--ink)} .q-res svg{width:12px;height:12px}
+.pf-list{display:grid;gap:8px}
+.pf-it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;cursor:pointer;text-decoration:none;color:inherit;font:inherit;transition:border-color .15s,background .15s}
+.pf-it:hover{border-color:var(--accent);background:var(--accent-soft)}
+.pf-it span{flex:1;min-width:0}
+.pf-it b{display:block;font-size:14px;font-weight:600}
+.pf-it small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-it svg{width:16px;height:16px;flex:none;color:var(--accent)}
+.kc-pf{display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600}
 .cv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.cv-top h4{margin:0}
 .cvdoc{display:grid;gap:18px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
 .cvdoc mark{background:var(--accent-soft);color:var(--accent-2);border-radius:3px;padding:0 1px}
@@ -744,6 +752,8 @@ function scoreCand(c){
     if(c.cv_path && c.cv_text==null && !c._cvErr) tier='P';
     else if(!norm((c.about||'')+(c.cv_text||'')).trim()) tier='Q';
   }
+  // vaga com portfólio: quem mandou portfólio não cai sozinho por score baixo (só por resposta eliminatória)
+  if(!kos.length && tier==='C' && v.portfolio && v.portfolio!=='off'){ const pf=pfOf(c); if(pf.links.length||pf.files.length) tier='Q'; }
   return {pct,got,max,tier,parts,kos,highlights,kw:kwInfo,th:{a:+th.a||75,b:+th.b||50},ev:kwInfo&&kwInfo.hit.length?kwEvidence(c,kwInfo.hit):[]};
 }
 /* mesma quantidade de letras do original: sem acento e minúsculo (para achar a posição no texto) */
@@ -1144,6 +1154,22 @@ async function cvOrig(c){ const box=$('cvOrig'); if(!box||box.dataset.ok) return
     if(doc.numPages>5) box.insertAdjacentHTML('beforeend','<p class="note">Mostrando 5 de '+doc.numPages+' páginas. Use <b>Ver currículo</b> para o arquivo inteiro.</p>');
   }catch(_){ box.innerHTML='<p class="note">Não consegui abrir o arquivo agora. Tente <b>Ver currículo</b>.</p>'; delete box.dataset.ok; } }
 
+/* ---------- portfólio (links e arquivos enviados no formulário) ---------- */
+function pfOf(c){ const p=c.portfolio||{}; return {links:Array.isArray(p.links)?p.links.filter(x=>/^https?:\/\//i.test(x)):[], files:Array.isArray(p.files)?p.files.filter(f=>f&&f.path):[]}; }
+const PF_SITES=[[/instagram\.com/,'Instagram'],[/(drive|docs)\.google\.com/,'Google Drive'],[/(youtube\.com|youtu\.be)/,'YouTube'],[/vimeo\.com/,'Vimeo'],[/tiktok\.com/,'TikTok'],[/behance\.net/,'Behance'],[/dropbox\.com/,'Dropbox'],[/(wetransfer\.com|we\.tl)/,'WeTransfer'],[/linkedin\.com/,'LinkedIn'],[/canva\.(com|site)/,'Canva'],[/linktr\.ee/,'Linktree']];
+function pfSite(u){ try{ const h=new URL(u).hostname.replace(/^www\./,''); const m=PF_SITES.find(([re])=>re.test(h)); return {name:m?m[1]:h, host:h}; }catch(_){ return {name:'Link',host:''}; } }
+const pfSize=b=>!b?'':b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(1)+' MB';
+function pfBlk(c){ const p=pfOf(c), v=vagas.find(x=>x.id===c.vaga_id)||{};
+  if(!p.links.length && !p.files.length) return (v.portfolio&&v.portfolio!=='off')?'<div class="blk"><h4>Portfólio</h4><p class="note">Não enviou portfólio.</p></div>':'';
+  return '<div class="blk"><h4>Portfólio</h4><div class="pf-list">'
+    +p.links.map(u=>{ const s=pfSite(u); return '<a class="pf-it" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+ic('link')+'<span><b>'+esc(s.name)+'</b><small>'+esc(u.replace(/^https?:\/\/(www\.)?/,'').slice(0,70))+'</small></span>'+ic('arrow')+'</a>'; }).join('')
+    +p.files.map(f=>'<button class="pf-it" data-pf-file="'+esc(f.path)+'">'+ic(/^video/.test(f.type)||/\.(mov|mp4|webm)$/i.test(f.name)?'eye':'file')+'<span><b>'+esc(f.name)+'</b><small>Arquivo enviado'+(f.size?' · '+pfSize(f.size):'')+'</small></span>'+ic('arrow')+'</button>').join('')
+    +'</div><div class="note" style="margin-top:8px">Os links abrem em outra aba. Link com acesso restrito? Peça ao candidato para liberar.</div></div>'; }
+async function openPfFile(path){ const w=window.open('','_blank');
+  const {data,error}=await sb.storage.from('portfolios').createSignedUrl(path,600);
+  if(error||!data){ if(w) w.close(); toast('Não foi possível abrir o arquivo'); return; }
+  if(w) w.location=data.signedUrl; else location.href=data.signedUrl; }
+
 function rescore(){ cands.forEach(c=>c._s=null); }
 
 /* ---------- visual ---------- */
@@ -1278,7 +1304,7 @@ function card(c){
     +(()=>{ const h=homeOf(c), sp=spotOfVaga(v); if(!h||!sp) return ''; const tr=trip(h.b,sp);
         return '<div class="kc-home'+(tr.bus>75?' far':'')+'">'+ic('pin')+esc(prettyBairro(h.b.n))+' · <b>'+ic('bus')+'~'+tr.bus+' min</b></div>'; })()
     +'<div class="kc-f">'+ic('clock')+'<span class="t">'+ago(c.created_at)+(UI.vaga==='all'&&v.title?' · '+esc(v.title):'')+'</span>'
-    +'<span class="r">'+(colOf(c)==='reprovado'?(c.agradecido_em?'<span class="kc-thx done" title="Agradecido em '+fmtDia(c.agradecido_em)+'">✓ agradecido</span>':c.email?'<a class="kc-thx" data-thank-card="'+c.id+'" target="_blank" rel="noopener" href="'+thxHref(c)+'" title="Abrir e-mail de agradecimento">'+ic('mail')+'Agradecer</a>':''):'')+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
+    +'<span class="r">'+(colOf(c)==='reprovado'?(c.agradecido_em?'<span class="kc-thx done" title="Agradecido em '+fmtDia(c.agradecido_em)+'">✓ agradecido</span>':c.email?'<a class="kc-thx" data-thank-card="'+c.id+'" target="_blank" rel="noopener" href="'+thxHref(c)+'" title="Abrir e-mail de agradecimento">'+ic('mail')+'Agradecer</a>':''):'')+(c.stars?'<span class="stars">'+'★'.repeat(c.stars)+'</span>':'')+(c.cv_path?'<span title="Tem currículo">'+ic('file')+'</span>':'')+(()=>{ const p=pfOf(c), n=p.links.length+p.files.length; return n?'<span class="kc-pf" title="Portfólio: '+p.links.length+' link(s), '+p.files.length+' arquivo(s)">'+ic('link')+n+'</span>':''; })()+(c.notes?'<span title="Tem anotação">'+ic('chat')+'</span>':'')+'</span></div></div>';
 }
 /* arrastar o fundo do quadro rola para os lados (como no Trello) */
 (()=>{ const b=$('board'); let x0=null,s0=0;
@@ -1350,7 +1376,7 @@ function openCand(id){
           +'</div></div>'; })()
     +(colOf(c)==='reprovado'?'<div class="blk"><div class="why"><b>Por que está em Não qualificados</b><ul>'+whyNQ(c).map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>'
       +'<div class="why-tip">Discorda? Mova para outra etapa abaixo, ou ajuste as palavras-chave em <b>Vagas & regras → Regras</b>.</div></div></div>':'')
-    +(s.tier==='Q'?'<div class="blk"><div class="why q"><b>Por que está como Manual</b><ul><li>Não consegui ler nenhum texto do arquivo (pode ser foto muito escura, desenho ou formato não suportado).</li><li>Abra o currículo e decida você mesma.</li></ul></div></div>':'')
+    +(s.tier==='Q'?'<div class="blk"><div class="why q"><b>Por que está como Manual</b><ul>'+((pfOf(c).links.length||pfOf(c).files.length)&&v.portfolio&&v.portfolio!=='off'?'<li>Vaga avaliada pelo <b>portfólio</b>: abra os links abaixo e decida você mesma.</li>':'<li>Não consegui ler nenhum texto do arquivo (pode ser foto muito escura, desenho ou formato não suportado).</li><li>Abra o currículo e decida você mesma.</li>')+'</ul></div></div>':'')
     +'<div class="blk"><div class="scorebox"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="#ECE8E1" stroke-width="6"/><circle cx="38" cy="38" r="32" fill="none" stroke="'+TIERC[s.tier]+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct/100))+'"/></svg><b style="color:'+TIERC[s.tier]+'">'+(noNum(s.tier)?'—':s.pct)+'</b></div>'
     +'<div><div class="tl">'+tl+'</div><div class="ts">'+ts+'</div></div></div>'
     +(s.kos.length && colOf(c)!=='reprovado'?'<div class="alert" style="margin-top:10px"><b>Eliminatória</b><br>'+s.kos.map(esc).join('<br>')+'</div>':'')
@@ -1365,6 +1391,7 @@ function openCand(id){
     +'</div>'
     +(c.agradecido_em?'<div class="thx-done">'+ic('mail')+'Agradecimento enviado em '+fmtDia(c.agradecido_em)+'</div>':'')
     +'</div>'
+    +pfBlk(c)
     +(c.cv_path||c.cv_text?'<div class="blk cv-blk"><div class="cv-top"><h4>Currículo</h4><div class="seg" id="cvTabs"><button data-cvt="doc" class="'+(UI.cvTab!=='orig'?'sel':'')+'">Organizado</button>'+(c.cv_path?'<button data-cvt="orig" class="'+(UI.cvTab==='orig'?'sel':'')+'">Arquivo original</button>':'')+'</div></div>'
       +'<div id="cvDoc"'+(UI.cvTab==='orig'&&c.cv_path?' class="hide"':'')+'>'+(c.cv_text?cvDocHtml(c,v):'<p class="note">'+(c.cv_text==null&&c.cv_path?'Lendo o currículo… aparece aqui em instantes.':'Não deu para ler o texto deste arquivo (foto ou escaneado). Veja o <b>Arquivo original</b>.')+'</p>')+'</div>'
       +(c.cv_path?'<div id="cvOrig" class="cv-orig'+(UI.cvTab==='orig'?'':' hide')+'"></div>':'')+'</div>':'')
@@ -1384,6 +1411,7 @@ function openCand(id){
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
+  $('cBody').querySelectorAll('[data-pf-file]').forEach(b=>b.onclick=()=>openPfFile(b.dataset.pfFile));
   if($('cvTabs')){ $('cvTabs').onclick=e=>{ const b=e.target.closest('[data-cvt]'); if(!b) return; UI.cvTab=b.dataset.cvt;
       document.querySelectorAll('#cvTabs button').forEach(x=>x.classList.toggle('sel',x===b)); $('cvDoc').classList.toggle('hide',UI.cvTab==='orig');
       if($('cvOrig')){ $('cvOrig').classList.toggle('hide',UI.cvTab!=='orig'); if(UI.cvTab==='orig') cvOrig(c); } };
@@ -1472,7 +1500,8 @@ async function patch(c,fields,quiet){
   else if(openId===c.id && fields.status){ const b=document.querySelectorAll('#stSel button'); b.forEach(x=>x.classList.toggle('sel',x.dataset.st===colOf(c))); }
 }
 async function delCand(c){
-  if(!confirm('Excluir a candidatura de '+c.name+' e o currículo? Não dá pra desfazer.')) return;
+  if(!confirm('Excluir a candidatura de '+c.name+', o currículo e os arquivos do portfólio? Não dá pra desfazer.')) return;
+  const pff=pfOf(c).files.map(f=>f.path); if(pff.length){ const {error:pe}=await sb.storage.from('portfolios').remove(pff); if(pe&&!confirm('Não consegui apagar os arquivos do portfólio. Excluir a candidatura mesmo assim?')) return; }
   if(c.cv_path){ const {data:rm,error:re}=await sb.storage.from('cvs').remove([c.cv_path]);
     if(re||!rm||!rm.length){ if(!confirm('Não consegui apagar o arquivo do currículo (ele pode já ter sido apagado). Excluir a candidatura mesmo assim?')) return; } }
   const {error}=await sb.from('candidaturas').delete().eq('id',c.id);
@@ -1484,10 +1513,10 @@ async function delCand(c){
 $('csvBtn').onclick=()=>{
   const base=filtered(cands.filter(c=>UI.vaga==='all'||c.vaga_id===UI.vaga));
   const qset=[]; base.forEach(c=>{ const v=vagas.find(x=>x.id===c.vaga_id); (v&&v.questions||[]).forEach(q=>{ if(!qset.some(x=>x.k===q.k)) qset.push(q); }); });
-  const head=['Nome','WhatsApp','E-mail','Bairro/cidade','Vaga','Score','Nível','Eliminatória','Status','Nota','Inscrito em'].concat(qset.map(q=>q.label),['Sobre','Anotações']);
+  const head=['Nome','WhatsApp','E-mail','Bairro/cidade','Vaga','Score','Nível','Eliminatória','Status','Nota','Inscrito em'].concat(qset.map(q=>q.label),['Portfólio (links)','Portfólio (arquivos)','Sobre','Anotações']);
   const rows=base.map(c=>{ const s=sc(c); const v=vagas.find(x=>x.id===c.vaga_id)||{};
     const qa=qset.map(q=>{ const p=s.parts.find(p=>p.label===q.label); return p?p.ans:''; });
-    return [c.name,phoneOf(c),c.email,c.city,v.title||c.vaga_id,s.pct,s.tier,s.kos.join(' | '),(STATUS.find(x=>x.k===colOf(c))||{}).l||c.status,c.stars||0,new Date(c.created_at).toLocaleString('pt-BR')].concat(qa,[c.about,c.notes]); });
+    return [c.name,phoneOf(c),c.email,c.city,v.title||c.vaga_id,s.pct,s.tier,s.kos.join(' | '),(STATUS.find(x=>x.k===colOf(c))||{}).l||c.status,c.stars||0,new Date(c.created_at).toLocaleString('pt-BR')].concat(qa,[pfOf(c).links.join(' | '),pfOf(c).files.map(f=>f.name).join(' | '),c.about,c.notes]); });
   const csv=[head].concat(rows).map(r=>r.map(x=>{ x=String(x==null?'':x); if(/^[=+\-@]/.test(x)) x="'"+x; return '"'+x.replace(/"/g,'""')+'"'; }).join(';')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
   a.download='candidatos-coquin-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
@@ -1536,7 +1565,9 @@ function renderEditor(){
     +'<div class="note" style="margin-top:4px">'+(draftNew?'Fica no fim do link: …/?v=<b>'+esc(d.id||slugify(d.title+' '+d.store))+'</b>':'O link não muda depois de criado (já pode estar no Instagram).')+'</div></div>'
     +'<div class="row2"><div class="f"><label>Nº de vagas</label><input type="number" min="1" id="eOpen" value="'+(+d.openings||1)+'"></div>'
     +'<div class="f"><label>Banner (arte do Instagram)</label><div class="ed-banner">'+(d._bUrl||bannerUrl(d)?'<img src="'+esc(d._bUrl||bannerUrl(d))+'" alt="">':'')+'<label class="btn ghost sm" style="cursor:pointer">'+(d.banner_path||d._bUrl?'Trocar':'Enviar banner')+'<input type="file" id="eBanner" accept="image/*" class="hide"></label>'+(d.banner_path||d._bUrl?'<button class="btn ghost sm" id="eBannerDel">Remover</button>':'')+'</div></div></div>'
-    +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600"><input type="checkbox" id="eCv"'+(d.cv_required?' checked':'')+'> Currículo obrigatório</label></div>'
+    +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600"><input type="checkbox" id="eCv"'+(d.cv_required?' checked':'')+'> Currículo obrigatório</label>'
+    +'<div class="f" style="margin-top:14px"><label>Portfólio no formulário</label><select id="ePf">'+[['off','Não pedir'],['opcional','Opcional (links e arquivos)'],['obrigatorio','Obrigatório (pelo menos 1 link)']].map(([k,l])=>'<option value="'+k+'"'+((d.portfolio||'off')===k?' selected':'')+'>'+l+'</option>').join('')+'</select>'
+    +'<div class="note" style="margin-top:4px">Para filmmaker, designer, social media… O candidato cola links (Instagram, Drive, YouTube, Vimeo…) e pode anexar PDF, fotos ou vídeos de até 50 MB.</div></div></div>'
     +'<div class="blk"><h4>Palavras-chave no currículo</h4>'
     +'<div class="note" style="margin-bottom:10px">O painel lê o currículo (PDF ou Word) e soma os pontos de cada palavra encontrada, até o teto. Use o começo da palavra para pegar variações (<b>sorvet</b> pega sorvete, sorveteria). Acentos não importam.</div>'
     +'<div id="kwList">'+kwhtml+'</div>'
@@ -1557,7 +1588,7 @@ function renderEditor(){
 }
 function syncHeader(){
   const d=draft; d.title=$('eTitle').value; d.store=$('eStore').value; d.kind=$('eKind').value; d.salary=$('eSalary').value;
-  d.description=$('eDesc').value; d.perks=$('ePerks').value; d.cv_required=$('eCv').checked; d.kw_max=+$('eKwMax').value||0;
+  d.description=$('eDesc').value; d.perks=$('ePerks').value; d.cv_required=$('eCv').checked; if($('ePf')) d.portfolio=$('ePf').value; d.kw_max=+$('eKwMax').value||0;
   d.thresholds={a:+$('eThA').value||75,b:+$('eThB').value||50}; d.openings=Math.max(1,+$('eOpen').value||1);
   if(draftNew) d.id=slugify($('eSlug').value||'');
 }
@@ -1613,8 +1644,9 @@ async function saveVaga(){
     d.banner_path=path; d._bFile=null; d._bUrl=null; }
   const row={id:d.id,title:d.title.trim(),store:d.store.trim(),kind:d.kind,salary:d.salary.trim(),description:d.description.trim(),perks:d.perks.trim(),openings:+d.openings||1,banner_path:d.banner_path||null,
     active:d.active!==false,cv_required:!!d.cv_required,questions:d.questions,keywords:d.keywords,kw_max:d.kw_max,thresholds:d.thresholds,updated_at:new Date().toISOString()};
+  if((d.portfolio&&d.portfolio!=='off') || vagas.some(v=>'portfolio' in v)) row.portfolio=d.portfolio||'off';
   const {error}=await sb.from('vagas').upsert(row,{onConflict:'id'});
-  if(error) return toast('⚠︎ '+error.message);
+  if(error) return toast(/portfolio/i.test(error.message)?'⚠︎ Rode o SETUP.sql atualizado para usar o portfólio':'⚠︎ '+error.message);
   const i=vagas.findIndex(v=>v.id===row.id); if(i>=0) vagas[i]=Object.assign(vagas[i],row); else vagas.unshift(row);
   rescore(); closeSheets(); render(); toast(draftNew?'Vaga criada — agora é só divulgar 📣':'Regras salvas — scores recalculados ✓');
   if(draftNew) openShare(row);
@@ -1623,6 +1655,7 @@ async function delVaga(){
   const n=cands.filter(c=>c.vaga_id===draft.id);
   if(!confirm('Excluir a vaga "'+draft.title+'"'+(n.length?' e as '+n.length+' candidaturas':'')+'? Para só parar de receber, prefira desligar a chave da vaga.')) return;
   const paths=n.map(c=>c.cv_path).filter(Boolean); if(paths.length) await sb.storage.from('cvs').remove(paths);
+  const pff=n.flatMap(c=>pfOf(c).files.map(f=>f.path)); if(pff.length) await sb.storage.from('portfolios').remove(pff);
   const {error}=await sb.from('vagas').delete().eq('id',draft.id); if(error) return toast('⚠︎ '+error.message);
   vagas=vagas.filter(v=>v.id!==draft.id); cands=cands.filter(c=>c.vaga_id!==draft.id); closeSheets(); render(); toast('Vaga excluída');
 }
