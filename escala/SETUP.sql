@@ -283,3 +283,22 @@ do $$ begin alter publication supabase_realtime add table public.shift_config;  
 do $$ begin alter publication supabase_realtime add table public.payroll_entries; exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.payroll_people;  exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.absence_docs;    exception when duplicate_object then null; end $$;
+
+-- ============ Aniversários (v5): agente que parabeniza no grupo do WhatsApp ============
+-- data de nascimento (a equipe vê, porque o app mostra os próximos aniversários)
+alter table public.shift_employees add column if not exists birth_date date;
+-- WhatsApp da pessoa (para marcar @ no grupo): fica na tabela só de gerente
+alter table public.payroll_people  add column if not exists whatsapp text;
+-- o que o agente já mandou (evita mensagem repetida no mesmo ano)
+create table if not exists public.birthday_log (
+  emp        text not null,
+  year       integer not null,
+  kind       text not null,                 -- grupo | lembrete-3 | lembrete-1 | lembrete-0
+  message    text default '',
+  sent_at    timestamptz not null default now(),
+  primary key (emp, year, kind)
+);
+alter table public.birthday_log enable row level security;
+drop policy if exists "v5 gerente aniversarios" on public.birthday_log;
+create policy "v5 gerente aniversarios" on public.birthday_log for select to authenticated using (public.is_admin());
+-- O agendamento diário (pg_cron) fica no README: precisa da URL do projeto e da senha do cron.

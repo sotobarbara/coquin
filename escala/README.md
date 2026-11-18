@@ -273,3 +273,51 @@ turno), **When I Work**, **Homebase** e **Connecteam** lá fora; e **Pontomais**
 (Sólides)**, **Ahgora** e **Oitchau** no Brasil (ponto por app com comprovante, espelho de
 ponto e banco de horas conforme a Portaria 671/2021). Este app faz o recorte que a Coquin
 precisa, sem mensalidade por funcionário.
+
+## 🎂 Agente de aniversários (WhatsApp)
+
+Em *👥 Equipe*, cada pessoa ganhou **🎂 Aniversário** e **WhatsApp** (o número só os gerentes veem).
+O botão **🎂 Aniversários e agente do WhatsApp** mostra os próximos aniversários e tem os testes.
+
+Todo dia às **8h** a função `aniversarios` (Supabase Edge Function, em
+[`supabase/functions/aniversarios`](../supabase/functions/aniversarios/index.ts)):
+
+1. **Lembra o gerente no privado** alguns dias antes (padrão: 3 dias e 1 dia antes).
+2. **No dia, parabeniza no grupo da equipe**: o Claude escreve uma mensagem diferente a cada ano,
+   marcando a pessoa (@) se o WhatsApp dela estiver cadastrado. Sem a chave da Anthropic, sai uma
+   mensagem padrão.
+3. Registra tudo em `birthday_log`, para não mandar a mesma mensagem duas vezes.
+
+### Por que não dá pra usar só o app WhatsApp Business
+
+O app WhatsApp Business (o do celular) **não tem API**. Para um robô mandar mensagem **em grupo**
+é preciso um "conector" ligado a um número de WhatsApp. O agente funciona com os dois mais usados no Brasil:
+
+| | **Z-API** (pago, mais simples) | **Evolution API** (grátis, você hospeda) |
+|---|---|---|
+| Como conecta | lê o QR Code no painel da Z-API | lê o QR Code no painel da sua Evolution |
+| Secrets | `ZAPI_INSTANCE`, `ZAPI_TOKEN`, `ZAPI_CLIENT_TOKEN` | `EVOLUTION_URL`, `EVOLUTION_INSTANCE`, `EVOLUTION_APIKEY` |
+
+> ⚠️ Os dois conectam por **WhatsApp Web** (não é a API oficial da Meta). Funcionam bem para poucas
+> mensagens por dia, como aqui, mas é uma integração não oficial: use de preferência um **número da
+> empresa** (pode ser o próprio WhatsApp Business) e não use para disparo em massa.
+
+### Passo a passo
+
+1. **SQL**: rode o [`SETUP.sql`](SETUP.sql) de novo (cria `birth_date`, `whatsapp` e `birthday_log`).
+2. **Conector**: crie a instância na Z-API (ou Evolution) e leia o QR Code com o WhatsApp da loja.
+   Esse número precisa **estar no grupo** da equipe.
+3. **Função**: Supabase → Edge Functions → *Deploy a new function* → *Via Editor* → nome
+   **`aniversarios`** → cole o `index.ts`.
+4. **Secrets** (Edge Functions → Secrets):
+   - `ANTHROPIC_API_KEY` (a mesma da função `vagas-ia`)
+   - `WHATSAPP_PROVIDER` = `zapi` ou `evolution` + as chaves do conector (tabela acima)
+   - `MANAGER_PHONES` = WhatsApp de quem recebe os lembretes, com 55 + DDD: `5585999999999`
+     (vários: separe por vírgula)
+   - `CRON_SECRET` = uma senha qualquer, que você inventa
+   - `REMINDER_DAYS` (opcional) = `3,1` por padrão
+5. **Id do grupo**: no app, *Equipe → 🎂 Aniversários → 🔎 Descobrir o id do grupo*. Copie o id do grupo
+   da equipe para a Secret `WHATSAPP_GROUP_ID`.
+6. **Teste**: *👀 Ver prévia* (só mostra) e *📲 Enviar teste só para o gerente* (manda pro seu WhatsApp).
+7. **Agendar**: ligue `pg_cron` e `pg_net` em Database → Extensions, preencha e rode o
+   [`AGENDAR.sql`](../supabase/functions/aniversarios/AGENDAR.sql). Pronto: roda sozinho todo dia às 8h.
