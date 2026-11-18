@@ -67,6 +67,14 @@ create index if not exists candidaturas_vaga_idx on public.candidaturas (vaga_id
 -- deixa rápida a checagem de candidatura repetida (mesmo com milhares de inscrições)
 create index if not exists candidaturas_vaga_email_idx on public.candidaturas (vaga_id, lower(trim(email)));
 
+-- atualização: portfólio (links e arquivos), para vagas como filmmaker/designer
+alter table public.vagas add column if not exists portfolio text not null default 'off';      -- off | opcional | obrigatorio
+alter table public.vagas drop constraint if exists vagas_portfolio_check;
+alter table public.vagas add constraint vagas_portfolio_check check (portfolio in ('off','opcional','obrigatorio'));
+alter table public.candidaturas add column if not exists portfolio jsonb not null default '{}'::jsonb;  -- {links:[...], files:[{path,name,size,type}]}
+alter table public.candidaturas drop constraint if exists candidaturas_portfolio_check;
+alter table public.candidaturas add constraint candidaturas_portfolio_check check (pg_column_size(portfolio) < 20000);
+
 -- ============ 1 candidatura por e-mail em cada vaga ============
 -- (trigger em vez de índice único: funciona mesmo se já existirem repetidas de testes)
 create or replace function public.candidaturas_unica() returns trigger
@@ -140,6 +148,25 @@ create policy "equipe le cv" on storage.objects for select to authenticated
   using (bucket_id = 'cvs' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 create policy "equipe apaga cv" on storage.objects for delete to authenticated
   using (bucket_id = 'cvs' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+
+-- ============ Storage: bucket privado "portfolios" (até 50 MB por arquivo: PDF, fotos e vídeos) ============
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('portfolios', 'portfolios', false, 52428800, array[
+  'application/pdf','image/jpeg','image/png','image/webp','image/heic',
+  'video/mp4','video/quicktime','video/webm'])
+on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+drop policy if exists "publico envia portfolio" on storage.objects;
+drop policy if exists "equipe le portfolio"     on storage.objects;
+drop policy if exists "equipe apaga portfolio"  on storage.objects;
+-- candidato só SOBE arquivo, e só em vaga ativa que pede portfólio
+create policy "publico envia portfolio" on storage.objects for insert to anon, authenticated
+  with check (bucket_id = 'portfolios'
+    and (storage.foldername(name))[1] in (select v.id from public.vagas v where v.active and v.portfolio <> 'off'));
+create policy "equipe le portfolio" on storage.objects for select to authenticated
+  using (bucket_id = 'portfolios' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+create policy "equipe apaga portfolio" on storage.objects for delete to authenticated
+  using (bucket_id = 'portfolios' and coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 
 -- ============ Storage: bucket PÚBLICO "banners" (as artes das vagas, até 10 MB) ============
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
