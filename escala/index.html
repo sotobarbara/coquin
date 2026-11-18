@@ -807,7 +807,7 @@ function freshDB(){
   return {version:2, emps:SEED_TEAM.map(t=>({
       id:slug(t.name), name:t.name, role:t.role, color:t.color, face:t.face, active:true,
       scale:t.scale, start:t.start, end:t.end, lunch:t.lunch, contract:t.contract,
-      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:'', birth:'', wa:'',
+      prefOff:(t.prefOff||[]).slice(), fixedOff:!!t.fixedOff, pin:'', admission:'',
       salary:t.salary||0, food:t.food||0, vtDay:t.vtDay||0, advPct:null, deps:0
     })),
     sched:[], swaps:[], punch:[], pay:[], docs:[],
@@ -1728,7 +1728,7 @@ const Cloud={
       const pv=(row,col,id,key,def)=>(row[col]!=null)?+row[col]:(prevE[id]&&prevE[id][key]!=null?prevE[id][key]:def);
       db.emps=emps.map(e=>migrateEmp({id:e.id, name:e.name, role:e.role||'', color:e.color||'#446349', face:e.face||null,
         active:e.active!==false, scale:e.scale||'6x1', start:e.start_t||'', end:e.end_t||'', lunch:(e.lunch==null?60:+e.lunch),
-        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'', login:e.login_email||'', birth:e.birth_date||'',
+        contract:e.contract||'clt', prefOff:Array.isArray(e.pref_off)?e.pref_off:[], fixedOff:!!e.fixed_off, pin:e.pin||'', admission:e.admission||'', login:e.login_email||'',
         photo:(e.photo!==undefined? (e.photo||null) : (prevE[e.id]?prevE[e.id].photo:null)),
         salary:pv(e,'salary',e.id,'salary',undefined), food:pv(e,'food',e.id,'food',0), vtDay:pv(e,'vt_day',e.id,'vtDay',0),
         advPct:(e.adv_pct!=null?+e.adv_pct:(prevE[e.id]?prevE[e.id].advPct:null)), deps:pv(e,'deps',e.id,'deps',0)}));
@@ -1766,14 +1766,14 @@ const Cloud={
       }
     }catch(e){}
     if(!isAdmin()){                                    /* funcionário: nada de salário/folha no aparelho */
-      db.pay=[]; db.emps.forEach(e=>{ e.salary=0; e.food=0; e.vtDay=0; e.advPct=null; e.deps=0; e.pin=''; e.wa=''; });
+      db.pay=[]; db.emps.forEach(e=>{ e.salary=0; e.food=0; e.vtDay=0; e.advPct=null; e.deps=0; e.pin=''; });
       Store.save(db); return;
     }
     try{                                               /* salários (v4: tabela só de gerente) */
       const rs=await c.from('payroll_people').select('*');
       if(!rs.error){ this.peopleOK=true;
         (rs.data||[]).forEach(x=>{ const e=db.emps.find(y=>y.id===x.emp); if(!e) return;
-          if(x.salary!=null) e.salary=+x.salary; e.wa=x.whatsapp||''; if(x.food!=null) e.food=+x.food; if(x.vt_day!=null) e.vtDay=+x.vt_day;
+          if(x.salary!=null) e.salary=+x.salary; if(x.food!=null) e.food=+x.food; if(x.vt_day!=null) e.vtDay=+x.vt_day;
           e.advPct=x.adv_pct==null?null:+x.adv_pct; if(x.deps!=null) e.deps=+x.deps; });
       }else this.peopleOK=false;
     }catch(e){ this.peopleOK=false; }
@@ -1794,19 +1794,17 @@ const Cloud={
   async pushEmp(e){ if(!this.on || !isAdmin()) return;
     const row={id:e.id, name:e.name, role:e.role||'', color:e.color||'', face:e.face||null,
       active:e.active!==false, scale:e.scale||'6x1', start_t:e.start, end_t:e.end, lunch:e.lunch||0, contract:e.contract||'clt',
-      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null, login_email:e.login||null, photo:photoOK(e.photo)?e.photo:null, birth_date:e.birth||null};
+      pref_off:e.prefOff||[], fixed_off:!!e.fixedOff, pin:e.pin||'', admission:e.admission||null, login_email:e.login||null, photo:photoOK(e.photo)?e.photo:null};
     const pay={salary:+e.salary||0, food:+e.food||0, vt_day:+e.vtDay||0, adv_pct:e.advPct==null?null:+e.advPct, deps:+e.deps||0};
     try{
       let r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'});
       if(r.error && /column|schema/i.test(r.error.message||'')){            /* SETUP.sql v4 ainda não rodou */
-        delete row.login_email; delete row.photo; delete row.birth_date; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast();
+        delete row.login_email; delete row.photo; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast();
       }
-      if(r.error && /birth_date/i.test(r.error.message||'')){ delete row.birth_date; r=await this.client.from('shift_employees').upsert(row,{onConflict:'id'}); setupToast(); }
       if(r.error) throw r.error;
       /* salário: tabela só de gerente (v4); sem ela, cai nas colunas antigas */
       let q=await this.client.from('payroll_people').upsert(Object.assign({emp:e.id},pay),{onConflict:'emp'});
       if(q.error){ q=await this.client.from('shift_employees').update(pay).eq('id',e.id); if(q.error) setupToast(); }
-      else{ const w=await this.client.from('payroll_people').update({whatsapp:e.wa||null}).eq('emp',e.id); if(w.error) setupToast(); }
     }catch(err){ offlineToast(); } },
   async pushPay(x){ if(!this.on || !isAdmin()) return;
     try{ const {error}=await this.client.from('payroll_entries').upsert({id:x.id, ym:x.ym, emp:x.emp, kind:x.kind, date:x.date||null,
@@ -2170,78 +2168,9 @@ function openTeamSheet(){
   });
   if(!db.emps.length) h+='<div class="empty"><div class="em">👥</div><p>Nenhuma pessoa cadastrada ainda.</p></div>';
   h+='<button class="btn btn-green" id="teamAdd" style="margin-top:16px">+ Adicionar pessoa</button>';
-  h+='<button class="btn-ghost" id="teamBday" style="width:100%;margin-top:10px">🎂 Aniversários e agente do WhatsApp</button>';
   openSheet('Equipe', h, ()=>{
-    $('teamBday').addEventListener('click',openBirthdaySheet);
     Array.prototype.forEach.call(document.querySelectorAll('[data-emp]'),b=>b.addEventListener('click',()=>openEmpSheet(b.getAttribute('data-emp'))));
     $('teamAdd').addEventListener('click',()=>openEmpSheet(null));
-  });
-}
-/* ---------- Aniversários (agente do WhatsApp: Supabase Edge Function "aniversarios") ---------- */
-function waNorm(v){ let d=String(v||'').replace(/\D/g,''); if(!d) return ''; if(d.length<=11) d='55'+d; return d; }
-function waShow(d){ d=String(d||''); const m=d.match(/^55(\d{2})(\d{4,5})(\d{4})$/); return m?'('+m[1]+') '+m[2]+'-'+m[3]:d; }
-function bdayNext(birth){                     /* dias até o próximo aniversário (0 = hoje); 29/02 vira 28/02 */
-  const t=new Date(todayISO()+'T12:00:00'), bm=+birth.slice(5,7), bd=+birth.slice(8,10);
-  const at=y=>{ const leap=(y%4===0&&y%100!==0)||y%400===0; return new Date(y,bm-1,(bm===2&&bd===29&&!leap)?28:bd,12); };
-  let n=at(t.getFullYear()); if(n<t) n=at(t.getFullYear()+1);
-  return Math.round((n-t)/86400000);
-}
-async function callBday(body){
-  const c=Cloud.client;
-  if(!Cloud.on||!c) return {error:'Entre com o login do gerente (sincronizado) para usar o agente.'};
-  const {data,error}=await c.functions.invoke('aniversarios',{body});
-  if(error){
-    let msg=error.message||String(error);
-    try{ const j=await error.context.json(); if(j&&j.error) msg=j.error; }catch(e){}
-    if(/not found|404|Failed to send/i.test(msg)) msg='A função "aniversarios" ainda não está publicada no Supabase (veja o passo a passo no README da escala).';
-    return {error:msg};
-  }
-  return data||{};
-}
-function openBirthdaySheet(){
-  const list=db.emps.filter(e=>e.active!==false && e.birth).map(e=>({e, d:bdayNext(e.birth)})).sort((a,b)=>a.d-b.d);
-  const miss=db.emps.filter(e=>e.active!==false && !e.birth);
-  let h='<div class="note" style="margin-top:0">Todo dia às 8h o agente confere a equipe: <b>avisa o gerente no privado</b> alguns dias antes e, no dia, o Claude escreve uma mensagem e <b>parabeniza a pessoa no grupo</b> do WhatsApp, marcando o número dela.</div>';
-  h+='<div class="section-title" style="margin:16px 4px 8px">Próximos aniversários</div>';
-  if(!list.length) h+='<div class="empty"><div class="em">🎂</div><p>Ninguém com aniversário cadastrado. Abra cada pessoa em Equipe e preencha a data.</p></div>';
-  list.forEach(x=>{
-    const e=x.e, when=x.d===0?'<span class="chip ok">🎉 hoje</span>':x.d===1?'<span class="chip warn">amanhã</span>':x.d<=7?'<span class="chip warn">em '+x.d+' dias</span>':'<span class="chip neutral">em '+x.d+' dias</span>';
-    h+='<div class="tc-line" style="cursor:pointer" data-bd="'+e.id+'">'+avatar(e)
-      +'<div class="nm">'+esc(e.name)+'<small>'+e.birth.slice(8,10)+'/'+e.birth.slice(5,7)+(isAdmin()?(e.wa?' · '+esc(waShow(e.wa)):' · sem WhatsApp (não marca no grupo)'):'')+'</small></div>'+when+'</div>';
-  });
-  if(miss.length) h+='<div class="hint" style="margin-top:8px">Sem data cadastrada: '+miss.map(e=>esc(e.name)).join(', ')+'.</div>';
-  if(isAdmin()){
-    h+='<div class="section-title" style="margin:18px 4px 8px">Testar o agente</div>'
-     +'<div class="hint" style="margin:0 4px 8px">Toque numa pessoa acima para escolher; sem escolha, vale o próximo aniversário.</div>'
-     +'<button class="btn-ghost" id="bdPrev" style="width:100%">👀 Ver prévia da mensagem (não envia)</button>'
-     +'<button class="btn-ghost" id="bdTest" style="width:100%;margin-top:8px">📲 Enviar teste só para o gerente</button>'
-     +'<button class="btn-ghost" id="bdGroups" style="width:100%;margin-top:8px">🔎 Descobrir o id do grupo</button>'
-     +'<div id="bdOut"></div>';
-  }
-  openSheet('Aniversários', h, ()=>{
-    let pick=list.length?list[0].e.id:null;
-    const mark=()=>Array.prototype.forEach.call(document.querySelectorAll('[data-bd]'),b=>b.style.background=b.getAttribute('data-bd')===pick?'var(--green-tint)':'');
-    Array.prototype.forEach.call(document.querySelectorAll('[data-bd]'),b=>b.addEventListener('click',()=>{ pick=b.getAttribute('data-bd'); mark(); }));
-    mark();
-    if(!isAdmin()) return;
-    const out=html=>{ $('bdOut').innerHTML=html; };
-    const busy=(id,on,label)=>{ const b=$(id); b.disabled=on; if(label) b.textContent=label; };
-    const show=r=>out(r.error?'<div class="banner warn"><span>'+esc(r.error)+'</span></div>'
-      :'<div class="receipt" style="margin-top:12px"><div class="rt">MENSAGEM PARA '+esc((r.name||'').toUpperCase())+'</div>'
-       +'<div style="white-space:pre-wrap;font-size:14px;line-height:1.45;padding:6px 2px">'+esc(r.text||'')+'</div></div>'
-       +(r.ai===false?'<div class="hint">Mensagem padrão (sem a chave da Anthropic ou a IA não respondeu).</div>':'<div class="hint">Escrita pelo Claude — cada aniversário sai uma mensagem diferente.</div>')
-       +(r.sent?'<div class="note">Teste enviado para '+r.sent+' número(s) de gerente. ✅</div>':''));
-    $('bdPrev').addEventListener('click',async()=>{ busy('bdPrev',true,'Escrevendo…'); show(await callBday({mode:'preview',emp:pick})); busy('bdPrev',false,'👀 Ver prévia da mensagem (não envia)'); });
-    $('bdTest').addEventListener('click',async()=>{ busy('bdTest',true,'Enviando…'); show(await callBday({mode:'test',emp:pick})); busy('bdTest',false,'📲 Enviar teste só para o gerente'); });
-    $('bdGroups').addEventListener('click',async()=>{
-      busy('bdGroups',true,'Buscando…'); const r=await callBday({mode:'groups'}); busy('bdGroups',false,'🔎 Descobrir o id do grupo');
-      if(r.error){ out('<div class="banner warn"><span>'+esc(r.error)+'</span></div>'); return; }
-      const g=r.groups||[];
-      out(g.length?'<div class="receipt" style="margin-top:12px"><div class="rt">GRUPOS DO WHATSAPP CONECTADO</div>'
-        +g.map(x=>'<div class="rr"><span>'+esc(x.name||'(sem nome)')+'</span><b style="word-break:break-all;user-select:all">'+esc(x.id)+'</b></div>').join('')+'</div>'
-        +'<div class="note">Copie o id do grupo da equipe e cole na Secret <b>WHATSAPP_GROUP_ID</b> da função no Supabase.</div>'
-        :'<div class="hint">Nenhum grupo encontrado nesse WhatsApp.</div>');
-    });
   });
 }
 function openEmpSheet(id,payFocus){
@@ -2250,9 +2179,6 @@ function openEmpSheet(id,payFocus){
   let h='<div class="fld"><label>Foto</label><div id="epPhotoBox">'+photoEditor(e,'ep')+'</div><div class="hint">Foto real da pessoa (ela também pode colocar pelo portal). Sem foto, fica um bonequinho.</div></div>'
    +'<div class="fld"><label>Nome</label><input id="epName" value="'+esc(e.name)+'" placeholder="ex.: Wagner"></div>'
    +'<div class="fld"><label>Cargo</label><input id="epRole" value="'+esc(e.role||'')+'" placeholder="Atendimento"></div>'
-   +'<div class="fld2"><div class="fld"><label>🎂 Aniversário</label><input type="date" id="epBirth" value="'+esc(e.birth||'')+'"></div>'
-   +'<div class="fld"><label>WhatsApp</label><input id="epWa" inputmode="tel" value="'+esc(waShow(e.wa))+'" placeholder="(85) 99999-9999"></div></div>'
-   +'<div class="hint">O agente de aniversários parabeniza a pessoa no grupo da equipe e marca o WhatsApp dela. O número fica visível só para gerentes.</div>'
    +'<div class="fld"><label>Vínculo</label><div class="opt" id="epContract">'
    +'<button data-v="clt" class="'+(isCLT(e)?'sel':'')+'"><span class="ot">CLT</span><span class="os">entra nas regras da CLT</span></button>'
    +'<button data-v="pj" class="'+(isCLT(e)?'':'sel')+'"><span class="ot">PJ</span><span class="os">fora das regras da CLT</span></button>'
@@ -2370,7 +2296,7 @@ function openEmpSheet(id,payFocus){
       const name=$('epName').value.trim();
       if(!name){ toast('Coloque o nome'); return; }
       const rec=id?empById(id):{id:slug(name), face:null};
-      rec.name=name; rec.role=$('epRole').value.trim(); rec.birth=$('epBirth').value||''; rec.wa=waNorm($('epWa').value);
+      rec.name=name; rec.role=$('epRole').value.trim();
       rec.start=$('epStart').value||'10:00'; rec.end=$('epEnd').value||'19:00'; rec.lunch=+$('epLunch').value||0;
       rec.scale=scale; rec.contract=contract; rec.color=$('epColor').value; rec.pin=$('epPin').value.trim();
       rec.prefOff=prefOff; rec.fixedOff=fixedOff; rec.active=active; rec.photo=photo;
