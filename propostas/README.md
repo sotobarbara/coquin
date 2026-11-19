@@ -51,6 +51,16 @@ número do pedido (#XXXXX) e o resumo.
 2. Entre no gerador com o **login da equipe**. Sem login ele continua funcionando só no
    aparelho, mas sem pedidos do site e sem publicar preços.
 
+## Como o preço é calculado
+
+| Item | Regra |
+|---|---|
+| Gelato | convidados × gelatos por convidado × preço do tamanho (**3 bolas R$ 35 · 2 bolas R$ 30**) |
+| Equipe | **R$ 150 de diária por pessoa**, mínimo 2 pessoas (R$ 300); +1 pessoa a cada N convidados |
+| Deslocamento | **R$ 1 por km** saindo do Centro (Rua Dom Joaquim, 33), ida e volta. A distância sai do endereço do evento (busca: Photon/OpenStreetMap; rota de carro: OSRM; se a rota falhar, linha reta × 1,3) |
+| Venda no local | o contratante paga equipe + deslocamento (+ taxa extra opcional); convidados compram o gelato |
+| Opcionais | hora extra, valor mínimo, desconto por volume, adicionais (zerados ou vazios por padrão) |
+
 ## Ajustes (revise antes de usar)
 
 Os valores padrão são **exemplos**, exceto o preço do gelato (R$ 35) e água/refri (R$ 4/7):

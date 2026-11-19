@@ -425,6 +425,13 @@ textarea:focus{outline:0;border-color:var(--olive);box-shadow:0 0 0 3px rgba(61,
 .btn.ghost:hover{background:var(--olive-soft)}
 .warn-save{background:var(--danger-soft);color:var(--danger);border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:16px}
 
+.addr{position:relative}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;background:#fff;border:1px solid var(--line-2);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.sug button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 15px;cursor:pointer;border-top:1px solid var(--line);font:inherit;font-size:15px;color:var(--ink)}
+.sug button:first-child{border-top:0}
+.sug button:hover{background:var(--bg-2)}
+.sug small{display:block;color:var(--muted);font-size:13px}
+.kmok{color:var(--olive);font-weight:500}
 @media (max-width:980px){ .main{grid-template-columns:1fr} }
 @media (max-width:760px){
   .qcard,.rcard{padding:22px 18px}
@@ -539,18 +546,20 @@ textarea:focus{outline:0;border-color:var(--olive);box-shadow:0 0 0 3px rgba(61,
           </div>
           <div class="row2">
             <div class="field"><label class="fl" for="fHora">Horário do gelato <span class="opc">(aprox.)</span></label><input id="fHora" type="time"></div>
-            <div class="field"><label class="fl" for="fLocal">Local</label><input id="fLocal" type="text" maxlength="200" placeholder="Espaço, bairro, cidade"></div>
+            <div></div>
           </div>
         </div>
 
         <div class="qs">
           <div class="qh"><b>2</b>Onde vai ser</div>
-          <div class="field" id="q-reg"><label class="fl">Região</label><div class="opts" id="regOpts"></div></div>
+          <div class="field" id="q-local"><label class="fl" for="fLocal">Endereço ou nome do local</label><div class="addr"><input id="fLocal" type="text" maxlength="200" placeholder="Ex.: Buffet Dom Pedro, Fortaleza" autocomplete="off"><div class="sug" id="sugLocal" hidden></div></div>
+            <div class="hint2" id="kmInfo">Comece a digitar e escolha o local na lista: calculamos o deslocamento na hora.</div></div>
         </div>
 
         <div class="qs">
           <div class="qh"><b>3</b>Como servir</div>
           <div class="field"><label class="fl">Quem paga o gelato?</label><div class="opts" id="modoOpts"></div><div class="hint2" id="modoHint"></div></div>
+          <div class="field" id="q-tam"><label class="fl">Qual tamanho?</label><div class="opts" id="tamOpts"></div></div>
           <div class="field"><label class="fl">Quanto tempo de serviço?</label><div class="opts" id="horasOpts"></div></div>
         </div>
 
@@ -684,7 +693,7 @@ let PRICED=false;                       // só mostra valores se a equipe public
 let sb=null; try{ sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:false}}); }catch(e){}
 const MODOS_PUB=[{id:'open',nome:'Eu ofereço aos convidados',hint:'Você contrata e os convidados se servem à vontade, sem pagar nada.'},
                  {id:'local',nome:'Os convidados compram',hint:'Você paga só a taxa de presença e cada convidado compra o seu gelato na hora.'}];
-const A={tipo:'',reg:0,modo:'open',horas:0,extras:{}};   // respostas de escolha
+const A={tipo:'',modo:'open',tamanho:'3',horas:0,extras:{},geo:null,km:0,kmRota:false};   // respostas de escolha
 let lastSent=null;
 
 function opts(el,name,items,cur,on){
@@ -695,8 +704,9 @@ function waLink(msg){ const n=String(S.whatsapp||'').replace(/\D/g,'').replace(/
 
 function buildForm(){
   opts($('tipoOpts'),'tipo',TIPOS,A.tipo,v=>A.tipo=v);
-  opts($('regOpts'),'reg',S.deslocamentos.map((d,i)=>({id:i,nome:d.nome})),A.reg,v=>A.reg=+v);
-  opts($('modoOpts'),'modo',MODOS_PUB,A.modo,v=>{A.modo=v;$('modoHint').textContent=MODOS_PUB.find(m=>m.id===v).hint;buildExtras()});
+  opts($('tamOpts'),'tam',TAMANHOS.map(t=>({id:t.id,nome:t.nome+(PRICED&&S.mostrarValor!=='oculto'?' · '+BRL(t.id==='2'?S.preco2:S.precoGelato):'')})),A.tamanho,v=>A.tamanho=v);
+  $('q-tam').classList.toggle('hide',A.modo==='local');
+  opts($('modoOpts'),'modo',MODOS_PUB,A.modo,v=>{A.modo=v;$('modoHint').textContent=MODOS_PUB.find(m=>m.id===v).hint;$('q-tam').classList.toggle('hide',v==='local');buildExtras()});
   $('modoHint').textContent=MODOS_PUB.find(m=>m.id===A.modo).hint;
   if(!A.horas) A.horas=S.horasInclusas;
   const hs=[...new Set([2,3,4,5,6,S.horasInclusas])].filter(h=>h>=Math.min(2,S.horasInclusas)).sort((a,b)=>a-b);
@@ -718,13 +728,24 @@ $('extrasBox').addEventListener('input',e=>{const t=e.target;
 });
 $('extrasBox').addEventListener('click',e=>{ if(e.target.matches('input[type=number]')) e.preventDefault(); });
 
+/* endereço do evento -> km */
+let kmSeq=0;
+async function setGeo(x){ A.geo={lat:x.lat,lon:x.lon,label:x.label}; const my=++kmSeq; $('kmInfo').innerHTML='Calculando a distância…';
+  const r=await GEO.km(x); if(my!==kmSeq) return; A.km=r.km; A.kmRota=r.rota;
+  $('kmInfo').innerHTML=`<span class="kmok">≈ ${r.km.toLocaleString('pt-BR')} km</span> do nosso ponto de saída, no Centro de Fortaleza.`; }
+enderecoAuto($('fLocal'),$('sugLocal'),setGeo);
+$('fLocal').addEventListener('input',()=>{ A.geo=null; A.km=0; ++kmSeq; $('kmInfo').textContent='Comece a digitar e escolha o local na lista: calculamos o deslocamento na hora.'; });
+async function geoAuto(){ // escreveu e não escolheu na lista: tenta o 1º resultado
+  const q=$('fLocal').value.trim(); if(A.geo||q.length<4) return;
+  try{ const r=await GEO.buscar(q); if(r[0]){ A.geo={lat:r[0].lat,lon:r[0].lon,label:r[0].label}; const k=await GEO.km(r[0]); A.km=k.km; A.kmRota=k.rota; } }catch(e){} }
+
 /* máscara simples de telefone */
 $('fTel').addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);
   e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,d.length-4)}-${d.slice(-4)}`:d.length>2?`(${d.slice(0,2)}) ${d.slice(2)}`:d;});
 
 function proposta(){
   return {tipo:A.tipo||'outro',cliente:$('fNome').value.trim(),telefone:$('fTel').value.trim(),nomeEvento:'',
-    data:$('fData').value,horario:$('fHora').value,local:$('fLocal').value.trim(),deslocamento:A.reg,
+    data:$('fData').value,horario:$('fHora').value,local:$('fLocal').value.trim(),deslocamento:-1,km:A.km||'',tamanho:A.tamanho,
     modo:A.modo,convidados:$('fConv').value,consumo:S.consumoPadrao,qtdGelatos:'',horas:A.horas||S.horasInclusas,atendentes:'',
     extras:structuredClone(A.extras),desconto:'',descontoMotivo:'',mensagem:'',obs:$('fObs').value.trim(),assinatura:false,criadaEm:hojeISO()};
 }
@@ -746,12 +767,13 @@ $('form').addEventListener('submit',async e=>{
   if(bad.length){ $('errBox').textContent='Confira os campos marcados em vermelho.'; $('errBox').classList.remove('hide');
     $(bad[0]).scrollIntoView({behavior:'smooth',block:'center'}); return; }
   const btn=$('sendBtn'); btn.disabled=true; btn.innerHTML='Montando sua pré-proposta…';
+  await geoAuto();
   const p=proposta(), c=calc(p), prot=(lastSent&&lastSent.prot)||protocolo();
   let saved=false;
   if(sb){ try{
     const {error}=await sb.from('propostas_pedidos').insert({protocolo:prot,nome:p.cliente,telefone:p.telefone,email:$('fEmail').value.trim(),
       tipo:p.tipo,convidados:c.conv,data_evento:p.data||null,horario:p.horario,local:p.local,
-      respostas:{modo:p.modo,horas:p.horas,deslocamento:p.deslocamento,regiao:(c.desl||{}).nome||'',extras:p.extras,consumo:p.consumo,precos:PRICED?'publicados':'padrao'},
+      respostas:{modo:p.modo,tamanho:p.tamanho,horas:p.horas,km:A.km||0,kmRota:A.kmRota,geo:A.geo,regiao:A.km?`${A.km} km`:'',extras:p.extras,consumo:p.consumo,precos:PRICED?'publicados':'padrao'},
       obs:p.obs,estimativa:PRICED?Math.round(c.total*100)/100:0});
     saved=!error; }catch(_){ saved=false; } }
   lastSent={p,c,prot,saved};
@@ -770,10 +792,10 @@ function showResult(){
     valor=`<table class="inv"><tbody>${c.L.map(l=>`<tr><td>${esc(l.d)}${l.s?`<small>${esc(l.s)}</small>`:''}</td><td class="r">${BRL(l.t)}</td></tr>`).join('')}</tbody></table>
       <div class="total"><div><small>Investimento estimado</small><div class="v">${BRL(c.total)}</div></div>${c.conv?`<div class="pp">por convidado<b>${BRL(c.porConv,true)}</b></div>`:''}</div>`;
   } else if(mode==='faixa'){
-    valor=`<table class="inv"><tbody>${c.L.filter(l=>!/m[ií]nimo/i.test(l.d)).map(l=>`<tr><td>${esc(l.d)}${l.s?`<small>${esc(l.s)}</small>`:''}</td><td class="r">${l.q>1?l.q.toLocaleString('pt-BR'):''}</td></tr>`).join('')}</tbody></table>
+    valor=`<table class="inv"><tbody>${c.L.filter(l=>!/m[ií]nimo/i.test(l.d)).map(l=>`<tr><td>${esc(l.d)}${l.s?`<small>${esc(l.s)}</small>`:''}</td><td class="r">${l.qLbl||(l.q>1?l.q.toLocaleString('pt-BR'):'')}</td></tr>`).join('')}</tbody></table>
       <div class="total"><div><small>Investimento estimado</small><div class="v rng">${lo===hi?BRL(lo):BRL(lo)+' a '+BRL(hi)}</div></div>${c.conv?`<div class="pp">por convidado<b>${BRL(Math.round(lo/c.conv))} a ${BRL(Math.round(hi/c.conv))}</b></div>`:''}</div>`;
   } else {
-    valor=`<table class="inv"><tbody>${c.L.filter(l=>!/m[ií]nimo/i.test(l.d)).map(l=>`<tr><td>${esc(l.d)}${l.s?`<small>${esc(l.s)}</small>`:''}</td><td class="r">${l.q>1?l.q.toLocaleString('pt-BR'):''}</td></tr>`).join('')}</tbody></table>
+    valor=`<table class="inv"><tbody>${c.L.filter(l=>!/m[ií]nimo/i.test(l.d)).map(l=>`<tr><td>${esc(l.d)}${l.s?`<small>${esc(l.s)}</small>`:''}</td><td class="r">${l.qLbl||(l.q>1?l.q.toLocaleString('pt-BR'):'')}</td></tr>`).join('')}</tbody></table>
       <div class="total"><div><small>Valor</small><div class="v rng" style="font-size:22px">O comercial envia o valor pelo WhatsApp</div></div></div>`;
   }
   const resumo=[`${t.nome}`,c.conv?plural(c.conv,'convidado'):'',p.data?fmtData(p.data,true):'',p.local].filter(Boolean).join(', ');
@@ -785,12 +807,13 @@ function showResult(){
     <div class="facts">
       <div><small>Evento</small><b>${esc(t.nome)}</b></div>
       <div><small>Convidados</small><b>${c.conv.toLocaleString('pt-BR')}</b></div>
-      <div><small>${p.modo==='local'?'Formato':'Gelatos'}</small><b>${p.modo==='local'?'Venda no local':c.gelatos.toLocaleString('pt-BR')}</b></div>
+      <div><small>${p.modo==='local'?'Formato':'Gelatos'}</small><b>${p.modo==='local'?'Venda no local':c.gelatos.toLocaleString('pt-BR')+' · '+tamNome(p.tamanho)}</b></div>
       <div><small>Serviço</small><b>${c.horas.toLocaleString('pt-BR')}h · ${plural(c.atend,'atendente')}</b></div>
     </div>
     ${p.data||p.local?`<p style="margin:12px 2px 0;color:var(--ink-2);font-size:15px">${[p.data?esc(fmtData(p.data))+(p.horario?' · '+esc(p.horario):''):'',esc(p.local)].filter(Boolean).join(' · ')}</p>`:''}
     <div class="rblk"><h3>O que está incluso</h3><ul class="perks">${inc.map(i=>`<li>${ic('i-check')}${esc(i)}</li>`).join('')}</ul></div>
     <div class="rblk"><h3>Investimento</h3>${valor}
+      ${!c.km&&S.precoKm>0?`<div class="ressalva" style="background:var(--bg-2);border-color:var(--line);color:var(--ink-2)">${ic('i-pin')}<span>Não conseguimos localizar o endereço, então o <b>deslocamento</b> (${BRL(S.precoKm)} por km saindo do Centro de Fortaleza) ainda não está no valor. O comercial confirma.</span></div>`:''}
       <div class="ressalva">${ic('i-info')}<span>${esc(S.ressalva)}</span></div></div>
     <div class="next"><div class="ct-main">
       <svg class="ct-pat" width="100%" height="100%" aria-hidden="true"><rect width="100%" height="100%" fill="url(#pat-waves)"/></svg>
