@@ -483,7 +483,7 @@ function bindForm(){
     if(el.dataset.xq){const id=el.dataset.xq;P.extras[id]={...(P.extras[id]||{}),q:el.value,on:num(el.value)>0}; const cb=$(`[data-x="${id}"]`); if(cb) cb.checked=num(el.value)>0; render()}
   });
   enderecoAuto($('#f-local'),$('#sugLocal'),async x=>{ P.local=x.label; P.geo={lat:x.lat,lon:x.lon}; $('#kmHint').textContent='Calculando a distância…';
-    const r=await GEO.km(x); P.km=String(r.km); $('#f-km').value=r.km; $('#kmHint').textContent=r.rota?'Distância de carro pela rota':'Aproximada (linha reta × 1,3)'; render(); });
+    const r=await GEO.km(x); P.km=String(r.km); $('#f-km').value=r.km; $('#kmHint').innerHTML=(r.rota?'Distância de carro pela rota':'Aproximada (linha reta × 1,3)')+` · <a href="https://www.google.com/maps/search/?api=1&query=${x.lat},${x.lon}" target="_blank" rel="noopener">ver no mapa</a>`; render(); });
   $('#btnParse').onclick=()=>{const r=parsePedido($('#paste').value); if(!r.n){toast('Não encontrei dados na mensagem');return} Object.assign(P,r.d); fillForm(); render(); toast(`Preenchi: ${r.campos.join(', ')}`)};
 }
 
@@ -763,7 +763,7 @@ function renderPedidos(){
     const quando=new Date(x.created_at); const tel=String(x.telefone||'').replace(/\D/g,'').replace(/^55/,'');
     return `<div class="ped ${x.status==='novo'?'novo':''}">
       <div class="h"><b>${esc(x.nome)} <span class="st ${x.status}">${esc((PST.find(s=>s.id===x.status)||{}).nome||x.status)}</span></b><span class="v">${x.estimativa>0?'≈ '+BRL(+x.estimativa):''}</span></div>
-      <div class="m"><span>#${esc(x.protocolo)}</span><span>${esc(t.nome)}</span><span>${(+x.convidados).toLocaleString('pt-BR')} convidados</span>${x.data_evento?`<span>📅 ${fmtData(x.data_evento,true)}${x.horario?' '+esc(x.horario):''}</span>`:''}${x.local?`<span>📍 ${esc(x.local)}</span>`:''}${r.regiao?`<span>${esc(r.regiao)}</span>`:''}<span>${r.modo==='local'?'Convidados compram':'Open'} · ${esc(r.horas||'')}h</span>${ex.length?`<span>+ ${esc(ex.join(', '))}</span>`:''}</div>
+      <div class="m"><span>#${esc(x.protocolo)}</span><span>${esc(t.nome)}</span><span>${(+x.convidados).toLocaleString('pt-BR')} convidados</span>${x.data_evento?`<span>📅 ${fmtData(x.data_evento,true)}${x.horario?' '+esc(x.horario):''}</span>`:''}${x.local?`<span>📍 ${esc(x.local)}</span>`:''}${r.km?`<span>🚗 ${esc(r.km)} km${r.geo?` · <a href="https://www.google.com/maps/search/?api=1&query=${r.geo.lat},${r.geo.lon}" target="_blank" rel="noopener">mapa</a>`:''}</span>`:`<span style="color:var(--red)">endereço não localizado: calcular km</span>`}<span>${r.modo==='local'?'Convidados compram':'Open'} · ${esc(r.horas||'')}h</span>${ex.length?`<span>+ ${esc(ex.join(', '))}</span>`:''}</div>
       ${x.obs?`<div class="o">${esc(x.obs)}</div>`:''}
       <div class="m"><span>${esc(x.telefone)}</span>${x.email?`<span>${esc(x.email)}</span>`:''}<span>recebido ${quando.toLocaleDateString('pt-BR')} ${quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
       <div class="acts"><button class="btn primary sm" data-gen="${x.id}">Gerar proposta</button><a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/55${tel}?text=${encodeURIComponent(`Olá, ${String(x.nome).split(' ')[0]}! Aqui é da Coquin, recebemos seu pedido #${x.protocolo} para o ${t.nome.toLowerCase()}. `)}">WhatsApp</a>${PST.filter(s=>s.id!==x.status&&s.id!=='novo').map(s=>`<button class="btn ghost sm" data-pst="${s.id}" data-id="${x.id}">${s.nome}</button>`).join('')}</div>
