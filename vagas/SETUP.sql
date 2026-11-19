@@ -192,6 +192,55 @@ create policy "equipe config" on public.vagas_config for all to authenticated
   using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app')
   with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
 
+-- ============ Links para compartilhar um candidato com pessoas de fora ============
+-- A equipe gera um link secreto (/c/<token>) com validade. Quem abre vê só o que o link libera:
+-- nome, vaga, currículo e portfólio (contato e anotações só se marcados). Pode revogar a qualquer hora.
+-- Os arquivos vão como links temporários do Storage, que vencem junto com o link.
+create table if not exists public.candidato_links (
+  token        text primary key check (char_length(token) between 20 and 64),
+  cand_id      uuid not null references public.candidaturas(id) on delete cascade,
+  criado_por   text default '',
+  criado_em    timestamptz not null default now(),
+  expira_em    timestamptz not null,
+  revogado     boolean not null default false,
+  mostra_contato boolean not null default false,
+  mostra_notas   boolean not null default false,
+  arquivos     jsonb not null default '{}'::jsonb,   -- {cv:{url,name,type}, files:[{url,name,size,type}]}
+  extra        jsonb not null default '{}'::jsonb,   -- {telefone} (só se mostra_contato)
+  views        integer not null default 0,
+  ultima_visita timestamptz
+);
+create index if not exists candidato_links_cand_idx on public.candidato_links (cand_id);
+alter table public.candidato_links enable row level security;
+drop policy if exists "equipe links" on public.candidato_links;
+create policy "equipe links" on public.candidato_links for all to authenticated
+  using (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app')
+  with check (coalesce(auth.jwt()->>'email','') not like '%@ponto.coquin.app');
+
+-- o visitante não lê a tabela: só esta função, com o token certo, dentro da validade
+create or replace function public.ver_candidato(p_token text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare l public.candidato_links; c public.candidaturas; v public.vagas;
+begin
+  select * into l from public.candidato_links where token = p_token;
+  if not found or l.revogado or l.expira_em < now() then return null; end if;
+  select * into c from public.candidaturas where id = l.cand_id;
+  if not found then return null; end if;
+  select * into v from public.vagas where id = c.vaga_id;
+  update public.candidato_links set views = views + 1, ultima_visita = now() where token = p_token;
+  return jsonb_build_object(
+    'nome', c.name, 'vaga', coalesce(v.title, ''), 'local', coalesce(v.store, ''), 'inscrito_em', c.created_at,
+    'cidade', c.city, 'foto', case when c.cv_photo like 'data:image%' then c.cv_photo end,
+    'email',    case when l.mostra_contato then c.email end,
+    'telefone', case when l.mostra_contato then coalesce(nullif(c.phone, ''), l.extra->>'telefone') end,
+    'notas',    case when l.mostra_notas then c.notes end,
+    'cv', l.arquivos->'cv', 'arquivos', coalesce(l.arquivos->'files', '[]'::jsonb),
+    'links', coalesce(c.portfolio->'links', '[]'::jsonb),
+    'expira_em', l.expira_em, 'por', l.criado_por);
+end $$;
+revoke all on function public.ver_candidato(text) from public;
+grant execute on function public.ver_candidato(text) to anon, authenticated;
+
 -- ============ Tempo real (candidatura nova aparece sozinha no painel) ============
 do $$ begin alter publication supabase_realtime add table public.candidaturas; exception when duplicate_object then null; end $$;
 do $$ begin alter publication supabase_realtime add table public.vagas;        exception when duplicate_object then null; end $$;

@@ -118,6 +118,21 @@ A chave da IA **fica no Supabase** (nunca no site). Configuração, uma vez:
 
 Só a equipe logada consegue chamar a função. Cada vaga melhorada custa poucos centavos.
 
+## Compartilhar um candidato com alguém de fora
+
+No perfil do candidato, botão **Compartilhar** → escolha a **validade** (24 horas, 7 ou 30 dias) e se
+quer incluir **contato** e **anotações da equipe** (os dois vêm desmarcados) → **Gerar link**.
+O link (`vagas.coquin.com.br/c/<código>`) já vai copiado, com botões de WhatsApp e Abrir.
+
+- Quem recebe **não precisa de login** e vê uma página da Coquin com nome, vaga, **currículo** (PDF
+  aparece na própria página, com botão Baixar) e **portfólio** (links e arquivos). Score e outros
+  candidatos nunca aparecem. A página não aparece no Google (`noindex`).
+- Na mesma tela ficam os **links já criados**, com quantas vezes cada um foi aberto e quando, e o botão
+  **Revogar** (o link para de abrir na hora). Excluir a candidatura apaga os links dela.
+- Por trás: tabela `candidato_links` (token aleatório de 32 caracteres) e a função `ver_candidato`,
+  a única coisa que o visitante consegue chamar. Os arquivos vão como links temporários do Storage
+  com a mesma validade do link.
+
 ## Portfólio (filmmaker, designer, social media…)
 
 No editor da vaga, **Portfólio no formulário**: *Não pedir* · *Opcional* · *Obrigatório (pelo menos 1 link)*.

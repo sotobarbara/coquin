@@ -361,6 +361,20 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 .q-res b{color:var(--accent)} .q-res .muted{color:var(--muted)}
 .q-res button{border:0;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;width:20px;height:20px;border-radius:99px;padding:0}
 .q-res button:hover{background:rgba(0,0,0,.07);color:var(--ink)} .q-res svg{width:12px;height:12px}
+.lk-intro{margin:6px 0 4px;font-size:14.5px;color:var(--ink-2)}
+#lkBody h4{margin:18px 0 8px}
+.lk-opt{display:flex;gap:9px;align-items:center;font-size:14px;margin:6px 0;cursor:pointer}
+.lk-what{display:flex;gap:8px;align-items:flex-start;background:var(--accent-soft);color:var(--ink-2);border-radius:10px;padding:10px 12px;font-size:13px;margin:16px 0}
+.lk-what svg{width:15px;height:15px;color:var(--accent);margin-top:2px}
+.lk-what .muted{color:var(--muted)}
+.lk-new{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding:12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)}
+.lk-new input{flex:1 1 100%;height:38px;border:1px solid var(--line-2);border-radius:8px;padding:0 10px;font-size:13px;background:var(--hover,#fff)}
+.lk-list{display:grid;gap:8px}
+.lk-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.lk-row>div{flex:1;min-width:0}
+.lk-row b{display:block;font-size:13.5px}
+.lk-row small{display:block;font-size:12px;color:var(--muted)}
+.lk-row.off{opacity:.55}
 .pf-list{display:grid;gap:8px}
 .pf-it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;cursor:pointer;text-decoration:none;color:inherit;font:inherit;transition:border-color .15s,background .15s}
 .pf-it:hover{border-color:var(--accent);background:var(--accent-soft)}
@@ -567,6 +581,10 @@ pre.cap{white-space:pre-wrap;background:var(--hover);border:1px solid var(--line
 <aside class="sheet wide" id="impSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title">Criar vagas a partir dos banners</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
   <div class="sh-body" id="impBody"></div>
+</aside>
+<aside class="sheet" id="linkSheet" role="dialog" aria-modal="true">
+  <div class="sh-head"><button class="x" id="lkBack" title="Voltar ao candidato"><svg class="i"><use href="#i-back"/></svg></button><div class="sh-title">Compartilhar candidato</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="sh-body" id="lkBody"></div>
 </aside>
 <aside class="sheet" id="thxSheet" role="dialog" aria-modal="true">
   <div class="sh-head"><div class="sh-title">Agradecer a participação</div><button class="x" data-close><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -1176,6 +1194,66 @@ async function openPfFile(path){ const w=window.open('','_blank');
   if(error||!data){ if(w) w.close(); toast('Não foi possível abrir o arquivo'); return; }
   if(w) w.location=data.signedUrl; else location.href=data.signedUrl; }
 
+/* ---------- compartilhar candidato com pessoas de fora (link secreto com validade) ----------
+   Cria uma linha em candidato_links com token aleatório. A página /c/<token> (candidato.html) chama
+   a função ver_candidato e mostra nome, vaga, currículo e portfólio. Os arquivos vão como links
+   temporários do Storage com a mesma validade. Dá para revogar. */
+let SHR={c:null};
+const randTok=n=>{ const a=new Uint8Array(n); crypto.getRandomValues(a); return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
+const MIME={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic'};
+const shareUrl=t=>location.origin+'/c/'+t;
+const fmtDH=d=>new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+function openShareCand(c){ SHR={c,days:7,contato:false,notas:false,list:null,url:'',busy:false}; renderShareCand(); openSheet('linkSheet'); loadLinks(); }
+async function loadLinks(){ const {data,error}=await sb.from('candidato_links').select('token,criado_em,expira_em,revogado,views,ultima_visita,criado_por,mostra_contato,mostra_notas').eq('cand_id',SHR.c.id).order('criado_em',{ascending:false});
+  SHR.list=error?{err:error.message}:(data||[]); renderShareCand(); }
+function renderShareCand(){
+  const c=SHR.c, p=pfOf(c), now=Date.now();
+  const what=['nome e vaga'].concat(c.cv_path?['currículo']:[],p.links.length||p.files.length?['portfólio ('+[p.links.length?p.links.length+' link'+(p.links.length>1?'s':''):'',p.files.length?p.files.length+' arquivo'+(p.files.length>1?'s':''):''].filter(Boolean).join(', ')+')']:[],SHR.contato?['contato']:[],SHR.notas?['anotações']:[]);
+  const L=SHR.list;
+  $('lkBody').innerHTML='<div class="blk"><p class="lk-intro">Gere um link para mostrar <b>'+esc(c.name)+'</b> a alguém de fora (um gestor, um parceiro, a agência). Quem recebe <b>não precisa de login</b>.</p>'
+    +'<h4>Validade</h4><div class="seg" id="lkDays">'+[[1,'24 horas'],[7,'7 dias'],[30,'30 dias']].map(([d,l])=>'<button data-d="'+d+'" class="'+(SHR.days===d?'sel':'')+'">'+l+'</button>').join('')+'</div>'
+    +'<h4>O que mostrar</h4><label class="lk-opt"><input type="checkbox" id="lkCont"'+(SHR.contato?' checked':'')+'> Contato (e-mail e WhatsApp)</label>'
+    +'<label class="lk-opt"><input type="checkbox" id="lkNotes"'+(SHR.notas?' checked':'')+'> Anotações da equipe</label>'
+    +'<div class="lk-what">'+ic('okc')+'<span>Vai junto: '+esc(what.join(', '))+'. <span class="muted">Score e outros candidatos nunca aparecem.</span></span></div>'
+    +'<button class="btn accent" id="lkGo"'+(SHR.busy?' disabled':'')+'>'+ic('link')+(SHR.busy?'Gerando…':'Gerar link')+'</button>'
+    +(SHR.url?'<div class="lk-new"><input readonly id="lkUrl" value="'+esc(SHR.url)+'"><button class="btn ghost sm" id="lkCopy">Copiar</button><a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent('Candidato(a) para '+((vagas.find(v=>v.id===c.vaga_id)||{}).title||'a vaga')+': '+c.name+'\n'+SHR.url)+'">'+ic('chat')+'WhatsApp</a><a class="btn ghost sm" target="_blank" rel="noopener" href="'+esc(SHR.url)+'">'+ic('eye')+'Abrir</a></div>':'')
+    +'</div>'
+    +'<div class="blk"><h4>Links já criados</h4>'
+    +(L===null?'<p class="note">Carregando…</p>':L.err?'<p class="note">'+(/candidato_links|relation|schema cache/i.test(L.err)?'Rode o <b>SETUP.sql</b> atualizado no Supabase para usar os links.':esc(L.err))+'</p>'
+      :!L.length?'<p class="note">Nenhum link ainda.</p>'
+      :'<div class="lk-list">'+L.map(l=>{ const off=l.revogado||new Date(l.expira_em)<now;
+        return '<div class="lk-row'+(off?' off':'')+'"><div><b>'+(l.revogado?'Revogado':new Date(l.expira_em)<now?'Expirado':'Ativo até '+fmtDH(l.expira_em))+'</b>'
+          +'<small>Criado '+fmtDH(l.criado_em)+(l.criado_por?' por '+esc(l.criado_por):'')+' · aberto '+(l.views||0)+'x'+(l.ultima_visita?' (último '+fmtDH(l.ultima_visita)+')':'')+(l.mostra_contato?' · com contato':'')+(l.mostra_notas?' · com anotações':'')+'</small></div>'
+          +(off?'':'<button class="btn ghost sm" data-copy="'+esc(l.token)+'">Copiar</button><button class="btn danger sm" data-rev="'+esc(l.token)+'">Revogar</button>')+'</div>'; }).join('')+'</div>'
+        +'<p class="note" style="margin-top:8px">Revogar faz o link parar de abrir na hora. Quem já baixou o arquivo continua com ele.</p>')
+    +'</div>';
+}
+async function createLink(){
+  const c=SHR.c, secs=SHR.days*86400; SHR.busy=true; renderShareCand();
+  try{
+    const arq={files:[]};
+    if(c.cv_path){ const {data,error}=await sb.storage.from('cvs').createSignedUrl(c.cv_path,secs); if(error) throw error;
+      arq.cv={url:data.signedUrl,name:c.cv_name||('curriculo.'+cvExt(c)),type:MIME[cvExt(c)]||''}; }
+    for(const f of pfOf(c).files){ const {data,error}=await sb.storage.from('portfolios').createSignedUrl(f.path,secs); if(!error&&data) arq.files.push({url:data.signedUrl,name:f.name,size:f.size,type:f.type}); }
+    const token=randTok(24);
+    const row={token,cand_id:c.id,criado_em:new Date().toISOString(),criado_por:$('meEm').textContent||'',expira_em:new Date(Date.now()+secs*1000).toISOString(),mostra_contato:SHR.contato,mostra_notas:SHR.notas,arquivos:arq,extra:SHR.contato?{telefone:phoneOf(c)||''}:{}};
+    const {error}=await sb.from('candidato_links').insert(row); if(error) throw error;
+    SHR.url=shareUrl(token);
+    try{ await navigator.clipboard.writeText(SHR.url); toast('Link copiado ✓'); }catch(_){ toast('Link criado ✓'); }
+  }catch(e){ toast(/candidato_links|relation|schema cache/i.test(e.message||'')?'⚠︎ Rode o SETUP.sql atualizado no Supabase':'⚠︎ '+(e.message||e)); }
+  SHR.busy=false; await loadLinks();
+}
+$('lkBody').addEventListener('click',async e=>{
+  const d=e.target.closest('[data-d]'); if(d){ SHR.days=+d.dataset.d; renderShareCand(); return; }
+  if(e.target.closest('#lkGo')) return createLink();
+  if(e.target.closest('#lkCopy')) return copy(SHR.url,'Link copiado ✓');
+  const cp=e.target.closest('[data-copy]'); if(cp) return copy(shareUrl(cp.dataset.copy),'Link copiado ✓');
+  const rv=e.target.closest('[data-rev]'); if(rv){ if(!confirm('Revogar este link? Ele para de abrir na hora.')) return;
+    const {error}=await sb.from('candidato_links').update({revogado:true}).eq('token',rv.dataset.rev); if(error) return toast('⚠︎ '+error.message); toast('Link revogado'); loadLinks(); }
+});
+$('lkBody').addEventListener('change',e=>{ if(e.target.id==='lkCont') SHR.contato=e.target.checked; if(e.target.id==='lkNotes') SHR.notas=e.target.checked; renderShareCand(); });
+$('lkBack').onclick=()=>{ if(SHR.c) openCand(SHR.c.id); };
+
 function rescore(){ cands.forEach(c=>c._s=null); }
 
 /* ---------- visual ---------- */
@@ -1388,6 +1466,7 @@ function openCand(id){
     +(s.kos.length && colOf(c)!=='reprovado'?'<div class="alert" style="margin-top:10px"><b>Eliminatória</b><br>'+s.kos.map(esc).join('<br>')+'</div>':'')
     +'<div class="acts" style="margin-top:14px">'
       +(c.cv_path?'<button class="btn accent" id="cvOpen">'+ic('file')+'Ver currículo</button>':'<span class="chip">sem currículo</span>')
+      +'<button class="btn ghost" id="cShare" title="Gerar link para mostrar este candidato a alguém de fora">'+ic('link')+'Compartilhar</button>'
       +(colOf(c)==='reprovado'
         ? (c.email?'<a class="btn ghost" target="_blank" rel="noopener" data-thank="'+c.id+'" href="'+thxHref(c)+'">'+ic('mail')+'Agradecer por e-mail</a>':'')
           +(ph?'<a class="btn ghost" target="_blank" rel="noopener" data-thank="'+c.id+'" href="'+wa(msgNo)+'">'+ic('chat')+'Agradecer no WhatsApp</a>':'')
@@ -1417,6 +1496,7 @@ function openCand(id){
     +'<div class="blk"><h4>Anotações da equipe</h4><textarea id="cNotes" placeholder="Impressões da entrevista, disponibilidade, indicação…">'+esc(c.notes||'')+'</textarea>'
     +'<button class="btn danger sm" id="cDel" style="margin-top:14px">'+ic('trash')+'Excluir candidatura (LGPD)</button></div>';
   if(c.cv_path) $('cvOpen').onclick=()=>openCv(c);
+  $('cShare').onclick=()=>openShareCand(c);
   $('cBody').querySelectorAll('[data-pf-file]').forEach(b=>b.onclick=()=>openPfFile(b.dataset.pfFile));
   if($('cvTabs')){ $('cvTabs').onclick=e=>{ const b=e.target.closest('[data-cvt]'); if(!b) return; UI.cvTab=b.dataset.cvt;
       document.querySelectorAll('#cvTabs button').forEach(x=>x.classList.toggle('sel',x===b)); $('cvDoc').classList.toggle('hide',UI.cvTab==='orig');
