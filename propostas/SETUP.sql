@@ -3,7 +3,7 @@
 --
 -- propostas_config  -> preços e textos. Linha 'publico' o formulário do cliente lê (sem login);
 --                      linha 'interno' (custos, numeração) só a equipe vê.
--- propostas_pedidos -> pedidos que chegam pelo formulário público (/orcamento).
+-- propostas_pedidos -> pedidos que chegam pelo formulário público (eventos.coquin.com.br).
 --                      O cliente só consegue ENVIAR; ler, mudar e apagar fica com a equipe.
 -- propostas         -> propostas montadas no gerador, sincronizadas entre os aparelhos da equipe.
 -- Logins de funcionário do ponto (@ponto.coquin.app) ficam de fora, igual ao painel de vagas.
