@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Candidato · Coquin</title>
+<link rel="icon" href="/logo-coquin.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* COQUIN · perfil de candidato compartilhado (página pública por link secreto, sem login) */
+:root{
+  --bg:#F6EEE4; --bg-2:#FBF7F1; --card:#FFFCF8; --sand:#EFE4D6;
+  --olive:#4E6B50; --olive-2:#3E5841; --olive-soft:#E4EADF;
+  --ink:#2F3329; --ink-2:#565A4D; --muted:#7A7468;
+  --line:#EADFD1; --line-2:#DDD1C1; --brown:#8B5E34;
+  --sh:0 1px 2px rgba(60,50,30,.04),0 10px 30px -12px rgba(60,50,30,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Outfit,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.top{background:var(--olive);color:#fff}
+.top .in{max-width:880px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top img{height:24px;display:block}
+.top span{font-size:13px;opacity:.85;letter-spacing:.04em}
+.wrap{max-width:880px;margin:0 auto;padding:28px 20px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh);padding:26px;margin-bottom:16px}
+.head{display:flex;gap:18px;align-items:center}
+.av{width:76px;height:76px;border-radius:99px;flex:none;display:grid;place-items:center;background:var(--olive-soft);color:var(--olive);font-weight:600;font-size:26px;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+h1{margin:0;font-size:30px;font-weight:500;letter-spacing:-.02em;line-height:1.15}
+.sub{color:var(--ink-2);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--bg-2);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:14px;color:var(--ink-2);text-decoration:none}
+a.chip:hover{border-color:var(--olive);color:var(--olive)}
+h2{margin:0 0 14px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--brown);font-weight:600}
+.list{display:grid;gap:8px}
+.it{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--bg-2);border-radius:14px;padding:12px 14px;text-decoration:none;color:inherit;transition:border-color .15s}
+.it:hover{border-color:var(--olive)}
+.it span{flex:1;min-width:0}
+.it b{display:block;font-weight:500}
+.it small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it svg{color:var(--olive)}
+.cvhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.cvhead h2{margin:0}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:99px;background:var(--olive);color:#fff;text-decoration:none;font-weight:500;font-size:14px}
+.btn:hover{background:var(--olive-2)}
+.pages{display:grid;gap:12px}
+.pages canvas,.pages img{width:100%;display:block;border:1px solid var(--line);border-radius:12px;background:#fff}
+.note{color:var(--muted);font-size:14px}
+.notes{white-space:pre-wrap;color:var(--ink-2)}
+.msg{text-align:center;padding:70px 20px}
+.msg h1{margin:14px 0 8px}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin-top:26px;line-height:1.6}
+.hide{display:none!important}
+@media (max-width:560px){h1{font-size:25px}.card{padding:20px}.av{width:62px;height:62px;font-size:22px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h3.5l1.6 4.2-2.2 1.5a11 11 0 0 0 6.4 6.4l1.5-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+</svg>
+<header class="top"><div class="in"><img src="/logo-coquin-oficial-branca.png" alt="Coquin"><span>Perfil compartilhado</span></div></header>
+
+<main class="wrap">
+  <div id="loading" class="msg"><p class="note">Carregando…</p></div>
+
+  <div id="gone" class="msg hide">
+    <svg class="i" style="width:40px;height:40px;color:var(--muted)"><use href="#i-lock"/></svg>
+    <h1>Link indisponível</h1>
+    <p class="note">Este link expirou ou foi desativado pela equipe da Coquin.<br>Peça um novo link para quem compartilhou com você.</p>
+  </div>
+
+  <div id="prof" class="hide">
+    <section class="card">
+      <div class="head"><div class="av" id="pAv"></div><div><h1 id="pName"></h1><div class="sub" id="pVaga"></div></div></div>
+      <div class="chips" id="pChips"></div>
+    </section>
+    <section class="card hide" id="pfCard"><h2>Portfólio</h2><div class="list" id="pfList"></div></section>
+    <section class="card hide" id="cvCard">
+      <div class="cvhead"><h2>Currículo</h2><a class="btn" id="cvDown" target="_blank" rel="noopener noreferrer"><svg class="i"><use href="#i-down"/></svg>Baixar</a></div>
+      <div class="pages" id="cvPages"><p class="note">Carregando o currículo…</p></div>
+    </section>
+    <section class="card hide" id="ntCard"><h2>Anotações da equipe</h2><div class="notes" id="pNotes"></div></section>
+    <p class="foot" id="pFoot"></p>
+  </div>
+</main>
+
+<script>
+'use strict';
+const SUPABASE_URL='https://anrfipczginloozmatht.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucmZpcGN6Z2lubG9vem1hdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODk3NzEsImV4cCI6MjEwMDU2NTc3MX0.Je1pF13l5Lael0EZkDC6o1Qk2XJWcusmX_ElcvdPx40';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=n=>'<svg class="i"><use href="#i-'+n+'"/></svg>';
+const safeUrl=u=>/^https:\/\//i.test(String(u||''))?String(u):'';
+const SITES=[[/instagram\.com/,'Instagram'],[/(drive|docs)\.google\.com/,'Google Drive'],[/(youtube\.com|youtu\.be)/,'YouTube'],[/vimeo\.com/,'Vimeo'],[/tiktok\.com/,'TikTok'],[/behance\.net/,'Behance'],[/dropbox\.com/,'Dropbox'],[/(wetransfer\.com|we\.tl)/,'WeTransfer'],[/linkedin\.com/,'LinkedIn'],[/canva\.(com|site)/,'Canva'],[/linktr\.ee/,'Linktree']];
+const site=u=>{ try{ const h=new URL(u).hostname.replace(/^www\./,''); const m=SITES.find(([r])=>r.test(h)); return m?m[1]:h; }catch(_){ return 'Link'; } };
+const size=b=>!b?'':b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(1)+' MB';
+const fmtD=d=>new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+/* token: /c/<token> (ou ?t=<token>) */
+const token=(location.pathname.match(/\/c\/([A-Za-z0-9_-]{20,64})/)||[])[1]||new URLSearchParams(location.search).get('t')||'';
+
+function gone(){ $('loading').classList.add('hide'); $('gone').classList.remove('hide'); }
+
+async function load(){
+  if(!token) return gone();
+  let d=null;
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/ver_candidato',{method:'POST',headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},body:JSON.stringify({p_token:token})});
+    if(r.ok) d=await r.json();
+  }catch(_){}
+  if(!d||!d.nome) return gone();
+  document.title=d.nome+' · Coquin';
+  $('pName').textContent=d.nome;
+  $('pVaga').textContent='Candidatura: '+(d.vaga||'—')+(d.local?' · '+d.local:'');
+  $('pAv').innerHTML=/^data:image\//.test(d.foto||'')?'<img src="'+esc(d.foto)+'" alt="">':esc(d.nome.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase());
+  const chips=[];
+  if(d.cidade) chips.push('<span class="chip">'+ic('pin')+esc(d.cidade)+'</span>');
+  if(d.inscrito_em) chips.push('<span class="chip">'+ic('brief')+'Inscrição em '+fmtD(d.inscrito_em)+'</span>');
+  if(d.telefone){ const n=String(d.telefone).replace(/\D/g,''); chips.push('<a class="chip" href="https://wa.me/'+(n.length<=11?'55':'')+n+'" target="_blank" rel="noopener noreferrer">'+ic('phone')+esc(d.telefone)+'</a>'); }
+  if(d.email) chips.push('<a class="chip" href="mailto:'+esc(d.email)+'">'+ic('mail')+esc(d.email)+'</a>');
+  $('pChips').innerHTML=chips.join('');
+
+  // portfólio: links + arquivos
+  const links=(d.links||[]).map(safeUrl).filter(Boolean), files=(d.arquivos||[]).filter(f=>safeUrl(f.url));
+  if(links.length||files.length){
+    $('pfCard').classList.remove('hide');
+    $('pfList').innerHTML=links.map(u=>'<a class="it" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+ic('link')+'<span><b>'+esc(site(u))+'</b><small>'+esc(u.replace(/^https?:\/\/(www\.)?/,''))+'</small></span>'+ic('arrow')+'</a>').join('')
+      +files.map(f=>'<a class="it" href="'+esc(f.url)+'" target="_blank" rel="noopener noreferrer">'+ic(/^video/.test(f.type||'')?'play':'file')+'<span><b>'+esc(f.name||'Arquivo')+'</b><small>Arquivo'+(f.size?' · '+size(f.size):'')+'</small></span>'+ic('arrow')+'</a>').join('');
+  }
+  // currículo: PDF desenhado aqui mesmo, foto direto, Word para baixar
+  const cv=d.cv&&safeUrl(d.cv.url)?d.cv:null;
+  if(cv){ $('cvCard').classList.remove('hide'); $('cvDown').href=cv.url; showCv(cv); }
+  if(d.notas){ $('ntCard').classList.remove('hide'); $('pNotes').textContent=d.notas; }
+  $('pFoot').innerHTML='Compartilhado pela equipe de contratação da Coquin'+(d.por?' ('+esc(d.por)+')':'')+'.<br>Link válido até '+fmtD(d.expira_em)+'. Use só para avaliar esta candidatura e não repasse (LGPD).';
+  $('loading').classList.add('hide'); $('prof').classList.remove('hide');
+}
+
+async function showCv(cv){
+  const box=$('cvPages'), name=String(cv.name||'').toLowerCase(), type=String(cv.type||'');
+  if(/image\//.test(type)||/\.(jpe?g|png|webp|gif)$/.test(name)){ box.innerHTML='<img src="'+esc(cv.url)+'" alt="Currículo">'; return; }
+  if(!(/pdf/.test(type)||/\.pdf$/.test(name))){ box.innerHTML='<p class="note">Arquivo do Word: toque em <b>Baixar</b> para abrir.</p>'; return; }
+  try{
+    await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf=await (await fetch(cv.url)).arrayBuffer();
+    const doc=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise; box.innerHTML='';
+    const W=Math.max(320,box.clientWidth||700), dpr=Math.min(2,devicePixelRatio||1);
+    for(let i=1;i<=Math.min(doc.numPages,6);i++){ const pg=await doc.getPage(i), v0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:W/v0.width*dpr});
+      const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; box.appendChild(c); await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise; }
+    if(doc.numPages>6) box.insertAdjacentHTML('beforeend','<p class="note">Mostrando 6 de '+doc.numPages+' páginas. Toque em Baixar para ver tudo.</p>');
+  }catch(_){ box.innerHTML='<p class="note">Não foi possível mostrar o arquivo aqui. Toque em <b>Baixar</b>.</p>'; }
+}
+load();
+</script>
+</body>
+</html>

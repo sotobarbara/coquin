@@ -13,6 +13,14 @@
       ]
     },
     {
+      "source": "/(c/.*|candidato)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
+    {
       "source": "/(index.html)?",
       "headers": [
         {
@@ -26,6 +34,10 @@
     {
       "source": "/jooble.xml",
       "destination": "/api/jooble"
+    },
+    {
+      "source": "/c/:token",
+      "destination": "/candidato"
     }
   ]
 }
