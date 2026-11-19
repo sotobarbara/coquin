@@ -95,7 +95,8 @@ O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL E
   eliminatórias, palavras-chave), status do processo, WhatsApp pronto e arte do post/story.
 - [`propostas/`](propostas/) — **Propostas de evento**: cola a mensagem do cliente e gera a
   proposta (casamento, íntimo, corporativo…) com preço por volume, mínimo, equipe e deslocamento;
-  sai em PDF, texto para WhatsApp ou link para o cliente.
+  sai em PDF, texto para WhatsApp ou link para o cliente. Formulário público `/orcamento`: o cliente
+  responde e vê uma pré-proposta; o pedido cai no gerador.
 
 Cada um é um projeto separado na Vercel (Root Directory = a pasta) e usa o mesmo login da equipe.
 

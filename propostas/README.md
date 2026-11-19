@@ -1,6 +1,6 @@
 # Coquin · Gerador de propostas de evento
 
-App próprio (Root Directory = `propostas` na Vercel), página única sem build, no mesmo padrão
+App próprio (Root Directory = `propostas` na Vercel; o formulário público fica em `/orcamento`), página única sem build, no mesmo padrão
 dos outros apps. Feito para responder rápido os pedidos de evento (casamento, casamento íntimo,
 aniversário, 15 anos, corporativo, formatura).
 
@@ -27,6 +27,30 @@ mostra quantos cocos/caixas levar e, com os custos cadastrados, o lucro e a marg
 (ótimo para eventos parecidos), atalho para o WhatsApp do cliente e indicadores (em aberto,
 fechado, taxa de fechamento).
 
+## Formulário do cliente (`/orcamento`)
+
+Link público (mesmo visual do Portal de Vagas) para mandar no WhatsApp ou pôr na bio do Instagram.
+O cliente responde tipo de evento, convidados, data, local/região, quem paga o gelato (open ou
+os convidados compram), tempo de serviço, adicionais e contato, e vê **na hora uma
+pré-proposta**: o que está incluso, o investimento estimado e o aviso de que **data e valores
+são confirmados e negociados com o comercial**, com botão para o WhatsApp comercial já com o
+número do pedido (#XXXXX) e o resumo.
+
+- **Valor na pré-proposta** (Ajustes): *faixa* (padrão, ex.: R$ 3.150 a R$ 3.850), *exato* ou
+  *não mostrar*. A ressalva também é editável.
+- Os preços usados são os do gerador, e só vão para o formulário **depois de "Pronto,
+  revisei"** com login. Até lá o formulário funciona, mas não mostra valor.
+- Custos internos nunca vão para o formulário.
+- O pedido cai na aba **Pedidos** do gerador (com aviso na hora), onde **Gerar proposta**
+  monta a proposta completa a partir das respostas.
+
+## Login e Supabase
+
+1. Rode o [`SETUP.sql`](SETUP.sql) **uma vez** no SQL Editor do Supabase (mesmo projeto dos
+   outros apps). Cria `propostas_config`, `propostas_pedidos` e `propostas`.
+2. Entre no gerador com o **login da equipe**. Sem login ele continua funcionando só no
+   aparelho, mas sem pedidos do site e sem publicar preços.
+
 ## Ajustes (revise antes de usar)
 
 Os valores padrão são **exemplos**, exceto o preço do gelato (R$ 35) e água/refri (R$ 4/7):
@@ -36,6 +60,7 @@ convidado, taxas de deslocamento, adicionais, sinal, validade, textos de "inclus
 
 ## Onde ficam os dados
 
-No **próprio aparelho** (localStorage). Use *Ajustes → Exportar/Importar backup* para guardar
-ou levar para outro aparelho. O link enviado ao cliente leva os dados da proposta no próprio
+Com login, no **Supabase** (sincroniza entre os aparelhos da equipe) e uma cópia no aparelho.
+Sem login, só no aparelho (localStorage); *Ajustes → Exportar/Importar backup* para levar a
+outro aparelho. O link enviado ao cliente leva os dados da proposta no próprio
 endereço (`#p=…`), então abre sem login e não depende de servidor.

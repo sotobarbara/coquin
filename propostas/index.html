@@ -34,7 +34,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--sand);padding:4px;border-radius:99px}
 .tabs button{border:0;background:none;padding:7px 14px;border-radius:99px;cursor:pointer;font-size:14px;color:var(--ink-2);white-space:nowrap}
 .tabs button[aria-selected=true]{background:var(--white);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-@media (max-width:640px){.top .app{display:none}.tabs button{padding:7px 11px;font-size:13.5px}}
+@media (max-width:640px){.top .in{gap:8px;padding:0 10px}.top img{height:18px}.top .app{display:none}.tabs{flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;margin-left:4px}.tabs::-webkit-scrollbar{display:none}.tabs button{padding:7px 10px;font-size:13px}}
 
 /* ---------- layout do editor ---------- */
 .view{max-width:1440px;margin:0 auto;padding:18px 16px 120px}
@@ -90,7 +90,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--green);color:#fff}
 .btn.primary:hover{background:var(--green-d)}
-.btn.ghost{border-color:var(--line-2);background:var(--white)}
+.btn.ghost{border-color:var(--line-2);background:var(--white);color:var(--ink)}
 .btn.ghost:hover{border-color:var(--ink)}
 .btn.sm{height:34px;padding:0 12px;font-size:13px}
 .btn.danger{color:var(--red)}
@@ -202,6 +202,35 @@ input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0
   .doc .tot .pp{text-align:left}
 }
 
+/* ---------- conta / login ---------- */
+.acct{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--white);border-radius:99px;height:34px;padding:0 12px;font-size:13px;cursor:pointer;color:var(--ink-2);white-space:nowrap}
+.acct::before{content:'';width:8px;height:8px;border-radius:99px;background:var(--ok)}
+.acct.off::before{background:#C9A24A}
+@media (max-width:640px){.acct span{display:none}.acct{padding:0 11px}}
+.gate{position:fixed;inset:0;z-index:80;background:rgba(31,46,33,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:none;place-items:center;padding:16px}
+.gate.on{display:grid}
+.gate .box{width:100%;max-width:380px;background:var(--paper);border-radius:20px;padding:24px;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.gate img{height:24px;width:auto;margin-bottom:14px}
+.gate h2{font-size:22px;font-weight:400;margin:0 0 4px}
+.gate p{font-size:13.5px;color:var(--muted);margin:0 0 16px}
+.gate .err{color:var(--red);font-size:13px;min-height:18px;margin:4px 0}
+.gate .btn{width:100%}
+.gate .lnk{display:block;text-align:center;margin-top:12px;font-size:13.5px;color:var(--muted);background:none;border:0;cursor:pointer;text-decoration:underline;width:100%}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--brown);color:#fff;font-size:11px;margin-left:5px;vertical-align:1px}
+
+/* ---------- pedidos do site ---------- */
+.ped{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:8px}
+.ped.novo{border-color:var(--brown-l);box-shadow:0 0 0 3px rgba(176,125,79,.12)}
+.ped .h{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ped .h b{font-weight:500;font-size:16px}
+.ped .h .v{font-variant-numeric:tabular-nums;font-weight:500}
+.ped .m{font-size:13.5px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:4px 14px}
+.ped .o{font-size:13.5px;background:var(--sand);border-radius:10px;padding:8px 10px;white-space:pre-line}
+.ped .acts{display:flex;gap:6px;flex-wrap:wrap}
+.st.novo{background:#F6E2CB;color:#7A4B1E}.st.proposta{background:#E3ECF5;color:#29507A}.st.fechado{background:#DCEBDD;color:#2C5E36}.st.perdido{background:#F3DEDA;color:#8A3022}.st.arquivado{background:var(--sand);color:var(--muted)}
+.linkbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.linkbox code{flex:1;min-width:200px;background:var(--white);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:13.5px;overflow-wrap:anywhere}
+
 /* ---------- modo cliente (link compartilhado) ---------- */
 body.client{background:var(--sand)}
 body.client .top,body.client #app{display:none}
@@ -213,7 +242,7 @@ body.client .top,body.client #app{display:none}
 @page :first{margin:0}
 @media print{
   html,body{background:#fff!important}
-  .top,.bar,.formcol,.toast,.cbar,#listView,#setView,.noprint{display:none!important}
+  .top,.bar,.formcol,.toast,.cbar,#listView,#setView,#pedView,.gate,.noprint{display:none!important}
   .view,#clientView{padding:0!important;max-width:none}
   .editor{display:block}
   .previewcol{display:block!important;position:static;max-height:none;overflow:visible;background:none;padding:0}
@@ -254,11 +283,26 @@ body.client .top,body.client #app{display:none}
     <span class="app">Propostas de evento</span>
     <nav class="tabs" role="tablist">
       <button role="tab" data-tab="edit" aria-selected="true">Nova proposta</button>
+      <button role="tab" data-tab="ped" aria-selected="false">Pedidos<span class="badge hide" id="pedBadge"></span></button>
       <button role="tab" data-tab="list" aria-selected="false">Propostas</button>
       <button role="tab" data-tab="set" aria-selected="false">Ajustes</button>
     </nav>
+    <button class="acct off" id="acct" type="button" title="Conta"><span id="acctLbl">Local</span></button>
   </div>
 </header>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateT">
+  <div class="box">
+    <img src="img/logo-coquin-oficial.png" alt="Coquin">
+    <h2 id="gateT">Entrar</h2>
+    <p>Use o mesmo login da equipe dos outros apps da Coquin. Com login, os preços vão para o formulário do cliente, os pedidos do site aparecem aqui e as propostas sincronizam entre os aparelhos.</p>
+    <div class="field"><label for="gEmail">E-mail</label><input id="gEmail" type="email" autocomplete="username" autocapitalize="none"></div>
+    <div class="field"><label for="gPass">Senha</label><input id="gPass" type="password" autocomplete="current-password"></div>
+    <div class="err" id="gErr"></div>
+    <button class="btn primary" id="gBtn" type="button">Entrar</button>
+    <button class="lnk" id="gLocal" type="button">Usar sem login (só neste aparelho)</button>
+  </div>
+</div>
 
 <div id="app">
 <!-- ================= EDITOR ================= -->
@@ -345,6 +389,17 @@ body.client .top,body.client #app{display:none}
   <div class="plist" id="plist"></div>
 </main>
 
+<!-- ================= PEDIDOS DO SITE ================= -->
+<main class="view hide" id="pedView">
+  <div class="list-head">
+    <h1>Pedidos do site</h1>
+    <button class="btn ghost sm" id="pedLink" type="button"><svg class="i"><use href="#i-link"/></svg>Copiar link do formulário</button>
+    <button class="btn ghost sm" id="pedReload" type="button">Atualizar</button>
+  </div>
+  <div class="seg" id="pedFilter" style="margin-bottom:12px"></div>
+  <div class="plist" id="pedList"></div>
+</main>
+
 <!-- ================= AJUSTES ================= -->
 <main class="view hide" id="setView">
   <div class="settings" id="settings"></div>
@@ -365,6 +420,8 @@ body.client .top,body.client #app{display:none}
 <div id="clientView" class="hide"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="core.js"></script>
 <script>
 /* =====================================================================
    Coquin · Gerador de propostas de evento
@@ -373,75 +430,12 @@ body.client .top,body.client #app{display:none}
    ===================================================================== */
 const LS_SET='coquin-propostas-settings-v1', LS_LIST='coquin-propostas-v1';
 
-const TIPOS=[
-  {id:'casamento', nome:'Casamento', capa:'Uma sobremesa à altura do grande dia',
-   msg:'Que alegria fazer parte desse dia! Preparamos uma proposta para levar o gelato tailandês da Coquin, servido na quenga do coco, para o casamento de vocês: um momento leve, bonito e diferente, que os convidados vão lembrar.'},
-  {id:'intimo', nome:'Casamento íntimo', capa:'Um gesto doce para quem é mais próximo',
-   msg:'Casamentos íntimos pedem detalhes especiais. Preparamos uma proposta para servir o gelato tailandês da Coquin na quenga do coco, com atendimento próximo e caprichado para cada convidado.'},
-  {id:'aniversario', nome:'Aniversário', capa:'A sobremesa que vira assunto da festa',
-   msg:'Obrigado por pensar na Coquin para essa comemoração! Preparamos uma proposta para levar o nosso gelato tailandês, servido na quenga do coco, para a sua festa.'},
-  {id:'15anos', nome:'15 anos', capa:'Uma sobremesa tão marcante quanto a festa',
-   msg:'Uma festa de 15 anos merece uma sobremesa à altura. Preparamos uma proposta para levar o gelato tailandês da Coquin, servido na quenga do coco, para essa noite.'},
-  {id:'corporativo', nome:'Corporativo', capa:'Uma experiência que a sua equipe e seus clientes vão lembrar',
-   msg:'Obrigado pelo contato! Preparamos uma proposta para levar a experiência Coquin ao seu evento: gelato tailandês artesanal, sem lactose e sem glúten, servido na quenga do coco por uma equipe treinada.'},
-  {id:'formatura', nome:'Formatura', capa:'Para celebrar a conquista com leveza',
-   msg:'Parabéns pela conquista! Preparamos uma proposta para levar o gelato tailandês da Coquin, servido na quenga do coco, para a festa de formatura.'},
-  {id:'outro', nome:'Outro', capa:'Gelato tailandês servido na quenga do coco',
-   msg:'Obrigado pelo contato! Preparamos uma proposta para levar o gelato tailandês da Coquin, servido na quenga do coco, para o seu evento.'}
-];
-const MODOS=[
-  {id:'open', nome:'Open (por convidado)', hint:'O contratante paga e os convidados se servem à vontade dentro da quantidade estimada.'},
-  {id:'pacote', nome:'Pacote fechado', hint:'O contratante compra uma quantidade fechada de gelatos.'},
-  {id:'local', nome:'Venda no local', hint:'Os convidados compram na hora (preço de balcão). O contratante paga só a taxa de presença e o deslocamento.'}
-];
-const STATUS=[{id:'rascunho',nome:'Rascunho'},{id:'enviada',nome:'Enviada'},{id:'aprovada',nome:'Aprovada'},{id:'recusada',nome:'Recusada'}];
-
-/* VALORES DE EXEMPLO — confira em Ajustes. Preço do gelato (R$ 35) e água/refri (R$ 4/7) são os da operação. */
-const DEFAULT_SETTINGS={
-  precoGelato:35,
-  faixas:[{min:150,preco:33},{min:250,preco:31}],      // a partir de X gelatos, preço unitário cai
-  minimo:1200,                                         // valor mínimo do evento (open/pacote)
-  taxaPresenca:600,                                    // venda no local
-  horasInclusas:3,
-  convPorAtendente:80,                                 // 1 atendente a cada N convidados
-  minAtendentes:2,
-  horaExtra:120,                                       // por hora adicional, por atendente
-  consumoPadrao:1,
-  deslocamentos:[{nome:'Fortaleza',preco:0},{nome:'Região metropolitana (Eusébio, Aquiraz, Caucaia…)',preco:200},{nome:'Litoral / outra cidade',preco:450}],
-  extras:[
-    {id:'tag',nome:'Tag personalizada no coco',desc:'Nome dos noivos / logo da empresa',preco:2.5,unid:'gelato',on:false},
-    {id:'carrinho',nome:'Carrinho decorado com o tema do evento',desc:'Flores e identidade visual combinadas',preco:250,unid:'fixo',on:false},
-    {id:'agua',nome:'Água mineral',desc:'',preco:4,unid:'unidade',on:false},
-    {id:'refri',nome:'Refrigerante lata',desc:'',preco:7,unid:'unidade',on:false}
-  ],
-  sinal:50,
-  validadeDias:15,
-  inclusos:['Gelato tailandês artesanal servido na quenga do coco natural','Sem lactose e sem glúten','Finalização com coco tostado','Carrinho Coquin no local do evento','Equipe uniformizada e treinada','Montagem, serviço e desmontagem','Utensílios, guardanapos e descarte','Transporte com controle de temperatura'],
-  condicoes:['Reserva da data com {sinal}% de sinal; o restante até 3 dias antes do evento.','Pagamento por Pix, transferência ou cartão.','O contratante disponibiliza um ponto de energia próximo ao carrinho e acesso para montagem 1h antes do serviço.','Quantidade final de convidados confirmada até 7 dias antes.'],
-  custoGelato:0,                                       // custo de insumos por gelato (coco + sorvete + embalagem)
-  custoAtendenteHora:0,                                // diária/hora paga ao atendente
-  custoKm:0,
-  whatsapp:'(85) 99971-9276', email:'coquingelato@gmail.com', instagram:'@coquingelato',
-  empresa:'Coquin Comércio de Alimentos LTDA',
-  seq:1, revisado:false
-};
-
 /* ---------------- utilidades ---------------- */
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const num=v=>{const n=parseFloat(String(v??'').replace(',','.'));return isFinite(n)?n:0};
-const BRL=(v,cents)=>{const c=cents??(Math.round(v)!==Math.round(v*100)/100);return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:c?2:0,maximumFractionDigits:c?2:0})};
-const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const DIAS=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
-function fmtData(iso,curta){ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); const dt=new Date(y,m-1,d);
-  return curta? `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}` : `${DIAS[dt.getDay()]}, ${d} de ${MESES[m-1]} de ${y}`; }
-const hojeISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-function addDias(iso,n){const [y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d+n);return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`}
-const uid=()=>Math.random().toString(36).slice(2,10);
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('on'),2400)}
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Não deu para salvar neste aparelho')}}
-const plural=(n,s,p)=>`${n.toLocaleString('pt-BR')} ${n===1?s:(p||s+'s')}`;
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Não deu para salvar neste aparelho')}
+  if(Cloud.on){ if(k===LS_SET) Cloud.queue('set'); if(k===LS_LIST) Cloud.queue('list'); }}
 
 /* ---------------- estado ---------------- */
 let S=Object.assign(structuredClone(DEFAULT_SETTINGS),lsGet(LS_SET,{}));
@@ -455,134 +449,6 @@ function novaProposta(){
     extras:{},desconto:'',descontoMotivo:'',mensagem:'',obs:'',assinatura:false};
 }
 const numero=n=>`COQ-${new Date().getFullYear()}-${String(n).padStart(3,'0')}`;
-
-/* ---------------- cálculo ---------------- */
-function precoUnit(qtd){ let p=S.precoGelato; [...S.faixas].filter(f=>f.min>0&&f.preco>0).sort((a,b)=>a.min-b.min).forEach(f=>{if(qtd>=f.min)p=f.preco}); return p; }
-function calc(p){
-  const conv=Math.max(0,Math.round(num(p.convidados)));
-  const tipo=TIPOS.find(t=>t.id===p.tipo)||TIPOS[0];
-  const autoAt=Math.max(S.minAtendentes||1,Math.ceil(conv/(S.convPorAtendente||80))||0);
-  const atend=num(p.atendentes)>0?Math.round(num(p.atendentes)):autoAt;
-  const horas=num(p.horas)>0?num(p.horas):S.horasInclusas;
-  let gelatos=0; if(p.modo==='open') gelatos=Math.ceil(conv*(num(p.consumo)||S.consumoPadrao)); else if(p.modo==='pacote') gelatos=Math.round(num(p.qtdGelatos));
-  const L=[];
-  let unit=0;
-  if(p.modo==='local'){
-    L.push({d:'Taxa de presença Coquin',s:`Gelato vendido aos convidados no local a ${BRL(S.precoGelato)} cada · ${plural(atend,'atendente')} · ${horas.toLocaleString('pt-BR')}h de serviço`,q:1,u:S.taxaPresenca,t:S.taxaPresenca});
-  } else if(gelatos>0){
-    unit=precoUnit(gelatos);
-    const sub=p.modo==='open'?`Estimativa de ${String(num(p.consumo)||S.consumoPadrao).replace('.',',')} por convidado · ${plural(conv,'convidado')}`:'Quantidade fechada';
-    L.push({d:'Gelato Coquin na quenga do coco',s:sub,q:gelatos,u:unit,t:gelatos*unit});
-  }
-  const extraH=Math.max(0,horas-S.horasInclusas);
-  if(extraH>0) L.push({d:'Horas adicionais de serviço',s:`${extraH.toLocaleString('pt-BR')}h além das ${S.horasInclusas}h inclusas · ${plural(atend,'atendente')}`,q:extraH*atend,u:S.horaExtra,t:extraH*atend*S.horaExtra,qLbl:`${extraH.toLocaleString('pt-BR')}h × ${atend}`});
-  const desl=S.deslocamentos[p.deslocamento]||S.deslocamentos[0];
-  if(desl&&desl.preco>0) L.push({d:'Deslocamento',s:desl.nome,q:1,u:desl.preco,t:desl.preco});
-  S.extras.forEach(x=>{const sel=p.extras[x.id]; if(!sel||!sel.on) return; let q=1;
-    if(x.unid==='gelato') q=p.modo==='local'?0:gelatos; else if(x.unid==='convidado') q=conv; else if(x.unid==='unidade') q=Math.max(0,Math.round(num(sel.q)));
-    if(q>0) L.push({d:x.nome,s:x.desc,q,u:x.preco,t:q*x.preco}); });
-  let sub=L.reduce((a,l)=>a+l.t,0);
-  let ajusteMin=0;
-  if(p.modo!=='local' && gelatos>0 && sub<S.minimo){ ajusteMin=S.minimo-sub; L.push({d:'Complemento para o valor mínimo do evento',s:`Valor mínimo para eventos: ${BRL(S.minimo)}`,q:1,u:ajusteMin,t:ajusteMin}); sub=S.minimo; }
-  const descPct=Math.min(100,Math.max(0,num(p.desconto)));
-  const desc=Math.round(sub*descPct)/100;
-  const total=sub-desc;
-  // interno
-  const custoIns=(p.modo==='local'?Math.ceil(conv*(num(p.consumo)||S.consumoPadrao)*0.5):gelatos)*S.custoGelato; // venda no local: estimativa de 50% de adesão
-  const custoEq=atend*horas*S.custoAtendenteHora;
-  const custo=custoIns+custoEq;
-  return {conv,tipo,atend,autoAt,horas,gelatos,unit,L,sub,descPct,desc,total,ajusteMin,custo,custoIns,custoEq,lucro:total-custo,porConv:conv?total/conv:0,desl};
-}
-
-/* ---------------- documento ---------------- */
-function condicoes(){ return S.condicoes.filter(Boolean).map(c=>c.replace('{sinal}',S.sinal)); }
-function docHTML(p,c,snap){
-  const st=snap||S, t=c.tipo;
-  const titulo=p.nomeEvento||(t.id==='outro'?'Seu evento':`${t.nome}${p.cliente?' · '+p.cliente:''}`);
-  const validade=addDias(p.criadaEm||hojeISO(),st.validadeDias);
-  const msg=(p.mensagem||t.msg).trim();
-  const fq=l=>l.qLbl||(l.q===1&&l.d!=='Gelato Coquin na quenga do coco'?'—':l.q.toLocaleString('pt-BR'));
-  const inc=[...st.inclusos];
-  if(c.atend) inc.splice(Math.min(5,inc.length),0,`${plural(c.atend,'atendente')} durante ${c.horas.toLocaleString('pt-BR')}h de serviço`);
-  return `<article class="doc">
-  <div class="cover">
-    <div class="txt">
-      <img src="img/logo-coquin-oficial-branca.png" alt="Coquin Gelato">
-      <div class="kick">Proposta para ${esc(t.nome.toLowerCase())}</div>
-      <h1>${esc(titulo)}</h1>
-      <div class="meta">
-        ${p.cliente?`<span>Para: ${esc(p.cliente)}</span>`:''}
-        ${p.data?`<span>${esc(fmtData(p.data))}${p.horario?' · a partir das '+esc(p.horario):''}</span>`:''}
-        ${p.local?`<span>${esc(p.local)}</span>`:''}
-      </div>
-    </div>
-    <div class="ph"><img src="img/coco-produto.webp" alt="Gelato Coquin servido na quenga do coco"><span class="num">${esc(p.numero||'Rascunho')}</span></div>
-  </div>
-  <div class="pg">
-    <p class="msg">${esc(msg)}</p>
-    <div class="facts avoid">
-      <div><small>Convidados</small><b>${c.conv?c.conv.toLocaleString('pt-BR'):'—'}</b></div>
-      <div><small>${p.modo==='local'?'Formato':'Gelatos'}</small><b>${p.modo==='local'?'Venda no local':(c.gelatos?c.gelatos.toLocaleString('pt-BR'):'—')}</b></div>
-      <div><small>Serviço</small><b>${c.horas.toLocaleString('pt-BR')}h</b></div>
-      <div><small>Equipe</small><b>${plural(c.atend,'atendente')}</b></div>
-    </div>
-
-    <div class="sec avoid">
-      <h3>O que está incluso</h3>
-      <ul class="inc">${inc.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
-    </div>
-
-    <div class="sec avoid">
-      <h3>Investimento</h3>
-      <table class="inv">
-        <thead><tr><th>Item</th><th class="r">Qtd.</th><th class="r">Valor</th><th class="r">Total</th></tr></thead>
-        <tbody>
-          ${c.L.map(l=>`<tr><td>${esc(l.d)}${l.s?`<small>${esc(l.s)}</small>`:''}</td><td class="r">${fq(l)}</td><td class="r">${BRL(l.u)}</td><td class="r">${BRL(l.t)}</td></tr>`).join('')||'<tr><td colspan="4" style="color:var(--muted)">Preencha convidados ou quantidade para calcular.</td></tr>'}
-          ${c.desc>0?`<tr class="disc"><td>Desconto de ${String(c.descPct).replace('.',',')}%${p.descontoMotivo?`<small>${esc(p.descontoMotivo)}</small>`:''}</td><td class="r"></td><td class="r"></td><td class="r">− ${BRL(c.desc)}</td></tr>`:''}
-        </tbody>
-      </table>
-      <div class="tot">
-        <div><small>Total do investimento</small><div class="v">${BRL(c.total)}</div></div>
-        ${c.conv&&c.total?`<div class="pp">por convidado<b>${BRL(c.porConv,true)}</b></div>`:''}
-      </div>
-    </div>
-
-    ${p.obs?`<div class="sec avoid"><h3>Observações</h3><p style="margin:0;white-space:pre-line">${esc(p.obs)}</p></div>`:''}
-
-    <div class="sec">
-      <h3>Condições</h3>
-      <ul class="cond">${condicoes().map(x=>`<li>${esc(x)}</li>`).join('')}<li>Proposta válida até ${esc(fmtData(validade,true))}. A data só fica garantida após a reserva.</li></ul>
-    </div>
-
-    ${p.assinatura?`<div class="sign avoid"><div>${esc(p.cliente||'Contratante')}</div><div>${esc(st.empresa)}</div></div>`:''}
-
-    <div class="foot">
-      <img src="img/logo-coquin-oficial.png" alt="Coquin Gelato">
-      <span>${esc(st.whatsapp)} · ${esc(st.email)} · ${esc(st.instagram)}</span>
-    </div>
-  </div>
-</article>`;
-}
-
-function textoWhats(p,c){
-  const t=c.tipo, linhas=[];
-  linhas.push(`*Proposta Coquin · ${p.nomeEvento||t.nome}*${p.numero?` (${p.numero})`:''}`);
-  linhas.push('');
-  const info=[];
-  if(p.data) info.push(`📅 ${fmtData(p.data)}${p.horario?', a partir das '+p.horario:''}`);
-  if(p.local) info.push(`📍 ${p.local}`);
-  if(c.conv) info.push(`👥 ${plural(c.conv,'convidado')}`);
-  linhas.push(...info); if(info.length) linhas.push('');
-  linhas.push('🥥 *Gelato tailandês servido na quenga do coco*, sem lactose e sem glúten, com carrinho Coquin, equipe uniformizada'+(c.atend?` (${plural(c.atend,'atendente')})`:'')+` e ${c.horas.toLocaleString('pt-BR')}h de serviço.`);
-  linhas.push('');
-  c.L.forEach(l=>linhas.push(`• ${l.d}${l.q>1?` (${l.qLbl||l.q.toLocaleString('pt-BR')} × ${BRL(l.u)})`:''}: ${BRL(l.t)}`));
-  if(c.desc>0) linhas.push(`• Desconto ${String(c.descPct).replace('.',',')}%: − ${BRL(c.desc)}`);
-  linhas.push('');
-  linhas.push(`*Total: ${BRL(c.total)}*`+(c.conv&&c.total?` (${BRL(c.porConv,true)} por convidado)`:''));
-  linhas.push('');
-  linhas.push(`Reserva com ${S.sinal}% de sinal. Proposta válida até ${fmtData(addDias(p.criadaEm||hojeISO(),S.validadeDias),true)}.`);
-  return linhas.join('\n');
-}
 
 /* ---------------- formulário ---------------- */
 function segButtons(el,items,cur,on){ el.innerHTML=items.map(i=>`<button type="button" data-v="${i.id}" aria-pressed="${i.id===cur}">${esc(i.nome)}</button>`).join(''); el.onclick=e=>{const b=e.target.closest('button');if(!b)return;on(b.dataset.v)} }
@@ -692,8 +558,9 @@ function go(tab){
   $('#editView').classList.toggle('hide',tab!=='edit');
   $('#listView').classList.toggle('hide',tab!=='list');
   $('#setView').classList.toggle('hide',tab!=='set');
+  $('#pedView').classList.toggle('hide',tab!=='ped');
   $('#bar').classList.toggle('hide',tab!=='edit');
-  if(tab==='list') renderList(); if(tab==='set') renderSettings();
+  if(tab==='list') renderList(); if(tab==='set') renderSettings(); if(tab==='ped') loadPedidos();
   $$('.tabs button')[0].textContent=P.numero?`Editando ${P.numero}`:'Nova proposta';
   window.scrollTo(0,0);
 }
@@ -759,6 +626,12 @@ function renderSettings(){
     <div class="field"><label>Condições (uma por linha · use {sinal} para o % do sinal)</label><textarea rows="5" data-lines="condicoes">${esc(S.condicoes.join('\n'))}</textarea></div>
     <div class="row">${f('sinal','Sinal na reserva (%)','5')}${f('validadeDias','Validade da proposta (dias)')}</div>
   </section>
+  <section class="card"><h2>Formulário do cliente (pré-proposta)</h2>
+    <p class="hint" style="margin-top:0">Link para mandar no WhatsApp ou colocar na bio do Instagram. O cliente responde e vê uma pré-proposta com os preços desta tela. ${Cloud.on?(S.revisado?'Preços publicados.':'<b>Os preços só vão para o formulário depois de tocar em "Pronto, revisei".</b>'):'<b>Entre com o login da equipe para publicar os preços e receber os pedidos.</b>'}</p>
+    <div class="linkbox" style="margin-bottom:12px"><code>${esc(formLink())}</code><button class="btn ghost sm" id="cpForm">Copiar</button><a class="btn ghost sm" href="orcamento" target="_blank" rel="noopener">Abrir</a></div>
+    <div class="row"><div class="field"><label>Valor na pré-proposta</label><select data-sel="mostrarValor">${[['faixa','Faixa de valor (ex.: R$ 3.150 a R$ 3.850)'],['exato','Valor exato estimado'],['oculto','Não mostrar valor']].map(([v,l])=>`<option value="${v}" ${S.mostrarValor===v?'selected':''}>${l}</option>`).join('')}</select></div>${f('faixaPct','Largura da faixa (± %)','1')}</div>
+    <div class="field"><label>Aviso (ressalva) na pré-proposta</label><textarea rows="3" data-s="ressalva">${esc(S.ressalva)}</textarea></div>
+  </section>
   <section class="card"><h2>Custos internos (não aparecem para o cliente)</h2>
     <div class="row3">${f('custoGelato','Custo de insumos por gelato (R$)','0.1','coco + sorvete + embalagem')}${f('custoAtendenteHora','Custo do atendente por hora (R$)','1')}<div></div></div>
   </section>
@@ -774,18 +647,20 @@ function renderSettings(){
 const setV=$('#setView');
 setV.addEventListener('input',e=>{const el=e.target;
   if(el.dataset.s){S[el.dataset.s]=el.type==='number'?num(el.value):el.value}
+  else if(el.dataset.sel){S[el.dataset.sel]=el.value}
   else if(el.dataset.arr){const a=S[el.dataset.arr][+el.dataset.i];a[el.dataset.f]=el.type==='number'?num(el.value):el.value}
   else if(el.dataset.lines){S[el.dataset.lines]=el.value.split('\n').map(s=>s.trim()).filter(Boolean)}
   else return;
   lsSet(LS_SET,S);
 });
-setV.addEventListener('change',e=>{const el=e.target; if(el.tagName==='SELECT'&&el.dataset.arr){S[el.dataset.arr][+el.dataset.i][el.dataset.f]=el.value;lsSet(LS_SET,S)}
+setV.addEventListener('change',e=>{const el=e.target; if(el.dataset.sel){S[el.dataset.sel]=el.value;lsSet(LS_SET,S)} if(el.tagName==='SELECT'&&el.dataset.arr){S[el.dataset.arr][+el.dataset.i][el.dataset.f]=el.value;lsSet(LS_SET,S)}
   if(el.id==='imp'&&el.files[0]){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(o.settings)S=Object.assign(structuredClone(DEFAULT_SETTINGS),o.settings);if(Array.isArray(o.propostas)){const ids=new Set(LIST.map(x=>x.id));o.propostas.forEach(x=>{if(!ids.has(x.id))LIST.push(x)})}lsSet(LS_SET,S);lsSet(LS_LIST,LIST);renderSettings();toast('Backup importado')}catch(_){toast('Arquivo inválido')}};r.readAsText(el.files[0])}});
 setV.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return;
   if(b.dataset.add){const k=b.dataset.add; S[k].push(k==='faixas'?{min:0,preco:S.precoGelato}:k==='deslocamentos'?{nome:'Nova região',preco:0}:{id:uid(),nome:'Novo adicional',desc:'',preco:0,unid:'fixo'}); lsSet(LS_SET,S); renderSettings()}
   if(b.dataset.rm){S[b.dataset.rm].splice(+b.dataset.i,1); lsSet(LS_SET,S); renderSettings()}
   if(b.id==='exp'){const blob=new Blob([JSON.stringify({settings:S,propostas:LIST},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`coquin-propostas-${hojeISO()}.json`;a.click();URL.revokeObjectURL(a.href)}
   if(b.id==='reset'&&confirm('Voltar preços e textos aos valores de exemplo? As propostas salvas continuam.')){const seq=S.seq;S=structuredClone(DEFAULT_SETTINGS);S.seq=seq;lsSet(LS_SET,S);renderSettings()}
+  if(b.id==='cpForm'){copiar(formLink(),'Link do formulário copiado')}
   if(b.id==='okRev'){S.revisado=true;lsSet(LS_SET,S);fillForm();render();go('edit');toast('Ajustes salvos')}
 });
 
@@ -802,8 +677,108 @@ function abrirCliente(){
   S=saveS; return true;
 }
 
+/* ---------------- nuvem (Supabase) ---------------- */
+const formLink=()=>location.origin+location.pathname.replace(/\/(index(\.html)?)?$/,'/')+'orcamento';
+const Cloud={client:null,on:false,email:null,sent:{},timers:{},
+  init(){ try{ this.client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON); }catch(e){ this.client=null; } },
+  queue(what){ clearTimeout(this.timers[what]); this.timers[what]=setTimeout(()=>this[what==='set'?'pushSettings':'pushList']().catch(e=>toast('Falha ao sincronizar: '+(e.message||e))),700); },
+  async pushSettings(){
+    const rows=[{id:'interno',dados:{...pick(S,INTERNAL_KEYS),revisado:!!S.revisado},updated_at:new Date().toISOString()}];
+    if(S.revisado) rows.push({id:'publico',dados:pick(S,PUBLIC_KEYS),updated_at:new Date().toISOString()});
+    const {error}=await this.client.from('propostas_config').upsert(rows); if(error) throw error; },
+  async pushList(){
+    const ids=new Set(LIST.map(x=>x.id)); const up=[];
+    LIST.forEach(x=>{const j=JSON.stringify(x); if(this.sent[x.id]!==j) up.push({id:x.id,dados:x,updated_at:new Date().toISOString()})});
+    const del=Object.keys(this.sent).filter(id=>!ids.has(id));
+    if(up.length){const {error}=await this.client.from('propostas').upsert(up); if(error) throw error; up.forEach(r=>this.sent[r.id]=JSON.stringify(r.dados));}
+    if(del.length){const {error}=await this.client.from('propostas').delete().in('id',del); if(error) throw error; del.forEach(id=>delete this.sent[id]);}
+  },
+  async pull(){
+    const {data:cfg,error:e1}=await this.client.from('propostas_config').select('id,dados'); if(e1) throw e1;
+    const pub=(cfg||[]).find(r=>r.id==='publico'), int=(cfg||[]).find(r=>r.id==='interno');
+    if(pub||int){ S=Object.assign(structuredClone(DEFAULT_SETTINGS),pub?pick(pub.dados,PUBLIC_KEYS):pick(S,PUBLIC_KEYS),int?int.dados:pick(S,INTERNAL_KEYS)); if(pub) S.revisado=true;
+      if(int&&!(int.dados.seq>0)) S.seq=Math.max(S.seq||1,1); try{localStorage.setItem(LS_SET,JSON.stringify(S))}catch(_){} }
+    else await this.pushSettings();
+    const {data:rows,error:e2}=await this.client.from('propostas').select('id,dados'); if(e2) throw e2;
+    const byId=new Map(LIST.map(x=>[x.id,x]));
+    (rows||[]).forEach(r=>{ this.sent[r.id]=JSON.stringify(r.dados); const l=byId.get(r.id);
+      if(!l||String(r.dados.atualizadaEm||'')>=String(l.atualizadaEm||'')) byId.set(r.id,r.dados); });
+    LIST=[...byId.values()].sort((a,b)=>String(b.atualizadaEm||'').localeCompare(String(a.atualizadaEm||'')));
+    // número da proposta: nunca repetir um que já existe
+    const maxN=LIST.reduce((m,x)=>{const n=+(String(x.numero||'').split('-')[2]||0);return Math.max(m,n)},0); if(S.seq<=maxN) S.seq=maxN+1;
+    try{localStorage.setItem(LS_LIST,JSON.stringify(LIST))}catch(_){}
+    await this.pushList();
+  },
+  subscribe(){ try{ this.client.channel('pedidos').on('postgres_changes',{event:'INSERT',schema:'public',table:'propostas_pedidos'},p=>{
+      PEDIDOS.unshift(p.new); badge(); toast(`Novo pedido do site: ${p.new.nome}`); if(!$('#pedView').classList.contains('hide')) renderPedidos(); }).subscribe(); }catch(e){} }
+};
+function acct(){ const a=$('#acct'); a.classList.toggle('off',!Cloud.on); $('#acctLbl').textContent=Cloud.on?'Sincronizado':'Local'; a.title=Cloud.on?Cloud.email:'Entrar com o login da equipe'; }
+function gate(v){ $('#gate').classList.toggle('on',v); if(v) setTimeout(()=>$('#gEmail').focus(),50); }
+async function onLogin(sess){
+  Cloud.on=true; Cloud.email=sess.user.email; gate(false); acct();
+  try{ await Cloud.pull(); }catch(e){ toast('Falha ao sincronizar: '+String(e.message||e.code||'sem conexão').replace(/[<>&]/g,'')+'. Usando dados locais'); }
+  fillForm(); render(); if(!$('#listView').classList.contains('hide')) renderList(); if(!$('#setView').classList.contains('hide')) renderSettings();
+  loadPedidos(true); Cloud.subscribe();
+}
+$('#acct').onclick=async()=>{ if(Cloud.on){ if(confirm(`Sair da conta ${Cloud.email}? As propostas continuam salvas neste aparelho.`)){ try{await Cloud.client.auth.signOut()}catch(e){} } } else if(Cloud.client) gate(true); else toast('Sem conexão com o servidor'); };
+$('#gLocal').onclick=()=>{ gate(false); acct(); };
+async function doLogin(){ const email=$('#gEmail').value.trim(), pass=$('#gPass').value; $('#gErr').textContent='';
+  if(!email||!pass){ $('#gErr').textContent='Preencha e-mail e senha.'; return; }
+  const b=$('#gBtn'); b.disabled=true; b.textContent='Entrando…';
+  try{ const {data,error}=await Cloud.client.auth.signInWithPassword({email,password:pass}); if(error) throw error; await onLogin(data.session); toast('Conectado'); }
+  catch(e){ $('#gErr').textContent=/invalid|credential/i.test(e.message||'')?'E-mail ou senha incorretos.':'Não foi possível entrar. Tente de novo.'; }
+  finally{ b.disabled=false; b.textContent='Entrar'; } }
+$('#gBtn').onclick=doLogin; $('#gPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+/* ---------------- pedidos do site ---------------- */
+let PEDIDOS=[], PFILTRO='abertos';
+const PST=[{id:'novo',nome:'Novo'},{id:'proposta',nome:'Proposta feita'},{id:'fechado',nome:'Fechado'},{id:'perdido',nome:'Perdido'},{id:'arquivado',nome:'Arquivado'}];
+function badge(){ const n=PEDIDOS.filter(x=>x.status==='novo').length; const b=$('#pedBadge'); b.textContent=n; b.classList.toggle('hide',!n); }
+async function loadPedidos(quiet){
+  if(!Cloud.on){ $('#pedList').innerHTML=`<div class="empty">Os pedidos do formulário aparecem aqui depois de entrar com o login da equipe.<br><br><button class="btn primary sm" onclick="gate(true)">Entrar</button></div>`; $('#pedFilter').innerHTML=''; return; }
+  if(!quiet) $('#pedList').innerHTML='<div class="empty">Carregando…</div>';
+  const {data,error}=await Cloud.client.from('propostas_pedidos').select('*').order('created_at',{ascending:false}).limit(300);
+  if(error){ $('#pedList').innerHTML=`<div class="empty">Não deu para carregar os pedidos (${esc(error.message)}). Confira se o SETUP.sql foi rodado no Supabase.</div>`; return; }
+  PEDIDOS=data||[]; badge(); renderPedidos();
+}
+function renderPedidos(){
+  if(!Cloud.on) return;
+  const cnt=id=>PEDIDOS.filter(x=>id==='abertos'?['novo','proposta'].includes(x.status):id==='todos'||x.status===id).length;
+  segButtons($('#pedFilter'),[{id:'abertos',nome:`Em aberto (${cnt('abertos')})`},...PST.map(s=>({id:s.id,nome:`${s.nome} (${cnt(s.id)})`})),{id:'todos',nome:'Todos'}],PFILTRO,v=>{PFILTRO=v;renderPedidos()});
+  const it=PEDIDOS.filter(x=>PFILTRO==='abertos'?['novo','proposta'].includes(x.status):PFILTRO==='todos'||x.status===PFILTRO);
+  $('#pedList').innerHTML=it.length?it.map(x=>{const t=TIPOS.find(y=>y.id===x.tipo)||{nome:x.tipo}; const r=x.respostas||{};
+    const ex=Object.entries(r.extras||{}).filter(([,v])=>v&&v.on).map(([id,v])=>{const e=S.extras.find(y=>y.id===id);return (e?e.nome:id)+(v.q?` (${v.q})`:'')});
+    const quando=new Date(x.created_at); const tel=String(x.telefone||'').replace(/\D/g,'').replace(/^55/,'');
+    return `<div class="ped ${x.status==='novo'?'novo':''}">
+      <div class="h"><b>${esc(x.nome)} <span class="st ${x.status}">${esc((PST.find(s=>s.id===x.status)||{}).nome||x.status)}</span></b><span class="v">${x.estimativa>0?'≈ '+BRL(+x.estimativa):''}</span></div>
+      <div class="m"><span>#${esc(x.protocolo)}</span><span>${esc(t.nome)}</span><span>${(+x.convidados).toLocaleString('pt-BR')} convidados</span>${x.data_evento?`<span>📅 ${fmtData(x.data_evento,true)}${x.horario?' '+esc(x.horario):''}</span>`:''}${x.local?`<span>📍 ${esc(x.local)}</span>`:''}${r.regiao?`<span>${esc(r.regiao)}</span>`:''}<span>${r.modo==='local'?'Convidados compram':'Open'} · ${esc(r.horas||'')}h</span>${ex.length?`<span>+ ${esc(ex.join(', '))}</span>`:''}</div>
+      ${x.obs?`<div class="o">${esc(x.obs)}</div>`:''}
+      <div class="m"><span>${esc(x.telefone)}</span>${x.email?`<span>${esc(x.email)}</span>`:''}<span>recebido ${quando.toLocaleDateString('pt-BR')} ${quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="acts"><button class="btn primary sm" data-gen="${x.id}">Gerar proposta</button><a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/55${tel}?text=${encodeURIComponent(`Olá, ${String(x.nome).split(' ')[0]}! Aqui é da Coquin, recebemos seu pedido #${x.protocolo} para o ${t.nome.toLowerCase()}. `)}">WhatsApp</a>${PST.filter(s=>s.id!==x.status&&s.id!=='novo').map(s=>`<button class="btn ghost sm" data-pst="${s.id}" data-id="${x.id}">${s.nome}</button>`).join('')}</div>
+    </div>`}).join(''):'<div class="empty">Nenhum pedido aqui. Mande o link do formulário para os clientes (botão acima).</div>';
+}
+async function setPedStatus(id,st){ const x=PEDIDOS.find(y=>y.id===id); if(!x) return; const old=x.status; x.status=st; renderPedidos(); badge();
+  const {error}=await Cloud.client.from('propostas_pedidos').update({status:st}).eq('id',id); if(error){x.status=old;renderPedidos();badge();toast('Não deu para atualizar')} }
+$('#pedList').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.pst) setPedStatus(b.dataset.id,b.dataset.pst);
+  if(b.dataset.gen){ const x=PEDIDOS.find(y=>y.id===b.dataset.gen); if(!x) return; const r=x.respostas||{};
+    P=Object.assign(novaProposta(),{tipo:TIPOS.some(t=>t.id===x.tipo)?x.tipo:'outro',cliente:x.nome,telefone:x.telefone,data:x.data_evento||'',horario:x.horario||'',local:x.local||'',
+      deslocamento:Math.min(+r.deslocamento||0,S.deslocamentos.length-1),modo:r.modo==='local'?'local':'open',convidados:String(x.convidados),horas:r.horas||S.horasInclusas,
+      extras:r.extras||{},pedidoId:x.id,pedidoProtocolo:x.protocolo});
+    if(x.status==='novo') setPedStatus(x.id,'proposta');
+    fillForm(); render(); go('edit'); toast(`Proposta montada a partir do pedido #${x.protocolo}. Confira e envie`); }
+});
+$('#pedReload').onclick=()=>loadPedidos();
+$('#pedLink').onclick=()=>copiar(formLink(),'Link do formulário copiado');
+
 /* ---------------- início ---------------- */
-if(!abrirCliente()){ fillForm(); bindForm(); bindBar(); render(); }
+if(!abrirCliente()){ fillForm(); bindForm(); bindBar(); render(); boot(); }
+async function boot(){
+  Cloud.init(); acct(); if(!Cloud.client) return;
+  let sess=null; try{ const {data}=await Cloud.client.auth.getSession(); sess=data.session; }catch(e){}
+  if(sess) await onLogin(sess); else gate(true);
+  try{ Cloud.client.auth.onAuthStateChange(ev=>{ if(ev==='SIGNED_OUT'){ Cloud.on=false; Cloud.email=null; Cloud.sent={}; acct(); PEDIDOS=[]; badge(); } }); }catch(e){}
+}
 window.addEventListener('hashchange',()=>location.reload());
 </script>
 </body>
