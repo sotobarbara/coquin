@@ -59,7 +59,8 @@ número do pedido (#XXXXX) e o resumo.
 | Equipe | **R$ 150 de diária por pessoa**, mínimo 2 pessoas (R$ 300); +1 pessoa a cada N convidados |
 | Deslocamento | **R$ 1 por km** saindo do Centro (Rua Dom Joaquim, 33), ida e volta. A distância sai do endereço do evento (busca: Photon/OpenStreetMap; rota de carro: OSRM; se a rota falhar, linha reta × 1,3) |
 | Venda no local | o contratante paga equipe + deslocamento (+ taxa extra opcional); convidados compram o gelato |
-| Opcionais | hora extra, valor mínimo, desconto por volume, adicionais (zerados ou vazios por padrão) |
+| Valor mínimo | **R$ 4.000** por evento (fds ~400 gelatos, dia fraco ~150). Abaixo disso entra "Complemento para o valor mínimo"; no formulário o cliente vê "Eventos a partir de R$ 4.000" |
+| Opcionais | hora extra, desconto por volume, adicionais (zerados ou vazios por padrão) |
 
 ## Ajustes (revise antes de usar)
 

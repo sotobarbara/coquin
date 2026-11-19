@@ -535,7 +535,7 @@ textarea:focus{outline:0;border-color:var(--olive);box-shadow:0 0 0 3px rgba(61,
     <div class="card qcard" id="formCard">
       <form id="form" novalidate>
         <h2>Monte sua pré-proposta</h2>
-        <p class="sub">Leva 2 minutos. No fim você já vê o investimento estimado.</p>
+        <p class="sub" id="formSub">Leva 2 minutos. No fim você já vê o investimento estimado.</p>
 
         <div class="qs">
           <div class="qh"><b>1</b>O evento</div>
@@ -712,6 +712,7 @@ function buildForm(){
   const hs=[...new Set([2,3,4,5,6,S.horasInclusas])].filter(h=>h>=Math.min(2,S.horasInclusas)).sort((a,b)=>a-b);
   opts($('horasOpts'),'horas',hs.map(h=>({id:h,nome:h+'h'+(h===S.horasInclusas?' (padrão)':'')})),A.horas,v=>A.horas=num(v));
   buildExtras();
+  if(PRICED&&S.minimo>0&&S.mostrarValor!=='oculto') $('formSub').textContent=`Leva 2 minutos. No fim você já vê o investimento estimado. Eventos a partir de ${BRL(S.minimo)}.`;
   document.querySelectorAll('.js-whats').forEach(b=>b.textContent=S.whatsapp);
   $('ctWa').href=waLink('Olá, Coquin! Quero um orçamento para um evento.');
 }
@@ -793,7 +794,9 @@ function showResult(){
   const mode=PRICED?(S.mostrarValor||'faixa'):'oculto';
   const pct=Math.max(0,num(S.faixaPct))/100;
   const r5=v=>Math.round(v/50)*50;
-  const lo=r5(c.total*(1-pct)), hi=r5(c.total*(1+pct));
+  const minimo=(p.modo!=='local'&&S.minimo>0)?S.minimo:0;
+  let lo=r5(c.total*(1-pct)), hi=r5(c.total*(1+pct));
+  if(c.ajusteMin>0){ lo=hi=c.total; } else if(minimo&&lo<minimo){ lo=minimo; }
   const inc=[...S.inclusos]; inc.splice(Math.min(5,inc.length),0,`${plural(c.atend,'atendente')} durante ${c.horas.toLocaleString('pt-BR')}h de serviço`);
   let valor='';
   if(mode==='exato'){
@@ -822,6 +825,7 @@ function showResult(){
     <div class="rblk"><h3>O que está incluso</h3><ul class="perks">${inc.map(i=>`<li>${ic('i-check')}${esc(i)}</li>`).join('')}</ul></div>
     <div class="rblk"><h3>Investimento</h3>${valor}
       ${!c.km&&S.precoKm>0?`<div class="ressalva" style="background:var(--bg-2);border-color:var(--line);color:var(--ink-2)">${ic('i-pin')}<span>Não conseguimos localizar o endereço, então o <b>deslocamento</b> (${BRL(S.precoKm)} por km saindo do Centro de Fortaleza) ainda não está no valor. O comercial confirma.</span></div>`:''}
+      ${c.ajusteMin>0&&mode!=='oculto'?`<div class="ressalva" style="background:var(--bg-2);border-color:var(--line);color:var(--ink-2)">${ic('i-coco')}<span>Nossos eventos têm <b>valor mínimo de ${BRL(S.minimo)}</b>. Para ${plural(c.conv,'convidado')}, o valor fica no mínimo, então dá para aumentar a quantidade de gelatos, escolher a 3 bolas ou incluir adicionais sem mudar o investimento. O comercial ajuda a montar.</span></div>`:''}
       <div class="ressalva">${ic('i-info')}<span>${esc(S.ressalva)}</span></div></div>
     <div class="next"><div class="ct-main">
       <svg class="ct-pat" width="100%" height="100%" aria-hidden="true"><rect width="100%" height="100%" fill="url(#pat-waves)"/></svg>

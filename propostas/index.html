@@ -447,7 +447,8 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast
 
 /* ---------------- estado ---------------- */
 /* v1 tinha preços de exemplo (faixas, mínimo, taxas por região): troca pelos valores da operação */
-function migrar(o){ if(o&&Object.keys(o).length&&o.preco2===undefined){ Object.assign(o,pick(DEFAULT_SETTINGS,['precoGelato','preco2','faixas','minimo','taxaPresenca','diaria','horasInclusas','convPorAtendente','minAtendentes','horaExtra','precoKm','idaVolta','origem','origemLat','origemLon','deslocamentos','custoDiaria'])); o.revisado=false; } return o||{}; }
+function migrar(o){ if(o&&Object.keys(o).length&&!(o.v>=3)&&[0,1200,undefined].includes(o.minimo)){ o.minimo=4000; } if(o&&Object.keys(o).length) o.v=3;
+  if(o&&Object.keys(o).length&&o.preco2===undefined){ Object.assign(o,pick(DEFAULT_SETTINGS,['precoGelato','preco2','faixas','minimo','taxaPresenca','diaria','horasInclusas','convPorAtendente','minAtendentes','horaExtra','precoKm','idaVolta','origem','origemLat','origemLon','deslocamentos','custoDiaria'])); o.revisado=false; } return o||{}; }
 let S=Object.assign(structuredClone(DEFAULT_SETTINGS),migrar(lsGet(LS_SET,{})));
 let LIST=lsGet(LS_LIST,[]);
 let P=novaProposta();
@@ -610,7 +611,7 @@ function renderSettings(){ setTimeout(bindOrigem,0);
   const f=(k,l,step='1',hint='')=>`<div class="field"><label>${l}</label><input type="number" step="${step}" min="0" data-s="${k}" value="${esc(S[k])}">${hint?`<small>${hint}</small>`:''}</div>`;
   const t=(k,l,ph='')=>`<div class="field"><label>${l}</label><input type="text" data-s="${k}" value="${esc(S[k])}" placeholder="${ph}"></div>`;
   $('#settings').innerHTML=`
-  <div class="note warn ${S.revisado?'hide':''}">Vindos da operação: gelato <b>3 bolas R$ 35 · 2 bolas R$ 30</b>, <b>R$ 1/km</b> saindo do Centro e <b>diária de R$ 150</b> por pessoa (mínimo 2). O resto é <b>exemplo</b>. Ajuste e toque em <b>Pronto, revisei</b>.</div>
+  <div class="note warn ${S.revisado?'hide':''}">Vindos da operação: gelato <b>3 bolas R$ 35 · 2 bolas R$ 30</b>, <b>R$ 1/km</b> saindo do Centro, <b>diária de R$ 150</b> por pessoa (mínimo 2) e <b>mínimo de R$ 4.000</b> por evento. O resto é <b>exemplo</b>. Ajuste e toque em <b>Pronto, revisei</b>.</div>
   <section class="card"><h2>Preço do gelato</h2>
     <div class="row3">${f('precoGelato','3 bolas (R$)','0.5')}${f('preco2','2 bolas (R$)','0.5')}${f('minimo','Valor mínimo do evento (R$)','50','0 = sem mínimo')}</div>
     <label class="lbl">Desconto por volume, opcional <small>(a partir de X gelatos, a 3 bolas passa a custar…; a 2 bolas acompanha a mesma diferença)</small></label>

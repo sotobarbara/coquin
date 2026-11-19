@@ -25,12 +25,12 @@ const MODOS=[
 const STATUS=[{id:'rascunho',nome:'Rascunho'},{id:'enviada',nome:'Enviada'},{id:'aprovada',nome:'Aprovada'},{id:'recusada',nome:'Recusada'}];
 
 /* Valores da operação: gelato 3 bolas R$ 35 · 2 bolas R$ 30 · R$ 1/km saindo do Centro · diária R$ 150 por pessoa (mín. 2).
-   O resto (horas, atendentes por convidado, mínimo, adicionais) é exemplo: confira em Ajustes. */
+   Mínimo do evento R$ 4.000. O resto (horas, atendentes por convidado, adicionais) é exemplo: confira em Ajustes. */
 const DEFAULT_SETTINGS={
   precoGelato:35,                                      // 3 bolas
   preco2:30,                                           // 2 bolas
   faixas:[],                                           // desconto por volume (opcional): a partir de X gelatos, preço da 3 bolas
-  minimo:0,                                            // valor mínimo do evento (0 = sem mínimo)
+  minimo:4000,                                         // valor mínimo do evento (0 = sem mínimo); fds ~400 gelatos, dia fraco ~150
   taxaPresenca:0,                                      // venda no local: taxa além de equipe e deslocamento
   diaria:150,                                          // diária cobrada por pessoa da equipe
   horasInclusas:4,                                     // horas de serviço cobertas pela diária
@@ -63,10 +63,10 @@ const DEFAULT_SETTINGS={
   mostrarValor:'faixa',                                // 'exato' | 'faixa' | 'oculto'
   faixaPct:10,                                         // faixa = total −X% a +X%
   ressalva:'Esta é uma pré-proposta automática, feita a partir das suas respostas. Ela ainda não reserva a data e não é o valor final: disponibilidade, valores e detalhes são confirmados e podem ser negociados com o nosso comercial.',
-  seq:1, revisado:false
+  seq:1, revisado:false, v:3
 };
 /* o que o formulário público pode ver (custos internos ficam de fora) */
-const PUBLIC_KEYS=['precoGelato','preco2','diaria','precoKm','idaVolta','origem','origemLat','origemLon','faixas','minimo','taxaPresenca','horasInclusas','convPorAtendente','minAtendentes','horaExtra','consumoPadrao','deslocamentos','extras','sinal','validadeDias','inclusos','condicoes','whatsapp','email','instagram','empresa','mostrarValor','faixaPct','ressalva'];
+const PUBLIC_KEYS=['v','precoGelato','preco2','diaria','precoKm','idaVolta','origem','origemLat','origemLon','faixas','minimo','taxaPresenca','horasInclusas','convPorAtendente','minAtendentes','horaExtra','consumoPadrao','deslocamentos','extras','sinal','validadeDias','inclusos','condicoes','whatsapp','email','instagram','empresa','mostrarValor','faixaPct','ressalva'];
 const INTERNAL_KEYS=['custoGelato','custoAtendenteHora','custoDiaria','custoKm','seq'];
 const pick=(o,keys)=>{const r={};keys.forEach(k=>{if(o[k]!==undefined)r[k]=o[k]});return r};
 
