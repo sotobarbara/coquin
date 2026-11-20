@@ -93,10 +93,8 @@ O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL E
 - [`vagas/`](vagas/) — **Vagas & Candidaturas**: link de inscrição para o Instagram (dados +
   upload do CV), painel com **score automático** por regras da vaga (pontos por resposta,
   eliminatórias, palavras-chave), status do processo, WhatsApp pronto e arte do post/story.
-- [`propostas/`](propostas/) — **Propostas de evento**: cola a mensagem do cliente e gera a
-  proposta (casamento, íntimo, corporativo…) com preço por volume, mínimo, equipe e deslocamento;
-  sai em PDF, texto para WhatsApp ou link para o cliente. Formulário público `/orcamento`: o cliente
-  responde e vê uma pré-proposta; o pedido cai no gerador.
+- **Eventos** (repositório próprio: [`sotobarbara/coquin-eventos`](https://github.com/sotobarbara/coquin-eventos), em
+  https://eventos.coquin.com.br) — formulário de orçamento com pré-proposta na hora, gerador de propostas e avisos de pedido novo.
 
 Cada um é um projeto separado na Vercel (Root Directory = a pasta) e usa o mesmo login da equipe.
 
