@@ -93,6 +93,8 @@ O **SQL de setup** está em [`SETUP.sql`](SETUP.sql) — rode uma vez no **SQL E
 - [`vagas/`](vagas/) — **Vagas & Candidaturas**: link de inscrição para o Instagram (dados +
   upload do CV), painel com **score automático** por regras da vaga (pontos por resposta,
   eliminatórias, palavras-chave), status do processo, WhatsApp pronto e arte do post/story.
+- **Eventos** (repositório próprio: [`sotobarbara/coquin-eventos`](https://github.com/sotobarbara/coquin-eventos), em
+  https://eventos.coquin.com.br) — formulário de orçamento com pré-proposta na hora, gerador de propostas e avisos de pedido novo.
 
 Cada um é um projeto separado na Vercel (Root Directory = a pasta) e usa o mesmo login da equipe.
 
