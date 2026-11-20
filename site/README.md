@@ -10,14 +10,16 @@ hospedado na Vercel. Formulários salvos no **mesmo Supabase** do painel.
 | Parceiros | `parceiros.html` | Proposta B2B (operação completa, sem investimento, aluguel mensal pago pela Coquin), etapas e **formulário de parceria** |
 | Contato | `contato.html` | WhatsApp, telefone, e-mail, Instagram, horários, endereço e **formulário de contato** |
 
-Em todas: navegação fixa (menu no celular), **WhatsApp flutuante** e rodapé.
+Em todas: navegação fixa (menu no celular), **WhatsApp flutuante** e rodapé. O item **Eventos** do menu
+(e do rodapé) leva para o site de eventos, `https://eventos.coquin.com.br/`; a home e Parceiros têm o botão
+**Coquin para eventos**.
 
 ## Dados usados (confirmados)
 
 - Produto: **gelato tailandês** servido na quenga do coco · sem lactose · sem glúten · artesanal · **R$ 35**
 - WhatsApp / telefone: **(85) 99971-9276** · e-mail **coquingelato@gmail.com** · Instagram **@coquingelato**
 - Pontos: **Beira-Mar** (Av. Historiador Raimundo Girão, em frente à feirinha, perto da Pizza Hut) **16h às 23h** ·
-  **Imprensa Food Square 17h às 23h** · **Praia do Futuro** (horário: "consulte pelo WhatsApp")
+  **Imprensa Food Square 17h às 23h** · **Praia do Futuro, dentro do Beach Club Santa Praia** (horário: "consulte pelo WhatsApp")
 - Rodapé: Coquin Comércio de Alimentos LTDA · Rua Dom Joaquim, 33, Centro
 
 **Ainda faltam:** sabores (se houver mais de um), horário da Praia do Futuro, fotos do quiosque e do
