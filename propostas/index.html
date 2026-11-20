@@ -317,7 +317,7 @@ body.client .top,body.client #app{display:none}
   <div class="editor" id="editor">
     <div class="formcol" id="form">
 
-      <div class="note warn hide" id="firstRun"><b>Primeira vez?</b> Os preços e taxas vêm com valores de exemplo. Confira em <a href="#" data-go="set">Ajustes</a> antes de mandar a primeira proposta.</div>
+      <div class="note warn hide" id="firstRun"><b>O formulário do cliente ainda não mostra valores.</b> Confira os preços em <a href="#" data-go="set">Ajustes</a> e toque em <b>Pronto, revisei</b> no fim da página para publicá-los.</div>
 
       <section class="card">
         <h2><svg class="i"><use href="#i-magic"/></svg>Colar o pedido</h2>
@@ -476,6 +476,7 @@ function fillForm(){
   $('#extrasBox').innerHTML=S.extras.map(x=>{const sel=P.extras[x.id]||{};const u={gelato:'por gelato',convidado:'por convidado',unidade:'por unidade',fixo:''}[x.unid];
     return `<div class="extra"><input type="checkbox" data-x="${x.id}" ${sel.on?'checked':''} aria-label="${esc(x.nome)}"><span class="nm">${esc(x.nome)}<small>${BRL(x.preco)} ${u}${x.desc?' · '+esc(x.desc):''}</small></span>${x.unid==='unidade'?`<input type="number" min="0" step="1" data-xq="${x.id}" value="${esc(sel.q??'')}" placeholder="qtd">`:'<span></span>'}</div>`}).join('')||'<p class="hint">Nenhum adicional cadastrado. Cadastre em Ajustes.</p>';
   $('#firstRun').classList.toggle('hide',!!S.revisado);
+  if(!S.revisado&&!Cloud.on) $('#firstRun').innerHTML='<b>O formulário do cliente ainda não mostra valores.</b> Entre com o login da equipe (botão no canto de cima), confira os <a href="#" data-go="set">Ajustes</a> e toque em <b>Pronto, revisei</b>.';
 }
 function bindForm(){
   $('#form').addEventListener('input',e=>{const el=e.target;
@@ -674,7 +675,10 @@ setV.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) ret
   if(b.id==='exp'){const blob=new Blob([JSON.stringify({settings:S,propostas:LIST},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`coquin-propostas-${hojeISO()}.json`;a.click();URL.revokeObjectURL(a.href)}
   if(b.id==='reset'&&confirm('Voltar preços e textos aos valores de exemplo? As propostas salvas continuam.')){const seq=S.seq;S=structuredClone(DEFAULT_SETTINGS);S.seq=seq;lsSet(LS_SET,S);renderSettings()}
   if(b.id==='cpForm'){copiar(formLink(),'Link do formulário copiado')}
-  if(b.id==='okRev'){S.revisado=true;lsSet(LS_SET,S);fillForm();render();go('edit');toast('Ajustes salvos')}
+  if(b.id==='okRev'){ if(!Cloud.on){ toast('Entre com o login da equipe para publicar os preços no formulário'); gate(true); return; }
+    S.revisado=true; lsSet(LS_SET,S); clearTimeout(Cloud.timers.set);
+    Cloud.pushSettings().then(()=>toast('Preços publicados: o formulário já mostra os valores')).catch(e=>toast('Não deu para publicar: '+(e.message||e)));
+    fillForm(); render(); go('edit'); }
 });
 
 /* ---------------- modo cliente: #p=... ---------------- */
