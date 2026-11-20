@@ -75,7 +75,7 @@ h1,h2,h3{font-weight:400;letter-spacing:-.035em;line-height:1.02;margin:0}
   .nav .menu a{display:block;font-size:24px;font-weight:300;letter-spacing:-.02em;padding:14px 0;border-bottom:1px solid var(--line);color:var(--ink)}
   .nav .menu a::after{display:none}
   .nav .menu .m-cta{display:block;margin-top:20px}
-  .nav .menu .m-cta .btn{width:100%;font-size:16px}
+  .nav .menu .m-cta a.btn{display:flex;width:100%;font-size:16px;font-weight:500;color:#fff;padding:0 26px;border-bottom:0;letter-spacing:0}
   .nav.open{background:var(--cream)}
 }
 @media (min-width:901px){.nav .menu .m-cta{display:none}}
