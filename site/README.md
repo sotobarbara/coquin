@@ -10,7 +10,9 @@ hospedado na Vercel. Formulários salvos no **mesmo Supabase** do painel.
 | Parceiros | `parceiros.html` | Proposta B2B (operação completa, sem investimento, aluguel mensal pago pela Coquin), etapas e **formulário de parceria** |
 | Contato | `contato.html` | WhatsApp, telefone, e-mail, Instagram, horários, endereço e **formulário de contato** |
 
-Em todas: navegação fixa (menu no celular), **WhatsApp flutuante** e rodapé.
+Em todas: navegação fixa (menu no celular), **WhatsApp flutuante** e rodapé. O item **Eventos** do menu
+(e do rodapé) leva para o site de eventos, `https://eventos.coquin.com.br/`; a home e Parceiros têm o botão
+**Coquin para eventos**.
 
 ## Dados usados (confirmados)
 
